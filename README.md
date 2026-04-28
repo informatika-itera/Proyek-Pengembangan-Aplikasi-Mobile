@@ -236,6 +236,8 @@ composeApp/src/
 MIT License - silakan gunakan untuk pembelajaran.
 
 ## 👨‍🏫 Dosen Pengampu
+### Pak Habib
+[GitHub: mh4Scripts](https://github.com/mh4Scripts)
 
 **Program Studi Teknik Informatika**  
 Institut Teknologi Sumatera (ITERA)

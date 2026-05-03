@@ -1,0 +1,223 @@
+-- ============================================================
+-- FitGen Database Schema
+-- File: FitGen.sq
+-- SQLDelight database untuk FitGen Fitness App
+-- ============================================================
+
+-- ==================== WORKOUT TABLE ====================
+-- Sprint 2: Tabel untuk menyimpan sesi latihan
+
+CREATE TABLE IF NOT EXISTS WorkoutEntity (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    title           TEXT NOT NULL,
+    type            TEXT NOT NULL DEFAULT 'STRENGTH',  -- STRENGTH, CARDIO, FLEXIBILITY, HIIT
+    duration_minutes INTEGER NOT NULL DEFAULT 0,
+    calories_burned INTEGER NOT NULL DEFAULT 0,
+    notes           TEXT NOT NULL DEFAULT '',
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL
+);
+
+-- Get all workouts ordered by created_at descending
+getAllWorkouts:
+SELECT * FROM WorkoutEntity
+ORDER BY created_at DESC;
+
+-- Get workout by ID
+getWorkoutById:
+SELECT * FROM WorkoutEntity
+WHERE id = ?;
+
+-- Get workouts by type
+getWorkoutsByType:
+SELECT * FROM WorkoutEntity
+WHERE type = ?
+ORDER BY created_at DESC;
+
+-- Insert new workout
+insertWorkout:
+INSERT INTO WorkoutEntity (title, type, duration_minutes, calories_burned, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- Get last inserted ID
+lastInsertWorkoutId:
+SELECT last_insert_rowid();
+
+-- Update existing workout
+updateWorkout:
+UPDATE WorkoutEntity
+SET title = ?, type = ?, duration_minutes = ?, calories_burned = ?, notes = ?, updated_at = ?
+WHERE id = ?;
+
+-- Delete workout by ID
+deleteWorkoutById:
+DELETE FROM WorkoutEntity
+WHERE id = ?;
+
+-- Count all workouts
+countWorkouts:
+SELECT COUNT(*) FROM WorkoutEntity;
+
+-- ==================== MEAL TABLE ====================
+-- Sprint 2: Tabel untuk mencatat asupan makanan/nutrisi
+
+CREATE TABLE IF NOT EXISTS MealEntity (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL,
+    meal_type       TEXT NOT NULL DEFAULT 'BREAKFAST', -- BREAKFAST, LUNCH, DINNER, SNACK
+    calories        INTEGER NOT NULL DEFAULT 0,
+    protein_g       REAL NOT NULL DEFAULT 0.0,
+    carbs_g         REAL NOT NULL DEFAULT 0.0,
+    fat_g           REAL NOT NULL DEFAULT 0.0,
+    portion_size    TEXT NOT NULL DEFAULT '1 serving',
+    notes           TEXT NOT NULL DEFAULT '',
+    logged_at       INTEGER NOT NULL,
+    created_at      INTEGER NOT NULL
+);
+
+-- Get all meals ordered by logged_at descending
+getAllMeals:
+SELECT * FROM MealEntity
+ORDER BY logged_at DESC;
+
+-- Get meals by type
+getMealsByType:
+SELECT * FROM MealEntity
+WHERE meal_type = ?
+ORDER BY logged_at DESC;
+
+-- Get meals logged on a specific date (unix timestamp range for the day)
+getMealsByDate:
+SELECT * FROM MealEntity
+WHERE logged_at >= ? AND logged_at < ?
+ORDER BY logged_at ASC;
+
+-- Get meal by ID
+getMealById:
+SELECT * FROM MealEntity
+WHERE id = ?;
+
+-- Insert new meal log
+insertMeal:
+INSERT INTO MealEntity (name, meal_type, calories, protein_g, carbs_g, fat_g, portion_size, notes, logged_at, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Update meal
+updateMeal:
+UPDATE MealEntity
+SET name = ?, meal_type = ?, calories = ?, protein_g = ?, carbs_g = ?, fat_g = ?, portion_size = ?, notes = ?, logged_at = ?
+WHERE id = ?;
+
+-- Delete meal by ID
+deleteMealById:
+DELETE FROM MealEntity
+WHERE id = ?;
+
+-- Get daily calorie total
+getDailyCaloriesTotal:
+SELECT SUM(calories) FROM MealEntity
+WHERE logged_at >= ? AND logged_at < ?;
+
+-- ==================== GPS ACTIVITY TABLE ====================
+-- Sprint 2: Tabel untuk menyimpan aktivitas dengan GPS tracking
+
+CREATE TABLE IF NOT EXISTS GpsActivityEntity (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    activity_type   TEXT NOT NULL DEFAULT 'RUNNING', -- RUNNING, CYCLING, WALKING, HIKING
+    distance_km     REAL NOT NULL DEFAULT 0.0,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    avg_speed_kmh   REAL NOT NULL DEFAULT 0.0,
+    max_speed_kmh   REAL NOT NULL DEFAULT 0.0,
+    calories_burned INTEGER NOT NULL DEFAULT 0,
+    route_polyline  TEXT NOT NULL DEFAULT '', -- encoded polyline for route
+    start_lat       REAL NOT NULL DEFAULT 0.0,
+    start_lng       REAL NOT NULL DEFAULT 0.0,
+    end_lat         REAL NOT NULL DEFAULT 0.0,
+    end_lng         REAL NOT NULL DEFAULT 0.0,
+    started_at      INTEGER NOT NULL,
+    ended_at        INTEGER NOT NULL,
+    created_at      INTEGER NOT NULL
+);
+
+-- Get all GPS activities ordered by started_at descending
+getAllGpsActivities:
+SELECT * FROM GpsActivityEntity
+ORDER BY started_at DESC;
+
+-- Get GPS activity by ID
+getGpsActivityById:
+SELECT * FROM GpsActivityEntity
+WHERE id = ?;
+
+-- Get GPS activities by type
+getGpsActivitiesByType:
+SELECT * FROM GpsActivityEntity
+WHERE activity_type = ?
+ORDER BY started_at DESC;
+
+-- Insert new GPS activity
+insertGpsActivity:
+INSERT INTO GpsActivityEntity (activity_type, distance_km, duration_seconds, avg_speed_kmh, max_speed_kmh, calories_burned, route_polyline, start_lat, start_lng, end_lat, end_lng, started_at, ended_at, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Get last inserted ID
+lastInsertGpsActivityId:
+SELECT last_insert_rowid();
+
+-- Delete GPS activity by ID
+deleteGpsActivityById:
+DELETE FROM GpsActivityEntity
+WHERE id = ?;
+
+-- ==================== BODY METRIC TABLE ====================
+-- Sprint 3: Tabel untuk mencatat metrik tubuh (berat, BMI, dll)
+
+CREATE TABLE IF NOT EXISTS BodyMetricEntity (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    weight_kg       REAL NOT NULL,
+    height_cm       REAL NOT NULL DEFAULT 0.0,
+    body_fat_pct    REAL NOT NULL DEFAULT 0.0,
+    muscle_mass_kg  REAL NOT NULL DEFAULT 0.0,
+    bmi             REAL NOT NULL DEFAULT 0.0,
+    notes           TEXT NOT NULL DEFAULT '',
+    measured_at     INTEGER NOT NULL,
+    created_at      INTEGER NOT NULL
+);
+
+-- Get all body metrics ordered by measured_at descending
+getAllBodyMetrics:
+SELECT * FROM BodyMetricEntity
+ORDER BY measured_at DESC;
+
+-- Get latest body metric
+getLatestBodyMetric:
+SELECT * FROM BodyMetricEntity
+ORDER BY measured_at DESC
+LIMIT 1;
+
+-- Get body metric by ID
+getBodyMetricById:
+SELECT * FROM BodyMetricEntity
+WHERE id = ?;
+
+-- Get body metrics within date range
+getBodyMetricsByDateRange:
+SELECT * FROM BodyMetricEntity
+WHERE measured_at >= ? AND measured_at <= ?
+ORDER BY measured_at ASC;
+
+-- Insert new body metric
+insertBodyMetric:
+INSERT INTO BodyMetricEntity (weight_kg, height_cm, body_fat_pct, muscle_mass_kg, bmi, notes, measured_at, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Update body metric
+updateBodyMetric:
+UPDATE BodyMetricEntity
+SET weight_kg = ?, height_cm = ?, body_fat_pct = ?, muscle_mass_kg = ?, bmi = ?, notes = ?, measured_at = ?
+WHERE id = ?;
+
+-- Delete body metric by ID
+deleteBodyMetricById:
+DELETE FROM BodyMetricEntity
+WHERE id = ?;

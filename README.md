@@ -1,8 +1,10 @@
-# 📱 NoteAI - KMP Project Template
-
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+# 📱 DailyBliss - KMP Note App
 
 Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+
+**Kelompok DailyBliss:**
+- Andika Dinata (123140096)
+- Satria Lemana Putra (123140088)
 
 > **📚 Dokumentasi Lengkap**
 > 
@@ -140,13 +142,10 @@ composeApp/src/
 
 1. **Fork & Clone repository**
    ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
+   git clone git@github.com:andika-123140096/123140096-123140088-DailyBliss.git
+   cd 123140096-123140088-DailyBliss
 
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
+   git checkout -b project/123140096-123140088-DailyBliss
    ```
 
 2. **Setup `local.properties`**
@@ -199,9 +198,9 @@ composeApp/src/
 ## 📝 Tugas Mahasiswa
 
 ### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
+- [x] Clone dan setup project
+- [x] Pahami struktur folder
+- [x] Modifikasi tema/warna
 
 ### Sprint 2: Core Features
 - [ ] Tambahkan field baru di Note (misal: priority, dueDate)

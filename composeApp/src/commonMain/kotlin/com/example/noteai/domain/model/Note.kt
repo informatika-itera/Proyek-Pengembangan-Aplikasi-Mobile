@@ -36,14 +36,14 @@ enum class NoteCategory(val displayName: String) {
 }
 
 enum class NoteColor(val hexValue: Long) {
-    DEFAULT(0xFFFFFFFF),
-    RED(0xFFFFCDD2),
-    ORANGE(0xFFFFE0B2),
-    YELLOW(0xFFFFF9C4),
-    GREEN(0xFFC8E6C9),
-    BLUE(0xFFBBDEFB),
-    PURPLE(0xFFE1BEE7),
-    PINK(0xFFF8BBD9);
+    DEFAULT(0xFF121212), // Dark Gray for OLED
+    RED(0xFF442C2C),
+    ORANGE(0xFF44362C),
+    YELLOW(0xFF44442C),
+    GREEN(0xFF2C442C),
+    BLUE(0xFF2C3644),
+    PURPLE(0xFF362C44),
+    PINK(0xFF442C36);
     
     companion object {
         fun fromString(value: String): NoteColor {

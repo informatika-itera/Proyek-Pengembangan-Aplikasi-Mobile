@@ -85,7 +85,7 @@ fun HomeScreen(
                             }
                         )
                     } else {
-                        Text("NoteAI")
+                        Text("DailyBliss")
                     }
                 },
                 actions = {

@@ -3,20 +3,12 @@ package com.example.synesthesia.presentation.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.graphics.Color
+import com.example.synesthesia.presentation.components.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -33,8 +25,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -67,116 +61,128 @@ fun HomeScreen(
     var showSearch by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    if (showSearch) {
-                        SearchField(
-                            query = when (val state = uiState) {
-                                is HomeUiState.Success -> state.query
-                                is HomeUiState.Empty -> state.query
-                                else -> ""
-                            },
-                            onQueryChange = viewModel::onSearchQueryChange,
-                            onClear = {
-                                viewModel.clearSearch()
-                                showSearch = false
+    AuroraBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    ),
+                    title = { 
+                        if (showSearch) {
+                            SearchField(
+                                query = when (val state = uiState) {
+                                    is HomeUiState.Success -> state.query
+                                    is HomeUiState.Empty -> state.query
+                                    else -> ""
+                                },
+                                onQueryChange = viewModel::onSearchQueryChange,
+                                onClear = {
+                                    viewModel.clearSearch()
+                                    showSearch = false
+                                }
+                            )
+                        } else {
+                            Text("NoteAI", style = MaterialTheme.typography.headlineMedium)
+                        }
+                    },
+                    actions = {
+                        if (!showSearch) {
+                            IconButton(onClick = { showSearch = true }) {
+                                Icon(Icons.Default.Search, contentDescription = "Cari")
                             }
-                        )
-                    } else {
-                        Text("NoteAI")
+                            
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
+                            }
+                            
+                            SortDropdownMenu(
+                                expanded = showSortMenu,
+                                currentSortBy = currentSortBy,
+                                onSortSelected = { 
+                                    viewModel.onSortByChanged(it)
+                                    showSortMenu = false
+                                },
+                                onDismiss = { showSortMenu = false }
+                            )
+                        }
+                        
+                        IconButton(onClick = onNavigateToAI) {
+                            Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
+                        }
                     }
-                },
-                actions = {
-                    if (!showSearch) {
-                        IconButton(onClick = { showSearch = true }) {
-                            Icon(Icons.Default.Search, contentDescription = "Cari")
-                        }
-                        
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
-                        }
-                        
-                        SortDropdownMenu(
-                            expanded = showSortMenu,
-                            currentSortBy = currentSortBy,
-                            onSortSelected = { 
-                                viewModel.onSortByChanged(it)
-                                showSortMenu = false
-                            },
-                            onDismiss = { showSortMenu = false }
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = onNavigateToAddNote,
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    contentColor = Color.White
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+                }
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                CategoryFilterRow(
+                    selectedCategory = when (val state = uiState) {
+                        is HomeUiState.Success -> state.category
+                        is HomeUiState.Empty -> state.category
+                        else -> null
+                    },
+                    onCategorySelected = viewModel::onCategorySelected
+                )
+                
+                when (val state = uiState) {
+                    is HomeUiState.Loading -> {
+                        LoadingIndicator()
+                    }
+                    
+                    is HomeUiState.Success -> {
+                        NotesList(
+                            notes = state.notes,
+                            onNoteClick = onNavigateToDetail,
+                            onPinClick = viewModel::togglePin,
+                            onDeleteClick = viewModel::deleteNote
                         )
                     }
                     
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
+                    is HomeUiState.Empty -> {
+                        EmptyState(
+                            title = if (state.query.isNotBlank() || state.category != null) {
+                                "Tidak Ditemukan"
+                            } else {
+                                "Belum Ada Catatan"
+                            },
+                            message = if (state.query.isNotBlank() || state.category != null) {
+                                "Coba ubah kata kunci atau filter"
+                            } else {
+                                "Tap + untuk membuat catatan baru"
+                            },
+                            icon = {
+                                Icon(
+                                    Icons.Outlined.NoteAlt,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = Color.White.copy(alpha = 0.6f)
+                                )
+                            }
+                        )
                     }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAddNote) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
-                    else -> null
-                },
-                onCategorySelected = viewModel::onCategorySelected
-            )
-            
-            when (val state = uiState) {
-                is HomeUiState.Loading -> {
-                    LoadingIndicator()
-                }
-                
-                is HomeUiState.Success -> {
-                    NotesList(
-                        notes = state.notes,
-                        onNoteClick = onNavigateToDetail,
-                        onPinClick = viewModel::togglePin,
-                        onDeleteClick = viewModel::deleteNote
-                    )
-                }
-                
-                is HomeUiState.Empty -> {
-                    EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
-                            "Tidak Ditemukan"
-                        } else {
-                            "Belum Ada Catatan"
-                        },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
-                        } else {
-                            "Tap + untuk membuat catatan baru"
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Outlined.NoteAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            )
-                        }
-                    )
-                }
-                
-                is HomeUiState.Error -> {
-                    ErrorState(
-                        message = state.message,
-                        onRetry = { viewModel.clearSearch() }
-                    )
+                    
+                    is HomeUiState.Error -> {
+                        ErrorState(
+                            message = state.message,
+                            onRetry = { viewModel.clearSearch() }
+                        )
+                    }
                 }
             }
         }
@@ -192,8 +198,15 @@ private fun SearchField(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Cari catatan...") },
+        placeholder = { Text("Cari catatan...", color = Color.White.copy(alpha = 0.5f)) },
         singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            focusedBorderColor = Color.White.copy(alpha = 0.6f),
+            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+            cursorColor = Color.White
+        ),
         modifier = Modifier.fillMaxWidth(),
         trailingIcon = {
             AnimatedVisibility(
@@ -252,19 +265,42 @@ private fun CategoryFilterRow(
             FilterChip(
                 selected = selectedCategory == null,
                 onClick = { onCategorySelected(null) },
-                label = { Text("Semua") }
+                label = { Text("Semua") },
+                colors = FilterChipDefaults.filterChipColors(
+                    labelColor = Color.White.copy(alpha = 0.6f),
+                    selectedLabelColor = Color.Black,
+                    selectedContainerColor = Color.White
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = Color.White.copy(alpha = 0.2f),
+                    selectedBorderColor = Color.Transparent,
+                    enabled = true,
+                    selected = selectedCategory == null
+                )
             )
         }
         
         items(NoteCategory.entries) { category ->
+            val isSelected = selectedCategory == category
             FilterChip(
-                selected = selectedCategory == category,
+                selected = isSelected,
                 onClick = { 
                     onCategorySelected(
-                        if (selectedCategory == category) null else category
+                        if (isSelected) null else category
                     )
                 },
-                label = { Text(category.displayName) }
+                label = { Text(category.displayName) },
+                colors = FilterChipDefaults.filterChipColors(
+                    labelColor = Color.White.copy(alpha = 0.6f),
+                    selectedLabelColor = Color.Black,
+                    selectedContainerColor = Color.White
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = Color.White.copy(alpha = 0.2f),
+                    selectedBorderColor = Color.Transparent,
+                    enabled = true,
+                    selected = isSelected
+                )
             )
         }
     }

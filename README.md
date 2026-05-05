@@ -1,4 +1,4 @@
-# 📱 NoteAI - KMP Project Template
+# 📱 Synesthesia - KMP Project Template
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
 
@@ -79,7 +79,7 @@ Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan 
 
 ```
 composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
+├── commonMain/kotlin/com/example/synesthesia/
 │   ├── core/                      # Core utilities
 │   │   ├── di/                    # Koin modules
 │   │   ├── network/               # Network config, error handling

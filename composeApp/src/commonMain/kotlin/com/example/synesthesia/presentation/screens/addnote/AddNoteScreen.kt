@@ -1,31 +1,16 @@
 package com.example.synesthesia.presentation.screens.addnote
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
+import com.example.synesthesia.presentation.components.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,86 +49,121 @@ fun AddNoteScreen(
         }
     }
     
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(if (uiState.isEditMode) "Edit Catatan" else "Catatan Baru")
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+    AuroraBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    ),
+                    title = { 
+                        Text(
+                            if (uiState.isEditMode) "Edit Catatan" else "Catatan Baru",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = { onNavigateToAI(uiState.content) },
+                            enabled = uiState.content.isNotBlank()
+                        ) {
+                            Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
+                        }
+                        
+                        IconButton(
+                            onClick = { viewModel.saveNote() },
+                            enabled = uiState.canSave
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = "Simpan")
+                        }
                     }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { onNavigateToAI(uiState.content) },
-                        enabled = uiState.content.isNotBlank()
+                )
+            }
+        ) { paddingValues ->
+            if (uiState.isLoading) {
+                LoadingIndicator()
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    GlassCard(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            TextField(
+                                value = uiState.title,
+                                onValueChange = viewModel::onTitleChange,
+                                placeholder = { Text("Judul", color = Color.White.copy(alpha = 0.5f)) },
+                                singleLine = true,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White
+                                ),
+                                textStyle = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            TextField(
+                                value = uiState.content,
+                                onValueChange = viewModel::onContentChange,
+                                placeholder = { Text("Tulis catatan di sini...", color = Color.White.copy(alpha = 0.4f)) },
+                                minLines = 10,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White.copy(alpha = 0.8f)
+                                ),
+                                textStyle = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                     
-                    IconButton(
-                        onClick = { viewModel.saveNote() },
-                        enabled = uiState.canSave
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = "Simpan")
-                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    CategoryDropdown(
+                        selectedCategory = uiState.category,
+                        onCategorySelected = viewModel::onCategoryChange
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Text(
+                        text = "Aksen Warna",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ColorPickerRow(
+                        selectedColor = uiState.color,
+                        onColorSelected = viewModel::onColorChange
+                    )
                 }
-            )
-        }
-    ) { paddingValues ->
-        if (uiState.isLoading) {
-            LoadingIndicator()
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                OutlinedTextField(
-                    value = uiState.title,
-                    onValueChange = viewModel::onTitleChange,
-                    label = { Text("Judul") },
-                    placeholder = { Text("Masukkan judul...") },
-                    singleLine = true,
-                    isError = uiState.titleError != null,
-                    supportingText = uiState.titleError?.let { { Text(it) } },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                OutlinedTextField(
-                    value = uiState.content,
-                    onValueChange = viewModel::onContentChange,
-                    label = { Text("Konten") },
-                    placeholder = { Text("Tulis catatan di sini...") },
-                    minLines = 8,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                CategoryDropdown(
-                    selectedCategory = uiState.category,
-                    onCategorySelected = viewModel::onCategoryChange
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(
-                    text = "Warna",
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ColorPickerRow(
-                    selectedColor = uiState.color,
-                    onColorSelected = viewModel::onColorChange
-                )
             }
         }
     }
@@ -165,8 +185,14 @@ private fun CategoryDropdown(
             value = selectedCategory.displayName,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Kategori") },
+            label = { Text("Kategori", color = Color.White.copy(alpha = 0.8f)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedTextColor = Color.White,
+                focusedTextColor = Color.White,
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                focusedBorderColor = Color.White.copy(alpha = 0.6f)
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -174,11 +200,12 @@ private fun CategoryDropdown(
         
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(Color(0xFF1C1B1F))
         ) {
             NoteCategory.entries.forEach { category ->
                 DropdownMenuItem(
-                    text = { Text(category.displayName) },
+                    text = { Text(category.displayName, color = Color.White) },
                     onClick = {
                         onCategorySelected(category)
                         expanded = false

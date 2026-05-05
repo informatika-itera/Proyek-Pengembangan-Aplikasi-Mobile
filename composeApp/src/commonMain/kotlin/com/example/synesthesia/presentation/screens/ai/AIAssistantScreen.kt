@@ -1,14 +1,7 @@
 package com.example.synesthesia.presentation.screens.ai
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -18,22 +11,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
+import com.example.synesthesia.presentation.components.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,141 +54,180 @@ fun AIAssistantScreen(
         }
     }
     
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = { Text("AI Assistant") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+    AuroraBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White
+                    ),
+                    title = { Text("AI Assistant", style = MaterialTheme.typography.titleLarge) },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = "Pilih Aksi",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(AIAction.entries) { action ->
+                        val isSelected = uiState.selectedAction == action
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { viewModel.onActionSelected(action) },
+                            label = { Text(action.displayName) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                labelColor = Color.White.copy(alpha = 0.8f),
+                                selectedLabelColor = Color.Black,
+                                selectedContainerColor = Color.White
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = Color.White.copy(alpha = 0.3f),
+                                enabled = true,
+                                selected = isSelected
+                            )
+                        )
                     }
                 }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text(
-                text = "Pilih Aksi",
-                style = MaterialTheme.typography.labelLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(AIAction.entries) { action ->
-                    FilterChip(
-                        selected = uiState.selectedAction == action,
-                        onClick = { viewModel.onActionSelected(action) },
-                        label = { Text(action.displayName) }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text(
+                    text = uiState.selectedAction.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                GlassCard(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = uiState.inputText,
+                        onValueChange = viewModel::onInputTextChange,
+                        placeholder = { Text("Teks yang ingin diproses...", color = Color.White.copy(alpha = 0.4f)) },
+                        minLines = 4,
+                        maxLines = 8,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = Color.White
+                        ),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = uiState.selectedAction.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            OutlinedTextField(
-                value = uiState.inputText,
-                onValueChange = viewModel::onInputTextChange,
-                label = { Text("Teks Input") },
-                placeholder = { Text("Masukkan teks di sini...") },
-                minLines = 4,
-                maxLines = 8,
-                isError = uiState.error != null,
-                supportingText = uiState.error?.let { { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Button(
-                onClick = { viewModel.executeAction() },
-                enabled = uiState.canExecute,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(end = 8.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Text("Memproses...")
-                } else {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Send,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text("Jalankan")
-                }
-            }
-            
-            AnimatedVisibility(visible = uiState.result != null) {
-                Column {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    Text(
-                        text = "Hasil",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Button(
+                    onClick = { viewModel.executeAction() },
+                    enabled = uiState.canExecute,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp).padding(end = 8.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
                         )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = uiState.result ?: "",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedButton(
-                                    onClick = { viewModel.copyResult() },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(
-                                        Icons.Default.ContentCopy,
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(end = 4.dp)
-                                    )
-                                    Text("Salin")
-                                }
+                        Text("Memproses...")
+                    } else {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp).padding(end = 8.dp)
+                        )
+                        Text("Jalankan")
+                    }
+                }
+                
+                AnimatedVisibility(visible = uiState.result != null) {
+                    Column {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        
+                        Text(
+                            text = "Hasil AI",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color.White
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        GlassCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            borderOpacity = 0.25f
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = uiState.result ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White
+                                )
                                 
-                                if (noteId != null) {
-                                    Button(
-                                        onClick = { viewModel.applyToNote() },
+                                Spacer(modifier = Modifier.height(24.dp))
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    OutlinedButton(
+                                        onClick = { viewModel.copyResult() },
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = Color.White
+                                        ),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         Icon(
-                                            Icons.Default.Done,
+                                            Icons.Default.ContentCopy,
                                             contentDescription = null,
-                                            modifier = Modifier.padding(end = 4.dp)
+                                            modifier = Modifier.size(16.dp).padding(end = 4.dp)
                                         )
-                                        Text("Terapkan")
+                                        Text("Salin")
+                                    }
+                                    
+                                    if (noteId != null) {
+                                        Button(
+                                            onClick = { viewModel.applyToNote() },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.White.copy(alpha = 0.15f),
+                                                contentColor = Color.White
+                                            ),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Done,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp).padding(end = 4.dp)
+                                            )
+                                            Text("Terapkan")
+                                        }
                                     }
                                 }
                             }

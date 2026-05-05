@@ -4,11 +4,16 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 // ==================== COLORS ====================
 
+val MidnightSpace = Color(0xFF0B0D17)
 private val Primary = Color(0xFF6750A4)
 private val OnPrimary = Color(0xFFFFFFFF)
 private val PrimaryContainer = Color(0xFFEADDFF)
@@ -45,6 +50,41 @@ private val OnSurfaceVariantDark = Color(0xFFCAC4D0)
 
 private val OutlineLight = Color(0xFF79747E)
 private val OutlineDark = Color(0xFF938F99)
+
+// ==================== TYPOGRAPHY ====================
+
+private val AppTypography = Typography(
+    headlineLarge = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        letterSpacing = (-0.5).sp
+    ),
+    headlineMedium = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 28.sp,
+        letterSpacing = 0.sp
+    ),
+    titleLarge = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 22.sp,
+        letterSpacing = 0.sp
+    ),
+    bodyLarge = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodyMedium = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        letterSpacing = 0.25.sp
+    ),
+    labelLarge = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        letterSpacing = 0.1.sp
+    )
+)
 
 // ==================== COLOR SCHEMES ====================
 
@@ -91,13 +131,13 @@ private val DarkColorScheme = darkColorScheme(
     onError = Color(0xFF601410),
     errorContainer = Color(0xFF8C1D18),
     onErrorContainer = Color(0xFFF9DEDC),
-    background = BackgroundDark,
-    onBackground = OnBackgroundDark,
-    surface = SurfaceDark,
-    onSurface = OnSurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+    background = MidnightSpace,
+    onBackground = Color(0xFFFFFFFF),
+    surface = MidnightSpace,
+    onSurface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFF49454F),
+    onSurfaceVariant = Color(0xFFE6E1E5),
+    outline = Color(0xFF938F99)
 )
 
 // ==================== THEME ====================
@@ -111,6 +151,7 @@ fun NoteAITheme(
     
     MaterialTheme(
         colorScheme = colorScheme,
+        typography = AppTypography,
         content = content
     )
 }

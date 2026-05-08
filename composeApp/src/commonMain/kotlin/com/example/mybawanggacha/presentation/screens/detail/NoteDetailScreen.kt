@@ -56,11 +56,11 @@ fun NoteDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(noteId) {
         viewModel.loadNote(noteId)
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -69,7 +69,7 @@ fun NoteDetailScreen(
             }
         }
     }
-    
+
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
@@ -79,7 +79,7 @@ fun NoteDetailScreen(
             onDismiss = { showDeleteDialog = false }
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -91,28 +91,28 @@ fun NoteDetailScreen(
                     }
                 },
                 actions = {
-                    val currentState = uiState
-                    if (currentState is NoteDetailUiState.Success) {
+                    if (uiState is NoteDetailUiState.Success) {
+                        val successState = uiState as NoteDetailUiState.Success
                         IconButton(onClick = { viewModel.togglePin() }) {
                             Icon(
-                                imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
-                                contentDescription = if (currentState.note.isPinned) "Lepas Pin" else "Pin"
+                                imageVector = if (successState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                                contentDescription = if (successState.note.isPinned) "Lepas Pin" else "Pin"
                             )
                         }
-                        
-                        IconButton(onClick = { 
+
+                        IconButton(onClick = {
                             viewModel.getShareContent()?.let { onShare(it) }
                         }) {
                             Icon(Icons.Default.Share, contentDescription = "Bagikan")
                         }
-                        
+
                         IconButton(onClick = { onNavigateToEdit(noteId) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
-                        
+
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
-                                Icons.Default.Delete, 
+                                Icons.Default.Delete,
                                 contentDescription = "Hapus",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -123,10 +123,8 @@ fun NoteDetailScreen(
         }
     ) { paddingValues ->
         when (val state = uiState) {
-            is NoteDetailUiState.Loading -> {
-                LoadingIndicator()
-            }
-            
+            is NoteDetailUiState.Loading -> LoadingIndicator()
+
             is NoteDetailUiState.Success -> {
                 Column(
                     modifier = Modifier
@@ -143,35 +141,32 @@ fun NoteDetailScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CategoryBadge(category = state.note.category.displayName)
-                        
                         Text(
                             text = state.note.updatedAt.formatToDisplay(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     Text(
                         text = state.note.content,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
-            
-            is NoteDetailUiState.NotFound -> {
-                EmptyState(
-                    title = "Catatan Tidak Ditemukan",
-                    message = "Catatan mungkin sudah dihapus"
-                )
-            }
+
+            is NoteDetailUiState.NotFound -> EmptyState(
+                title = "Catatan Tidak Ditemukan",
+                message = "Catatan mungkin sudah dihapus"
+            )
         }
     }
 }

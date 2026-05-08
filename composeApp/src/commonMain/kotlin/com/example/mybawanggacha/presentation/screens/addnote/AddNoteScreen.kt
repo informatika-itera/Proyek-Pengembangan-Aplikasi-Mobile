@@ -50,11 +50,11 @@ fun AddNoteScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(noteId) {
         noteId?.let { viewModel.loadNote(it) }
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -63,12 +63,12 @@ fun AddNoteScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(if (uiState.isEditMode) "Edit Catatan" else "Catatan Baru")
                 },
                 navigationIcon = {
@@ -83,7 +83,7 @@ fun AddNoteScreen(
                     ) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
                     }
-                    
+
                     IconButton(
                         onClick = { viewModel.saveNote() },
                         enabled = uiState.canSave
@@ -114,9 +114,9 @@ fun AddNoteScreen(
                     supportingText = uiState.titleError?.let { { Text(it) } },
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 OutlinedTextField(
                     value = uiState.content,
                     onValueChange = viewModel::onContentChange,
@@ -125,16 +125,16 @@ fun AddNoteScreen(
                     minLines = 8,
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 CategoryDropdown(
                     selectedCategory = uiState.category,
                     onCategorySelected = viewModel::onCategoryChange
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = "Warna",
                     style = MaterialTheme.typography.labelLarge
@@ -156,7 +156,7 @@ private fun CategoryDropdown(
     onCategorySelected: (NoteCategory) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
+
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it }
@@ -171,7 +171,7 @@ private fun CategoryDropdown(
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
         )
-        
+
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }

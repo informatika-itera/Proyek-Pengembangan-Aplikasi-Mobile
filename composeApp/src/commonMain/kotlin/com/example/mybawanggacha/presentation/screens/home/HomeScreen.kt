@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,12 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.NoteAlt
-import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -66,11 +65,11 @@ fun HomeScreen(
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     var showSearch by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     if (showSearch) {
                         SearchField(
                             query = when (val state = uiState) {
@@ -85,7 +84,7 @@ fun HomeScreen(
                             }
                         )
                     } else {
-                        Text("mybawanggacha")
+                        Text("MyBawangGacha")
                     }
                 },
                 actions = {
@@ -93,22 +92,22 @@ fun HomeScreen(
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, contentDescription = "Cari")
                         }
-                        
+
                         IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
+                            Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = "Urutkan")
                         }
-                        
+
                         SortDropdownMenu(
                             expanded = showSortMenu,
                             currentSortBy = currentSortBy,
-                            onSortSelected = { 
+                            onSortSelected = {
                                 viewModel.onSortByChanged(it)
                                 showSortMenu = false
                             },
                             onDismiss = { showSortMenu = false }
                         )
                     }
-                    
+
                     IconButton(onClick = onNavigateToAI) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
                     }
@@ -134,50 +133,42 @@ fun HomeScreen(
                 },
                 onCategorySelected = viewModel::onCategorySelected
             )
-            
+
             when (val state = uiState) {
-                is HomeUiState.Loading -> {
-                    LoadingIndicator()
-                }
-                
-                is HomeUiState.Success -> {
-                    NotesList(
-                        notes = state.notes,
-                        onNoteClick = onNavigateToDetail,
-                        onPinClick = viewModel::togglePin,
-                        onDeleteClick = viewModel::deleteNote
-                    )
-                }
-                
-                is HomeUiState.Empty -> {
-                    EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
-                            "Tidak Ditemukan"
-                        } else {
-                            "Belum Ada Catatan"
-                        },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
-                        } else {
-                            "Tap + untuk membuat catatan baru"
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Outlined.NoteAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            )
-                        }
-                    )
-                }
-                
-                is HomeUiState.Error -> {
-                    ErrorState(
-                        message = state.message,
-                        onRetry = { viewModel.clearSearch() }
-                    )
-                }
+                is HomeUiState.Loading -> LoadingIndicator()
+
+                is HomeUiState.Success -> NotesList(
+                    notes = state.notes,
+                    onNoteClick = onNavigateToDetail,
+                    onPinClick = viewModel::togglePin,
+                    onDeleteClick = viewModel::deleteNote
+                )
+
+                is HomeUiState.Empty -> EmptyState(
+                    title = if (state.query.isNotBlank() || state.category != null) {
+                        "Tidak Ditemukan"
+                    } else {
+                        "Belum Ada Catatan"
+                    },
+                    message = if (state.query.isNotBlank() || state.category != null) {
+                        "Coba ubah kata kunci atau filter"
+                    } else {
+                        "Tap + untuk membuat catatan baru"
+                    },
+                    icon = {
+                        Icon(
+                            Icons.Outlined.NoteAlt,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        )
+                    }
+                )
+
+                is HomeUiState.Error -> ErrorState(
+                    message = state.message,
+                    onRetry = { viewModel.clearSearch() }
+                )
             }
         }
     }
@@ -222,10 +213,8 @@ private fun SortDropdownMenu(
     ) {
         NoteSortBy.entries.forEach { sortBy ->
             DropdownMenuItem(
-                text = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(sortBy.displayName)
                         if (sortBy == currentSortBy) {
                             Spacer(modifier = Modifier.width(8.dp))
@@ -255,11 +244,11 @@ private fun CategoryFilterRow(
                 label = { Text("Semua") }
             )
         }
-        
+
         items(NoteCategory.entries) { category ->
             FilterChip(
                 selected = selectedCategory == category,
-                onClick = { 
+                onClick = {
                     onCategorySelected(
                         if (selectedCategory == category) null else category
                     )

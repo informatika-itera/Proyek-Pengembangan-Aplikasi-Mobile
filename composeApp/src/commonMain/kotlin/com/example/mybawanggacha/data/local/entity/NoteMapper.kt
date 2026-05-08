@@ -4,7 +4,7 @@ import com.example.mybawanggacha.data.local.NoteEntity
 import com.example.mybawanggacha.domain.model.Note
 import com.example.mybawanggacha.domain.model.NoteCategory
 import com.example.mybawanggacha.domain.model.NoteColor
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 fun NoteEntity.toDomain(): Note {
     return Note(

@@ -13,6 +13,7 @@ kotlin {
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 
@@ -51,26 +52,33 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
+            // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
+            // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
 
+            // SQLDelight
             implementation(libs.sqlDelight.runtime)
             implementation(libs.sqlDelight.coroutines)
 
+            // KotlinX
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
 
+            // DataStore
             implementation(libs.datastore.preferences.core)
 
+            // Okio
             implementation(libs.okio)
 
+            // Navigation
             implementation(libs.navigation.compose)
         }
 

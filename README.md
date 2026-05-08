@@ -1,19 +1,19 @@
 # 📱 NoteAI - KMP Project Template
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA
 
 Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
 
 > **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+>
+> | Dokumen                                          | Deskripsi                                                   |
+> | ------------------------------------------------ | ----------------------------------------------------------- |
+> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md)   | **BACA INI DULU!** Panduan setup dan running aplikasi |
+> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md)     | Informasi lengkap tentang project, timeline, dan penilaian  |
+> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md)           | Cara menggunakan Git dan branching strategy                 |
+> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi                 |
+> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md)       | Penjelasan arsitektur dan struktur folder                   |
+> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md)     | Solusi untuk masalah umum                                   |
 
 ## ✨ Fitur Aplikasi
 
@@ -63,17 +63,17 @@ Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan 
 
 ### Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
+| Layer                 | Technology                        |
+| --------------------- | --------------------------------- |
+| **UI**          | Compose Multiplatform, Material 3 |
+| **State**       | StateFlow, ViewModel              |
+| **Navigation**  | Compose Navigation (Type-safe)    |
+| **Networking**  | Ktor Client                       |
+| **Local DB**    | SQLDelight                        |
+| **Preferences** | DataStore                         |
+| **DI**          | Koin                              |
+| **AI**          | Google Gemini API                 |
+| **Testing**     | Kotlin Test, Turbine              |
 
 ## 📁 Struktur Project
 
@@ -126,12 +126,13 @@ composeApp/src/
 
 ### 👥 Ketentuan Kelompok
 
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
+| Ketentuan      | Detail                                   |
+| -------------- | ---------------------------------------- |
+| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok   |
+| Format Branch  | `project/[NIM-NIM-...]-[NamaAplikasi]` |
 
 **Contoh Branch:**
+
 - Individu: `project/121140001-TodoMaster`
 - 2 orang: `project/121140003-121140004-FitnessApp`
 - 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
@@ -139,6 +140,7 @@ composeApp/src/
 ### Setup
 
 1. **Fork & Clone repository**
+
    ```bash
    # 1 orang fork, lalu invite anggota lain sebagai collaborator
    # Semua anggota clone dari repo yang di-fork
@@ -148,24 +150,24 @@ composeApp/src/
    # Buat branch project kelompok
    git checkout -b project/121140003-121140004-FitnessApp
    ```
-
 2. **Setup `local.properties`**
 
    Salin template, lalu isi API key:
+
    ```bash
    cp local.properties.example local.properties
    # edit local.properties dan isi GEMINI_API_KEY=...
    ```
 
    Dapatkan API key gratis di: https://aistudio.google.com/
-
 3. **Sync & Build**
+
    ```bash
    ./gradlew build              # build semua target
    ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
    ```
-
 4. **Run**
+
    - **Android**: pilih run configuration `composeApp` di Android Studio, atau
      `./gradlew :composeApp:installDebug` ke emulator/device aktif.
    - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
@@ -173,18 +175,18 @@ composeApp/src/
 
 ## 📚 Materi yang Dicakup
 
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
+| Pertemuan | Topik             | File/Folder Reference                         |
+| --------- | ----------------- | --------------------------------------------- |
+| 1         | Setup Environment | Root project setup                            |
+| 2         | Kotlin Lanjutan   | `core/util/`, coroutines, Flow              |
+| 3         | Compose Basics    | `presentation/components/`                  |
+| 4         | MVVM & State      | `presentation/screens/*/ViewModel.kt`       |
+| 5         | Navigation        | `presentation/navigation/`                  |
+| 6         | Networking        | `data/remote/`, Ktor setup                  |
+| 7         | Local Storage     | `data/local/`, SQLDelight                   |
+| 8         | Platform Code     | `androidMain/`, `iosMain/`, expect/actual |
+| 9         | AI Integration    | `data/remote/api/GeminiService.kt`          |
+| 10        | Testing           | `commonTest/`                               |
 
 ## 🧪 Testing
 
@@ -199,26 +201,31 @@ composeApp/src/
 ## 📝 Tugas Mahasiswa
 
 ### Sprint 1: Foundation
+
 - [ ] Clone dan setup project
 - [ ] Pahami struktur folder
 - [ ] Modifikasi tema/warna
 
 ### Sprint 2: Core Features
+
 - [ ] Tambahkan field baru di Note (misal: priority, dueDate)
 - [ ] Implementasi fitur kategori/tags
 - [ ] Tambahkan validasi input
 
 ### Sprint 3: Advanced Features
+
 - [ ] Implementasi search dengan debounce
 - [ ] Tambahkan filter dan sort
 - [ ] Implementasi offline-first
 
 ### Sprint 4: AI & Polish
+
 - [ ] Integrasikan fitur AI baru
 - [ ] UI polish dan animasi
 - [ ] Tambahkan unit tests
 
 ### Sprint 5: Final
+
 - [ ] Bug fixes
 - [ ] Dokumentasi
 - [ ] Prepare demo
@@ -236,10 +243,12 @@ composeApp/src/
 MIT License - silakan gunakan untuk pembelajaran.
 
 ## 👨‍🏫 Dosen Pengampu
+
 ### Pak Habib
+
 [GitHub: mh4Scripts](https://github.com/mh4Scripts)
 
-**Program Studi Teknik Informatika**  
+**Program Studi Teknik Informatika**
 Institut Teknologi Sumatera (ITERA)
 
 ---

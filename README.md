@@ -1,6 +1,6 @@
 # 💸 Money-Z
 
-![CI](https://github.com/MartinoKelvin/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=123140052-123140165-sprint-1)
+![CI](https://github.com/MartinoKelvin/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
 > Aplikasi manajemen keuangan pintar berbasis Kotlin Multiplatform yang membantu Anda mencatat arus kas, menetapkan anggaran, dan memantau laporan keuangan — kini dilengkapi asisten AI untuk pencatatan transaksi via chat.
 

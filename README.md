@@ -19,7 +19,7 @@
 - **E-Permit:** Generate surat izin peminjaman digital setelah dapet *approval*.
 
 ### 3. 🧠 AI-Powered Experience
-- **Auto-Categorization (NLP):** AI otomatis nentuin kategori (Fasilitas/Akademik/Keamanan) dan prioritas laporan berdasarkan teks yang ditulis.
+- **Auto-Categorization:** AI otomatis nentuin kategori (Fasilitas/Akademik/Keamanan) dan prioritas laporan berdasarkan teks yang ditulis.
 - **Smart Recommendation:** Ruangan inceran penuh? AI bakal nyaranin ruangan alternatif yang kapasitasnya mirip dan lagi kosong.
 - **Semantic Search:** Cari ruangan atau laporan cuma pake bahasa santai (contoh: *"Cari kelas yang dingin buat 30 orang"*).
 

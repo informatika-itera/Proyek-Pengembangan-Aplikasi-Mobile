@@ -28,7 +28,7 @@ Aplikasi ini dibangun di atas template **NoteAI KMP** menggunakan **Kotlin Multi
 > *Proyek ini masih dalam tahap awal pengembangan (Sprint 1).*
 
 ## 👨‍🏫 Dosen Pengampu
-### Pak Habib
+### Muhammad Habib Algifari, S.Kom., M.TI.
 [GitHub: mh4Scripts](https://github.com/mh4Scripts)
 
 **Program Studi Teknik Informatika** Institut Teknologi Sumatera (ITERA)

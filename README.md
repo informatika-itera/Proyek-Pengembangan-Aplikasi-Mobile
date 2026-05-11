@@ -21,3 +21,43 @@ Integrasi dengan *Spotify Web API* untuk mencari metadata lagu, menampilkan albu
 
 ### 5. Aesthetic UI/UX (Techno-Modern Style)
 Antarmuka dikembangkan menggunakan *Material 3* dengan tema *Dark Mode, gradasi biru elektrik, dan gaya *Glassmorphism untuk memberikan kesan futuristik dan modern.
+
+---
+
+## 🛠️ Arsitektur & Teknologi
+
+Aplikasi ini dibangun dengan standar pengembangan industri modern untuk memenuhi kriteria akademik mata kuliah Pengembangan Aplikasi Mobile:
+
+* *Language:* Kotlin
+* *UI Framework:* Jetpack Compose (Declarative UI)
+* *Architecture:* MVVM (Model-View-ViewModel) + Clean Architecture
+* *Dependency Injection:* Koin
+* *Asynchronous & State:* Kotlin Coroutines & StateFlow
+* *Database & Backend:*
+    * *Firebase Firestore:* Penyimpanan data pesan secara real-time.
+    * *Room Database:* Penyimpanan lokal untuk fitur bookmark/favorit pesan.
+* *Networking:* Retrofit & OkHttp (untuk akses Spotify & Gemini API).
+* *AI Engine:* Google Generative AI SDK (Gemini Pro).
+
+---
+
+## 📂 Struktur Proyek Utama
+
+Proyek ini mengikuti struktur Clean Architecture untuk memastikan kode yang mudah diuji (testable) dan dikelola:
+```
+com.soundletter.app/
+├── data/                # Data Layer
+│   ├── remote/          # API Service (Spotify, Gemini, Firebase)
+│   ├── local/           # Room Database & DAOs
+│   └── repository/      # Implementasi Repository
+├── domain/              # Domain Layer (Business Logic)
+│   ├── model/           # Data Classes (POJO)
+│   └── repository/      # Interface Repository
+├── ui/                  # Presentation Layer
+│   ├── theme/           # Color, Type, Shape (Material 3 Customization)
+│   ├── components/      # Reusable UI Components
+│   ├── screen/          # Screens (Home, Compose, Detail, Search)
+│   └── viewmodel/       # Logic & State Management (StateFlow)
+├── di/                  # Dependency Injection Modules (Koin)
+└── utils/               # Helper classes & Extensions
+```

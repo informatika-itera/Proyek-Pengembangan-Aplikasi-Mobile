@@ -4,10 +4,10 @@ Pusaka Kata adalah aplikasi edukasi interaktif berbasis Android *native* yang di
 
 ## ✨ Fitur Utama
 
-* 🧠 **Smart Flashcard (Sistem Hafalan Adaptif):** Menggunakan algoritma *Spaced Repetition System* (SRS). Sistem secara otomatis menghitung tingkat retensi memori pengguna dan memprioritaskan kemunculan kosakata yang sering salah dijawab.
-* 📸 **Kamera Pemindai Teks (OCR Scanner):** Terintegrasi dengan *Google ML Kit Vision API*. Pengguna dapat memindai teks dari buku fisik, dan aplikasi akan mengekstrak kata-kata untuk langsung dijadikan kartu hafalan baru secara *offline*.
-* 🎲 **Sistem Undian Legenda (Gacha Reward):** Sistem *reward* berbasis *Weighted Random Number Generator* (RNG). Setiap menyelesaikan sesi belajar, pengguna mendapatkan token untuk melakukan *pull gacha* karakter mitologi dengan *rarity* yang berbeda (Contoh: Tuyul [Common], Barong [Rare], Garuda [Epic]).
-* 📚 **Galeri Nusantara (Kamus Mitologi):** Halaman koleksi (*Encyclopedia*) yang menampilkan detail visual dan cerita rakyat/sejarah dari karakter legenda yang berhasil didapatkan.
+* 🧠 **Smart Flashcard (Sistem Hafalan Adaptif):** Menggunakan algoritma *Spaced Repetition System* (SRS) untuk menampilkan kembali kosakata yang sering salah dijawab agar lebih mudah dihafal.
+* 📸 **Kamera Pemindai Teks (OCR Scanner):** Terintegrasi dengan *Google ML Kit Vision API* untuk memindai teks dari buku fisik dan mengubahnya menjadi kartu hafalan baru secara *offline*.
+* 🎲 **Sistem Undian Legenda (Gacha Reward):** Sistem *reward* berbasis *Weighted Random Number Generator* (RNG). Pengguna mendapatkan token *gacha* setelah menyelesaikan sesi belajar dengan karakter mitologi dengan tingkat *rarity* berbeda.
+* 📚 **Galeri Nusantara (Kamus Mitologi):** Halaman koleksi (*Encyclopedia*) yang menampilkan visual serta cerita rakyat dari karakter legenda yang telah diperoleh pengguna.
 
 ## 🛠️ Arsitektur & Teknologi
 

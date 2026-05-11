@@ -1,6 +1,6 @@
-# SmartPOS - Aplikasi Kasir Digital UMKM
+# Aplikasi Kasir Digital UMKM
 
-SmartPOS merupakan aplikasi Point of Sale (POS) berbasis Android yang dirancang untuk membantu pelaku UMKM dalam mengelola transaksi penjualan secara digital, cepat, dan efisien.
+Aplikasi ini berbasis Android yang dirancang untuk membantu pelaku UMKM dalam mengelola transaksi penjualan secara digital, cepat, dan efisien.
 
 ## Fitur Utama
 - Dashboard Penjualan

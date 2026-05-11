@@ -1,8 +1,6 @@
-# 📱 NoteAI - KMP Project Template
+# 📱 LearnCore - Aplikasi untuk fokus pembelajaran
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
-
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+**LearnCore** adalah aplikasi mobile produktivitas cerdas yang dirancang khusus untuk membantu pelajar dan profesional mengoptimalkan sesi belajar serta mengelola tugas secara efisien. Dengan menggabungkan teknik manajemen waktu yang teruji dan kecerdasan buatan, **LearnCore hadir sebagai asisten pribadi** yang mengatasi kebiasaan menunda pekerjaan dan menjaga fokus pengguna agar tetap berada pada performa puncak.
 
 > **📚 Dokumentasi Lengkap**
 > 

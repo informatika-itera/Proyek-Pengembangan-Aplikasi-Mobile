@@ -1,4 +1,4 @@
-# 📱 NoteAI - KMP Project Template
+# 📱 My Wallet - Project Apps Mobile IF ITERA
 ## 👥 Tim Pengembang
 
 | Nama | NIM |
@@ -6,9 +6,9 @@
 | Hanifah Hasanah | 123140082 |
 | Zahwa Natasya Hamzah | 123140069 |
 
-** Nama Aplikasi: ** 
-** Branch: ** 
-** Link Repository: ** 
+**Nama Aplikasi :** My Wallet<br>
+**Branch :** `project/My-Wallet`<br>
+**Link Repository :** 
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
 

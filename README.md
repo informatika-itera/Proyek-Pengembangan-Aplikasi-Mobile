@@ -61,3 +61,35 @@ com.soundletter.app/
 ├── di/                  # Dependency Injection Modules (Koin)
 └── utils/               # Helper classes & Extensions
 ```
+
+---
+
+## ⚙️ Cara Menjalankan Proyek
+
+### Clone Repository
+```bash
+git clone https://github.com/15-040-GianIvander/SoundLetter.git
+```
+
+### Konfigurasi API Key
+- Dapatkan Gemini API Key dari Google AI Studio.
+- Dapatkan Spotify Client ID & Secret dari Spotify Developer Dashboard.
+- Tambahkan key tersebut ke dalam file `local.properties`.
+
+### Firebase Setup
+- Tambahkan file `google-services.json` ke folder `app/`.
+
+### Build Project
+- Buka proyek di Android Studio Ladybug atau versi terbaru.
+- Lakukan Sync Gradle.
+- Jalankan aplikasi pada emulator atau perangkat fisik.
+
+---
+
+## 👥 Pengembang Utama
+
+Aplikasi ini dikembangkan sebagai Proyek Tugas Besar Mata Kuliah Pengembangan Aplikasi Mobile oleh Kelompok:
+
+- (123140027) ATALIE SALSABILA  
+- (123140039) MUHAMMAD DZAKY  
+- (123140040) GIAN IVANDER  

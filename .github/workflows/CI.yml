@@ -43,6 +43,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: nutriscan-debug-apk
+          name: moneyz-debug-apk
           path: composeApp/build/outputs/apk/debug/*.apk
           retention-days: 7

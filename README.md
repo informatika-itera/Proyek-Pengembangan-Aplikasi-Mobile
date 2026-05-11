@@ -1,78 +1,102 @@
-# 📱 LearnCore - Aplikasi untuk fokus pembelajaran
+# 📚  LearnCore - Aplikasi untuk fokus pembelajaran
 ![CI](https://github.com/123140003-MuhammadFadhilahAkbar/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
-**LearnCore** adalah aplikasi mobile produktivitas cerdas yang dirancang khusus untuk membantu pelajar dan profesional mengoptimalkan sesi belajar serta mengelola tugas secara efisien. Dengan menggabungkan teknik manajemen waktu yang teruji dan kecerdasan buatan, **LearnCore hadir sebagai asisten pribadi** yang mengatasi kebiasaan menunda pekerjaan dan menjaga fokus pengguna agar tetap berada pada performa puncak.
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+## 📱 Deskripsi Aplikasi
 
-## ✨ Fitur Aplikasi
+**LearnCore** adalah aplikasi mobile produktivitas cerdas yang dirancang khusus untuk membantu pelajar dan profesional mengoptimalkan sesi belajar serta mengelola tugas secara efisien. Dengan menggabungkan teknik manajemen waktu yang teruji dan kecerdasan buatan, LearnCore hadir sebagai asisten pribadi yang mengatasi kebiasaan menunda pekerjaan dan menjaga fokus pengguna agar tetap berada pada performa puncak.
 
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
+---
 
-## 🏗️ Arsitektur & Teknologi
+LearnCore membantu pengguna memprioritaskan pekerjaan dan belajar secara lebih efektif. Dengan visualisasi Matriks Eisenhower interaktif, pengguna dapat melihat secara langsung tugas mana yang harus dikerjakan duluan. Dikombinasikan dengan Pomodoro Timer dan AI Assistant berbasis Gemini, LearnCore hadir sebagai teman belajar yang cerdas dan personal.
 
-### Clean Architecture + MVVM
+> Focus. Prioritize. Learn Smarter.
+
+Aplikasi mobile multiplatform (Android-first) yang membantu mahasiswa dan pelajar untuk **mengelola tugas secara cerdas** menggunakan **Matriks Eisenhower**, dilengkapi dengan **Pomodoro Timer**, **AI Learning Assistant**, dan analisis produktivitas berbasis data lokal.
+
+---
+## 👥 Tim
+| Nama | NIM | Role |
+|------|-----|------|
+| Muhammad Fadhilah Akbar | 123140003 | Lead & Android Dev |
+| Sigit Kurnia Hartawan | 123140033 | FE Dev & QA |
+
+**Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile
+
+**Dosen:** Pak Habib ([@mh4Scripts](https://github.com/mh4Scripts))
+
+**Institut:** Institut Teknologi Sumatera (ITERA)
+
+---
+
+## ✨ Fitur
+
+### Minimum (Wajib)
+
+- [ ] **Dashboard & Eisenhower Matrix** — Visualisasi prioritas tugas aktif dalam grid 2×2 interaktif; klik kuadran untuk langsung filter daftar tugas
+- [ ] **Task List & CRUD** — Tambah, lihat, edit, dan hapus tugas dengan kategori prioritas Eisenhower; navigasi ke halaman detail menggunakan argument passing
+- [ ] **Pomodoro Mode** — Timer hitung mundur dengan Circular Progress Indicator; pilih tugas aktif yang sedang dikerjakan; kontrol Play/Pause/Reset
+- [ ] **Profile & Settings** — Input nama & status pengguna; kustomisasi durasi Pomodoro via Slider; toggle notifikasi deadline; toggle Dark/Light Mode
+- [ ] **AI Learning Assistant** — Chat interaktif dengan Gemini API; prompt cepat (chip suggestion) untuk analisis produktivitas; kirim data statistik Room ke AI untuk evaluasi
+- [ ] **Navigasi Multi-Screen** — 5 layar utama: Dashboard, Task List/Detail, Pomodoro, Profile/Settings, AI Chat
+- [ ] **State Management** — MVVM + StateFlow untuk semua UI state
+- [ ] **Minimal 10 unit tests** + 3 UI tests, coverage > 50%
+- [ ] **Koin DI** — Dependency injection setup
+
+### Bonus (Target)
+
+- [ ] **AI Integration (+10%)** — Integrasi Gemini API untuk saran belajar kontekstual dan analisis produktivitas personal
+- [ ] **Offline First (+5%)** — Cache data tugas dan riwayat di Room Database; aplikasi tetap berfungsi tanpa internet
+- [ ] **Dark Mode (+5%)** — Support tema gelap/terang dengan Material 3
+- [ ] **Animations (+5%)** — Animasi transisi antar screen, animasi timer Pomodoro, animasi indikator kuadran Eisenhower
+- [ ] **CI/CD (+5%)** — Automated build dan test dengan GitHub Actions
+
+**Total target bonus: +30%**
+
+---
+
+## 🖥️ Rancangan 5 Screen Utama
+
+### 1. Dashboard / Home
+Layar utama dengan **Eisenhower Matrix Card** interaktif — grid 2×2 berisi titik-titik berwarna mewakili tugas aktif per kuadran. Klik kuadran menavigasi ke Task List yang sudah terfilter. Tersedia kartu statistik (tugas selesai, waktu fokus) dan tombol FAB untuk langsung ke Pomodoro.
+
+### 2. Task List, CRUD & Detail Page
+Daftar tugas dengan `ScrollableTabRow` untuk filter 4 kuadran secara manual. Setiap item memiliki checkbox dan indikator warna prioritas. FAB untuk tambah tugas via BottomSheet. Halaman Detail menampilkan deskripsi lengkap, tenggat, opsi ubah kuadran, dan tombol hapus tugas.
+
+### 3. Pomodoro Mode
+UI bersih minim gangguan. Lingkaran besar (`Circular Progress Indicator`) sebagai timer utama dengan warna dinamis (merah/oranye = kerja, hijau/biru = istirahat). Dropdown pemilih tugas aktif dari database. Tombol Play/Pause dan Reset. State tracker menampilkan progres siklus (misal: "Sesi 1 dari 4").
+
+### 4. Profile & Settings
+Header profil dengan placeholder icon Material 3. Slider kustomisasi durasi Pomodoro. Toggle notifikasi deadline lokal. Switch Dark/Light Mode.
+
+### 5. AI Learning Assistant
+UI chat interaktif (`LazyColumn`) mirip aplikasi messaging. Chip suggestion untuk prompt cepat: "Pecah tugasku hari ini", "Beri ringkasan materi", "Analisa produktivitasku". Saat analisis diminta, data statistik dari Room dikirim ke Gemini untuk evaluasi dan saran peningkatan.
+
+---
+
+## 🏗️ Arsitektur
+
+Menggunakan **Clean Architecture + MVVM** sesuai panduan mata kuliah.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│              PRESENTATION LAYER                 │
+│   Screens (Composable) ◄──► ViewModel           │
+│             (StateFlow / UDF Pattern)           │
+└────────────────────┬────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────┐
+│               DOMAIN LAYER                      │
+│   Use Cases ◄──► Repository Interfaces          │
+│           (Pure Kotlin, no framework)           │
+└────────────────────┬────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────┐
+│                DATA LAYER                       │
+│   Repository Impl                               │
+│   ├── Remote: Ktor + Gemini API (AI)            │
+│   └── Local:  Room Database (tasks, stats)      │
+└─────────────────────────────────────────────────┘
 ```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
 ## 📁 Struktur Project
 
 ```

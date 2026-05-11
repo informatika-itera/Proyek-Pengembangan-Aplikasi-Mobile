@@ -4,7 +4,7 @@
 
 # CoffeSpace: Live Seat & Ambience Tracker ☕️📍
 
-**CoffeSpace**  *Kotlin Multiplatform (KMP)* yang dirancang khusus untuk mahasiswa dan pekerja remote di Bandar Lampung. Aplikasi ini membantu pengguna menemukan kafe yang paling sesuai dengan kebutuhan produktivitas mereka secara real-time.
+**CoffeSpace** adalah aplikasi mobile berbasis *Kotlin Multiplatform (KMP)* yang dirancang khusus untuk mahasiswa dan pekerja remote di Bandar Lampung. Aplikasi ini membantu pengguna menemukan kafe yang paling sesuai dengan kebutuhan produktivitas mereka secara real-time.
 
 
 

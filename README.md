@@ -1,4 +1,14 @@
 # 📱 NoteAI - KMP Project Template
+## 👥 Tim Pengembang
+
+| Nama | NIM |
+|------|-----|
+| Hanifah Hasanah | 123140082 |
+| Zahwa Natasya Hamzah | 123140069 |
+
+**Nama Aplikasi:** 
+**Branch:** 
+**Link Repository:** 
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
 

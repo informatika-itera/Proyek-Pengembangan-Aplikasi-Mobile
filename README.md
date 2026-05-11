@@ -7,7 +7,7 @@
 | Zahwa Natasya Hamzah | 123140069 |
 
 **Nama Aplikasi :** My Wallet<br>
-**Branch :** `project/My-Wallet`<br>
+**Branch :** `project/123140082-123140069-MyWallet`<br>
 **Link Repository :** 
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.

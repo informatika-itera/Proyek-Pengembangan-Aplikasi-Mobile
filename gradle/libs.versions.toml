@@ -14,6 +14,12 @@ lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
 
+# Barcode Scanner (Android - ML Kit)
+mlkit-barcode = "17.3.0"
+
+# CameraX (Android - untuk preview kamera di scanner)
+camerax = "1.4.1"
+
 # Testing
 turbine = "1.2.0"
 
@@ -61,7 +67,19 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
 
-# Testing
+# ─── NUTRISCAN ADDITIONS ────────────────────────────────────────────────────
+
+# ML Kit Barcode Scanning (Android only - via expect/actual)
+# Digunakan di androidMain untuk scan barcode produk makanan/minuman
+mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode" }
+
+# CameraX (Android only - untuk preview kamera saat scan)
+camerax-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+
+# ─── TESTING ────────────────────────────────────────────────────────────────
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 

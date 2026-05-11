@@ -1,3 +1,14 @@
+> | Nama Anggota |  |NIM |
+> |Andika Rahman Pratama|  |123140090|
+> |M farhan Muzakhi|  |123140075|
+
+# CoffeSpace: Live Seat & Ambience Tracker ☕️📍
+
+**CoffeSpace** adalah aplikasi mobile berbasis *Kotlin Multiplatform (KMP)* yang dirancang khusus untuk mahasiswa dan pekerja remote di Bandar Lampung. Aplikasi ini membantu pengguna menemukan kafe yang paling sesuai dengan kebutuhan produktivitas mereka secara real-time.
+
+
+
+
 # 📱 NoteAI - KMP Project Template
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.

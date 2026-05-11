@@ -18,3 +18,8 @@
 - **Conflict Detection:** Sistem otomatis nolak peminjaman kalau jamnya udah di-book orang lain.
 - **E-Permit:** Generate surat izin peminjaman digital setelah dapet *approval*.
 
+### 3. 🧠 AI-Powered Experience
+- **Auto-Categorization (NLP):** AI otomatis nentuin kategori (Fasilitas/Akademik/Keamanan) dan prioritas laporan berdasarkan teks yang lo tulis.
+- **Smart Recommendation:** Ruangan inceran lo penuh? AI bakal nyaranin ruangan alternatif yang kapasitasnya mirip dan lagi kosong.
+- **Semantic Search:** Cari ruangan atau laporan cuma pake bahasa santai (contoh: *"Cari kelas yang dingin buat 30 orang"*).
+

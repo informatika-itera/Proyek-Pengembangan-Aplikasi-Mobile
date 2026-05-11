@@ -1,6 +1,6 @@
-> | Nama Anggota |  |NIM |
-> |Andika Rahman Pratama|  |123140090|
-> |M farhan Muzakhi|  |123140075|
+
+> | [Andika Rahman Pratama) | 123140090 |
+> | [Muhammad Farhan Muzakhi) | 123140075 |
 
 # CoffeSpace: Live Seat & Ambience Tracker ☕️📍
 

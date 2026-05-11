@@ -1,4 +1,4 @@
-# 📱 Synesthesia - KMP Project Template
+# 📱 NoteAI: Synesthesia - KMP Project Template
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
 

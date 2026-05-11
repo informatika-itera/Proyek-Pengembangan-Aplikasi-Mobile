@@ -8,7 +8,7 @@
 
 **Nama Aplikasi :** My Wallet<br>
 **Branch :** `project/123140082-123140069-MyWallet`<br>
-**Link Repository :** 
+**Link Repository :** https://github.com/HANIFAHHASANAH-123140082/123140082-123140069-MyWallet 
 
 Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
 

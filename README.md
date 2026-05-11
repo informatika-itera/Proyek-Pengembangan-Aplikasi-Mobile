@@ -1,6 +1,6 @@
 # 💸 Money-Z
 
-![CI](https://github.com/[USERNAME]/[REPO-NAME]/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/MartinoKelvin/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=123140052-123140165-sprint-1)
 
 > Aplikasi manajemen keuangan pintar berbasis Kotlin Multiplatform yang membantu Anda mencatat arus kas, menetapkan anggaran, dan memantau laporan keuangan — kini dilengkapi asisten AI untuk pencatatan transaksi via chat.
 
@@ -98,7 +98,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek Money-Z secara lokal:
 **1. Clone repository**
 
 ```bash
-git clone https://github.com/[USERNAME]/[REPO-NAME].git
+git clone https://github.com/MartinoKelvin/Proyek-Pengembangan-Aplikasi-Mobile.git
 cd [REPO-NAME]
 ```
 

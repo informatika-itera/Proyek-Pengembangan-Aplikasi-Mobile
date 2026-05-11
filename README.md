@@ -1,258 +1,72 @@
-
-> | [Andika Rahman Pratama) | 123140090 |
-> | [Muhammad Farhan Muzakhi) | 123140075 |
-
 # CoffeSpace: Live Seat & Ambience Tracker ☕️📍
 
-**CoffeSpace** adalah aplikasi mobile berbasis *Kotlin Multiplatform (KMP)* yang dirancang khusus untuk mahasiswa dan pekerja remote di Bandar Lampung. Aplikasi ini membantu pengguna menemukan kafe yang paling sesuai dengan kebutuhan produktivitas mereka secara real-time.
+**CoffeSpace** adalah aplikasi mobile inovatif yang dibangun menggunakan **Kotlin Multiplatform (KMP)** dan **Compose Multiplatform**. Aplikasi ini dirancang untuk memecahkan masalah klasik mahasiswa teknik: mencari tempat ngerjain tugas (kafe) yang pasti ada kursinya, suasananya kondusif, dan fasilitasnya lengkap.
 
-
-
-
-# 📱 NoteAI - KMP Project Template
-
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
-
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
-
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
-
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+Aplikasi ini merupakan proyek **Tugas Besar Mata Kuliah Pengembangan Aplikasi Mobile** di Program Studi Teknik Informatika, **Institut Teknologi Sumatera (ITERA)**.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## 🚀 Overview
+Dalam ekosistem mahasiswa yang dinamis di Bandar Lampung, kafe bukan sekadar tempat minum kopi, melainkan ruang kerja ketiga (*third space*). **CoffeSpace** hadir untuk memberikan data real-time mengenai kepadatan dan suasana kafe, sehingga produktivitas tetap terjaga tanpa harus "hunting" tempat secara manual.
+
+---
+
+## ✨ Fitur Utama (Scope Project)
+
+### 1. Real-time Seat Monitoring
+* Menampilkan status okupansi meja (Kosong, Tersedia, Penuh).
+* Integrasi database real-time untuk pembaruan status tanpa refresh.
+
+### 2. Ambience Noise Detection
+* Memberikan label pada kafe berdasarkan tingkat kebisingan: **Quiet** (fokus), **Moderate** (santai), atau **Loud** (diskusi).
+
+### 3. Productivity Filters
+* Filter berdasarkan ketersediaan **Stopkontak** (Power Outlets).
+* Informasi kecepatan **Wi-Fi** (Speed Test results).
+* Penanda lokasi ramah kantong mahasiswa (Range harga menu).
+
+### 4. Location-Based Service (Maps)
+* Integrasi peta untuk menemukan kafe terdekat dari posisi pengguna saat ini.
+
+---
+
+## 🏗 Arsitektur & Teknologi
+
+Proyek ini menerapkan **Clean Architecture** untuk memastikan kode mudah diuji dan dikelola:
+* **Presentation Layer:** Jetpack Compose (Android) & Compose Multiplatform (iOS/Shared).
+* **Domain Layer:** Business logic, Use Cases, & Entities (Shared Module).
+* **Data Layer:** Repository pattern, Ktor (API), & SQLDelight (Local DB).
+
+**Tech Stack:**
+- **Language:** Kotlin
+- **UI Framework:** Compose Multiplatform
+- **Dependency Injection:** Koin
+- **Networking:** Ktor
+- **Concurrency:** Kotlin Coroutines & Flow
+
+---
+
+## 📈 Roadmap Sprint (Timeline)
+
+Sesuai dengan kurikulum Pertemuan 11 Pengembangan Aplikasi Mobile ITERA:
+* **Sprint 1 (Planning):** Architecture design, UI Mockup, & Repository setup.
+* **Sprint 2 (Core):** Authentication, Cafe Listing, & Google Maps integration.
+* **Sprint 3 (Advanced):** Real-time Seat tracking & Noise Indicator logic.
+* **Sprint 4 (Testing):** UI/UX Polishing, Bug fixing, & Unit Testing.
+* **Sprint 5 (Final):** Deployment & Presentation Preparation.
+
+---
+
+## 👥 Tim Pengembang
+* **Andika Rahman Pratama** (123140090) - [Leader
+* **Muhammad Farhan Muzakhi** (123140075) - [Coder]
+
+---
+
+## 🛠 Cara Menjalankan
+1. Clone repository: `git clone https://github.com/[username]/coffespace.git`
+2. Buka di Android Studio (Versi Ladybug atau terbaru).
+3. Jalankan `:composeApp` pada perangkat Android atau simulator iOS.
+
+---
+© 2026 - Teknik Informatika ITERA

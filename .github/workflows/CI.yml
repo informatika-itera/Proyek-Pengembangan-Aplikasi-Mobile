@@ -38,7 +38,7 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew :composeApp:assembleDebug -x test --stacktrace
 
-      # 6. Upload APK sebagai artifact
+      
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         if: success()

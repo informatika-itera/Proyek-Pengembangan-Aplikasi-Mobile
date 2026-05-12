@@ -13,17 +13,14 @@ Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
 
 ## Tentang Aplikasi
 
-**NightOwl** adalah aplikasi *study planner* bertema malam hari yang menemani mahasiswa mengelola sesi belajar, melacak *deadline*, dan tetap fokus hingga larut malam.
-
-Aplikasi ini dibangun di atas template **NoteAI KMP** menggunakan **Kotlin Multiplatform** sehingga berjalan di Android maupun iOS dari satu *codebase*, menggunakan arsitektur **Clean Architecture + MVVM**, serta dilengkapi dengan kecerdasan buatan dari **Google Gemini API**.
+**Rewind** aadalah aplikasi mobile personal tracker untuk film dan series berbasis Kotlin Multiplatform. Pengguna bisa mencari film atau series, menambahkannya ke koleksi pribadi, mencatat status tontonan, memberi rating, dan menulis kesan singkat. Data film diambil secara real-time dari *TMDB API, koleksi disimpan lokal menggunakan **SQLDelight, dan dilengkapi asisten **AI berbasis Google Gemini* yang membantu menulis review dan merekomendasikan tontonan berikutnya.
 
 ### Fitur Unggulan
-1. **Sesi Belajar** — Catat dan kelola sesi belajar per mata kuliah lengkap dengan durasi dan *mood*.
-2. **Focus Timer** — *Pomodoro timer* terintegrasi yang otomatis menyimpan sesi belajarmu.
-3. **Deadline Tracker** — Pantau tenggat tugas dan ujian agar tidak ada yang terlewat.
-4. **Statistik Belajar** — Visualisasi grafik jam belajar mingguan dan *streak* produktivitas.
-5. **AI Owl Companion** — Asisten AI yang siap kasih tips belajar, motivasi, dan rangkuman materi kapan saja.
-6. **Dark Mode Native** — Tampilan gelap yang nyaman di mata saat belajar tengah malam.
+1. **Search Film & Series** — Cari film dan series secara real-time dari TMDB
+2. ***Koleksi Pribadi** — Kelola tontonan dengan status Want to Watch, Watching, Finished, Dropped
+3. **Rating & Review** — Beri rating dan tulis kesan singkat setiap tontonan
+4. **AI Assistant** — Bantu tulis review dan rekomendasikan tontonan berikutnya
+5. **Offline Access** — Koleksi tetap bisa diakses tanpa internet.
 
 > *Proyek ini masih dalam tahap awal pengembangan (Sprint 1).*
 

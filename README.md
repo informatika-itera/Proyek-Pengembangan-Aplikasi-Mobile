@@ -5,10 +5,10 @@
 
 ## 👥 Tim Pengembangan (Sprint 1)
 
-| Foto | Informasi | Role Utama |
-|------|-----------|------------|
-| ![Profile](https://github.com/GarsRayy.png?size=100) | **Garsia Rayhan** (121140001)<br>[@GarsRayy](https://github.com/GarsRayy) | UI/UX Design, Presentation Layer, Animations, Navigation |
-| ![Profile](https://github.com/ReyhanOP.png?size=100) | **Reyhan Oktavian Putra** (123140202)<br>[@ReyhanOP](https://github.com/ReyhanOP) | Domain & Data Layer (AI, SQLDelight, Ktor) |
+| Foto                                                 | Informasi                                                                       | Role Utama |
+|------------------------------------------------------|---------------------------------------------------------------------------------|------------|
+| ![Profile](https://github.com/GarsRayy.png?size=100) | **Garis Rayya Rabbani** (123140018)<br>[@GarsRayy](https://github.com/GarsRayy) | UI/UX Design, Presentation Layer, Animations, Navigation |
+| ![Profile](https://github.com/Ondor-R.png?size=100)  | **Reyhan Oktavian Putra** (123140202)<br>[@Ondor-R](https://github.com/Ondor-R) | Domain & Data Layer (AI, SQLDelight, Ktor) |
 
 ---
 

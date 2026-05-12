@@ -1,29 +1,28 @@
-package com.example.noteai.presentation.navigation
+package com.example.edumate.presentation.navigation
 
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
-    
     @Serializable
     data object Home : Route
-    
+
     @Serializable
-    data class AddNote(val noteId: Long? = null) : Route
-    
+    data class AddEditTask(val taskId: Long? = null) : Route
+
     @Serializable
-    data class NoteDetail(val noteId: Long) : Route
-    
+    data class TaskDetail(val taskId: Long) : Route
+
     @Serializable
     data class AIAssistant(
-        val noteId: Long? = null,
+        val taskId: Long? = null,
         val initialText: String? = null
     ) : Route
 }
 
 interface NavigationActions {
     fun navigateToHome()
-    fun navigateToAddNote(noteId: Long? = null)
-    fun navigateToNoteDetail(noteId: Long)
-    fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
+    fun navigateToAddEditTask(taskId: Long? = null)
+    fun navigateToTaskDetail(taskId: Long)
+    fun navigateToAIAssistant(taskId: Long? = null, initialText: String? = null)
     fun navigateBack()
 }

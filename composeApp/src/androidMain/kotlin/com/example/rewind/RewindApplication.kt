@@ -21,7 +21,7 @@ class RewindApplication : Application() {
             platformModules = listOf(androidModule)
         ) {
             androidLogger()
-            androidContext(this@StudyPlannerApplication)
+            androidContext(this@RewindApplication)
         }
     }
 }

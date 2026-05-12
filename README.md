@@ -31,7 +31,7 @@
 | 123140067 | Andini Rahma Kemala | UI/UX, Presentation Layer, Feature Development |
 | 123140064 | Miftahul Khoiriyah | Backend Integration, Architecture, Data Layer |
 
-> **Branch:** `project/[NIM]-[NIM]-ROSEA`
+> **Branch:** project/123140064-123140067-ROSÉA
 
 ---
 

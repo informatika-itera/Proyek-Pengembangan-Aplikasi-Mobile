@@ -43,6 +43,3 @@
 **Program Studi Teknik Informatika**  
 Institut Teknologi Sumatera (ITERA)
 
----
-
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*

@@ -1,27 +1,90 @@
-# 📱 NoteAI - KMP Project Template
+# 🚂 RailLog Nusantara
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+> **Aplikasi Logistik Manufaktur Kereta Api Berbasis Adaptive UI dengan Dukungan Kecerdasan Buatan untuk Efisiensi Rantai Pasok dan Verifikasi Dokumen Teknis**
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-brightgreen?style=for-the-badge&logo=kotlin" />
+  <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=for-the-badge&logo=kotlin" />
+  <img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4?style=for-the-badge&logo=google" />
+  <img src="https://img.shields.io/badge/Sprint-1%20%E2%9C%85-success?style=for-the-badge" />
+</p>
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+---
 
-## ✨ Fitur Aplikasi
+## 📌 Identitas Proyek
 
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
+| Item | Detail |
+|------|--------|
+| **Nama Aplikasi** | RailLog Nusantara |
+| **Mata Kuliah** | Pengembangan Aplikasi Mobile (IF25-22017) |
+| **Program Studi** | Teknik Informatika |
+| **Institusi** | Institut Teknologi Sumatera (ITERA) |
+| **Dosen Pengampu** | Pak Habib (mh4Scripts) |
+
+---
+
+## 👥 Tim Pengembang
+
+| NIM | Nama | Peran |
+|-----|------|-------|
+| 123140057 | Muhammad Nurikhsan | Domain Layer, Database, API Integration |
+| 123140068 | Giovan Lado | Presentation Layer, UI/UX, Navigation |
+
+> **Branch:** `project/123140057-123140068-RailLog`
+
+---
+
+## 🎯 Deskripsi Aplikasi
+
+**RailLog Nusantara** adalah aplikasi mobile lintas platform (Android & iOS) yang dirancang untuk mendukung operasional logistik pada industri manufaktur kereta api. Aplikasi ini mengintegrasikan kecerdasan buatan berbasis Google Gemini untuk membantu tim logistik dalam:
+
+- **Memantau rantai pasok** komponen dan suku cadang kereta api secara real-time
+- **Memverifikasi dokumen teknis** seperti lembar spesifikasi, sertifikat kepatuhan, dan laporan inspeksi menggunakan AI
+- **Mengelola inventaris** komponen dengan kategorisasi berbasis jenis subsistem kereta api
+- **Menganalisis prioritas pengadaan** berdasarkan status dan urgensi kebutuhan komponen
+
+Aplikasi ini dibangun dengan pendekatan **Adaptive UI** yang menyesuaikan tampilan berdasarkan peran pengguna (operator gudang, manajer logistik, inspektor teknis).
+
+---
+
+## ✨ Fitur Utama
+
+### Sprint 1 (Foundation) — Saat Ini
+- [x] Setup project Kotlin Multiplatform
+- [x] Arsitektur Clean Architecture + MVVM terdefinisi
+- [x] Domain model `SupplyItem` dan `TechnicalDocument`
+- [x] SQLDelight schema untuk penyimpanan lokal
+- [x] Repository interfaces terdefinisi
+- [x] Koin Dependency Injection aktif
+- [x] Build berhasil tanpa error
+
+### Sprint 2 (Core Features) — Rencana
+- [ ] Dashboard ringkasan status rantai pasok
+- [ ] Form input item suku cadang baru
+- [ ] Daftar komponen dengan filter status & kategori
+- [ ] Penyimpanan lokal dengan SQLDelight
+- [ ] Navigasi antar screen
+
+### Sprint 3 (Advanced) — Rencana
+- [ ] Verifikasi dokumen teknis via AI (Gemini)
+- [ ] Pencarian komponen dengan debounce
+- [ ] Filter berdasarkan kategori subsistem kereta
+- [ ] Notifikasi komponen kritis
+- [ ] Offline-first support
+
+### Sprint 4 (AI & Polish) — Rencana
+- [ ] Analisis ringkasan dokumen teknis via AI
+- [ ] Saran pengadaan berbasis AI
+- [ ] UI polish dan animasi adaptif
+- [ ] Unit tests (target 10+)
+
+### Sprint 5 (Final) — Rencana
+- [ ] Demo-ready build
+- [ ] Release APK
+- [ ] Dokumentasi lengkap
+- [ ] Video demo
+
+---
 
 ## 🏗️ Arsitektur & Teknologi
 
@@ -39,8 +102,7 @@ Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan 
 ┌───────────────────────────────────┼─────────────────────────┐
 │                      DOMAIN LAYER │                          │
 │                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
+│                    │  Use Cases (Business Logic) │          │
 │                    └──────────────┬──────────────┘          │
 │                    ┌──────────────▼──────────────┐          │
 │                    │    Repository Interface     │          │
@@ -50,198 +112,281 @@ Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan 
 ┌───────────────────────────────────┼─────────────────────────┐
 │                       DATA LAYER  │                          │
 │                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
+│                    │  Repository Implementation  │          │
 │                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
+│         ┌──────────────────────┬──┴───────────────────┐     │
+│   ┌─────▼──────┐        ┌──────▼─────┐       ┌────────▼───┐ │
+│   │ SQLDelight │        │    Ktor    │       │ DataStore  │ │
+│   │  (Lokal)  │        │  (Remote) │       │  (Prefs)   │ │
+│   └───────────┘        └───────────┘       └────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### Tech Stack
 
-| Layer | Technology |
-|-------|------------|
+| Layer | Teknologi |
+|-------|-----------|
 | **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
+| **State Management** | StateFlow, ViewModel |
 | **Navigation** | Compose Navigation (Type-safe) |
 | **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
+| **Local Database** | SQLDelight |
 | **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
+| **Dependency Injection** | Koin |
+| **AI Integration** | Google Gemini API |
 | **Testing** | Kotlin Test, Turbine |
+| **Platform** | Kotlin Multiplatform (Android + iOS) |
+
+---
 
 ## 📁 Struktur Project
 
 ```
 composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
+├── commonMain/kotlin/com/example/raillog/
+│   ├── core/
+│   │   ├── di/                     # Koin modules
+│   │   ├── network/                # Ktor client, API config
+│   │   └── util/                   # Extensions, helpers
 │   │
-│   ├── data/                      # Data layer
+│   ├── data/
 │   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
+│   │   │   ├── entity/             # SQLDelight mappers
+│   │   │   └── datastore/          # Preferences
 │   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
+│   │   │   ├── api/                # GeminiService
+│   │   │   └── dto/                # Request/Response DTOs
+│   │   └── repository/             # Repository implementations
 │   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
+│   ├── domain/
+│   │   ├── model/
+│   │   │   ├── SupplyItem.kt       # Model suku cadang kereta
+│   │   │   └── TechnicalDocument.kt # Model dokumen teknis
+│   │   ├── repository/
+│   │   │   ├── SupplyRepository.kt
+│   │   │   └── DocumentRepository.kt
+│   │   └── usecase/                # Business logic
 │   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
+│   └── presentation/
+│       ├── navigation/             # Routes & NavHost
+│       ├── screens/
+│       │   ├── dashboard/          # Dashboard logistik
+│       │   ├── supply/             # Manajemen suku cadang
+│       │   ├── document/           # Verifikasi dokumen
+│       │   └── ai/                 # AI Assistant
+│       ├── components/             # Komponen UI reusable
+│       └── theme/                  # Material theme
 │
-├── commonMain/sqldelight/         # SQLDelight schema
+├── commonMain/sqldelight/          # SQLDelight schema
+│   ├── SupplyItem.sq
+│   └── TechnicalDocument.sq
 │
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
+├── androidMain/kotlin/             # Android-specific
+└── iosMain/kotlin/                 # iOS-specific
 ```
 
-## 🚀 Getting Started
+---
 
-### Prerequisites
+## 🚀 Cara Menjalankan
 
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
+### Prasyarat
 
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
+| Software | Versi Minimum |
+|----------|---------------|
+| Android Studio | Ladybug (2024.2.1) |
+| JDK | 17 |
+| Git | 2.x |
+| Android SDK | API 34+ |
 
 ### Setup
 
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
+**1. Clone repository**
+```bash
+git clone https://github.com/[USERNAME_FORK]/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
+git checkout project/123140057-123140068-RailLog
+```
 
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
+**2. Setup `local.properties`**
+```bash
+cp local.properties.example local.properties
+```
 
-2. **Setup `local.properties`**
+Edit `local.properties`:
+```properties
+sdk.dir=C\:\\Users\\[USERNAME]\\AppData\\Local\\Android\\Sdk
+GEMINI_API_KEY=your_api_key_here
+```
 
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
+Dapatkan API key gratis di: https://aistudio.google.com
 
-   Dapatkan API key gratis di: https://aistudio.google.com/
+**3. Konfigurasi JDK di Android Studio**
 
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
+`File → Settings → Build, Execution, Deployment → Build Tools → Gradle`
 
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
+Pastikan **Gradle JDK** mengarah ke **JDK 17**.
 
-## 📚 Materi yang Dicakup
+**4. Sync & Build**
+```bash
+./gradlew :composeApp:assembleDebug
+```
 
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
+**5. Run di Android**
+
+Pilih run configuration `composeApp` di Android Studio, lalu klik **Run**.
+
+---
+
+## 🗃️ Domain Model
+
+### SupplyItem — Suku Cadang Kereta Api
+
+| Field | Tipe | Deskripsi |
+|-------|------|-----------|
+| `id` | Long | Primary key |
+| `partCode` | String | Kode part unik |
+| `name` | String | Nama komponen |
+| `category` | PartCategory | Kategori subsistem |
+| `quantity` | Int | Jumlah unit |
+| `unit` | String | Satuan (pcs, set, kg) |
+| `supplier` | String | Nama pemasok |
+| `status` | SupplyStatus | Status pengiriman |
+| `priority` | Priority | Tingkat urgensi |
+| `documentRef` | String? | Referensi dokumen terkait |
+
+**Kategori Komponen (`PartCategory`):**
+- `BOGIE` — Bogie & Roda
+- `PROPULSION` — Propulsi & Motor
+- `BRAKING` — Sistem Pengereman
+- `ELECTRICAL` — Kelistrikan
+- `BODY` — Bodi & Struktur
+- `INTERIOR` — Interior
+- `SAFETY` — Keselamatan
+- `MAINTENANCE` — Pemeliharaan
+
+**Status Supply (`SupplyStatus`):**
+- `PENDING` → `IN_TRANSIT` → `RECEIVED` → `VERIFIED` / `REJECTED`
+
+---
+
+### TechnicalDocument — Dokumen Teknis
+
+| Field | Tipe | Deskripsi |
+|-------|------|-----------|
+| `id` | Long | Primary key |
+| `title` | String | Judul dokumen |
+| `documentType` | DocumentType | Jenis dokumen |
+| `content` | String | Isi/teks dokumen |
+| `linkedItemId` | Long? | Referensi ke SupplyItem |
+| `verificationStatus` | VerificationStatus | Status verifikasi AI |
+| `aiSummary` | String? | Ringkasan hasil analisis AI |
+
+**Jenis Dokumen (`DocumentType`):**
+- `SPEC_SHEET` — Lembar Spesifikasi
+- `INSPECTION_REPORT` — Laporan Inspeksi
+- `DELIVERY_NOTE` — Surat Jalan
+- `COMPLIANCE_CERT` — Sertifikat Kepatuhan
+- `MAINTENANCE_LOG` — Log Pemeliharaan
+
+---
+
+## 🤖 Integrasi AI
+
+RailLog Nusantara menggunakan **Google Gemini API** untuk:
+
+| Fitur AI | Deskripsi |
+|----------|-----------|
+| **Verifikasi Dokumen** | Menganalisis dokumen teknis untuk mendeteksi inkonsistensi atau ketidaksesuaian standar |
+| **Ringkasan Otomatis** | Meringkas laporan inspeksi panjang menjadi poin-poin kritis |
+| **Saran Pengadaan** | Memberikan rekomendasi prioritas pengadaan berdasarkan data supply chain |
+| **Deteksi Anomali** | Menandai dokumen yang memerlukan perhatian khusus |
+
+---
 
 ## 🧪 Testing
 
 ```bash
-# Run all tests
+# Jalankan semua test
 ./gradlew allTests
 
-# Run common tests only
+# Unit test saja
 ./gradlew :composeApp:testDebugUnitTest
 ```
 
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+Target coverage Sprint 4: minimal 10 unit tests, 50%+ code coverage.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## 📅 Timeline Sprint
+
+| Sprint | Minggu | Status | Target |
+|--------|--------|--------|--------|
+| Sprint 1: Foundation | 11 | ✅ Selesai | Setup, arsitektur, domain model |
+| Sprint 2: Core Features | 12 | 🔄 Akan datang | CRUD, navigasi, local storage |
+| Sprint 3: Advanced | 13 | — | Search, AI integration, offline |
+| Sprint 4: Polish | 14 | — | Testing, bug fix, UI polish |
+| Sprint 5: Final | 15 | — | Demo, APK, dokumentasi lengkap |
+
+---
+
+## 📝 Panduan Kontribusi
+
+### Git Workflow
+
+```bash
+# Pastikan di branch yang benar
+git checkout project/123140057-123140068-RailLog
+
+# Sebelum mulai kerja, selalu pull dulu
+git pull origin project/123140057-123140068-RailLog
+
+# Commit dengan format yang benar
+git commit -m "feat: add supply item list screen"
+git commit -m "fix: resolve database migration issue"
+git commit -m "refactor: extract AI logic to use case"
+```
+
+### Commit Convention
+
+| Prefix | Penggunaan |
+|--------|------------|
+| `feat:` | Fitur baru |
+| `fix:` | Perbaikan bug |
+| `refactor:` | Refactoring kode |
+| `style:` | Perubahan UI/styling |
+| `test:` | Menambah/update test |
+| `docs:` | Update dokumentasi |
+| `chore:` | Maintenance |
+
+---
+
+## 🔧 Troubleshooting
+
+| Masalah | Solusi |
+|---------|--------|
+| `DefaultArtifactPublicationSet` error | Pastikan Gradle JDK = JDK 17, bukan JDK 20 |
+| `gradle-wrapper.properties not found` | Buat file wrapper manual atau jalankan `gradle wrapper --gradle-version 8.9` |
+| `GEMINI_API_KEY` kosong / 401 | Periksa `local.properties`, pastikan API key valid |
+| SQLDelight `no databases set up` | Pastikan blok `sqldelight { databases { ... } }` ada di `build.gradle.kts` |
+| Gradle sync lambat | Normal untuk sync pertama (~15 menit), pastikan internet stabil |
+
+---
+
+## 📚 Referensi
+
+- [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
+- [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
+- [SQLDelight](https://cashapp.github.io/sqldelight/)
+- [Koin DI](https://insert-koin.io/)
+- [Ktor Client](https://ktor.io/docs/welcome.html)
+- [Google Gemini API](https://ai.google.dev/docs)
+
+---
+
+## 📄 Lisensi
+
+MIT License — dibuat untuk keperluan pembelajaran Pengembangan Aplikasi Mobile di ITERA.
+
+---
+
+*Proyek ini dikembangkan sebagai bagian dari mata kuliah Pengembangan Aplikasi Mobile — Institut Teknologi Sumatera (ITERA)*

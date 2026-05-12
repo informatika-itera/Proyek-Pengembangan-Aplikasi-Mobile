@@ -28,8 +28,8 @@
 
 | NIM | Nama | Peran |
 |-----|------|-------|
-| 123140XXX | Andini Rahma | UI/UX, Presentation Layer, Feature Development |
-| 123140XXX | Miftah | Backend Integration, Architecture, Data Layer |
+| 123140067 | Andini Rahma Kemala | UI/UX, Presentation Layer, Feature Development |
+| 123140064 | Miftahul Khoiriyah | Backend Integration, Architecture, Data Layer |
 
 > **Branch:** `project/[NIM]-[NIM]-ROSEA`
 

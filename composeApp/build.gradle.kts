@@ -106,11 +106,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.studyplanner"
+    namespace = "com.example.rewind"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.studyplanner"
+        applicationId = "com.example.rewind"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -152,8 +152,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.studyplanner.data.local")
+        create("RewindDatabase") {
+            packageName.set("com.example.rewind.data.local")
         }
     }
 }

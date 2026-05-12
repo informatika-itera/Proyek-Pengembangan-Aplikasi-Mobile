@@ -1,4 +1,4 @@
-rootProject.name = "StudyPlanner"
+rootProject.name = "Rewind"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

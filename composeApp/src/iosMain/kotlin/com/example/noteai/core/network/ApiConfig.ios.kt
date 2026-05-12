@@ -1,4 +1,4 @@
-package com.example.noteai.core.network
+package com.example.pantaujompo.core.network
 
 import platform.Foundation.NSBundle
 

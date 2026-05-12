@@ -1,27 +1,23 @@
-package com.example.noteai
+package com.example.pantaujompo
 
 import android.app.Application
-import com.example.noteai.core.di.androidModule
-import com.example.noteai.core.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 
-/**
- * Android Application class
- * 
- * Entry point untuk inisialisasi app-wide dependencies.
- */
 class PantauJompoApplication : Application() {
-    
+
+    // Ini jalur pintas Context-nya!
+    companion object {
+        lateinit var appContext: Application
+    }
+
     override fun onCreate() {
         super.onCreate()
-        
-        // Initialize Koin DI
-        initKoin(
-            platformModules = listOf(androidModule)
-        ) {
+        appContext = this
+        startKoin {
             androidLogger()
-            androidContext(this@NoteAIApplication)
+            androidContext(this@PantauJompoApplication)
         }
     }
 }

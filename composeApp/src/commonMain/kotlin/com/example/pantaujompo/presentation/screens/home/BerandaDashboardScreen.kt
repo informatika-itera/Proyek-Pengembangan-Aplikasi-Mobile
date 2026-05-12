@@ -21,14 +21,16 @@ import com.example.pantaujompo.presentation.navigation.Route
 import com.example.pantaujompo.presentation.theme.*
 import com.example.pantaujompo.domain.model.FitnessLog
 import com.example.pantaujompo.domain.model.LogType
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import org.koin.compose.viewmodel.koinViewModel // Pastikan libs setara Koin-ViewModels-Compose
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+
 
 @Composable
 fun BerandaDashboardScreen(

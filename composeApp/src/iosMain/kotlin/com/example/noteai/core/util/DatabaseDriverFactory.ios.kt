@@ -1,8 +1,8 @@
-package com.example.noteai.core.util
+package com.example.pantaujompo.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.example.noteai.data.local.NoteDatabase
+import com.example.pantaujompo.data.local.NoteDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory

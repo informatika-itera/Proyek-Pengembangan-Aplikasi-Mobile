@@ -1,18 +1,13 @@
-package com.example.noteai.core.di
+package com.example.pantaujompo.core.di
 
-import com.example.noteai.core.util.DatabaseDriverFactory
-import com.example.noteai.data.local.datastore.DataStoreFactory
-import org.koin.android.ext.koin.androidContext
+import com.example.pantaujompo.PlatformLocationProvider
+import com.example.pantaujompo.core.util.DatabaseDriverFactory
+import com.example.pantaujompo.data.local.datastore.DataStoreFactory
 import org.koin.dsl.module
 
-/**
- * Android-specific Koin module.
- *
- * Menyediakan dependencies yang membutuhkan `Context`:
- * - DatabaseDriverFactory: untuk SQLDelight driver
- * - DataStoreFactory     : untuk lokasi file preferences
- */
 val androidModule = module {
-    single { DatabaseDriverFactory(androidContext()) }
-    single { DataStoreFactory(androidContext()) }
+    // Kurungnya sudah dikosongkan semua ya bes
+    single { DatabaseDriverFactory() }
+    single { DataStoreFactory() }
+    single { PlatformLocationProvider() }
 }

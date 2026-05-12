@@ -1,4 +1,4 @@
-package com.example.noteai
+package com.example.pantaujompo
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

@@ -2,6 +2,7 @@ package com.example.pantaujompo.presentation.theme
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 // MAIN tema Materia3 untuk Dark mode
 private val DarkColorScheme = darkColorScheme(

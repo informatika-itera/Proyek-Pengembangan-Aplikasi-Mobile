@@ -21,7 +21,7 @@ Bagian-bagian ini **HARUS** diubah sesuai project Anda:
 
 ```kotlin
 // SEBELUM (Template)
-package com.example.noteai
+package com.example.pantaujompo
 
 // SESUDAH (Project Anda)
 package com.example.todomaster    // Sesuaikan dengan nama app
@@ -388,7 +388,7 @@ Sebelum mengubah template, pastikan:
 ```bash
 # Di Android Studio:
 # Right-click package > Refactor > Rename
-# com.example.noteai → com.example.todomaster
+# com.example.pantaujompo → com.example.todomaster
 ```
 
 #### Step 2: Update Model

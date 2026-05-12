@@ -6,11 +6,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+
+// Import layar utama
 import com.example.pantaujompo.presentation.screens.home.BerandaDashboardScreen
-import com.example.pantaujompo.presentation.screens.scanner.PemindaiGiziAIScreen
-import com.example.pantaujompo.presentation.screens.history.IntegratedHistoryScreen
-import com.example.pantaujompo.presentation.screens.articles.HealthLiteracyScreen
-import com.example.pantaujompo.presentation.screens.profile.UserProfileScreen
+
+// Import 4 layar sementara (dari file StubScreens.kt)
+import com.example.pantaujompo.presentation.screens.PemindaiGiziAIScreen
+import com.example.pantaujompo.presentation.screens.IntegratedHistoryScreen
+import com.example.pantaujompo.presentation.screens.HealthLiteracyScreen
+import com.example.pantaujompo.presentation.screens.UserProfileScreen
 
 // MAIN AppNavHost untuk mengelola 5 screen bottom nav
 @Composable

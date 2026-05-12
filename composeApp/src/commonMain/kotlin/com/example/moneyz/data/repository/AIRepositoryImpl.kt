@@ -1,9 +1,9 @@
-package com.example.moneyz.data.repository
+package com.example.cakapAi.data.repository
 
-import com.example.moneyz.data.remote.api.GeminiService
-import com.example.moneyz.data.remote.api.SystemPrompts
-import com.example.moneyz.domain.repository.AIRepository
-import com.example.moneyz.domain.repository.WritingStyle
+import com.example.cakapAi.data.remote.api.GeminiService
+import com.example.cakapAi.data.remote.api.SystemPrompts
+import com.example.cakapAi.domain.repository.AIRepository
+import com.example.cakapAi.domain.repository.WritingStyle
 
 class AIRepositoryImpl(
     private val geminiService: GeminiService

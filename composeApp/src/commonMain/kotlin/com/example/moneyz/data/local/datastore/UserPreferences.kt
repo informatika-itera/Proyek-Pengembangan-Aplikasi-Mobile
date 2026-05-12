@@ -1,4 +1,4 @@
-package com.example.moneyz.data.local.datastore
+package com.example.cakapAi.data.local.datastore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

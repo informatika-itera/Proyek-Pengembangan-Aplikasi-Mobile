@@ -1,10 +1,10 @@
-package com.example.moneyz.domain.usecase
+package com.example.cakapAi.domain.usecase
 
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.repository.AIRepository
-import com.example.moneyz.domain.repository.NoteRepository
-import com.example.moneyz.domain.repository.WritingStyle
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.repository.AIRepository
+import com.example.cakapAi.domain.repository.NoteRepository
+import com.example.cakapAi.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

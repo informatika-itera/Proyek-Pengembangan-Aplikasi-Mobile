@@ -1,12 +1,12 @@
-package com.example.moneyz.presentation.screens.addnote
+package com.example.cakapAi.presentation.screens.addnote
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.model.NoteColor
-import com.example.moneyz.domain.repository.NoteRepository
-import com.example.moneyz.domain.usecase.SaveNoteUseCase
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.model.NoteColor
+import com.example.cakapAi.domain.repository.NoteRepository
+import com.example.cakapAi.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

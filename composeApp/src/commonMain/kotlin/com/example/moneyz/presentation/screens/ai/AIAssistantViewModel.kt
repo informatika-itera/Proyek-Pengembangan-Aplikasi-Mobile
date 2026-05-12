@@ -1,12 +1,12 @@
-package com.example.moneyz.presentation.screens.ai
+package com.example.cakapAi.presentation.screens.ai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneyz.domain.repository.AIRepository
-import com.example.moneyz.domain.repository.WritingStyle
-import com.example.moneyz.domain.usecase.GenerateIdeasUseCase
-import com.example.moneyz.domain.usecase.ImproveWritingUseCase
-import com.example.moneyz.domain.usecase.SummarizeNoteUseCase
+import com.example.cakapAi.domain.repository.AIRepository
+import com.example.cakapAi.domain.repository.WritingStyle
+import com.example.cakapAi.domain.usecase.GenerateIdeasUseCase
+import com.example.cakapAi.domain.usecase.ImproveWritingUseCase
+import com.example.cakapAi.domain.usecase.SummarizeNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

@@ -1,4 +1,4 @@
-package com.example.moneyz.core.util
+package com.example.cakapAi.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 

@@ -173,11 +173,13 @@ composeApp/src/
 ### 1. Domain Layer (Paling Dalam)
 
 **Karakteristik:**
+
 - Pure Kotlin (tidak ada dependency ke framework)
 - Berisi business logic
 - Tidak tahu tentang database atau API
 
 **Models (`domain/model/`)**
+
 ```kotlin
 // Domain model - representasi data dalam aplikasi
 data class Note(
@@ -190,6 +192,7 @@ data class Note(
 ```
 
 **Repository Interface (`domain/repository/`)**
+
 ```kotlin
 // Contract - mendefinisikan operasi yang tersedia
 interface NoteRepository {
@@ -200,6 +203,7 @@ interface NoteRepository {
 ```
 
 **Use Cases (`domain/usecase/`)**
+
 ```kotlin
 // Business logic yang spesifik
 class GetAllNotesUseCase(
@@ -217,11 +221,13 @@ class GetAllNotesUseCase(
 ### 2. Data Layer (Tengah)
 
 **Karakteristik:**
+
 - Implementasi repository
 - Berinteraksi dengan database dan API
 - Mapping antara entity dan domain model
 
 **Entity & Mapper (`data/local/entity/`)**
+
 ```kotlin
 // Mapper: Entity (database) ↔ Domain Model
 fun NoteEntity.toDomain(): Note {
@@ -234,11 +240,12 @@ fun NoteEntity.toDomain(): Note {
 ```
 
 **Repository Implementation (`data/repository/`)**
+
 ```kotlin
 class NoteRepositoryImpl(
     private val database: NoteDatabase
 ) : NoteRepository {
-    
+
     override fun getAllNotes(): Flow<List<Note>> {
         // Implementation: query database, map to domain
         return database.noteQueries.getAllNotes()
@@ -250,6 +257,7 @@ class NoteRepositoryImpl(
 ```
 
 **Remote API (`data/remote/`)**
+
 ```kotlin
 // DTO: Data Transfer Object untuk API
 @Serializable
@@ -269,21 +277,23 @@ class GeminiService(private val client: HttpClient) {
 ### 3. Presentation Layer (Paling Luar)
 
 **Karakteristik:**
+
 - UI dengan Compose
 - ViewModel dengan StateFlow
 - Event handling
 
 **ViewModel (`presentation/screens/*/`)**
+
 ```kotlin
 class HomeViewModel(
     private val getAllNotesUseCase: GetAllNotesUseCase
 ) : ViewModel() {
-    
+
     // UI State menggunakan StateFlow
     val uiState: StateFlow<HomeUiState> = getAllNotesUseCase()
         .map { notes -> HomeUiState.Success(notes) }
         .stateIn(viewModelScope, ...)
-    
+
     // Handle user actions
     fun onSearchQueryChange(query: String) { ... }
 }
@@ -297,6 +307,7 @@ sealed interface HomeUiState {
 ```
 
 **Screen (`presentation/screens/*/`)**
+
 ```kotlin
 @Composable
 fun HomeScreen(
@@ -304,7 +315,7 @@ fun HomeScreen(
 ) {
     // Collect state
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     // Render based on state
     when (val state = uiState) {
         is HomeUiState.Loading -> LoadingIndicator()
@@ -443,9 +454,9 @@ fun HomeScreen(
 
 class FakeNoteRepository : NoteRepository {
     private val notes = MutableStateFlow<List<Note>>(emptyList())
-    
+
     override fun getAllNotes(): Flow<List<Note>> = notes
-    
+
     override suspend fun insertNote(note: Note): Long {
         notes.update { it + note.copy(id = nextId++) }
         return nextId
@@ -457,15 +468,15 @@ class FakeNoteRepository : NoteRepository {
 // ═══════════════════════════════════════════════════════════
 
 class NoteRepositoryTest {
-    
+
     @Test
     fun `insertNote should add note to list`() = runTest {
         // Arrange
         val repository = FakeNoteRepository()
-        
+
         // Act
         repository.insertNote(Note(title = "Test"))
-        
+
         // Assert dengan Turbine
         repository.getAllNotes().test {
             val notes = awaitItem()
@@ -545,14 +556,14 @@ Contoh: User menambah note baru
 
 ### 1. Naming Conventions
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Package | lowercase | `com.example.moneyz.domain` |
-| Class | PascalCase | `NoteRepository`, `HomeViewModel` |
-| Function | camelCase | `getAllNotes()`, `onSaveClick()` |
-| Variable | camelCase | `noteList`, `isLoading` |
-| Constant | SCREAMING_SNAKE | `MAX_TITLE_LENGTH` |
-| File | PascalCase.kt | `NoteRepository.kt` |
+| Type     | Convention      | Example                           |
+| -------- | --------------- | --------------------------------- |
+| Package  | lowercase       | `com.example.cakapAi.domain`      |
+| Class    | PascalCase      | `NoteRepository`, `HomeViewModel` |
+| Function | camelCase       | `getAllNotes()`, `onSaveClick()`  |
+| Variable | camelCase       | `noteList`, `isLoading`           |
+| Constant | SCREAMING_SNAKE | `MAX_TITLE_LENGTH`                |
+| File     | PascalCase.kt   | `NoteRepository.kt`               |
 
 ### 2. File Organization
 
@@ -562,21 +573,21 @@ class HomeViewModel(
     // 1. Constructor parameters
     private val repository: NoteRepository
 ) : ViewModel() {
-    
+
     // 2. Constants
     companion object {
         private const val DEBOUNCE_MS = 300L
     }
-    
+
     // 3. Private state
     private val _searchQuery = MutableStateFlow("")
-    
+
     // 4. Public state
     val uiState: StateFlow<HomeUiState> = ...
-    
+
     // 5. Public functions
     fun onSearchQueryChange(query: String) { ... }
-    
+
     // 6. Private functions
     private fun sortNotes(notes: List<Note>): List<Note> { ... }
 }
@@ -602,4 +613,4 @@ when (val state = uiState) {
 
 ---
 
-*Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+_Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA_

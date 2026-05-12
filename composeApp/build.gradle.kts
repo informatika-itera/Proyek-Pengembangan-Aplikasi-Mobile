@@ -106,11 +106,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.moneyz"
+    namespace = "com.example.cakapAi"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.moneyz"
+        applicationId = "com.example.cakapAi"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -153,7 +153,7 @@ android {
 sqldelight {
     databases {
         create("NoteDatabase") {
-            packageName.set("com.example.moneyz.data.local")
+            packageName.set("com.example.cakapAi.data.local")
         }
     }
 }

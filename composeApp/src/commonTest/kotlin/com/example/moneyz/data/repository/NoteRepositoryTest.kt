@@ -1,10 +1,10 @@
-package com.example.moneyz.data.repository
+package com.example.cakapAi.data.repository
 
 import app.cash.turbine.test
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.model.NoteColor
-import com.example.moneyz.domain.repository.NoteRepository
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.model.NoteColor
+import com.example.cakapAi.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

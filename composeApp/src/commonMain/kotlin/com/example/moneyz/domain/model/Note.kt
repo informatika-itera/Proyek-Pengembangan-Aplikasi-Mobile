@@ -1,4 +1,4 @@
-package com.example.moneyz.domain.model
+package com.example.cakapAi.domain.model
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

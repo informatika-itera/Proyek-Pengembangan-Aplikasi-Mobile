@@ -1,8 +1,8 @@
-package com.example.moneyz.core.util
+package com.example.cakapAi.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.example.moneyz.data.local.NoteDatabase
+import com.example.cakapAi.data.local.NoteDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory

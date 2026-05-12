@@ -1,13 +1,13 @@
-package com.example.moneyz.data.remote.api
+package com.example.cakapAi.data.remote.api
 
-import com.example.moneyz.core.network.ApiConfig
-import com.example.moneyz.data.remote.dto.GeminiContent
-import com.example.moneyz.data.remote.dto.GeminiPart
-import com.example.moneyz.data.remote.dto.GeminiRequest
-import com.example.moneyz.data.remote.dto.GeminiResponse
-import com.example.moneyz.data.remote.dto.GenerationConfig
-import com.example.moneyz.data.remote.dto.getErrorMessage
-import com.example.moneyz.data.remote.dto.getTextContent
+import com.example.cakapAi.core.network.ApiConfig
+import com.example.cakapAi.data.remote.dto.GeminiContent
+import com.example.cakapAi.data.remote.dto.GeminiPart
+import com.example.cakapAi.data.remote.dto.GeminiRequest
+import com.example.cakapAi.data.remote.dto.GeminiResponse
+import com.example.cakapAi.data.remote.dto.GenerationConfig
+import com.example.cakapAi.data.remote.dto.getErrorMessage
+import com.example.cakapAi.data.remote.dto.getTextContent
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.parameter

@@ -1,8 +1,8 @@
-package com.example.moneyz
+package com.example.cakapAi
 
 import android.app.Application
-import com.example.moneyz.core.di.androidModule
-import com.example.moneyz.core.di.initKoin
+import com.example.cakapAi.core.di.androidModule
+import com.example.cakapAi.core.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 

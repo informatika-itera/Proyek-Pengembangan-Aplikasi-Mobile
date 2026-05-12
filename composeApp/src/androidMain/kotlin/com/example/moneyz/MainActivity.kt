@@ -1,4 +1,4 @@
-package com.example.moneyz
+package com.example.cakapAi
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

@@ -1,4 +1,4 @@
-package com.example.moneyz.data.local.datastore
+package com.example.cakapAi.data.local.datastore
 
 import android.content.Context
 

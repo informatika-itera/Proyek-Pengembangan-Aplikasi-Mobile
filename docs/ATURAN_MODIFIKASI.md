@@ -21,7 +21,7 @@ Bagian-bagian ini **HARUS** diubah sesuai project Anda:
 
 ```kotlin
 // SEBELUM (Template)
-package com.example.moneyz
+package com.example.cakapAi
 
 // SESUDAH (Project Anda)
 package com.example.todomaster    // Sesuaikan dengan nama app
@@ -30,6 +30,7 @@ package com.example.fitnessapp
 ```
 
 **File yang perlu diubah:**
+
 - `composeApp/build.gradle.kts` → `namespace` dan `applicationId`
 - Semua file `.kt` → package declaration
 - `AndroidManifest.xml` → package references
@@ -170,6 +171,7 @@ private val Secondary = Color(0xFF625B71)    // Ubah ke warna sekunder
 ### 8. README.md
 
 Update README dengan:
+
 - Nama aplikasi Anda
 - Deskripsi fitur
 - Screenshot
@@ -215,7 +217,7 @@ object SystemPrompts {
         Bantu user membuat task yang SMART.
         ...
     """.trimIndent()
-    
+
     // Tambah prompt baru
     val DEADLINE_ADVISOR = """
         ...
@@ -353,6 +355,7 @@ fun initKoin(
 Sebelum mengubah template, pastikan:
 
 ### Untuk Setiap Perubahan Model:
+
 - [ ] Update domain model (`domain/model/`)
 - [ ] Update entity (`data/local/entity/`)
 - [ ] Update mapper functions
@@ -365,6 +368,7 @@ Sebelum mengubah template, pastikan:
 - [ ] Update tests
 
 ### Untuk Menambah Screen Baru:
+
 - [ ] Buat ViewModel di `screens/[nama]/`
 - [ ] Buat Screen composable di `screens/[nama]/`
 - [ ] Tambah Route di `navigation/Routes.kt`
@@ -372,6 +376,7 @@ Sebelum mengubah template, pastikan:
 - [ ] Buat UI tests jika perlu
 
 ### Untuk Menambah Fitur AI:
+
 - [ ] Tambah method di `AIRepository` interface
 - [ ] Implement di `AIRepositoryImpl`
 - [ ] Buat use case jika diperlukan
@@ -385,13 +390,15 @@ Sebelum mengubah template, pastikan:
 ### Mengubah dari NoteAI ke TodoMaster
 
 #### Step 1: Rename Package
+
 ```bash
 # Di Android Studio:
 # Right-click package > Refactor > Rename
-# com.example.moneyz → com.example.todomaster
+# com.example.cakapAi → com.example.todomaster
 ```
 
 #### Step 2: Update Model
+
 ```kotlin
 // domain/model/Task.kt
 data class Task(
@@ -408,6 +415,7 @@ enum class TaskPriority { LOW, MEDIUM, HIGH, URGENT }
 ```
 
 #### Step 3: Update Schema
+
 ```sql
 -- sqldelight/Task.sq
 CREATE TABLE TaskEntity (
@@ -428,6 +436,7 @@ SELECT * FROM TaskEntity WHERE is_completed = 0 ORDER BY due_date ASC;
 ```
 
 #### Step 4: Update Repository
+
 ```kotlin
 // domain/repository/TaskRepository.kt
 interface TaskRepository {
@@ -443,6 +452,7 @@ interface TaskRepository {
 ```
 
 #### Step 5: Implement Repository
+
 ```kotlin
 // data/repository/TaskRepositoryImpl.kt
 class TaskRepositoryImpl(
@@ -453,6 +463,7 @@ class TaskRepositoryImpl(
 ```
 
 #### Step 6: Update DI
+
 ```kotlin
 // core/di/AppModule.kt
 val repositoryModule = module {
@@ -465,6 +476,7 @@ val repositoryModule = module {
 ## ⚠️ Peringatan
 
 ### Jangan Lakukan:
+
 1. **Menghapus layer** - Semua layer (domain, data, presentation) harus ada
 2. **Bypass repository** - ViewModel tidak boleh akses database langsung
 3. **Hardcode API key** - Selalu gunakan `local.properties`
@@ -472,6 +484,7 @@ val repositoryModule = module {
 5. **Copy-paste tanpa paham** - Pastikan mengerti kode yang digunakan
 
 ### Harus Dilakukan:
+
 1. **Test setiap perubahan** - Minimal manual test
 2. **Commit secara berkala** - Jangan tunggu semua selesai
 3. **Dokumentasikan perubahan** - Update README
@@ -480,4 +493,4 @@ val repositoryModule = module {
 
 ---
 
-*Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+_Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA_

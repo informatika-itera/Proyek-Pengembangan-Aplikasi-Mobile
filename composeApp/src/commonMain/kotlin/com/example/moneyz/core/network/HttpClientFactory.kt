@@ -1,4 +1,4 @@
-package com.example.moneyz.core.network
+package com.example.cakapAi.core.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout

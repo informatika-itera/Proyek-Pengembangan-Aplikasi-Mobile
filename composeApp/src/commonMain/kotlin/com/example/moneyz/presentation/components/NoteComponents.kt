@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.components
+package com.example.cakapAi.presentation.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -38,8 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteColor
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteColor
 
 @Composable
 fun NoteCard(

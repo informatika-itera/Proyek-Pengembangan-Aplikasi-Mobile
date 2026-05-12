@@ -1,7 +1,7 @@
-package com.example.moneyz.domain.repository
+package com.example.cakapAi.domain.repository
 
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository {

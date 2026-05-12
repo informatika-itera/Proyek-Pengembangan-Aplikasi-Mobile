@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.screens.detail
+package com.example.cakapAi.presentation.screens.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,10 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.moneyz.core.util.formatToDisplay
-import com.example.moneyz.presentation.components.CategoryBadge
-import com.example.moneyz.presentation.components.EmptyState
-import com.example.moneyz.presentation.components.LoadingIndicator
+import com.example.cakapAi.core.util.formatToDisplay
+import com.example.cakapAi.presentation.components.CategoryBadge
+import com.example.cakapAi.presentation.components.EmptyState
+import com.example.cakapAi.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

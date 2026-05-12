@@ -1,9 +1,9 @@
-package com.example.moneyz.core.util
+package com.example.cakapAi.core.util
 
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.example.moneyz.data.local.NoteDatabase
+import com.example.cakapAi.data.local.NoteDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory

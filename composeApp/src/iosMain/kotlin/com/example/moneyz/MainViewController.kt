@@ -1,7 +1,7 @@
-package com.example.moneyz
+package com.example.cakapAi
 
 import androidx.compose.ui.window.ComposeUIViewController
-import com.example.moneyz.core.di.initKoinIOS
+import com.example.cakapAi.core.di.initKoinIOS
 
 /**
  * iOS Main View Controller Factory

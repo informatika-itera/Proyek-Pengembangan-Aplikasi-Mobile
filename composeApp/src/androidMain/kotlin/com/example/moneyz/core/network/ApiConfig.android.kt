@@ -1,6 +1,6 @@
-package com.example.moneyz.core.network
+package com.example.cakapAi.core.network
 
-import com.example.moneyz.BuildConfig
+import com.example.cakapAi.BuildConfig
 
 /**
  * Android implementation of ApiConfig

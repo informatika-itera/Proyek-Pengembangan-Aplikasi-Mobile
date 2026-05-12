@@ -1,4 +1,4 @@
-package com.example.moneyz.core.network
+package com.example.cakapAi.core.network
 
 import platform.Foundation.NSBundle
 

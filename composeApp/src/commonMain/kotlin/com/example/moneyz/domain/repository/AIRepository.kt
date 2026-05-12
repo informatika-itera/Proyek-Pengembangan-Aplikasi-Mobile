@@ -1,4 +1,4 @@
-package com.example.moneyz.domain.repository
+package com.example.cakapAi.domain.repository
 
 interface AIRepository {
     suspend fun summarize(text: String): Result<String>

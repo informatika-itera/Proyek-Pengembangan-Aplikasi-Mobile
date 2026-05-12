@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   build-and-test:
@@ -20,8 +20,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
           cache: gradle
 
       # 3. Beri permission ke gradlew
@@ -38,11 +38,10 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew :composeApp:assembleDebug -x test --stacktrace
 
-      
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: moneyz-debug-apk
+          name: cakapAi-debug-apk
           path: composeApp/build/outputs/apk/debug/*.apk
           retention-days: 7

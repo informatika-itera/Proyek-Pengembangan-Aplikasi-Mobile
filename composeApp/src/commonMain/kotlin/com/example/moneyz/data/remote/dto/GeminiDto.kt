@@ -1,4 +1,4 @@
-package com.example.moneyz.data.remote.dto
+package com.example.cakapAi.data.remote.dto
 
 import kotlinx.serialization.Serializable
 

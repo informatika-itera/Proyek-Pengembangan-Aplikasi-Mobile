@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.screens.home
+package com.example.cakapAi.presentation.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -45,13 +45,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.usecase.NoteSortBy
-import com.example.moneyz.presentation.components.EmptyState
-import com.example.moneyz.presentation.components.ErrorState
-import com.example.moneyz.presentation.components.LoadingIndicator
-import com.example.moneyz.presentation.components.NoteCard
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.usecase.NoteSortBy
+import com.example.cakapAi.presentation.components.EmptyState
+import com.example.cakapAi.presentation.components.ErrorState
+import com.example.cakapAi.presentation.components.LoadingIndicator
+import com.example.cakapAi.presentation.components.NoteCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

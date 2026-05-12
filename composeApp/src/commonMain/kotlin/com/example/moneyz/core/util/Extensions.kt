@@ -1,4 +1,4 @@
-package com.example.moneyz.core.util
+package com.example.cakapAi.core.util
 
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Instant

@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.navigation
+package com.example.cakapAi.presentation.navigation
 
 import kotlinx.serialization.Serializable
 

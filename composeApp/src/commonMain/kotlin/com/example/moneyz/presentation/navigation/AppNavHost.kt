@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.navigation
+package com.example.cakapAi.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -7,10 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.moneyz.presentation.screens.addnote.AddNoteScreen
-import com.example.moneyz.presentation.screens.ai.AIAssistantScreen
-import com.example.moneyz.presentation.screens.detail.NoteDetailScreen
-import com.example.moneyz.presentation.screens.home.HomeScreen
+import com.example.cakapAi.presentation.screens.addnote.AddNoteScreen
+import com.example.cakapAi.presentation.screens.ai.AIAssistantScreen
+import com.example.cakapAi.presentation.screens.detail.NoteDetailScreen
+import com.example.cakapAi.presentation.screens.home.HomeScreen
 
 @Composable
 fun AppNavHost(

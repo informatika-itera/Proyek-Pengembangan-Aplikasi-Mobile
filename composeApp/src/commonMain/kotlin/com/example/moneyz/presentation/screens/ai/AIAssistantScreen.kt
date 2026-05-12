@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.screens.ai
+package com.example.cakapAi.presentation.screens.ai
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement

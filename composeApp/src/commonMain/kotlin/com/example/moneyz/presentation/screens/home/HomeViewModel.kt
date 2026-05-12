@@ -1,14 +1,14 @@
-package com.example.moneyz.presentation.screens.home
+package com.example.cakapAi.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.repository.NoteRepository
-import com.example.moneyz.domain.usecase.DeleteNoteUseCase
-import com.example.moneyz.domain.usecase.GetAllNotesUseCase
-import com.example.moneyz.domain.usecase.NoteSortBy
-import com.example.moneyz.domain.usecase.SearchNotesUseCase
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.repository.NoteRepository
+import com.example.cakapAi.domain.usecase.DeleteNoteUseCase
+import com.example.cakapAi.domain.usecase.GetAllNotesUseCase
+import com.example.cakapAi.domain.usecase.NoteSortBy
+import com.example.cakapAi.domain.usecase.SearchNotesUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,15 +1,15 @@
-package com.example.moneyz.data.repository
+package com.example.cakapAi.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import com.example.moneyz.data.local.NoteDatabase
-import com.example.moneyz.data.local.entity.toDomain
-import com.example.moneyz.data.local.entity.toDomainList
-import com.example.moneyz.data.local.entity.toEntityValues
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.repository.NoteRepository
+import com.example.cakapAi.data.local.NoteDatabase
+import com.example.cakapAi.data.local.entity.toDomain
+import com.example.cakapAi.data.local.entity.toDomainList
+import com.example.cakapAi.data.local.entity.toEntityValues
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

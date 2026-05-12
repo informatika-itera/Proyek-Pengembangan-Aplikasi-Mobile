@@ -1,9 +1,9 @@
-package com.example.moneyz.data.local.entity
+package com.example.cakapAi.data.local.entity
 
-import com.example.moneyz.data.local.NoteEntity
-import com.example.moneyz.domain.model.Note
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.domain.model.NoteColor
+import com.example.cakapAi.data.local.NoteEntity
+import com.example.cakapAi.domain.model.Note
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.domain.model.NoteColor
 import kotlinx.datetime.Instant
 
 fun NoteEntity.toDomain(): Note {

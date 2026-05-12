@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.theme
+package com.example.cakapAi.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

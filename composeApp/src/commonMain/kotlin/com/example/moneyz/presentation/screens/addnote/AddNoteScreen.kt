@@ -1,4 +1,4 @@
-package com.example.moneyz.presentation.screens.addnote
+package com.example.cakapAi.presentation.screens.addnote
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,9 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.moneyz.domain.model.NoteCategory
-import com.example.moneyz.presentation.components.ColorPickerRow
-import com.example.moneyz.presentation.components.LoadingIndicator
+import com.example.cakapAi.domain.model.NoteCategory
+import com.example.cakapAi.presentation.components.ColorPickerRow
+import com.example.cakapAi.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

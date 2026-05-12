@@ -1,6 +1,6 @@
 # Hujjah
 
-!![CI](https://github.com/Awesome1209/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Awesome1209/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
 ## 📌 Project Overview
 
@@ -22,11 +22,10 @@ Aplikasi kemudian akan memetakan input pengguna ke topik Islami yang relevan, me
 
 ## 👥 Team
 
-| Nama                 | NIM       | GitHub Username | Role |
-|----------------------|-----------|-----------------|---|
-| AWI SEPTIAN PRASETYO | 123140201 | @awesome1209    | Lead / Mobile Developer |
-| MUHAMMAD BIMASTIAR   | 123140211 | @211-Bimas      | API & Data Developer |
-
+| Nama | NIM | GitHub Username | Role |
+|---|---|---|---|
+| AWI SEPTIAN PRASETYO | 123140201 | @awesome1209 | Lead / Mobile Developer |
+| MUHAMMAD BIMASTIAR | 123140211 | @211-Bimas | API & Data Developer |
 
 ---
 
@@ -43,10 +42,9 @@ Aplikasi Al-Qur’an atau hadis biasanya mengharuskan pengguna mencari berdasark
 
 **Hujjah** hadir untuk menghubungkan:
 
-```markdown
 ```text
 Kondisi pengguna → Topik Islami → Dalil Al-Qur’an/Hadis → Solusi Berdalil
-````
+```
 
 ---
 
@@ -93,83 +91,68 @@ Solusi Berdalil:
 
 ### Minimum Features
 
-* [ ] **Hujjah Lens**
+- [ ] **Hujjah Lens**
+    - Input kondisi pengguna.
+    - AI memetakan input ke topik Islami.
+    - Menampilkan referensi Al-Qur’an dan hadis.
+    - Menyusun Solusi Berdalil.
 
-    * Input kondisi pengguna.
-    * AI memetakan input ke topik Islami.
-    * Menampilkan referensi Al-Qur’an dan hadis.
-    * Menyusun Solusi Berdalil.
+- [ ] **Al-Qur’an Manual**
+    - Menampilkan daftar surah.
+    - Menampilkan detail surah.
+    - Menampilkan ayat dan terjemahan Bahasa Indonesia.
+    - Bookmark ayat.
 
-* [ ] **Al-Qur’an Manual**
+- [ ] **Hadis Manual**
+    - Menampilkan daftar hadis atau hadis tematik.
+    - Menampilkan detail hadis.
+    - Bookmark hadis.
 
-    * Menampilkan daftar surah.
-    * Menampilkan detail surah.
-    * Menampilkan ayat dan terjemahan Bahasa Indonesia.
-    * Bookmark ayat.
+- [ ] **Reference Detail**
+    - Menampilkan detail referensi Al-Qur’an atau hadis.
+    - Menampilkan teks Arab, terjemahan, sumber, dan topik.
 
-* [ ] **Hadis Manual**
+- [ ] **Bookmark Reference**
+    - Menyimpan referensi Al-Qur’an dan hadis ke database lokal.
+    - Menampilkan daftar referensi tersimpan.
+    - Menghapus bookmark.
 
-    * Menampilkan daftar hadis atau hadis tematik.
-    * Menampilkan detail hadis.
-    * Bookmark hadis.
+- [ ] **Multi-screen Navigation**
+    - Navigasi antar halaman menggunakan Compose Navigation.
+    - Mendukung argument passing untuk detail referensi.
 
-* [ ] **Reference Detail**
+- [ ] **State Management**
+    - Menggunakan ViewModel.
+    - Menggunakan StateFlow untuk UI state.
 
-    * Menampilkan detail referensi Al-Qur’an atau hadis.
-    * Menampilkan teks Arab, terjemahan, sumber, dan topik.
+- [ ] **Clean Architecture**
+    - Memisahkan layer `presentation`, `domain`, dan `data`.
 
-* [ ] **Bookmark Reference**
+- [ ] **Dependency Injection**
+    - Menggunakan Koin.
 
-    * Menyimpan referensi Al-Qur’an dan hadis ke database lokal.
-    * Menampilkan daftar referensi tersimpan.
-    * Menghapus bookmark.
-
-* [ ] **Multi-screen Navigation**
-
-    * Navigasi antar halaman menggunakan Compose Navigation.
-    * Mendukung argument passing untuk detail referensi.
-
-* [ ] **State Management**
-
-    * Menggunakan ViewModel.
-    * Menggunakan StateFlow untuk UI state.
-
-* [ ] **Clean Architecture**
-
-    * Memisahkan layer `presentation`, `domain`, dan `data`.
-
-* [ ] **Dependency Injection**
-
-    * Menggunakan Koin.
-
-* [ ] **Testing**
-
-    * Unit test untuk use case/repository.
-    * UI test untuk screen utama.
+- [ ] **Testing**
+    - Unit test untuk use case/repository.
+    - UI test untuk screen utama.
 
 ---
 
 ### Bonus Features
 
-* [ ] **Gemini AI Integration**
+- [ ] **Gemini AI Integration**
+    - AI digunakan untuk mapping input, ringkasan, dan Solusi Berdalil.
 
-    * AI digunakan untuk mapping input, ringkasan, dan Solusi Berdalil.
+- [ ] **Offline-first Bookmark**
+    - Referensi yang sudah disimpan dapat diakses tanpa internet.
 
-* [ ] **Offline-first Bookmark**
+- [ ] **Dark Mode**
+    - Mendukung tema terang dan gelap.
 
-    * Referensi yang sudah disimpan dapat diakses tanpa internet.
+- [ ] **Meaningful Animations**
+    - Animasi sederhana untuk transisi dan loading state.
 
-* [ ] **Dark Mode**
-
-    * Mendukung tema terang dan gelap.
-
-* [ ] **Meaningful Animations**
-
-    * Animasi sederhana untuk transisi dan loading state.
-
-* [ ] **CI/CD**
-
-    * GitHub Actions untuk build dan test otomatis.
+- [ ] **CI/CD**
+    - GitHub Actions untuk build dan test otomatis.
 
 ---
 
@@ -179,25 +162,25 @@ AI dalam Hujjah digunakan sebagai **reasoning layer**, bukan sebagai sumber utam
 
 Sumber utama aplikasi tetap:
 
-* Al-Qur’an
-* Hadis
-* Data/API referensi yang digunakan aplikasi
+- Al-Qur’an
+- Hadis
+- Data/API referensi yang digunakan aplikasi
 
 AI digunakan untuk:
 
-* Memahami input pengguna.
-* Memetakan input ke kategori/topik Islami.
-* Membuat keyword pencarian.
-* Meringkas dalil yang sudah ditemukan.
-* Menyusun Solusi Berdalil berdasarkan referensi yang ditampilkan.
+- Memahami input pengguna.
+- Memetakan input ke kategori/topik Islami.
+- Membuat keyword pencarian.
+- Meringkas dalil yang sudah ditemukan.
+- Menyusun Solusi Berdalil berdasarkan referensi yang ditampilkan.
 
 AI tidak digunakan untuk:
 
-* Memberikan fatwa final.
-* Menentukan hukum halal-haram secara bebas.
-* Menggantikan ustadz/ulama.
-* Menjawab tanpa referensi.
-* Menambahkan dalil yang tidak tersedia dalam data aplikasi.
+- Memberikan fatwa final.
+- Menentukan hukum halal-haram secara bebas.
+- Menggantikan ustadz/ulama.
+- Menjawab tanpa referensi.
+- Menambahkan dalil yang tidak tersedia dalam data aplikasi.
 
 Disclaimer:
 
@@ -209,36 +192,36 @@ Disclaimer:
 
 Pada tahap MVP, input pengguna bersifat bebas, tetapi sistem akan memetakan input tersebut ke kategori awal yang terkurasi.
 
-| Kategori             | Contoh Input                   | Contoh Referensi                        |
-| -------------------- | ------------------------------ | --------------------------------------- |
-| Mengendalikan Amarah | marah, emosi, kesal            | QS Ali Imran: 134, hadis “Jangan marah” |
-| Ketenangan Hati      | sedih, galau, kecewa           | QS Ar-Ra’d: 28, QS Al-Insyirah: 5–6     |
-| Sabar                | diuji, musibah, capek          | QS Al-Baqarah: 153, QS Az-Zumar: 10     |
-| Taubat               | dosa, menyesal, ingin berubah  | QS Az-Zumar: 53, QS At-Tahrim: 8        |
-| Syukur               | kurang bersyukur, iri          | QS Ibrahim: 7                           |
-| Shalat               | malas shalat, lalai            | QS Al-Ma’un: 4–5, QS Al-Baqarah: 45     |
-| Tawakkal / Cemas     | takut masa depan, overthinking | QS Ath-Thalaq: 3                        |
-| Ilmu                 | malas belajar, ingin belajar   | QS Al-Mujadilah: 11                     |
-| Orang Tua            | konflik dengan orang tua       | QS Al-Isra: 23                          |
-| Rezeki               | takut miskin, kerja, nafkah    | QS Hud: 6, QS Ath-Thalaq: 2–3           |
+| Kategori | Contoh Input | Contoh Referensi |
+|---|---|---|
+| Mengendalikan Amarah | marah, emosi, kesal | QS Ali Imran: 134, hadis “Jangan marah” |
+| Ketenangan Hati | sedih, galau, kecewa | QS Ar-Ra’d: 28, QS Al-Insyirah: 5–6 |
+| Sabar | diuji, musibah, capek | QS Al-Baqarah: 153, QS Az-Zumar: 10 |
+| Taubat | dosa, menyesal, ingin berubah | QS Az-Zumar: 53, QS At-Tahrim: 8 |
+| Syukur | kurang bersyukur, iri | QS Ibrahim: 7 |
+| Shalat | malas shalat, lalai | QS Al-Ma’un: 4–5, QS Al-Baqarah: 45 |
+| Tawakkal / Cemas | takut masa depan, overthinking | QS Ath-Thalaq: 3 |
+| Ilmu | malas belajar, ingin belajar | QS Al-Mujadilah: 11 |
+| Orang Tua | konflik dengan orang tua | QS Al-Isra: 23 |
+| Rezeki | takut miskin, kerja, nafkah | QS Hud: 6, QS Ath-Thalaq: 2–3 |
 
 ---
 
 ## 🛠 Tech Stack
 
-| Kebutuhan            | Teknologi                                    |
-| -------------------- | -------------------------------------------- |
-| Framework            | Kotlin Multiplatform                         |
-| UI                   | Compose Multiplatform, Material Design 3     |
-| Architecture         | MVVM, Clean Architecture, Repository Pattern |
-| Async                | Coroutines, Flow, StateFlow                  |
-| Networking           | Ktor Client                                  |
-| Serialization        | Kotlinx Serialization                        |
-| Local Storage        | SQLDelight, DataStore Preferences            |
-| Dependency Injection | Koin                                         |
-| AI                   | Gemini API                                   |
-| Testing              | kotlin.test, MockK, Turbine, Compose Test    |
-| CI/CD                | GitHub Actions                               |
+| Kebutuhan | Teknologi |
+|---|---|
+| Framework | Kotlin Multiplatform |
+| UI | Compose Multiplatform, Material Design 3 |
+| Architecture | MVVM, Clean Architecture, Repository Pattern |
+| Async | Coroutines, Flow, StateFlow |
+| Networking | Ktor Client |
+| Serialization | Kotlinx Serialization |
+| Local Storage | SQLDelight, DataStore Preferences |
+| Dependency Injection | Koin |
+| AI | Gemini API |
+| Testing | kotlin.test, MockK, Turbine, Compose Test |
+| CI/CD | GitHub Actions |
 
 ---
 
@@ -254,11 +237,11 @@ equran.id API
 
 Digunakan untuk:
 
-* Daftar surah.
-* Detail surah.
-* Ayat Al-Qur’an.
-* Terjemahan Bahasa Indonesia.
-* Audio atau tafsir jika memungkinkan.
+- Daftar surah.
+- Detail surah.
+- Ayat Al-Qur’an.
+- Terjemahan Bahasa Indonesia.
+- Audio atau tafsir jika memungkinkan.
 
 Backup source:
 
@@ -298,9 +281,9 @@ Gemini API
 
 Digunakan untuk:
 
-* Mapping input pengguna ke kategori Islami.
-* Membuat ringkasan pembelajaran.
-* Menyusun Solusi Berdalil berdasarkan daftar dalil yang sudah ditemukan.
+- Mapping input pengguna ke kategori Islami.
+- Membuat ringkasan pembelajaran.
+- Menyusun Solusi Berdalil berdasarkan daftar dalil yang sudah ditemukan.
 
 ---
 
@@ -394,17 +377,17 @@ composeApp/src/commonMain/kotlin/...
 
 ## 📱 Planned Screens
 
-| Screen                    | Description                                              |
-| ------------------------- | -------------------------------------------------------- |
-| Splash / Welcome Screen   | Menampilkan logo dan tagline Hujjah                      |
-| Hujjah Lens Screen        | Input kondisi pengguna dan kategori cepat                |
-| Hujjah Result Screen      | Menampilkan topik, dalil, ringkasan, dan Solusi Berdalil |
-| Al-Qur’an List Screen     | Menampilkan daftar surah                                 |
-| Al-Qur’an Detail Screen   | Menampilkan daftar ayat dan terjemahan                   |
-| Hadis Screen              | Menampilkan daftar hadis atau hadis tematik              |
-| Reference Detail Screen   | Menampilkan detail ayat/hadis                            |
-| Bookmark Screen           | Menampilkan referensi tersimpan                          |
-| About / Disclaimer Screen | Menampilkan informasi aplikasi dan disclaimer AI         |
+| Screen | Description |
+|---|---|
+| Splash / Welcome Screen | Menampilkan logo dan tagline Hujjah |
+| Hujjah Lens Screen | Input kondisi pengguna dan kategori cepat |
+| Hujjah Result Screen | Menampilkan topik, dalil, ringkasan, dan Solusi Berdalil |
+| Al-Qur’an List Screen | Menampilkan daftar surah |
+| Al-Qur’an Detail Screen | Menampilkan daftar ayat dan terjemahan |
+| Hadis Screen | Menampilkan daftar hadis atau hadis tematik |
+| Reference Detail Screen | Menampilkan detail ayat/hadis |
+| Bookmark Screen | Menampilkan referensi tersimpan |
+| About / Disclaimer Screen | Menampilkan informasi aplikasi dan disclaimer AI |
 
 Bottom navigation:
 
@@ -436,10 +419,10 @@ CREATE TABLE BookmarkReferenceEntity (
 
 Fungsi utama:
 
-* Menyimpan bookmark ayat.
-* Menyimpan bookmark hadis.
-* Menampilkan referensi tersimpan.
-* Menghapus bookmark.
+- Menyimpan bookmark ayat.
+- Menyimpan bookmark hadis.
+- Menampilkan referensi tersimpan.
+- Menghapus bookmark.
 
 ---
 
@@ -451,22 +434,22 @@ Testing dilakukan secara bertahap.
 
 Target unit test:
 
-* AnalyzeUserInputUseCase
-* GenerateHujjahSolutionUseCase
-* SaveBookmarkUseCase
-* DeleteBookmarkUseCase
-* GetBookmarksUseCase
-* QuranRepository
-* HadithRepository
-* BookmarkRepository
+- AnalyzeUserInputUseCase
+- GenerateHujjahSolutionUseCase
+- SaveBookmarkUseCase
+- DeleteBookmarkUseCase
+- GetBookmarksUseCase
+- QuranRepository
+- HadithRepository
+- BookmarkRepository
 
 ### UI Tests
 
 Target UI test:
 
-* Hujjah Lens input and result flow
-* Al-Qur’an list/detail screen
-* Bookmark screen
+- Hujjah Lens input and result flow
+- Al-Qur’an list/detail screen
+- Bookmark screen
 
 ---
 
@@ -482,31 +465,31 @@ Workflow file:
 
 Target workflow:
 
-* Checkout repository.
-* Setup JDK 17.
-* Run unit tests.
-* Build debug APK.
+- Checkout repository.
+- Setup JDK 17.
+- Run unit tests.
+- Build debug APK.
 
 ---
 
 ## 🗓 Project Plan
 
-| Sprint   | Target                                                                |
-| -------- | --------------------------------------------------------------------- |
+| Sprint | Target |
+|---|---|
 | Sprint 1 | Planning, setup repository, CI/CD, README, architecture, API decision |
-| Sprint 2 | Core screens, navigation, local database, bookmark CRUD               |
-| Sprint 3 | API integration, Gemini AI, Hujjah Lens, Solusi Berdalil              |
-| Sprint 4 | UI polish, bug fixing, testing, offline/cache improvement             |
-| Sprint 5 | Final APK, README final, demo script, presentation, video backup      |
+| Sprint 2 | Core screens, navigation, local database, bookmark CRUD |
+| Sprint 3 | API integration, Gemini AI, Hujjah Lens, Solusi Berdalil |
+| Sprint 4 | UI polish, bug fixing, testing, offline/cache improvement |
+| Sprint 5 | Final APK, README final, demo script, presentation, video backup |
 
 ---
 
 ## 👨‍💻 Task Assignment
 
-| Member | Responsibility                                           |
-|  | -------------------------------------------------------- |
+| Member | Responsibility |
+|---|---|
 | Awi Septian Prasetyo | Project setup, architecture, AI integration, Hujjah Lens |
-| Muhammad Bimatiar | API/data, UI implementation, testing, documentation      |
+| Muhammad Bimastiar | API/data, UI implementation, testing, documentation |
 
 ---
 
@@ -637,28 +620,28 @@ chore: add GitHub Actions workflow
 
 Jenis commit:
 
-| Type     | Usage                                           |
-| -------- | ----------------------------------------------- |
-| feat     | Menambahkan fitur baru                          |
-| fix      | Memperbaiki bug                                 |
+| Type | Usage |
+|---|---|
+| feat | Menambahkan fitur baru |
+| fix | Memperbaiki bug |
 | refactor | Merapikan struktur kode tanpa mengubah behavior |
-| test     | Menambahkan atau memperbaiki test               |
-| docs     | Mengubah dokumentasi                            |
-| style    | Format kode                                     |
-| chore    | Maintenance project                             |
+| test | Menambahkan atau memperbaiki test |
+| docs | Mengubah dokumentasi |
+| style | Format kode |
+| chore | Maintenance project |
 
 ---
 
 ## ⚠️ Risk Management
 
-| Risiko                                    | Solusi                                                               |
-| ----------------------------------------- | -------------------------------------------------------------------- |
-| API Al-Qur’an bermasalah                  | Gunakan backup alquran.cloud atau data lokal ayat pilihan            |
-| API hadis tidak stabil                    | Gunakan data lokal hadis tematik                                     |
-| Gemini API error/limit                    | Gunakan rule-based mapping dan summary fallback                      |
-| Internet mati saat demo                   | Bookmark dan cache tetap dapat ditampilkan                           |
-| Scope terlalu besar                       | Fokus pada Hujjah Lens, Qur’an manual, hadis sederhana, dan bookmark |
-| CI gagal karena konfigurasi multiplatform | Fokuskan build Android karena Android adalah platform wajib          |
+| Risiko | Solusi |
+|---|---|
+| API Al-Qur’an bermasalah | Gunakan backup alquran.cloud atau data lokal ayat pilihan |
+| API hadis tidak stabil | Gunakan data lokal hadis tematik |
+| Gemini API error/limit | Gunakan rule-based mapping dan summary fallback |
+| Internet mati saat demo | Bookmark dan cache tetap dapat ditampilkan |
+| Scope terlalu besar | Fokus pada Hujjah Lens, Qur’an manual, hadis sederhana, dan bookmark |
+| CI gagal karena konfigurasi multiplatform | Fokuskan build Android karena Android adalah platform wajib |
 
 ---
 
@@ -666,19 +649,19 @@ Jenis commit:
 
 Hujjah tidak bertujuan menjadi:
 
-* Aplikasi fatwa.
-* Pengganti ulama.
-* Chatbot Islam bebas.
-* Penentu hukum halal-haram.
-* Aplikasi Al-Qur’an lengkap seperti mushaf digital penuh.
-* Ensiklopedia hadis lengkap.
+- Aplikasi fatwa.
+- Pengganti ulama.
+- Chatbot Islam bebas.
+- Penentu hukum halal-haram.
+- Aplikasi Al-Qur’an lengkap seperti mushaf digital penuh.
+- Ensiklopedia hadis lengkap.
 
 Hujjah berfokus pada:
 
-* Pencarian dalil berdasarkan kondisi sehari-hari.
-* Pembacaan Al-Qur’an dan hadis secara manual.
-* Solusi Berdalil berdasarkan referensi.
-* Pembelajaran Islam berbasis sumber.
+- Pencarian dalil berdasarkan kondisi sehari-hari.
+- Pembacaan Al-Qur’an dan hadis secara manual.
+- Solusi Berdalil berdasarkan referensi.
+- Pembelajaran Islam berbasis sumber.
 
 ---
 
@@ -694,9 +677,6 @@ Untuk persoalan hukum agama yang kompleks, pengguna dianjurkan bertanya kepada u
 
 Project ini dibuat untuk keperluan tugas mata kuliah **Pengembangan Aplikasi Mobile**.
 
-Institut Teknologi Sumatera
-Program Studi Teknik Informatika
+Institut Teknologi Sumatera  
+Program Studi Teknik Informatika  
 Tahun Akademik Genap 2025/2026
-
-```
-```

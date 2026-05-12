@@ -45,7 +45,7 @@ Project ini mengikuti standar **Clean Architecture** yang ketat sesuai panduan t
 
 ---
 
-## 👥 Anggota Kelompok (ITERA)
+## 👥 Anggota Kelompok 
 
 | Nama | NIM | Peran Utama |
 |------|-----|-------------|
@@ -80,10 +80,3 @@ Format Commit: `<type>: <deskripsi>` (contoh: `feat: add genre filter logic`)
 ---
 *© 2026 - Program Studi Teknik Informatika, Institut Teknologi Sumatera*
 """
-
-# Write the content to a file
-file_path = 'README.md'
-with open(file_path, 'w', encoding='utf-8') as f:
-    f.write(readme_content)
-
-print(f"File {file_path} has been generated.")

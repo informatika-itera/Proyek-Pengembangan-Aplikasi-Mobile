@@ -1,0 +1,40 @@
+CREATE TABLE TaskEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    priority TEXT NOT NULL DEFAULT 'MEDIUM',
+    deadline INTEGER,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    sub_tasks TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+getAllTasks:
+SELECT * FROM TaskEntity
+ORDER BY is_completed ASC, deadline ASC, priority DESC;
+
+getTaskById:
+SELECT * FROM TaskEntity
+WHERE id = ?;
+
+insertTask:
+INSERT INTO TaskEntity (title, description, priority, deadline, is_completed, sub_tasks, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+updateTask:
+UPDATE TaskEntity
+SET title = ?, description = ?, priority = ?, deadline = ?, is_completed = ?, sub_tasks = ?, updated_at = ?
+WHERE id = ?;
+
+deleteTaskById:
+DELETE FROM TaskEntity
+WHERE id = ?;
+
+toggleComplete:
+UPDATE TaskEntity
+SET is_completed = CASE WHEN is_completed = 1 THEN 0 ELSE 1 END, updated_at = ?
+WHERE id = ?;

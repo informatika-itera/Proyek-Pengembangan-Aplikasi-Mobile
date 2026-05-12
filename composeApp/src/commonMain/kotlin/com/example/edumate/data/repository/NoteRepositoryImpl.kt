@@ -1,107 +1,78 @@
-package com.example.noteai.data.repository
+package com.example.edumate.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import com.example.noteai.data.local.NoteDatabase
-import com.example.noteai.data.local.entity.toDomain
-import com.example.noteai.data.local.entity.toDomainList
-import com.example.noteai.data.local.entity.toEntityValues
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.repository.NoteRepository
+import com.example.edumate.data.local.TaskDatabase
+import com.example.edumate.data.local.entity.toDomain
+import com.example.edumate.data.local.entity.toDomainList
+import com.example.edumate.domain.model.Task
+import com.example.edumate.domain.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
-class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
+class TaskRepositoryImpl(private val database: TaskDatabase) : TaskRepository {
 
-    private val queries = database.noteQueries
+    private val queries = database.taskQueries
 
-    override fun getAllNotes(): Flow<List<Note>> {
-        return queries.getAllNotes()
+    override fun getAllTasks(): Flow<List<Task>> {
+        return queries.getAllTasks()
             .asFlow()
             .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
+            .map { it.toDomainList() }
     }
 
-    override fun getPinnedNotes(): Flow<List<Note>> {
-        return queries.getPinnedNotes()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
-    }
-
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
-        return queries.getNotesByCategory(category.name)
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
-    }
-
-    override fun searchNotes(query: String): Flow<List<Note>> {
-        return queries.searchNotes(query, query)
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
-    }
-
-    override fun getNoteById(id: Long): Flow<Note?> {
-        return queries.getNoteById(id)
+    override fun getTaskById(id: Long): Flow<Task?> {
+        return queries.getTaskById(id)
             .asFlow()
             .mapToOneOrNull(Dispatchers.Default)
-            .map { entity -> entity?.toDomain() }
+            .map { it?.toDomain() }
     }
 
-    override suspend fun insertNote(note: Note): Long = withContext(Dispatchers.Default) {
-        val values = note.toEntityValues()
-        queries.insertNote(
-            title = values.title,
-            content = values.content,
-            category = values.category,
-            color = values.color,
-            is_pinned = values.isPinned,
-            created_at = values.createdAt,
-            updated_at = values.updatedAt
+    override suspend fun insertTask(task: Task): Long = withContext(Dispatchers.Default) {
+        queries.insertTask(
+            title = task.title,
+            description = task.description,
+            priority = task.priority.name,
+            deadline = task.deadline?.toEpochMilliseconds(),
+            is_completed = if (task.isCompleted) 1L else 0L,
+            sub_tasks = task.subTasks,
+            created_at = task.createdAt.toEpochMilliseconds(),
+            updated_at = task.updatedAt.toEpochMilliseconds()
         )
         queries.lastInsertId().executeAsOne()
     }
 
-    override suspend fun updateNote(note: Note) {
+    override suspend fun updateTask(task: Task) {
         withContext(Dispatchers.Default) {
-            val values = note.toEntityValues()
-            queries.updateNote(
-                id = note.id,
-                title = values.title,
-                content = values.content,
-                category = values.category,
-                color = values.color,
-                is_pinned = values.isPinned,
-                updated_at = Clock.System.now().toEpochMilliseconds()
+            queries.updateTask(
+                title = task.title,
+                description = task.description,
+                priority = task.priority.name,
+                deadline = task.deadline?.toEpochMilliseconds(),
+                is_completed = if (task.isCompleted) 1L else 0L,
+                sub_tasks = task.subTasks,
+                updated_at = Clock.System.now().toEpochMilliseconds(),
+                id = task.id
             )
         }
     }
 
-    override suspend fun deleteNote(id: Long) {
+    override suspend fun deleteTask(id: Long) {
         withContext(Dispatchers.Default) {
-            queries.deleteNoteById(id)
+            queries.deleteTaskById(id)
         }
     }
 
-    override suspend fun togglePinNote(id: Long) {
+    override suspend fun toggleComplete(id: Long) {
         withContext(Dispatchers.Default) {
-            queries.togglePin(
-                id = id,
-                updated_at = Clock.System.now().toEpochMilliseconds()
+            queries.toggleComplete(
+                updated_at = Clock.System.now().toEpochMilliseconds(),
+                id = id
             )
-        }
-    }
-
-    override suspend fun deleteNotes(ids: List<Long>) {
-        withContext(Dispatchers.Default) {
-            queries.deleteNotesByIds(ids)
         }
     }
 }

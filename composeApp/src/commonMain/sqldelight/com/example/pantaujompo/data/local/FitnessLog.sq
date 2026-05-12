@@ -1,0 +1,23 @@
+-- Skema untuk menyimpan log aktivitas kebugaran terpadu
+CREATE TABLE ActivityLog (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL, -- "RUN", "MEAL", "PAIN", "ARTICLE"
+    title TEXT NOT NULL, -- Judul bahasa Indonesia dari UI
+    timestamp INTEGER NOT NULL, -- Kapan log dibuat
+    details TEXT NOT NULL, -- Metrik seperti "650 kkal", "1.2 km", atau detail rasa sakit (dalam JSON string untuk fleksibilitas)
+    isAIGenerated INTEGER NOT NULL DEFAULT 0,
+    sourceUrl TEXT -- Untuk Artikel
+);
+
+getAllLogs:
+SELECT * FROM ActivityLog ORDER BY timestamp DESC;
+
+getLogsByType:
+SELECT * FROM ActivityLog WHERE type = ? ORDER BY timestamp DESC;
+
+insertLog:
+INSERT OR REPLACE INTO ActivityLog(type, title, timestamp, details, isAIGenerated, sourceUrl)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteLogById:
+DELETE FROM ActivityLog WHERE id = ?;

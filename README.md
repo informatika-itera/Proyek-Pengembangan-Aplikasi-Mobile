@@ -8,7 +8,7 @@
 | Foto                                                 | Informasi                                                                       | Role Utama |
 |------------------------------------------------------|---------------------------------------------------------------------------------|------------|
 | ![Profile](https://github.com/GarsRayy.png?size=100) | **Garis Rayya Rabbani** (123140018)<br>[@GarsRayy](https://github.com/GarsRayy) | UI/UX Design, Presentation Layer, Animations, Navigation |
-| ![Profile](https://github.com/Ondor-R.png?size=100)  | **Reyhan Oktavian Putra** (123140202)<br>[@Ondor-R](https://github.com/Ondor-R) | Domain & Data Layer (AI, SQLDelight, Ktor) |
+| ![Profile](https://github.com/Ondor-R.png?size=100)  | **Reyhan Oktavian Putra** (123140202)<br>[@Ondor-R](https://github.com/Ondor-R) | Domain & Data Layer (AI, SQLDelight, Ktor) | 
 
 ---
 

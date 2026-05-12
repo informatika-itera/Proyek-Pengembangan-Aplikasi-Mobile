@@ -19,7 +19,7 @@
 
 ## Arsitektur & Teknologi
 
-### Clean Architecture + MVVM
+Aplikasi ini berprinsip **Clean Architecture + MVVM**
 
 ### Tech Stack
 

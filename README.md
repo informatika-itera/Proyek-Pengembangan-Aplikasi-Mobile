@@ -1,6 +1,6 @@
-# 📱 DailyBliss - KMP Note App
+# 📱 DailyBliss
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+Aplikasi yang membantu seseorang untuk mencatat kejadian yang membuat mereka bersyukur. Dilengkapi dengan fitur reminder dan integrasi dengan AI untuk memberikan motivasi.
 
 **Kelompok DailyBliss:**
 - Andika Dinata (123140096)

@@ -6,7 +6,7 @@
 | Nama | NIM |
 |-------|------------|
 | Radja Apprilla | 123140084 |
-| isi | isi |
+| Gohan Tua Jeremia Ambarita | 123140160 |
 
 ## Fitur Aplikasi
 

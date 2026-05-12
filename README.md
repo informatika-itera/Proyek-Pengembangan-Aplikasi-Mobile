@@ -1,247 +1,163 @@
-# 📱 NoteAI - KMP Project Template
+# 📚 Hujjah - Islamic Reference Finder
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+![CI](https://github.com/USERNAME/team-13-hujjah/actions/workflows/ci.yml/badge.svg)
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+**Hujjah** adalah aplikasi mobile multiplatform berbasis **Kotlin Multiplatform** dan **Compose Multiplatform** yang membantu pengguna mencari, membaca, menyimpan, dan memahami referensi keislaman dari Al-Qur’an, Hadis, serta pembahasan ulama berdasarkan topik tertentu.
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+Aplikasi ini dibuat untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA sebagai project akhir berbasis **KMP, Compose Multiplatform, Clean Architecture, MVVM, Local Storage, Networking, StateFlow, Koin, AI Integration, dan Testing**.
 
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+> **Makna Nama**
+>
+> Hujjah berarti dasar, bukti, atau argumen yang digunakan untuk menjelaskan suatu perkara. Nama ini dipilih karena aplikasi berfokus pada pencarian dan pengelolaan referensi dalil secara terstruktur.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## 📚 Dokumentasi Project
+
+| Dokumen | Deskripsi |
+|---------|-----------|
+| [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | Panduan setup dan menjalankan aplikasi |
+| [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi project, timeline, dan penilaian |
+| [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
+| [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Batasan dan aturan modifikasi project |
+| [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
+| [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum saat development |
+
+---
+
+## 👥 Team
+
+| Role | Nama | NIM | GitHub |
+|------|------|-----|--------|
+| Lead Developer | Nama Anggota 1 | NIM Anggota 1 | [@username1](https://github.com/username1) |
+| Mobile Developer | Nama Anggota 2 | NIM Anggota 2 | [@username2](https://github.com/username2) |
+| QA & Documentation | Nama Anggota 3 | NIM Anggota 3 | [@username3](https://github.com/username3) |
+
+---
+
+## 📌 Project Overview
+
+**Hujjah** dirancang sebagai aplikasi referensi Islam yang memudahkan pengguna menemukan dalil berdasarkan topik tertentu, seperti shalat, puasa, zakat, akhlak, doa, adab, muamalah, dan tema keislaman lainnya.
+
+Pengguna dapat mencari referensi dalil, membaca detail dalil, menyimpan dalil favorit, membuat catatan pribadi, serta menggunakan fitur AI Assistant untuk membantu merangkum atau menjelaskan isi dalil dengan bahasa yang lebih mudah dipahami.
+
+---
+
+## 🎯 Tujuan Aplikasi
+
+- Membantu pengguna mencari referensi keislaman berdasarkan topik.
+- Menyediakan tampilan daftar dan detail dalil yang mudah dibaca.
+- Menyediakan fitur bookmark agar referensi penting dapat disimpan.
+- Menyediakan fitur catatan pribadi untuk proses belajar.
+- Menyediakan bantuan AI untuk merangkum dan menjelaskan dalil.
+- Menerapkan konsep pengembangan aplikasi mobile modern menggunakan Kotlin Multiplatform.
+
+---
+
+## 🧩 Pembeda Aplikasi
+
+Hujjah memiliki beberapa pembeda utama:
+
+| Pembeda | Penjelasan |
+|--------|------------|
+| **Topik Terstruktur** | Dalil dikelompokkan berdasarkan kategori seperti ibadah, akhlak, doa, adab, dan muamalah. |
+| **Personal Learning Notes** | Pengguna dapat menulis catatan pribadi pada setiap dalil. |
+| **AI Explanation** | AI membantu menjelaskan dalil dengan bahasa sederhana. |
+| **Bookmark Offline** | Dalil yang disimpan dapat diakses tanpa internet. |
+| **Clean Reading Mode** | Tampilan detail dirancang nyaman untuk membaca teks Arab, terjemahan, dan penjelasan. |
+| **Mobile First** | Fokus pada pengalaman penggunaan di perangkat mobile dengan performa optimal. |
+
+---
+
+## ✨ Fitur Aplikasi
+
+### ✅ Minimum Features
+- 🔎 **Search Hujjah**
+  - Pengguna dapat mencari referensi berdasarkan keyword atau topik.
+  - Contoh pencarian: `shalat`, `puasa`, `sedekah`, `akhlak`, `doa`.
+- 📚 **Reference List**
+  - Menampilkan daftar hasil pencarian atau daftar referensi berdasarkan kategori.
+- 📖 **Reference Detail**
+  - Menampilkan teks Arab, terjemahan, sumber, kategori, dan penjelasan singkat.
+- ⭐ **Bookmark**
+  - Pengguna dapat menyimpan referensi penting ke daftar favorit.
+- 📝 **Personal Notes**
+  - Pengguna dapat membuat, mengubah, dan menghapus catatan pribadi pada referensi tertentu.
+- 🗂️ **Category Filter**
+  - Referensi dapat difilter berdasarkan kategori.
+- 🌙 **Dark Mode**
+  - Mendukung tema terang dan gelap.
+- ⚙️ **Settings**
+  - Pengaturan tema, preferensi tampilan, dan informasi aplikasi.
+
+---
+
+## 🚀 Bonus Features
+
+- 🤖 **AI Assistant**
+  - Membantu merangkum dalil.
+  - Membantu menjelaskan isi dalil dengan bahasa sederhana.
+  - Membantu mengambil poin-poin penting dari dalil.
+- 📡 **Remote API Integration**
+  - Mengambil data referensi dari remote API atau mock API.
+- 📱 **Offline First**
+  - Bookmark, cache, dan catatan pribadi dapat diakses tanpa koneksi internet.
+- 🎞️ **Meaningful Animation**
+  - Animasi transisi antar halaman.
+  - Animasi loading, empty state, dan bookmark interaction.
+- ✅ **CI/CD**
+  - Build dan test otomatis menggunakan GitHub Actions.
+- 📦 **Play Store Ready**
+  - Menyiapkan APK/AAB release untuk final demo.
+
+---
+
+## 🖥️ Daftar Screen
+
+Aplikasi memiliki lebih dari 5 screen untuk memenuhi minimum requirement project.
+
+| Screen | Deskripsi |
+|--------|-----------|
+| Splash Screen | Tampilan awal aplikasi |
+| Home Screen | Menampilkan search bar, kategori, dan rekomendasi topik |
+| Search Result Screen | Menampilkan hasil pencarian referensi |
+| Reference Detail Screen | Menampilkan detail dalil, sumber, dan penjelasan |
+| Bookmark Screen | Menampilkan referensi yang disimpan |
+| Note Editor Screen | Menambah atau mengubah catatan pribadi |
+| AI Assistant Screen | Menampilkan fitur ringkasan dan penjelasan AI |
+| Settings Screen | Pengaturan tema dan informasi aplikasi |
+
+---
+
+## 🗂️ Kategori Referensi
+
+Kategori awal yang digunakan dalam aplikasi:
+
+| Kategori | Deskripsi |
+|----------|-----------|
+| Akidah | Referensi tentang keimanan dan tauhid |
+| Ibadah | Referensi tentang shalat, puasa, zakat, dan ibadah lainnya |
+| Akhlak | Referensi tentang adab, karakter, dan perilaku |
+| Muamalah | Referensi tentang hubungan sosial dan transaksi |
+| Doa | Kumpulan referensi doa dan dzikir |
+| Adab | Referensi tentang etika sehari-hari |
+| Sirah | Referensi tentang sejarah dan keteladanan |
+
+---
+
+## 🧩 Data Model
+
+### HujjahReference
+```kotlin
+data class HujjahReference(
+    val id: String,
+    val title: String,
+    val arabicText: String?,
+    val translation: String,
+    val source: String,
+    val category: HujjahCategory,
+    val explanation: String?,
+    val isBookmarked: Boolean = false,
+    val createdAt: Long = 0L,
+    val updatedAt: Long = 0L
+)

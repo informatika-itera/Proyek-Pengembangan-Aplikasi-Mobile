@@ -1,88 +1,157 @@
-# 🏠 UrHomie AI - Smart Home Shopping App
+# 🌸 ROSÉA
 
-UrHomie AI adalah aplikasi shopping alat rumah tangga modern berbasis **Kotlin Multiplatform** yang dirancang untuk membantu pengguna menemukan dan membeli kebutuhan rumah dengan lebih mudah, cepat, dan cerdas menggunakan teknologi **Artificial Intelligence (AI)**.
+> **Aplikasi Beauty & Skincare E-Commerce Berbasis Kotlin Multiplatform dengan Modern UI untuk Pengalaman Belanja Makeup dan Self-Care yang Elegan**
 
-Aplikasi ini menghadirkan pengalaman belanja online dengan tampilan **Material UI/UX** yang modern, clean, dan user-friendly serta mendukung platform **Android & iOS** dalam satu codebase.
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-brightgreen?style=for-the-badge&logo=kotlin" />
+  <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=for-the-badge&logo=kotlin" />
+  <img src="https://img.shields.io/badge/UI-Compose%20Multiplatform-4285F4?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Architecture-Clean%20Architecture-ff69b4?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Sprint-11--15%20%E2%9C%85-success?style=for-the-badge" />
+</p>
 
-Dengan fitur AI seperti **Smart Recommendation**, **AI Shopping Assistant**, dan **Smart Search**, UrHomie AI memberikan pengalaman belanja yang lebih personal, efisien, dan interaktif.
+---
+
+# 📌 Identitas Proyek
+
+| Item | Detail |
+|------|--------|
+| **Nama Aplikasi** | ROSÉA |
+| **Mata Kuliah** | Pengembangan Aplikasi Mobile (PAM) |
+| **Program Studi** | Teknik Informatika |
+| **Institusi** | Institut Teknologi Sumatera (ITERA) |
+| **Dosen Pengampu** | Pak Habib (mh4Scripts) |
+
+---
+
+# 👥 Tim Pengembang
+
+| NIM | Nama | Peran |
+|-----|------|-------|
+| 123140XXX | Andini Rahma | UI/UX, Presentation Layer, Feature Development |
+| 123140XXX | Miftah | Backend Integration, Architecture, Data Layer |
+
+> **Branch:** `project/[NIM]-[NIM]-ROSEA`
+
+---
+
+# 🎯 Deskripsi Aplikasi
+
+**ROSÉA** adalah aplikasi mobile beauty e-commerce berbasis Kotlin Multiplatform yang menyediakan pengalaman belanja modern untuk produk makeup, skincare, fragrance, dan self-care products.
+
+Aplikasi ini dikembangkan menggunakan pendekatan **Clean Architecture + MVI** serta mendukung berbagai platform seperti Android, iOS, Desktop, dan Web menggunakan satu codebase.
+
+ROSÉA dirancang untuk memberikan pengalaman shopping yang:
+- Modern
+- Elegant
+- Responsive
+- Aesthetic
+- Production-like
+
+Dengan fitur:
+- Shopping cart
+- Wishlist
+- Checkout system
+- Product search
+- Notifications
+- Dynamic product catalog
+- User profile management
 
 ---
 
 # ✨ Fitur Utama
 
-- 🏠 **Home Page**  
-  Menampilkan produk unggulan, promo, dan rekomendasi produk.
+## Sprint 1 — Foundation
+- [x] Setup project Kotlin Multiplatform
+- [x] Struktur Clean Architecture + MVI
+- [x] Dependency Injection dengan Koin
+- [x] Navigation setup
+- [x] Material 3 Theme
+- [x] Multi-platform configuration
 
-- 📂 **Categories**  
-  Menampilkan berbagai kategori produk rumah tangga untuk mempermudah pencarian.
+---
 
-- 🔍 **Smart Search Product**  
-  Fitur pencarian produk berbasis AI untuk hasil yang lebih cepat dan akurat.
+## Sprint 2 — Core Features
+- [x] Home Screen
+- [x] Product Detail Screen
+- [x] Wishlist Feature
+- [x] Shopping Cart
+- [x] Product Categories
+- [x] Authentication Flow
+- [x] User Profile
+- [x] Search Product
+- [x] Checkout Flow
 
-- ❤️ **Wishlist**  
-  Menyimpan produk favorit pengguna agar mudah ditemukan kembali.
+---
 
-- 🛒 **Purchase Product**  
-  Sistem pembelian produk yang praktis dan mudah digunakan.
+## Sprint 3 — Advanced Features
+- [x] API Integration menggunakan Ktor
+- [x] Dynamic Product Data
+- [x] Product Recommendation
+- [x] Notification System
+- [x] Cross-platform Support
+- [x] Modern State Management
+- [x] Responsive UI Layout
 
-- 🔐 **Authentication**  
-  Fitur Login & Register untuk keamanan akun pengguna.
+---
 
-- 👤 **Profile & Settings**  
-  Mengelola informasi akun dan pengaturan aplikasi.
+## Sprint 4 — Polish & Optimization
+- [x] Modern UI/UX Polish
+- [x] Error Handling
+- [x] Performance Optimization
+- [x] Smooth Navigation
+- [x] Dark Mode Support
+- [x] Splash Screen Animation
 
-- 🤖 **AI Product Recommendation**  
-  Memberikan rekomendasi produk berdasarkan aktivitas dan preferensi pengguna.
+---
 
-- 💬 **AI Shopping Assistant**  
-  Asisten AI yang membantu pengguna memilih produk rumah tangga sesuai kebutuhan.
-
-- 🌙 **Modern Material UI/UX**  
-  Tampilan modern, responsive, dan nyaman digunakan.
-
-- 📱 **Cross Platform**  
-  Mendukung Android & iOS menggunakan Kotlin Multiplatform.
+## Sprint 5 — Final Preparation
+- [x] Demo-ready Application
+- [x] Organized Project Structure
+- [x] Documentation
+- [x] APK Build
+- [x] Presentation Preparation
 
 ---
 
 # 🏗️ Arsitektur & Teknologi
 
-## Clean Architecture + MVVM
+## Clean Architecture + MVI
 
 ```text
-Presentation Layer
-├── Screen (Compose UI)
-├── Components
-└── ViewModel
-
-Domain Layer
-├── UseCase
-├── Repository Interface
-└── Business Logic
-
-Data Layer
-├── Repository Implementation
-├── Remote API
-├── Local Database
-└── Preferences
+┌─────────────────────────────────────────────┐
+│            PRESENTATION LAYER               │
+│   Compose UI • Screen • State • MVI         │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│               DOMAIN LAYER                  │
+│       UseCase • Business Logic • Model      │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│                DATA LAYER                   │
+│ Repository • API • Local Storage            │
+└─────────────────────────────────────────────┘
 ```
 
 ---
 
-# 🛠️ Tech Stack
+# 🧰 Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| UI | Compose Multiplatform |
-| Design | Material Design 3 |
-| State Management | StateFlow & ViewModel |
-| Navigation | Compose Navigation |
-| Networking | Ktor Client |
-| Local Database | SQLDelight |
-| Preferences | DataStore |
-| Dependency Injection | Koin |
-| AI Integration | Google Gemini API |
-| Platform | Kotlin Multiplatform |
+| Layer | Teknologi |
+|-------|-----------|
+| **UI** | Compose Multiplatform |
+| **Language** | Kotlin Multiplatform |
+| **Architecture** | Clean Architecture + MVI |
+| **State Management** | StateFlow |
+| **Dependency Injection** | Koin |
+| **Networking** | Ktor Client |
+| **Async Programming** | Kotlin Coroutines |
+| **Image Loading** | Coil 3 |
+| **Preferences** | DataStore |
+| **Navigation** | Compose Navigation |
+| **Design System** | Material 3 |
 
 ---
 
@@ -90,89 +159,273 @@ Data Layer
 
 ```text
 composeApp/src/
-├── commonMain/
+├── commonMain/kotlin/com/rosea/
+│   ├── core/
+│   │   ├── di/
+│   │   ├── network/
+│   │   └── util/
+│   │
 │   ├── data/
+│   │   ├── remote/
+│   │   │   ├── api/
+│   │   │   └── dto/
+│   │   ├── local/
+│   │   └── repository/
+│   │
 │   ├── domain/
-│   ├── presentation/
-│   ├── components/
-│   ├── navigation/
-│   └── theme/
+│   │   ├── model/
+│   │   ├── repository/
+│   │   └── usecase/
+│   │
+│   └── presentation/
+│       ├── home/
+│       ├── product/
+│       ├── wishlist/
+│       ├── cart/
+│       ├── checkout/
+│       ├── profile/
+│       ├── search/
+│       ├── notification/
+│       ├── components/
+│       └── theme/
 │
-├── androidMain/
-└── iosMain/
+├── androidMain/kotlin/
+└── iosMain/kotlin/
 ```
 
 ---
 
-# 🚀 Setup Project
+# 📚 Implementasi Berdasarkan Materi PAM 11–15
 
-## Clone Repository
+## 📖 Pertemuan 11 — Planning & Setup
+
+### Implementasi
+- Setup Kotlin Multiplatform
+- Clean Architecture
+- Dependency Injection
+- GitHub Workflow
+- Multi-module structure
+
+### Hasil Pembelajaran
+✔ Struktur project modern  
+✔ Arsitektur scalable  
+✔ Workflow development profesional  
+
+---
+
+## 📖 Pertemuan 12 — Core Features
+
+### Implementasi
+- Shopping Cart
+- Wishlist
+- Product Detail
+- Authentication
+- Navigation
+- User Profile
+
+### Hasil Pembelajaran
+✔ State management  
+✔ Navigation Compose  
+✔ Repository Pattern  
+✔ Reactive UI  
+
+---
+
+## 📖 Pertemuan 13 — Advanced Features
+
+### Implementasi
+- REST API Integration
+- Dynamic Product Data
+- Notification Feature
+- Search Product
+- Recommendation System
+
+### Hasil Pembelajaran
+✔ API integration  
+✔ Dynamic data handling  
+✔ Advanced application feature  
+
+---
+
+## 📖 Pertemuan 14 — Polish & Testing
+
+### Implementasi
+- UI consistency
+- Error handling
+- Performance optimization
+- Responsive design
+
+### Hasil Pembelajaran
+✔ Better UX  
+✔ Stable architecture  
+✔ Modern application design  
+
+---
+
+## 📖 Pertemuan 15 — Final Preparation
+
+### Implementasi
+- Documentation
+- APK Release
+- Demo-ready application
+- Presentation preparation
+
+### Hasil Pembelajaran
+✔ Production-like application  
+✔ Professional presentation setup  
+
+---
+
+# 🚀 Cara Menjalankan
+
+## Prasyarat
+
+| Software | Versi Minimum |
+|----------|---------------|
+| Android Studio | Ladybug (2024.2.1) |
+| JDK | 17 |
+| Git | 2.x |
+| Android SDK | API 34+ |
+
+---
+
+# ⚙️ Setup Project
+
+## 1. Clone Repository
 
 ```bash
-git clone https://github.com/MIFTAAHULKHR/urHomie.app.git
+git clone https://github.com/USERNAME/ROSEA.git
+cd ROSEA
 ```
 
-## Jalankan Project
+---
+
+## 2. Build Project
 
 ```bash
 ./gradlew build
 ```
 
-Buka project menggunakan Android Studio lalu jalankan aplikasi.
+---
+
+## 3. Run Android
+
+```bash
+./gradlew :composeApp:installDebug
+```
+
+Atau jalankan langsung menggunakan Android Studio.
 
 ---
 
-# 🤖 Fitur AI
+# 🎨 Design Concept
 
-## 🔹 Smart Recommendation
-AI memberikan rekomendasi produk berdasarkan aktivitas dan preferensi pengguna.
+ROSÉA menggunakan konsep:
+- Elegant Beauty App
+- Feminine Modern UI
+- Soft Pink Aesthetic
+- Luxury Beauty Branding
+- Clean Shopping Experience
 
-## 🔹 AI Shopping Assistant
-Asisten chatbot AI yang membantu pengguna memilih produk rumah tangga sesuai kebutuhan.
-
-## 🔹 Smart Search
-Pencarian produk berbasis AI agar hasil lebih relevan dan cepat.
+## Color Palette
+- Soft Pink
+- Rose Nude
+- Cream White
+- Dusty Rose
 
 ---
 
-# 📱 Tampilan Aplikasi
+# 📱 Main Screens
 
-- Home
-- Categories
-- Search
+- Splash Screen
+- Home Screen
+- Product Detail
 - Wishlist
-- Purchase Product
-- Settings
-- Authentication
+- Cart
+- Checkout
+- Search
+- Notifications
+- Orders
+- Profile
 
 ---
 
-# 🎯 Pengembangan Selanjutnya
+# 📈 Keunggulan Project
 
-- 💳 Payment Gateway
-- 🔔 Push Notification
-- 📦 Tracking Pesanan
-- ⭐ Review & Rating Produk
-- 🌙 Dark Mode
-- 🧠 Personalized AI Recommendation
-- 🛍️ AI Product Comparison
-- 📍 Tracking Pengiriman Real-time
+## ✨ Modern Architecture
+Menggunakan Clean Architecture dan MVI Pattern.
 
----
+## 🌐 Cross Platform
+Satu codebase untuk Android, iOS, Desktop, dan Web.
 
-# 👥 Tim Pengembang
+## 🎨 Modern UI/UX
+Menggunakan Compose Multiplatform dan Material 3.
 
-- Andini
-- Miftah
+## 📦 Scalable Structure
+Mudah dikembangkan untuk fitur tambahan.
 
----
-
-# 📄 License
-
-Project ini dibuat untuk kebutuhan pembelajaran dan pengembangan aplikasi mobile menggunakan Kotlin Multiplatform.
+## 🏭 Production-like Project
+Menggunakan struktur dan workflow seperti aplikasi industri modern.
 
 ---
 
-# 💡 Tagline
+# 🧪 Testing
 
-> **"Smart Shopping for Smart Homes."**
+```bash
+# Run all tests
+./gradlew allTests
+
+# Android unit tests
+./gradlew :composeApp:testDebugUnitTest
+```
+
+---
+
+# 📝 Git Workflow
+
+```bash
+# Pindah ke branch project
+git checkout project/[NIM]-[NIM]-ROSEA
+
+# Pull update terbaru
+git pull origin project/[NIM]-[NIM]-ROSEA
+
+# Commit changes
+git commit -m "feat: add wishlist feature"
+git commit -m "fix: resolve navigation issue"
+git commit -m "style: improve product card UI"
+```
+
+---
+
+# 🔧 Troubleshooting
+
+| Masalah | Solusi |
+|---------|--------|
+| Gradle sync error | Pastikan menggunakan JDK 17 |
+| Build failed | Jalankan `./gradlew clean build` |
+| Dependency error | Sync Gradle ulang |
+| Emulator lambat | Gunakan emulator API 34 dengan RAM minimal 4GB |
+
+---
+
+# 📚 Referensi
+
+- Kotlin Multiplatform
+- Compose Multiplatform
+- Koin DI
+- Ktor Client
+- Material 3
+- Kotlin Coroutines
+
+---
+
+# 📄 Lisensi
+
+Project ini dibuat untuk keperluan pembelajaran dan tugas besar mata kuliah Pengembangan Aplikasi Mobile (PAM).
+
+---
+
+# 🌸 ROSÉA
+
+> _“Glow Beyond Beauty”_

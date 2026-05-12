@@ -1,10 +1,10 @@
 # 📱 DailyBliss
 
-Aplikasi yang membantu seseorang untuk mencatat kejadian yang membuat mereka bersyukur. Dilengkapi dengan fitur reminder dan integrasi dengan AI untuk memberikan motivasi.
+Aplikasi yang membantu seseorang untuk mencatat kejadian yang membuat mereka bersyukur. Dilengkapi dengan fitur reminder dan integrasi dengan AI untuk memberikan motivasi. 
 
 **Kelompok DailyBliss:**
 - Andika Dinata (123140096)
-- Satria Lemana Putra (123140088)
+- Satria Lemana Putra ganteng (123140088)
 
 > **📚 Dokumentasi Lengkap**
 > 

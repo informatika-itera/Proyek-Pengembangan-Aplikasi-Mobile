@@ -1,6 +1,6 @@
 # Hujjah
 
-![CI](https://github.com/USERNAME/REPOSITORY/actions/workflows/ci.yml/badge.svg)
+!![CI](https://github.com/Awesome1209/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
 ## 📌 Project Overview
 
@@ -43,6 +43,7 @@ Aplikasi Al-Qur’an atau hadis biasanya mengharuskan pengguna mencari berdasark
 
 **Hujjah** hadir untuk menghubungkan:
 
+```markdown
 ```text
 Kondisi pengguna → Topik Islami → Dalil Al-Qur’an/Hadis → Solusi Berdalil
 ````
@@ -502,18 +503,10 @@ Target workflow:
 
 ## 👨‍💻 Task Assignment
 
-| Member         | Responsibility                                              |
-| -------------- | ----------------------------------------------------------- |
-| NAMA ANGGOTA 1 | Project setup, architecture, navigation, Hujjah Lens flow   |
-| NAMA ANGGOTA 2 | Qur’an API, hadis data/API, repository, SQLDelight bookmark |
-| NAMA ANGGOTA 3 | UI/UX, documentation, testing, CI/CD                        |
-
-Jika hanya 2 anggota:
-
-| Member         | Responsibility                                           |
-| -------------- | -------------------------------------------------------- |
-| NAMA ANGGOTA 1 | Project setup, architecture, AI integration, Hujjah Lens |
-| NAMA ANGGOTA 2 | API/data, UI implementation, testing, documentation      |
+| Member | Responsibility                                           |
+|  | -------------------------------------------------------- |
+| Awi Septian Prasetyo | Project setup, architecture, AI integration, Hujjah Lens |
+| Muhammad Bimatiar | API/data, UI implementation, testing, documentation      |
 
 ---
 
@@ -522,8 +515,8 @@ Jika hanya 2 anggota:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/USERNAME/REPOSITORY.git
-cd REPOSITORY
+git clone https://github.com/Awesome1209/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
 ```
 
 ### 2. Checkout Project Branch

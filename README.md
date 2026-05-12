@@ -118,7 +118,7 @@ TripMate/
 | NIM | Nama |
 |---|---|
 | 123140116 | Diwan Ramadhani Dwi Putra |
-| 123140135 | *(Partner)* |
+| 123140135 | M. Gymnastiar Syahputra |
 
 **Mata Kuliah:** Pengembangan Aplikasi Mobile (IF25-22017)  
 **Institusi:** Institut Teknologi Sumatera (ITERA)

@@ -11,7 +11,7 @@ import org.koin.android.ext.koin.androidLogger
  * 
  * Entry point untuk inisialisasi app-wide dependencies.
  */
-class StudyPlannerApplication : Application() {
+class RewindApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()

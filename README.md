@@ -1,247 +1,148 @@
-# 📱 NoteAI - KMP Project Template
+# TripMate ✈️
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+> **Travel Planning & Tracking Companion** — Rencanakan, jalani, dan kenang perjalananmu dalam satu aplikasi.
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+## 📖 Tentang TripMate
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+TripMate adalah aplikasi mobile travel planning & tracking yang dirancang untuk mendampingi pengguna di setiap tahap perjalanan — mulai dari perencanaan awal, selama perjalanan berlangsung, hingga evaluasi dan kenangan setelah trip selesai.
 
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+Berbeda dari aplikasi travel lainnya yang berfokus pada rekomendasi otomatis, TripMate menempatkan pengguna sebagai pencatat aktif perjalanannya sendiri. AI hadir sebagai asisten — merangkum, menghitung, dan merekomendasikan — bukan menggantikan pengalaman personal.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## ✨ Fitur Utama
+
+### Pre-Trip Planning
+- **Itinerary Builder** — Susun jadwal perjalanan per hari dengan detail destinasi
+- **Packing Checklist** — Template daftar bawaan berdasarkan jenis trip
+- **Budget Planning** — Atur anggaran per kategori pengeluaran
+- **Weather Check** — Cek prakiraan cuaca di destinasi tujuan
+
+### During Trip
+- **Expense Tracker** — Catat pengeluaran real-time per orang per kategori
+- **Map Pin** — Tandai lokasi yang sudah dikunjungi vs yang direncanakan
+- **Photo Notes** — Lampirkan foto pada catatan destinasi
+- **Offline Mode** — Akses data tanpa koneksi internet
+
+### Post-Trip
+- **Post-Trip Review** — Evaluasi apa yang sesuai dan tidak sesuai dari rencana
+- **Memory Journal** — Catatan kenangan dan foto per destinasi
+- **Trip Summary** — Statistik lengkap: total pengeluaran, destinasi visited vs planned
+- **Rating Destinasi** — Beri bintang dan ulasan untuk setiap tempat
+- **Export PDF** — Simpan ringkasan trip dalam format PDF
+
+### AI Features *(powered by Gemini API)*
+- **AI Trip Summary** — Rangkum seluruh perjalanan secara otomatis
+- **AI Split Bill** — Hitung patungan cerdas dari input pengeluaran
+
+### Social & Group
+- **Split Bill Tracker** — Catat siapa membayar apa dalam perjalanan grup
+- **Trip Sharing** — Bagikan itinerary ke teman satu rombongan
+- **Wishlist Destinasi** — Simpan daftar tempat impian yang ingin dikunjungi
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Teknologi |
+|---|---|
+| Language | Kotlin Multiplatform (KMP) |
+| UI | Compose Multiplatform |
+| Architecture | Clean Architecture + MVVM |
+| Local Database | SQLDelight |
+| Networking | Ktor |
+| Dependency Injection | Koin |
+| Preferences | DataStore |
+| AI | Gemini AI API |
+
+---
+
+## 📁 Struktur Proyek
+
+```
+TripMate/
+├── shared/                     # Shared KMP module
+│   ├── commonMain/
+│   │   ├── data/               # Repository, data source, models
+│   │   ├── domain/             # Use cases, domain models
+│   │   └── presentation/       # ViewModels
+│   └── androidMain/            # Platform-specific implementations
+│       └── DatabaseDriverFactory.kt
+├── composeApp/                 # Android UI module
+│   └── src/androidMain/
+│       └── ui/
+│           ├── home/
+│           ├── trips/
+│           ├── expense/
+│           ├── ai/
+│           └── profile/
+└── local.properties            # SDK path & API keys (tidak di-commit)
+```
+
+---
+
+## 🚀 Cara Menjalankan
+
+### Prasyarat
+- Android Studio Hedgehog atau lebih baru
+- JDK 17+
+- Android SDK (API 26+)
+- Gemini API Key ([dapatkan di sini](https://aistudio.google.com/app/apikey))
+
+### Setup
+
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/Ramaaaadevs/Proyek-Pengembangan-Aplikasi-Mobile.git
+   cd Proyek-Pengembangan-Aplikasi-Mobile
+   git checkout project/123140116-123140135-TripMate
+   ```
+
+2. **Buat file `local.properties`** di root project
+   ```properties
+   # Linux/Ubuntu
+   sdk.dir=/home/[username]/Android/Sdk
+
+   # Windows
+   # sdk.dir=C\:\\Users\\[username]\\AppData\\Local\\Android\\Sdk
+
+   GEMINI_API_KEY=api_key_kamu
+   ```
+
+3. **Buka di Android Studio** → Tunggu Gradle sync selesai → Run ▶️
+
+---
+
+## 👥 Tim Pengembang
+
+| NIM | Nama |
+|---|---|
+| 123140116 | Diwan Ramadhani Dwi Putra |
+| 123140135 | *(Partner)* |
+
+**Mata Kuliah:** Pengembangan Aplikasi Mobile (IF25-22017)  
+**Institusi:** Institut Teknologi Sumatera (ITERA)
+
+---
+
+## 📅 Sprint Timeline
+
+| Sprint | Minggu | Target |
+|---|---|---|
+| Sprint 1 | 11 | Setup repo, fork, branch, build sukses |
+| Sprint 2 | 12 | 3+ screens, navigasi, CRUD, local storage |
+| Sprint 3 | 13 | Search, filter, sort, API/AI, offline support |
+| Sprint 4 | 14 | Bug fixes, UI polish, 10+ unit tests |
+| Sprint 5 | 15 | Demo ready, APK, README lengkap |
+| UAS | 16 | Live demo & presentasi |
+
+---
+
+## 📄 Lisensi
+
+Proyek ini dibuat untuk keperluan akademik di Institut Teknologi Sumatera.  
+Template dasar menggunakan **NoteAI** oleh mh4Scripts.
+
+---
+
+*Last updated: Sprint 1, Week 11*

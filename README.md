@@ -1,7 +1,6 @@
 # 📚 StudyMate
 
 
-
 Aplikasi mobile multiplatform (Android-first) untuk mahasiswa yang membantu **mencatat materi kuliah**, **merangkum otomatis dengan AI**, **membuat soal latihan**, dan **mengingatkan jadwal belajar** berdasarkan kalender ujian pribadi.
 
 ---
@@ -244,6 +243,7 @@ Pengingat dikirim secara otomatis berdasarkan jarak hari menuju ujian:
 | H-3 | Notifikasi sedang | "3 hari lagi ujian [MK]. Coba kerjakan soal latihan!" |
 | H-1 | Notifikasi kuat | "Besok ujian [MK]! Buka ringkasan AI dan cek soal latihan." |
 | H-0 | Notifikasi hari H | "Hari ini ujian [MK]. Semangat! 💪" |
+
 
 Pengingat diimplementasikan menggunakan **AlarmManager** (Android) dengan `expect/actual` pattern untuk mendukung multiplatform.
 

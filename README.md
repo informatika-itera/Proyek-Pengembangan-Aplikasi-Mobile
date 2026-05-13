@@ -25,7 +25,7 @@ Tidak seperti aplikasi kuis statis lainnya, **CakapAi** dilengkapi integrasi **G
 
 - Memotivasi pengguna untuk belajar bahasa asing secara konsisten melalui progres level yang menantang.
 - Memberikan pengalaman kuis yang dinamis, interaktif, dan didukung oleh *feedback* visual (animasi).
-- Memanfaatkan AI untuk pembelajaran yang adaptif, memberikan soal kustom serta evaluasi otomatis layaknya tutor pribadi.
+- Memanfaatkan AI untuk pembelajaran yang adaptif, memberikan soal kustom serta evaluasi otomatis layaknya tutor pribadi
 
 ---
 

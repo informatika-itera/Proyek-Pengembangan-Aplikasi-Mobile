@@ -1,6 +1,6 @@
 # 📚 StudyHub
 
-> Aplikasi Manajemen Tugas Mahasiswa berbasis Kotlin Multiplatform dengan integrasi AI
+> Aplikasi Manajemen Tugas Mahasiswa dengan integrasi AI
 
 ---
 
@@ -15,9 +15,7 @@
 
 ## 📖 Tentang StudyHub
 
-**StudyHub** adalah aplikasi manajemen tugas yang dirancang khusus untuk meningkatkan produktivitas mahasiswa di lingkungan kampus. Aplikasi ini dibangun menggunakan **Kotlin Multiplatform (KMP)** sehingga satu codebase dapat berjalan di platform Android maupun iOS.
-
-StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta mengintegrasikan **Gemini AI** untuk menghadirkan fitur-fitur cerdas yang membantu mahasiswa mengelola waktu dan prioritas belajar mereka.
+**StudyHub** adalah aplikasi manajemen tugas yang dirancang khusus untuk meningkatkan produktivitas mahasiswa. StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta mengintegrasikan **Groq AI** untuk menghadirkan fitur-fitur cerdas yang membantu mahasiswa mengelola waktu dan prioritas belajar mereka.
 
 ### Tujuan Aplikasi
 
@@ -56,16 +54,14 @@ Notifikasi push otomatis dikirimkan sebelum deadline tugas tiba. Pengingat dapat
 
 ### 🎯 Smart Priority
 
-Fitur **Smart Priority** memanfaatkan Gemini AI untuk menganalisis seluruh daftar tugas mahasiswa dan menghasilkan urutan prioritas pengerjaan yang optimal.
+Fitur **Smart Priority** memanfaatkan groq AI untuk menganalisis seluruh daftar tugas mahasiswa dan menghasilkan urutan prioritas pengerjaan yang optimal.
 
-Gemini menganalisis deadline, estimasi waktu pengerjaan, dan distribusi tugas per mata kuliah agar tidak menumpuk di hari yang sama. Hasilnya berupa rekomendasi urutan tugas beserta alasan singkat mengapa tugas tersebut perlu didahulukan, sehingga mahasiswa tidak perlu lagi bingung harus mulai dari mana.
+groq menganalisis deadline, estimasi waktu pengerjaan, dan distribusi tugas per mata kuliah agar tidak menumpuk di hari yang sama. Hasilnya berupa rekomendasi urutan tugas beserta alasan singkat mengapa tugas tersebut perlu didahulukan, sehingga mahasiswa tidak perlu lagi bingung harus mulai dari mana.
 
 ### ⏰ Smart Reminder
 
-Fitur **Smart Reminder** menggunakan Gemini AI untuk menentukan waktu pengingat yang adaptif dan dipersonalisasi, bukan sekadar interval waktu tetap.
+Fitur **Smart Reminder** menggunakan groq AI untuk menentukan waktu pengingat yang adaptif dan dipersonalisasi, bukan sekadar interval waktu tetap.
 
 AI menganalisis riwayat penyelesaian tugas mahasiswa — apakah cenderung mengerjakan jauh-jauh hari atau mendekati deadline — lalu mempertimbangkan kompleksitas tugas untuk menghasilkan jadwal reminder yang paling efektif bagi masing-masing pengguna. Dengan cara ini, reminder yang diterima terasa lebih relevan dan tepat waktu.
 
 ---
-
-© 2024 Maxavier Girvanus Manurung & Muhammad Rafiq Ridho — Institut Teknologi Sumatera

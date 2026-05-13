@@ -1,8 +1,8 @@
-package com.example.noteai.core.util
+package com.example.raillog.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.example.noteai.data.local.NoteDatabase
+import com.example.raillog.data.local.RailLogDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory
@@ -13,8 +13,8 @@ import com.example.noteai.data.local.NoteDatabase
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
-            schema = NoteDatabase.Schema,
-            name = "noteai.db"
+            schema = RailLogDatabase.Schema,
+            name = "raillog.db"
         )
     }
 }

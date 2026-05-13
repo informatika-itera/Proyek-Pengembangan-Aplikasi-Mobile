@@ -1,7 +1,7 @@
-package com.example.noteai
+package com.example.raillog
 
 import androidx.compose.ui.window.ComposeUIViewController
-import com.example.noteai.core.di.initKoinIOS
+import com.example.raillog.core.di.initKoinIOS
 
 /**
  * iOS Main View Controller Factory

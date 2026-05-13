@@ -106,7 +106,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.example.inventra"
     compileSdk = 35
     
     defaultConfig {

@@ -71,6 +71,7 @@ fun NoteCard(
                 Text(
                     text = note.title.ifBlank { "Tanpa Judul" },
                     style = MaterialTheme.typography.titleMedium,
+                    color = Color.White, // Force white for readability on dark cards
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -109,7 +110,7 @@ fun NoteCard(
                 Text(
                     text = note.preview,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.LightGray, // Light gray for content text
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -129,13 +130,14 @@ fun CategoryBadge(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(Color.White)
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(
             text = category,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = Color.Black,
+            fontWeight = FontWeight.Bold
         )
     }
 }

@@ -110,7 +110,7 @@ Preview tidak muncul
 @Preview
 @Composable
 fun NoteCardPreview() {
-    NoteAITheme {
+    DailyBlissTheme {
         NoteCard(
             note = Note(title = "Preview", content = "Test"),
             onClick = {},

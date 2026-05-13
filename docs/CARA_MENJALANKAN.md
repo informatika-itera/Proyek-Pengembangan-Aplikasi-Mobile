@@ -1,6 +1,6 @@
-# 🚀 Cara Menjalankan NoteAI
+# 🚀 Cara Menjalankan DailyBliss
 
-Panduan lengkap untuk menjalankan template aplikasi **NoteAI** (Kotlin Multiplatform).
+Panduan lengkap untuk menjalankan template aplikasi **DailyBliss** (Kotlin Multiplatform).
 
 > **Status target build:**
 > - ✅ **Android** — jalur utama yang didukung penuh oleh template ini.
@@ -251,7 +251,7 @@ Pryk-PAM/
   melihat log Ktor karena kita pakai `enableLogging = true`).
 - **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
 - **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+  `/data/data/com.example.dailybliss/files/dailybliss.preferences_pb` (Android).
 
 ---
 

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master", "develop", "project/123140096-123140088-DailyBliss" ]
+  pull_request:
+    branches: [ "main", "master", "develop", "project/123140096-123140088-DailyBliss" ]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Create local.properties (Dummy)
+        run: echo "GEMINI_API_KEY=dummy_key_for_ci" > local.properties
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon --parallel --build-cache

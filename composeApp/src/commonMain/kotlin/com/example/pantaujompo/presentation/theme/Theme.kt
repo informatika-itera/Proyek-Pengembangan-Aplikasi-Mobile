@@ -1,42 +1,38 @@
 package com.example.pantaujompo.presentation.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Warna Utama
-val NeonGreenDark = Color(0xFF76FF03) // Hijau menyala untuk Dark Mode
-val GreenPrimaryLight = Color(0xFF2E7D32) // Hijau elegan untuk Light Mode
+// Palet Warna Premium Pantau Jompo (Dark + Neon Green)
+val NeonGreen = Color(0xFF00FF00) // Hijau stabilo sporty
+val DarkBackground = Color(0xFF121212) // Super dark gray (image_0.png background)
+val SurfaceDark = Color(0xFF1E1E1E) // Warna Card (image_0.png cards)
+val TextPrimary = Color(0xFFFFFFFF)
+val TextSecondary = Color(0xFFA0A0A0)
+val ErrorRed = Color(0xFFFF5252)
 
+// Konfigurasi Warna Dark Mode
 private val DarkColorScheme = darkColorScheme(
-    primary = NeonGreenDark,
+    primary = NeonGreen,
     onPrimary = Color.Black,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onBackground = Color.White,
-    onSurface = Color.White
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = GreenPrimaryLight,
-    onPrimary = Color.White,
-    background = Color(0xFFF8F9FA),
-    surface = Color.White,
-    onBackground = Color(0xFF1E1E1E),
-    onSurface = Color(0xFF1E1E1E)
+    background = DarkBackground,
+    onBackground = TextPrimary,
+    surface = SurfaceDark,
+    onSurface = TextPrimary,
+    error = ErrorRed,
+    onSurfaceVariant = TextSecondary // Digunakan untuk teks deskripsi di card
 )
 
 @Composable
 fun PantauJompoTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // Otomatis deteksi tema HP
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    // Kita paksakan pakai Dark Mode agar UI-nya "nyala" seperti referensi
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = DarkColorScheme,
+        // TODO: Typography bisa ditambahkan di sini nanti
         content = content
     )
 }

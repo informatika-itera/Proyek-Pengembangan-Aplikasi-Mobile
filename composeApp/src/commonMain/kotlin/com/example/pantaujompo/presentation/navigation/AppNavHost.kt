@@ -19,8 +19,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 
-// Import Layar-layar
-import com.example.pantaujompo.presentation.screens.home.BerandaScreen
+// Import SEMUA Layar Lo Di Sini
+import com.example.pantaujompo.presentation.screens.home.DashboardScreen
 import com.example.pantaujompo.presentation.screens.pemindai.PemindaiScreen
 import com.example.pantaujompo.presentation.screens.riwayat.RiwayatScreen
 import com.example.pantaujompo.presentation.screens.artikel.ArtikelScreen
@@ -43,7 +43,7 @@ fun AppNavHost(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Bottom Bar HANYA TAMPIL di 5 menu utama
+    // Bottom Bar hilang kalau lagi di layar Form
     val showBottomBar = currentDestination?.hierarchy?.any {
         it.route?.contains("AddEditActivity") == true || it.route?.contains("ActivityDetail") == true
     } != true
@@ -51,9 +51,7 @@ fun AppNavHost(
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     bottomNavItems.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any {
                             it.route?.substringBefore("?") == item.route::class.qualifiedName
@@ -86,16 +84,16 @@ fun AppNavHost(
             startDestination = Route.Beranda,
             modifier = modifier.padding(innerPadding)
         ) {
-            // 5 LAYAR UTAMA
+            // 5 LAYAR UTAMA (Sekarang semuanya udah nyala!)
             composable<Route.Beranda> {
-                BerandaScreen(onNavigateToAdd = { navController.navigate(Route.AddEditActivity(null)) })
+                DashboardScreen(onNavigateToAdd = { navController.navigate(Route.AddEditActivity(null)) })
             }
             composable<Route.Pemindai> { PemindaiScreen() }
             composable<Route.Riwayat> { RiwayatScreen() }
             composable<Route.Artikel> { ArtikelScreen() }
-            composable<Route.Profil> { ProfilScreen() }
+            composable<Route.Profil> { ProfilScreen() } // Ini yang bikin crash tadi karena di-comment
 
-            // LAYAR FORM CRUD
+            // LAYAR FORM TAMBAH DATA
             composable<Route.AddEditActivity> { backStackEntry ->
                 val route: Route.AddEditActivity = backStackEntry.toRoute()
                 AddEditActivityScreen(

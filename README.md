@@ -1,245 +1,113 @@
-# 📱 NoteAI - KMP Project Template
+# KostHub
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+**KostHub** adalah aplikasi mobile multiplatform yang dirancang untuk membantu mahasiswa menemukan dan mengelola informasi indekos di sekitar kampus ITERA menggunakan algoritma klasterisasi untuk rekomendasi yang lebih baik.
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+## Tim
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+- **Nashrullah Fathul Qoriib** (122140162)
+- **Havidz Ridho Pratama** (122140160)
 
-## ✨ Fitur Aplikasi
+## Fitur Minimum (Minimum Requirements)
 
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
+Aplikasi ini memenuhi standar wajib proyek akhir:
+- **UI/UX**: Minimal 5 layar responsif dengan Material Design 3.
+- **Arsitektur**: Mengimplementasikan *Clean Architecture* (Presentation, Domain, Data) dan pola MVVM.
+- **Data**: Integrasi REST API (Ktor) dan Database Lokal (SQLDelight) untuk operasi CRUD.
+- **State**: Manajemen status UI yang tertata menggunakan `StateFlow` (Loading, Success, Error, Empty).
+- **Testing**: Minimal 10 *unit tests* dan 3 *UI tests* dengan cakupan > 50%.
 
-## 🏗️ Arsitektur & Teknologi
+## Tech Stack
 
-### Clean Architecture + MVVM
+- **Framework**: Kotlin Multiplatform (KMP) & Compose Multiplatform.
+- **Dependency Injection**: Koin.
+- **Networking**: Ktor Client & Kotlinx Serialization.
+- **Local Storage**: SQLDelight & DataStore Preferences.
+- **Testing**: `kotlin.test`, MockK, Turbine, dan Compose Test.
+
+## Timeline & Progress Per Sprint
+
+### Sprint 1: Planning & Setup (Week 11)
+
+*Fokus: Infrastruktur dan Arsitektur* 
+
+- [x] Pembentukan tim dan persetujuan ide proyek KostHub.
+- [x] Setup repositori GitHub dan konfigurasi kolaborator.
+- [x] Inisialisasi proyek KMP dengan struktur folder *Clean Architecture*.
+- [x] Konfigurasi GitHub Actions untuk CI (Build & Test passing).
+- [x] Dokumentasi awal dan rencana kerja tim.
+
+### Sprint 2: Core Features (Week 12)
+
+*Fokus: UI Dasar dan Data Layer* 
+
+
+- [ ] Setup navigasi antar layar menggunakan `NavHost` dan *argument passing*.
+- [ ] Pembuatan *Repository pattern* dan database lokal SQLDelight.
+- [ ] Implementasi fungsi CRUD dasar untuk data kos.
+- [ ] Manajemen status UI (Loading, Success, Error) pada layar utama.
+
+### Sprint 3: Advanced Features (Week 13)
+
+*Fokus: Integrasi API dan Pencarian* 
+
+- [ ] Integrasi REST API menggunakan Ktor Client untuk data kos publik.
+- [ ] Implementasi fitur *Search* dan *Filter* kos berdasarkan harga/fasilitas.
+- [ ] Dukungan *Offline Mode* agar data yang sudah di-cache tetap dapat diakses.
+- [ ] Penambahan layar tambahan seperti *Settings* atau *User Profile*.
+- [ ] Integrasi fitur bonus (misal: klasterisasi AI atau *Dark Mode*).
+
+### Sprint 4: Polish & Testing (Week 14)
+
+*Fokus: Stabilitas dan Kualitas Kode* 
+
+- [ ] Perbaikan seluruh bug yang ditemukan dan penanganan *edge cases*.
+- [ ] Polesan UI (konsistensi spasi 8dp, tipografi, dan Material 3).
+- [ ] Penulisan 10+ *Unit Tests* untuk Repository dan ViewModel.
+- [ ] Penulisan 3+ *UI Tests* untuk alur pengguna kritikal.
+- [ ] Analisis performa dan pencapaian target *test coverage* > 50%.
+
+### Sprint 5: Final Preparation (Week 15)
+
+*Fokus: Build dan Kesiapan Demo Day* 
+
+- [ ] Pembersihan kode akhir dan perbaikan bug minor.
+- [ ] Pembuatan *Signed Release APK* untuk demonstrasi.
+- [ ] Penyusunan slide presentasi (Masalah, Solusi, Arsitektur).
+- [ ] Penulisan naskah demo dan latihan presentasi tim.
+- [ ] Pembuatan video *backup* demonstrasi aplikasi.
+
+## Setup Instructions
+
+1. **Clone Repository**:
+```bash
+git clone https://github.com/ORG/REPO.git
+cd KostHub
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
 
-### Tech Stack
+2. **Konfigurasi Lokal**:
+Pastikan Anda memiliki JDK 17 yang terinstal.
 
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
 
 ```bash
-# Run all tests
-./gradlew allTests
+cp local.properties.example local.properties
 
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
 ```
 
-## 📝 Tugas Mahasiswa
+3. **Build & Test**:
+Gunakan Gradle wrapper untuk memastikan konsistensi:
+```bash
+[cite_start]./gradlew test            # Menjalankan unit tests [cite: 1409]
+[cite_start]./gradlew assembleDebug   # Membuat build debug untuk Android [cite: 2119]
 
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
+```
 
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
+4. **Cek Coverage** (Opsional):
+```bash
+[cite_start]./gradlew koverHtmlReport # Melihat laporan test coverage [cite: 1411]
 
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
+```
 
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
+## License
 
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
-
----
-
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+MIT License - Proyek ini dibuat untuk tujuan akademik di Program Studi Teknik Informatika, Institut Teknologi Sumatera (ITERA).

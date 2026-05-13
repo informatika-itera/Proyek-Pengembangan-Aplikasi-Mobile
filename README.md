@@ -1,247 +1,203 @@
-# 📱 NoteAI - KMP Project Template
+#  Pantau Jompo
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+**Aplikasi Pemantauan Kesehatan Cerdas untuk Android**
+---
+## 📖 Tentang Proyek
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+**Pantau Jompo** adalah aplikasi kesehatan Android yang menggabungkan pelacakan aktivitas berbasis GPS, analisis nutrisi bertenaga AI, dan portal berita kesehatan dalam satu platform terpadu.
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
-
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+Aplikasi ini dirancang untuk memudahkan pengguna mengelola gaya hidup sehat secara efisien — mulai dari mencatat olahraga harian, memindai kandungan gizi makanan lewat kamera, hingga mendapatkan rekomendasi kalori personal dari AI assistant.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## 👥 Tim Pengembang
+
+Proyek ini dikembangkan sebagai bagian dari tugas perkuliahan oleh:
+
+| Nama | NIM | Peran |
+|------|-----|-------|
+| **Pradana Figo Ariansya** | 123140063 | Android Developer |
+| **Muhammad Piela Nugraha** | 123140200 | Android Developer |
+
+---
+
+## 🚀 Fitur Utama
+
+### 📍 Smart Activity Tracking
+Pelacakan aktivitas fisik luar ruangan secara *real-time* menggunakan GPS.
+
+- **Auto-Logging** — Rute, jarak tempuh, dan durasi tercatat otomatis (lari, jalan kaki, bersepeda)
+- **Calorie Analytics** — Estimasi kalori terbakar dihitung berdasarkan jenis dan intensitas aktivitas
+- **Persistent Storage** — Semua rekam jejak disimpan permanen via Room Database
+
+### 📸 AI Nutrition Scanner
+Gantikan pencatatan nutrisi manual dengan analisis gambar berbasis Vision AI.
+
+- **Camera Recognition** — Foto makanan → AI identifikasi jenis dan kandungan gizi secara instan
+- **Dual Input** — Mendukung input manual via teks atau analisis gambar dari kamera
+- **Detail Nutrisi** — Kalori, karbohidrat, protein, lemak, dan serat ditampilkan langsung
+
+### 📝 Fitness History — Full CRUD
+Logbook terpadu untuk seluruh data kesehatan pengguna.
+
+- **Create & Read** — Catat riwayat olahraga, asupan gizi, dan keluhan fisik
+- **Update & Delete** — Edit atau hapus data kapan saja
+- **Search & Filter** — Telusuri data berdasarkan rentang tanggal atau kategori
+
+### 📰 Health News Portal + AI Summarizer
+Pusat literasi kesehatan yang aktual dan ringkas.
+
+- **News API Integration** — Berita kesehatan terkini dari sumber terpercaya secara *real-time*
+- **AI Summarizer** — Artikel panjang diringkas menjadi poin-poin utama *(TL;DR)*
+
+### 👤 Personal Dashboard & Metrics
+Semua data kesehatan pengguna tersaji dalam satu halaman.
+
+- **BMI Calculator** — Perbarui berat dan tinggi badan untuk skor *Body Mass Index* instan
+- **Consistency Tracker** — Grafik kerutinan olahraga mingguan/bulanan
+- **AI Recommendation** — Target kalori harian yang dipersonalisasi sesuai profil pengguna
+
+### 🌙 Modern UI + Dark Mode
+- Desain responsif optimal untuk berbagai ukuran layar Android
+- Dukungan tema gelap penuh — efisiensi baterai AMOLED dan nyaman di mata
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Teknologi |
+|-------|-----------|
+| **Language** | Kotlin |
+| **UI** | XML Layouts, Material Design 3 |
+| **Architecture** | MVVM + Repository Pattern |
+| **Local Database** | Room (SQLite) |
+| **Async** | Kotlin Coroutines + Flow |
+| **HTTP Client** | Retrofit 2 + OkHttp |
+| **Image Loading** | Coil |
+| **AI / Vision** | Gemini API / ML Kit |
+| **Maps & GPS** | Google Maps SDK, FusedLocationProvider |
+| **News** | News API |
+| **DI** | Hilt (Dagger) |
+
+---
+
+## 🏛️ Arsitektur
+
+Aplikasi ini mengikuti pola **MVVM (Model-View-ViewModel)** yang direkomendasikan Google, dikombinasikan dengan **Repository Pattern** untuk abstraksi sumber data.
+
+```
+┌─────────────────────────────────────────────────┐
+│                    UI Layer                      │
+│         Activity / Fragment / Composable         │
+└──────────────────────┬──────────────────────────┘
+                       │ observes
+┌──────────────────────▼──────────────────────────┐
+│                 ViewModel Layer                  │
+│        StateFlow / LiveData / UI State           │
+└──────────────────────┬──────────────────────────┘
+                       │ calls
+┌──────────────────────▼──────────────────────────┐
+│               Repository Layer                   │
+│       Menentukan sumber data (local/remote)      │
+└────────┬─────────────────────────────┬───────────┘
+         │                             │
+┌────────▼────────┐         ┌──────────▼──────────┐
+│   Local Source  │         │    Remote Source     │
+│  Room Database  │         │  Retrofit / API      │
+│   (SQLite)      │         │  Gemini, News, Maps  │
+└─────────────────┘         └─────────────────────┘
+```
+
+### Alur Data
+1. **UI** mengobservasi `StateFlow`/`LiveData` dari **ViewModel**
+2. **ViewModel** memanggil **Repository** untuk data atau aksi
+3. **Repository** memilih antara **Room** (cache/offline) atau **Retrofit** (sumber remote)
+4. Data dikembalikan sebagai Kotlin `Flow` dan di-*collect* oleh ViewModel
+
+---
+
+## 📁 Struktur Proyek
+
+```
+app/src/main/
+├── java/com/example/pantaujompo/
+│   ├── data/
+│   │   ├── local/
+│   │   │   ├── dao/            # Room DAO interfaces
+│   │   │   ├── entity/         # Room Entity classes
+│   │   │   └── AppDatabase.kt
+│   │   ├── remote/
+│   │   │   ├── api/            # Retrofit API interfaces
+│   │   │   └── dto/            # Data Transfer Objects
+│   │   └── repository/         # Repository implementations
+│   ├── domain/
+│   │   ├── model/              # Domain models (pure Kotlin)
+│   │   └── usecase/            # Use case classes
+│   ├── ui/
+│   │   ├── tracking/           # Fitur GPS Tracking
+│   │   ├── nutrition/          # Fitur AI Scanner
+│   │   ├── history/            # Fitur CRUD Riwayat
+│   │   ├── news/               # Portal Berita
+│   │   ├── dashboard/          # Profil & Metrik
+│   │   └── common/             # Shared UI components
+│   ├── di/                     # Hilt Dependency Injection modules
+│   └── utils/                  # Extension functions & helpers
+└── res/
+    ├── layout/                 # XML layout files
+    ├── drawable/               # Icons & vector assets
+    └── values/                 # Strings, colors, themes
+```
+
+---
+
+## 🏁 Memulai
+
+### Prasyarat
+- Android Studio Hedgehog (2023.1.1) atau lebih baru
+- JDK 17
+- Android SDK API 26+
+- Gradle 8.x
+
+### Instalasi
+
+```bash
+# 1. Clone repositori
+git clone https://github.com/username/pantau-jompo.git
+
+# 2. Buka di Android Studio
+# File > Open > pilih folder pantau-jompo
+
+# 3. Tambahkan API keys (lihat bagian Konfigurasi API)
+
+# 4. Build dan jalankan
+# Run > Run 'app' atau Shift+F10
+```
+
+---
+
+## 🔑 Konfigurasi API
+
+Buat file `local.properties` di root proyek dan tambahkan key berikut:
+
+```properties
+# local.properties — jangan di-commit ke Git!
+
+GEMINI_API_KEY=your_gemini_api_key_here
+NEWS_API_KEY=your_news_api_key_here
+MAPS_API_KEY=your_google_maps_api_key_here
+```
+
+Daftarkan API key di:
+- **Gemini API** → [Google AI Studio](https://aistudio.google.com)
+- **News API** → [newsapi.org](https://newsapi.org)
+- **Google Maps** → [Google Cloud Console](https://console.cloud.google.com)
+
+> ⚠️ **Penting:** Pastikan `local.properties` sudah masuk ke `.gitignore` agar API key tidak ter-*expose* di repositori publik.
+
+---
+
+<div align="center">
+
+Dibuat dengan ❤️ · Institut Teknologi Sumatera · 2025
+
+</div>

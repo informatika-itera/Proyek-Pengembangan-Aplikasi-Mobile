@@ -122,6 +122,12 @@ Aplikasi ini dibangun dengan pendekatan **Adaptive UI** yang menyesuaikan tampil
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## 🎨 Design System Tokens
+
+- ##Colors: Surface Slate (#F7F9FB), Primary Navy (#1E3A8A), Success Emerald (#10B981).
+- ##Typography: Geist (UI) dan Geist Mono (Technical Data/Tracking ID).
+- ##Grid: Strict 4px baseline grid untuk presisi industrial.
+
 ### Tech Stack
 
 | Layer | Teknologi |

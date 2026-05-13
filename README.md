@@ -1,5 +1,7 @@
 # My Bawang Gacha
 
+test
+
 My Bawang Gacha adalah aplikasi Anime List dan Gacha yang dikembangkan menggunakan Kotlin Multiplatform.
 
 ## Fitur Utama

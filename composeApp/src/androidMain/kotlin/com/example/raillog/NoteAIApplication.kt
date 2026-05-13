@@ -1,8 +1,8 @@
-package com.example.noteai
+package com.example.raillog
 
 import android.app.Application
-import com.example.noteai.core.di.androidModule
-import com.example.noteai.core.di.initKoin
+import com.example.raillog.core.di.androidModule
+import com.example.raillog.core.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 

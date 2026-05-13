@@ -1,6 +1,6 @@
-package com.example.noteai.core.network
+package com.example.raillog.core.network
 
-import com.example.noteai.BuildConfig
+import com.example.raillog.BuildConfig
 
 /**
  * Android implementation of ApiConfig

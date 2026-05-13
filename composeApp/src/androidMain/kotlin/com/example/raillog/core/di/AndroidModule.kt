@@ -1,7 +1,7 @@
-package com.example.noteai.core.di
+package com.example.raillog.core.di
 
-import com.example.noteai.core.util.DatabaseDriverFactory
-import com.example.noteai.data.local.datastore.DataStoreFactory
+import com.example.raillog.core.util.DatabaseDriverFactory
+import com.example.raillog.data.local.datastore.DataStoreFactory
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 

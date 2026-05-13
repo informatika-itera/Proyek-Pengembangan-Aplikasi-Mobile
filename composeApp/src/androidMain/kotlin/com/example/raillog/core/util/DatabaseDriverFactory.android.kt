@@ -1,9 +1,9 @@
-package com.example.noteai.core.util
+package com.example.raillog.core.util
 
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.example.noteai.data.local.NoteDatabase
+import com.example.raillog.data.local.RailLogDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory
@@ -16,9 +16,9 @@ actual class DatabaseDriverFactory(
 ) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = RailLogDatabase.Schema,
             context = context,
-            name = "noteai.db"
+            name = "raillog.db"
         )
     }
 }

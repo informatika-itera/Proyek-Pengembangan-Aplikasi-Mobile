@@ -1,9 +1,9 @@
-package com.example.noteai.data.repository
+package com.example.raillog.data.repository
 
-import com.example.noteai.data.remote.api.GeminiService
-import com.example.noteai.data.remote.api.SystemPrompts
-import com.example.noteai.domain.repository.AIRepository
-import com.example.noteai.domain.repository.WritingStyle
+import com.example.raillog.data.remote.api.GeminiService
+import com.example.raillog.data.remote.api.SystemPrompts
+import com.example.raillog.domain.repository.AIRepository
+import com.example.raillog.domain.repository.WritingStyle
 
 class AIRepositoryImpl(
     private val geminiService: GeminiService

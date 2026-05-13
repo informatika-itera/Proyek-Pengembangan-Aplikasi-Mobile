@@ -1,8 +1,8 @@
-package com.example.noteai
+package com.example.raillog
 
 import androidx.compose.runtime.Composable
-import com.example.noteai.presentation.navigation.AppNavHost
-import com.example.noteai.presentation.theme.NoteAITheme
+import com.example.raillog.presentation.navigation.AppNavHost
+import com.example.raillog.presentation.theme.NoteAITheme
 import org.koin.compose.KoinContext
 
 @Composable

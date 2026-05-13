@@ -1,4 +1,4 @@
-package com.example.noteai.data.local.datastore
+package com.example.raillog.data.local.datastore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
@@ -21,7 +21,7 @@ expect class DataStoreFactory {
     fun producePath(): String
 }
 
-internal const val DATA_STORE_FILE_NAME = "noteai.preferences_pb"
+internal const val DATA_STORE_FILE_NAME = "raillog.preferences_pb"
 
 /**
  * Membuat DataStore<Preferences> dari [DataStoreFactory] platform-specific.

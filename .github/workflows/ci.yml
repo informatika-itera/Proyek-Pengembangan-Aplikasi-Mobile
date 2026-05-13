@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
 
 jobs:
   build:
@@ -27,5 +25,5 @@ jobs:
       - name: Run tests
         run: ./gradlew test
 
-      - name: Build Android debug
-        run: ./gradlew assembleDebug
+      - name: Build composeApp debug
+        run: ./gradlew :composeApp:assembleDebug

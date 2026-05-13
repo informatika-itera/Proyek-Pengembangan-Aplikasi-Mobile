@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "master", "develop" ]
+    branches: ["project/123140096-123140088-DailyBliss" ]
   pull_request:
-    branches: [ "main", "master", "develop" ]
+    branches: ["project/123140096-123140088-DailyBliss" ]
 
 jobs:
   build:

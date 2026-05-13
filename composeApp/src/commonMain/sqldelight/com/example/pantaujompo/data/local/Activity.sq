@@ -1,0 +1,36 @@
+-- Activity table schema for SQLDelight
+CREATE TABLE ActivityEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    activity_type TEXT NOT NULL,          -- 'LARI', 'JALAN', 'SEPEDA'
+    duration_minutes INTEGER NOT NULL,    -- Durasi dalam menit
+    distance_km REAL NOT NULL,            -- Jarak dalam kilometer
+    calories_burned INTEGER NOT NULL,     -- Kalori terbakar
+    date_timestamp INTEGER NOT NULL,      -- Waktu pelaksanaan
+    notes TEXT                            -- Catatan tambahan
+);
+
+-- GET ALL (Read)
+getAllActivities:
+SELECT * FROM ActivityEntity
+ORDER BY date_timestamp DESC;
+
+-- GET BY ID (Read Single)
+getActivityById:
+SELECT * FROM ActivityEntity
+WHERE id = ?;
+
+-- INSERT (Create)
+insertActivity:
+INSERT INTO ActivityEntity (activity_type, duration_minutes, distance_km, calories_burned, date_timestamp, notes)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- UPDATE (Update)
+updateActivity:
+UPDATE ActivityEntity
+SET activity_type = ?, duration_minutes = ?, distance_km = ?, calories_burned = ?, date_timestamp = ?, notes = ?
+WHERE id = ?;
+
+-- DELETE (Delete)
+deleteActivityById:
+DELETE FROM ActivityEntity
+WHERE id = ?;

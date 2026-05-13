@@ -1,5 +1,7 @@
 # 📱 DailyBliss
 
+[![CI](https://github.com/andika-123140096/123140096-123140088-DailyBliss/actions/workflows/ci.yml/badge.svg)](https://github.com/andika-123140096/123140096-123140088-DailyBliss/actions/workflows/ci.yml)
+
 Aplikasi yang membantu seseorang untuk mencatat kejadian yang membuat mereka bersyukur. Dilengkapi dengan fitur reminder dan integrasi dengan AI untuk memberikan motivasi. 
 
 **Kelompok DailyBliss:**

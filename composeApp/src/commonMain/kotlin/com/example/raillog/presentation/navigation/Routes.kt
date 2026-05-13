@@ -1,4 +1,4 @@
-package com.example.noteai.presentation.navigation
+package com.example.raillog.presentation.navigation
 
 import kotlinx.serialization.Serializable
 

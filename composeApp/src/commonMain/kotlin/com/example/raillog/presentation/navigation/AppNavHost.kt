@@ -1,4 +1,4 @@
-package com.example.noteai.presentation.navigation
+package com.example.raillog.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -7,10 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.noteai.presentation.screens.addnote.AddNoteScreen
-import com.example.noteai.presentation.screens.ai.AIAssistantScreen
-import com.example.noteai.presentation.screens.detail.NoteDetailScreen
-import com.example.noteai.presentation.screens.home.HomeScreen
+import com.example.raillog.presentation.screens.addnote.AddNoteScreen
+import com.example.raillog.presentation.screens.ai.AIAssistantScreen
+import com.example.raillog.presentation.screens.detail.NoteDetailScreen
+import com.example.raillog.presentation.screens.home.HomeScreen
 
 @Composable
 fun AppNavHost(

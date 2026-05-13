@@ -1,4 +1,4 @@
-rootProject.name = "NoteAI"
+rootProject.name = "StudyHub"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

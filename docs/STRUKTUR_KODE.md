@@ -236,7 +236,7 @@ fun NoteEntity.toDomain(): Note {
 **Repository Implementation (`data/repository/`)**
 ```kotlin
 class NoteRepositoryImpl(
-    private val database: NoteDatabase
+    private val database: RailLogDatabase
 ) : NoteRepository {
     
     override fun getAllNotes(): Flow<List<Note>> {

@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: ["project/123140096-123140088-DailyBliss" ]
+    branches: [ "main", "master", "develop", "project/123140096-123140088-DailyBliss" ]
   pull_request:
-    branches: ["project/123140096-123140088-DailyBliss" ]
+    branches: [ "main", "master", "develop", "project/123140096-123140088-DailyBliss" ]
 
 jobs:
   build:
     name: Build & Test
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -20,9 +20,11 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
+          
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -31,4 +33,4 @@ jobs:
         run: echo "GEMINI_API_KEY=dummy_key_for_ci" > local.properties
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build --no-daemon --parallel --build-cache

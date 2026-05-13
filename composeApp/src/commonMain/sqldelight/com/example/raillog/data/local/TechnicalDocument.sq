@@ -1,3 +1,39 @@
-CREATE TABLE  (
-
+CREATE TABLE TechnicalDocumentEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    document_type TEXT NOT NULL DEFAULT 'SPEC_SHEET',
+    content TEXT NOT NULL DEFAULT '',
+    linked_item_id INTEGER,
+    verification_status TEXT NOT NULL DEFAULT 'UNVERIFIED',
+    ai_summary TEXT,
+    created_at INTEGER NOT NULL
 );
+
+getAllDocuments:
+SELECT * FROM TechnicalDocumentEntity ORDER BY created_at DESC;
+
+getDocumentsByItem:
+SELECT * FROM TechnicalDocumentEntity
+WHERE linked_item_id = ?
+ORDER BY created_at DESC;
+
+getDocumentById:
+SELECT * FROM TechnicalDocumentEntity WHERE id = ?;
+
+getUnverifiedDocuments:
+SELECT * FROM TechnicalDocumentEntity
+WHERE verification_status = 'UNVERIFIED'
+ORDER BY created_at ASC;
+
+insertDocument:
+INSERT INTO TechnicalDocumentEntity
+(title, document_type, content, linked_item_id, verification_status, ai_summary, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateVerification:
+UPDATE TechnicalDocumentEntity
+SET verification_status = ?, ai_summary = ?
+WHERE id = ?;
+
+deleteDocument:
+DELETE FROM TechnicalDocumentEntity WHERE id = ?;

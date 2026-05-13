@@ -1,0 +1,32 @@
+CREATE TABLE GameEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    genre TEXT NOT NULL,
+    rating REAL NOT NULL,
+    image_url TEXT
+);
+
+insertGame:
+INSERT OR REPLACE INTO GameEntity(id, title, description, genre, rating, image_url)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getAllGames:
+SELECT * FROM GameEntity;
+
+searchGames:
+SELECT * FROM GameEntity
+WHERE title LIKE ('%' || :query || '%') OR genre LIKE ('%' || :query || '%');
+
+CREATE TABLE UserPreference (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    favorite_genre TEXT NOT NULL,
+    min_rating REAL DEFAULT 0.0
+);
+
+insertPreference:
+INSERT OR REPLACE INTO UserPreference(id, favorite_genre, min_rating)
+VALUES (1, ?, ?);
+
+getPreference:
+SELECT * FROM UserPreference WHERE id = 1;

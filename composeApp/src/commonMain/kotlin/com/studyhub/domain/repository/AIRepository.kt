@@ -1,18 +1,10 @@
 package com.studyhub.domain.repository
 
-interface AIRepository {
-    suspend fun summarize(text: String): Result<String>
-    suspend fun generateIdeas(topic: String): Result<List<String>>
-    suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>
-    suspend fun translate(text: String, targetLanguage: String): Result<String>
-    suspend fun chat(message: String): Result<String>
-    suspend fun suggestTitle(content: String): Result<String>
-}
+import com.studyhub.domain.model.PriorityResult
+import com.studyhub.domain.model.ReminderSchedule
+import com.studyhub.domain.model.Task
 
-enum class WritingStyle(val displayName: String, val prompt: String) {
-    NEUTRAL("Netral", "Perbaiki tulisan dengan gaya netral"),
-    FORMAL("Formal", "Perbaiki tulisan dengan gaya formal dan profesional"),
-    CASUAL("Kasual", "Perbaiki tulisan dengan gaya santai dan friendly"),
-    ACADEMIC("Akademik", "Perbaiki tulisan dengan gaya akademik dan ilmiah"),
-    CREATIVE("Kreatif", "Perbaiki tulisan dengan gaya kreatif dan menarik")
+interface AiRepository {
+    suspend fun getSmartPriority(tasks: List<Task>): List<PriorityResult>
+    suspend fun getSmartReminder(task: Task, userHistory: List<Task>): ReminderSchedule
 }

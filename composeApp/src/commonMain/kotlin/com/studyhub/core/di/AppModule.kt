@@ -16,6 +16,8 @@ import com.studyhub.domain.repository.NoteRepository
 import com.studyhub.domain.usecase.DeleteNoteUseCase
 import com.studyhub.domain.usecase.GenerateIdeasUseCase
 import com.studyhub.domain.usecase.GetAllNotesUseCase
+import com.studyhub.domain.usecase.GetSmartPriorityUseCase
+import com.studyhub.domain.usecase.GetSmartReminderUseCase
 import com.studyhub.domain.usecase.ImproveWritingUseCase
 import com.studyhub.domain.usecase.SaveNoteUseCase
 import com.studyhub.domain.usecase.SearchNotesUseCase
@@ -74,6 +76,8 @@ val useCaseModule = module {
     singleOf(::SummarizeNoteUseCase)
     singleOf(::ImproveWritingUseCase)
     singleOf(::GenerateIdeasUseCase)
+    factory { GetSmartPriorityUseCase(get(), get()) }
+    factory { GetSmartReminderUseCase(get(), get()) }
 }
 
 // ==================== VIEWMODEL MODULE ====================

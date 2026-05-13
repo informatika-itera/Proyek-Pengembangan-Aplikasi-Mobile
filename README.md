@@ -1,5 +1,7 @@
 #  Pantau Jompo
 
+[CI](https://github.com/EL-graha26/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+
 **Aplikasi Pemantauan Kesehatan Cerdas untuk Android**
 ---
 ## 📖 Tentang Proyek

@@ -1,0 +1,55 @@
+CREATE TABLE IF NOT EXISTS WorkoutLogEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tanggal INTEGER NOT NULL,
+    catatan TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ExerciseEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    workout_log_id INTEGER NOT NULL,
+    nama TEXT NOT NULL,
+    sets INTEGER NOT NULL,
+    reps INTEGER NOT NULL,
+    beban REAL NOT NULL,
+    FOREIGN KEY(workout_log_id) REFERENCES WorkoutLogEntity(id) ON DELETE CASCADE
+);
+
+-- Queries for WorkoutLogEntity
+
+insertWorkoutLog:
+INSERT INTO WorkoutLogEntity(tanggal, catatan)
+VALUES (?, ?);
+
+lastInsertWorkoutLogId:
+SELECT last_insert_rowid();
+
+updateWorkoutLog:
+UPDATE WorkoutLogEntity
+SET tanggal = ?, catatan = ?
+WHERE id = ?;
+
+deleteWorkoutLogById:
+DELETE FROM WorkoutLogEntity
+WHERE id = ?;
+
+getAllWorkoutLogs:
+SELECT * FROM WorkoutLogEntity
+ORDER BY tanggal DESC;
+
+getWorkoutLogById:
+SELECT * FROM WorkoutLogEntity
+WHERE id = ?;
+
+-- Queries for ExerciseEntity
+
+insertExercise:
+INSERT INTO ExerciseEntity(workout_log_id, nama, sets, reps, beban)
+VALUES (?, ?, ?, ?, ?);
+
+getExercisesForWorkoutLog:
+SELECT * FROM ExerciseEntity
+WHERE workout_log_id = ?;
+
+deleteExercisesByWorkoutLogId:
+DELETE FROM ExerciseEntity
+WHERE workout_log_id = ?;

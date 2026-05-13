@@ -1,7 +1,6 @@
 # Gradle
 .gradle/
 build/
-!gradle-wrapper.jar
 
 # IntelliJ IDEA / Android Studio
 .idea/
@@ -36,14 +35,17 @@ Pods/
 *.xcframework
 DerivedData/
 
-# Misc
+# Misc - JANGAN ignore *.jar secara global karena akan mengabaikan gradle-wrapper.jar
 *.class
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
+# *.jar  <-- DIHAPUS karena akan mengabaikan gradle/wrapper/gradle-wrapper.jar
+
+# Gradle Wrapper HARUS di-track oleh git (jangan di-ignore)
+# gradle/wrapper/gradle-wrapper.jar
+# gradle/wrapper/gradle-wrapper.properties
 
 .tmp/
 caches/
 daemon/
 kotlin-profile/
 native/
-wrapper/
+# wrapper/  <-- DIHAPUS karena akan mengabaikan gradle/wrapper/

@@ -38,8 +38,7 @@ DerivedData/
 
 # Misc
 *.class
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
+
 
 .tmp/
 caches/

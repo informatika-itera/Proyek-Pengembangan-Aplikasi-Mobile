@@ -1,17 +1,15 @@
-package com.example.noteai.presentation
+package com.example.raillog.presentation
 
 import app.cash.turbine.test
-import com.example.noteai.data.repository.FakeNoteRepository
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
-import com.example.noteai.domain.repository.NoteRepository
-import com.example.noteai.domain.usecase.DeleteNoteUseCase
-import com.example.noteai.domain.usecase.GetAllNotesUseCase
-import com.example.noteai.domain.usecase.NoteSortBy
-import com.example.noteai.domain.usecase.SearchNotesUseCase
-import com.example.noteai.presentation.screens.home.HomeUiState
-import com.example.noteai.presentation.screens.home.HomeViewModel
+import com.example.raillog.data.repository.FakeNoteRepository
+import com.example.raillog.domain.model.Note
+import com.example.raillog.domain.model.NoteCategory
+import com.example.raillog.domain.model.NoteColor
+import com.example.raillog.domain.usecase.DeleteNoteUseCase
+import com.example.raillog.domain.usecase.GetAllNotesUseCase
+import com.example.raillog.domain.usecase.SearchNotesUseCase
+import com.example.raillog.presentation.screens.home.HomeUiState
+import com.example.raillog.presentation.screens.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

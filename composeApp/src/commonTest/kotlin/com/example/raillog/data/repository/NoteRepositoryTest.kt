@@ -1,10 +1,10 @@
-package com.example.noteai.data.repository
+package com.example.raillog.data.repository
 
 import app.cash.turbine.test
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
-import com.example.noteai.domain.repository.NoteRepository
+import com.example.raillog.domain.model.Note
+import com.example.raillog.domain.model.NoteCategory
+import com.example.raillog.domain.model.NoteColor
+import com.example.raillog.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

@@ -168,6 +168,7 @@ Aplikasi ini dibuat untuk membantu digitalisasi UMKM agar proses pengelolaan bis
 
 **Danar Prayogo-123140015**
 **Exaudi Amin Hutasoit-123140161**
+# RA
 
 * Android Developer
 * AI Integration

@@ -1,247 +1,71 @@
-# 📱 NoteAI - KMP Project Template
+# 📚 StudyHub
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
-
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
-
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
-
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+> Aplikasi Manajemen Tugas Mahasiswa berbasis Kotlin Multiplatform dengan integrasi AI
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## 👥 Anggota Tim
+
+| Nama | NIM |
+|------|-----|
+| Maxavier Girvanus Manurung | 123140191 |
+| Muhammad Rafiq Ridho | 123140197 |
+
+---
+
+## 📖 Tentang StudyHub
+
+**StudyHub** adalah aplikasi manajemen tugas yang dirancang khusus untuk meningkatkan produktivitas mahasiswa di lingkungan kampus. Aplikasi ini dibangun menggunakan **Kotlin Multiplatform (KMP)** sehingga satu codebase dapat berjalan di platform Android maupun iOS.
+
+StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta mengintegrasikan **Gemini AI** untuk menghadirkan fitur-fitur cerdas yang membantu mahasiswa mengelola waktu dan prioritas belajar mereka.
+
+### Tujuan Aplikasi
+
+- Membantu mahasiswa melacak tugas dan deadline secara terorganisir
+- Mengurangi keterlambatan pengumpulan tugas dengan sistem reminder otomatis
+- Memberikan rekomendasi prioritas tugas yang cerdas berbasis AI
+- Menyediakan tampilan kalender terintegrasi untuk perencanaan akademik
+
+---
+
+## ✨ Fitur Aplikasi
+
+### 🔐 Autentikasi
+
+- **Login** — Masuk ke akun menggunakan email dan password via Firebase Authentication.
+- **Register** — Pendaftaran akun baru dengan validasi data pengguna. Sesi pengguna tersimpan otomatis sehingga tidak perlu login ulang setiap saat.
+
+### ✅ Manajemen Tugas
+
+- **Tambah Tugas** — Menambahkan tugas baru lengkap dengan judul, mata kuliah, deskripsi, dan tingkat kesulitan.
+- **Edit & Hapus Tugas** — Mengubah detail tugas atau menghapus tugas yang sudah tidak relevan.
+- **Status Selesai / Belum** — Menandai tugas sebagai selesai dengan satu klik. Tugas yang sudah selesai akan diarsipkan secara otomatis.
+
+### 📅 Deadline & Kalender
+
+- **Deadline Tugas** — Setiap tugas memiliki tanggal dan waktu deadline yang wajib diisi sebagai acuan pengerjaan.
+- **Kalender Tugas** — Tampilan kalender bulanan yang menampilkan semua tugas berdasarkan tanggal deadline, memudahkan mahasiswa dalam merencanakan jadwal belajar mingguan maupun bulanan.
+
+### 🔔 Reminder Notifikasi
+
+Notifikasi push otomatis dikirimkan sebelum deadline tugas tiba. Pengingat dapat dikustomisasi sesuai preferensi pengguna, misalnya H-1 hari atau H-3 jam sebelum deadline. Fitur ini bekerja di Android maupun iOS.
+
+---
+
+## 🤖 Fitur AI — Powered by Gemini
+
+### 🎯 Smart Priority
+
+Fitur **Smart Priority** memanfaatkan Gemini AI untuk menganalisis seluruh daftar tugas mahasiswa dan menghasilkan urutan prioritas pengerjaan yang optimal.
+
+Gemini menganalisis deadline, estimasi waktu pengerjaan, dan distribusi tugas per mata kuliah agar tidak menumpuk di hari yang sama. Hasilnya berupa rekomendasi urutan tugas beserta alasan singkat mengapa tugas tersebut perlu didahulukan, sehingga mahasiswa tidak perlu lagi bingung harus mulai dari mana.
+
+### ⏰ Smart Reminder
+
+Fitur **Smart Reminder** menggunakan Gemini AI untuk menentukan waktu pengingat yang adaptif dan dipersonalisasi, bukan sekadar interval waktu tetap.
+
+AI menganalisis riwayat penyelesaian tugas mahasiswa — apakah cenderung mengerjakan jauh-jauh hari atau mendekati deadline — lalu mempertimbangkan kompleksitas tugas untuk menghasilkan jadwal reminder yang paling efektif bagi masing-masing pengguna. Dengan cara ini, reminder yang diterima terasa lebih relevan dan tepat waktu.
+
+---
+
+© 2024 Maxavier Girvanus Manurung & Muhammad Rafiq Ridho — Institut Teknologi Sumatera

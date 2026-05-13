@@ -106,11 +106,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.studyhub"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.studyhub"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -119,8 +119,8 @@ android {
         // Inject API key from local.properties
         buildConfigField(
             "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
+            "GROQ_API_KEY",
+            "\"${localProperties.getProperty("GROQ_API_KEY", "")}\""
         )
     }
     
@@ -153,7 +153,7 @@ android {
 sqldelight {
     databases {
         create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+            packageName.set("com.studyhub.data.local")
         }
     }
 }

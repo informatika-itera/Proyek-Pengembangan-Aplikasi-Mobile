@@ -1,245 +1,95 @@
-# 📱 NoteAI - KMP Project Template
+# SoundLetter 🎵✉️
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
-
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
-
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
-
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+*SoundLetter* adalah aplikasi mobile inovatif yang menggabungkan ekspresi emosional melalui pesan anonim dengan integrasi musik. Terinspirasi dari tren "Send the Song", aplikasi ini memungkinkan pengguna untuk mengirimkan "surat digital" yang dilengkapi dengan lagu sebagai representasi perasaan mereka kepada orang lain secara anonim.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+## 🚀 Fitur Utama
+
+### 1. Anonymous Messaging (Compose)
+Pengguna dapat mengirimkan pesan atau curhatan secara anonim tanpa perlu pendaftaran akun. Form terdiri dari nama penerima, isi pesan, dan identitas pengirim (opsional).
+
+### 2. AI Song Recommender (Powered by Gemini AI)
+Fitur unggulan yang menggunakan *Artificial Intelligence (Gemini API)* untuk menganalisis sentimen dan isi pesan pengguna, kemudian memberikan rekomendasi lagu yang paling relevan secara otomatis sebelum pesan dikirim.
+
+### 3. Music Integration (Spotify API)
+Integrasi dengan *Spotify Web API* untuk mencari metadata lagu, menampilkan album art, dan memberikan pratinjau lagu yang dipilih oleh pengirim atau disarankan oleh AI.
+
+### 4. Global Feed & Search
+* *Global Feed:* Menampilkan daftar pesan terbaru dari pengguna lain secara publik dalam desain kartu yang estetik.
+* *Inbox Search:* Memungkinkan pengguna mencari pesan yang ditujukan khusus untuk nama mereka menggunakan fitur pencarian dinamis.
+
+### 5. Aesthetic UI/UX (Techno-Modern Style)
+Antarmuka dikembangkan menggunakan *Material 3* dengan tema *Dark Mode, gradasi biru elektrik, dan gaya *Glassmorphism untuk memberikan kesan futuristik dan modern.
+
+---
+
+## 🛠️ Arsitektur & Teknologi
+
+Aplikasi ini dibangun dengan standar pengembangan industri modern untuk memenuhi kriteria akademik mata kuliah Pengembangan Aplikasi Mobile:
+
+* *Language:* Kotlin
+* *UI Framework:* Jetpack Compose (Declarative UI)
+* *Architecture:* MVVM (Model-View-ViewModel) + Clean Architecture
+* *Dependency Injection:* Koin
+* *Asynchronous & State:* Kotlin Coroutines & StateFlow
+* *Database & Backend:*
+    * *Firebase Firestore:* Penyimpanan data pesan secara real-time.
+    * *Room Database:* Penyimpanan lokal untuk fitur bookmark/favorit pesan.
+* *Networking:* Retrofit & OkHttp (untuk akses Spotify & Gemini API).
+* *AI Engine:* Google Generative AI SDK (Gemini Pro).
+
+---
+
+## 📂 Struktur Proyek Utama
+
+Proyek ini mengikuti struktur Clean Architecture untuk memastikan kode yang mudah diuji (testable) dan dikelola:
+```
+com.soundletter.app/
+├── data/                # Data Layer
+│   ├── remote/          # API Service (Spotify, Gemini, Firebase)
+│   ├── local/           # Room Database & DAOs
+│   └── repository/      # Implementasi Repository
+├── domain/              # Domain Layer (Business Logic)
+│   ├── model/           # Data Classes (POJO)
+│   └── repository/      # Interface Repository
+├── ui/                  # Presentation Layer
+│   ├── theme/           # Color, Type, Shape (Material 3 Customization)
+│   ├── components/      # Reusable UI Components
+│   ├── screen/          # Screens (Home, Compose, Detail, Search)
+│   └── viewmodel/       # Logic & State Management (StateFlow)
+├── di/                  # Dependency Injection Modules (Koin)
+└── utils/               # Helper classes & Extensions
+```
+
+---
+
+## ⚙️ Cara Menjalankan Proyek
+
+### Clone Repository
+```bash
+git clone https://github.com/15-040-GianIvander/SoundLetter.git
+```
+
+### Konfigurasi API Key
+- Dapatkan Gemini API Key dari Google AI Studio.
+- Dapatkan Spotify Client ID & Secret dari Spotify Developer Dashboard.
+- Tambahkan key tersebut ke dalam file `local.properties`.
+
+### Firebase Setup
+- Tambahkan file `google-services.json` ke folder `app/`.
+
+### Build Project
+- Buka proyek di Android Studio Ladybug atau versi terbaru.
+- Lakukan Sync Gradle.
+- Jalankan aplikasi pada emulator atau perangkat fisik.
+
+---
+
+## 👥 Pengembang Utama
+
+Aplikasi ini dikembangkan sebagai Proyek Tugas Besar Mata Kuliah Pengembangan Aplikasi Mobile oleh Kelompok:
+
+- (123140027) ATALIE SALSABILA  
+- (123140039) MUHAMMAD DZAKY  
+- (123140040) GIAN IVANDER  

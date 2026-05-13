@@ -134,8 +134,8 @@ composeApp/src/
 
 | Nama | NIM | GitHub | Role |
 |------|-----|--------|------|
-| [Falih Faiq Fadhlurrahman] | [123140129] | [@ScienceCom](https://github.com/ScienceCom) | Lead & Data Engineer |
-| [Khairul Rijal Syauqi] | [123140143] | [@32gz](https://github.com/32gz) | UI/UX & QA Developer |
+| Falih Faiq Fadhlurrahman | [123140129] | [@ScienceCom](https://github.com/ScienceCom) | Lead & Data Engineer |
+| Khairul Rijal Syauqi | [123140143] | [@32gz](https://github.com/32gz) | UI/UX & QA Developer |
 
 **Branch:** `project/123140129-123140143-TabungIn`
 

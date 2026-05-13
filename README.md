@@ -156,8 +156,8 @@ data class Setoran(
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/[team-name]/tabungin.git
-cd tabungin
+git clone git clone https://github.com/ScienceCom/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
 
 # 2. Buka di Android Studio
 # File > Open > pilih folder tabungin

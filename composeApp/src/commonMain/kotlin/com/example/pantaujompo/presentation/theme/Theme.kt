@@ -1,36 +1,42 @@
 package com.example.pantaujompo.presentation.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Palet Warna Premium Fitness App
-val NeonGreen = Color(0xFFC6FF00) // Hijau stabilo sporty
-val DarkBackground = Color(0xFF0D0D0D) // Super dark gray (nyaman di mata)
-val SurfaceDark = Color(0xFF1A1A1A) // Warna Card (sedikit lebih terang dari BG)
-val SurfaceVariantDark = Color(0xFF262626) // Warna Card untuk elemen di dalam Card
-val TextPrimary = Color(0xFFFFFFFF)
-val TextSecondary = Color(0xFFA0A0A0)
-val ErrorRed = Color(0xFFFF5252)
+// Warna Utama
+val NeonGreenDark = Color(0xFF76FF03) // Hijau menyala untuk Dark Mode
+val GreenPrimaryLight = Color(0xFF2E7D32) // Hijau elegan untuk Light Mode
 
-private val PantauJompoColorScheme = darkColorScheme(
-    primary = NeonGreen,
-    onPrimary = Color.Black, // Teks di atas tombol hijau otomatis hitam
-    background = DarkBackground,
-    onBackground = TextPrimary,
-    surface = SurfaceDark,
-    onSurface = TextPrimary,
-    surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = TextSecondary,
-    error = ErrorRed
+private val DarkColorScheme = darkColorScheme(
+    primary = NeonGreenDark,
+    onPrimary = Color.Black,
+    background = Color(0xFF121212),
+    surface = Color(0xFF1E1E1E),
+    onBackground = Color.White,
+    onSurface = Color.White
+)
+
+private val LightColorScheme = lightColorScheme(
+    primary = GreenPrimaryLight,
+    onPrimary = Color.White,
+    background = Color(0xFFF8F9FA),
+    surface = Color.White,
+    onBackground = Color(0xFF1E1E1E),
+    onSurface = Color(0xFF1E1E1E)
 )
 
 @Composable
-fun PantauJompoTheme(content: @Composable () -> Unit) {
+fun PantauJompoTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(), // Otomatis deteksi tema HP
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     MaterialTheme(
-        colorScheme = PantauJompoColorScheme,
-        // TODO: Nanti kita bisa tambahin custom Typography di sini
+        colorScheme = colorScheme,
         content = content
     )
 }

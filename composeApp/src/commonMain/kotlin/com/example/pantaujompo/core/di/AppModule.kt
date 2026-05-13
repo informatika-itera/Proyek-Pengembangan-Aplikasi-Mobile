@@ -7,10 +7,20 @@ import com.example.pantaujompo.data.local.datastore.DataStoreFactory
 import com.example.pantaujompo.data.local.datastore.UserPreferences
 import com.example.pantaujompo.data.local.datastore.create
 import com.example.pantaujompo.data.remote.api.GeminiService
+import com.example.pantaujompo.data.repository.ActivityRepositoryImpl
+import com.example.pantaujompo.domain.repository.ActivityRepository
+
+// Import ViewModels
+import com.example.pantaujompo.presentation.screens.profil.ProfilViewModel
+import com.example.pantaujompo.presentation.screens.addedit.AddEditViewModel
+import com.example.pantaujompo.presentation.screens.riwayat.RiwayatViewModel
+
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 // ==================== NETWORK MODULE ====================
@@ -35,8 +45,8 @@ val preferencesModule = module {
 
 // ==================== REPOSITORY MODULE ====================
 val repositoryModule = module {
-    // TODO: Daftarkan repository baru Pantau Jompo di sini nanti
-    // singleOf(::ActivityRepositoryImpl) bind ActivityRepository::class
+    // Mendaftarkan ActivityRepositoryImpl ke Koin DI
+    singleOf(::ActivityRepositoryImpl) bind ActivityRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -46,7 +56,10 @@ val useCaseModule = module {
 
 // ==================== VIEWMODEL MODULE ====================
 val viewModelModule = module {
-    // TODO: Daftarkan ViewModel baru di sini nanti (Contoh: DashboardViewModel)
+    // Mendaftarkan ViewModels agar tidak force close
+    viewModelOf(::ProfilViewModel)
+    viewModelOf(::AddEditViewModel)
+    viewModelOf(::RiwayatViewModel)
 }
 
 // ==================== SHARED MODULES ====================

@@ -1,245 +1,423 @@
-# 📱 NoteAI - KMP Project Template
+# 💰 MyWallet
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+> **Aplikasi Personal Expense Tracker Berbasis Kotlin Multiplatform untuk Membantu Pengguna Mengelola Keuangan Harian Secara Mudah, Modern, dan Efisien**
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-brightgreen?style=for-the-badge&logo=kotlin" />
+  <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=for-the-badge&logo=kotlin" />
+  <img src="https://img.shields.io/badge/UI-Compose%20Multiplatform-4285F4?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Architecture-Clean%20Architecture-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Sprint-11--15%20%E2%9C%85-success?style=for-the-badge" />
+</p>
 
-> **📚 Dokumentasi Lengkap**
+---
+
+# 📌 Identitas Proyek
+
+| Item | Detail |
+|------|--------|
+| **Nama Aplikasi** | MyWallet |
+| **Mata Kuliah** | Pengembangan Aplikasi Mobile (PAM) |
+| **Program Studi** | Teknik Informatika |
+| **Institusi** | Institut Teknologi Sumatera (ITERA) |
+| **Dosen Pengampu** | Pak Habib (mh4Scripts) |
+
+---
+
+# 👥 Tim Pengembang
+
+| NIM | Nama | Peran |
+|-----|------|-------|
+| 123140082 | Hanifah Hasanah | Backend Developer, Database & Architecture Implementation |
+| 123140069 | Zahwa Natasya Hamzah |UI/UX Designer, Dashboard & Statistics Feature Development|
+
+> **Branch:** `project/123140082-123140069-mywallet`
 > 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+---
 
-## ✨ Fitur Aplikasi
+# 🎯 Deskripsi Aplikasi
 
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
+**MyWallet** adalah aplikasi mobile personal expense tracker berbasis Kotlin Multiplatform yang dirancang untuk membantu pengguna mengelola pemasukan dan pengeluaran harian secara praktis, terstruktur, dan efisien.
 
-## 🏗️ Arsitektur & Teknologi
+Aplikasi ini menggunakan pendekatan **Clean Architecture + MVVM** untuk menghasilkan struktur project yang scalable, maintainable, dan modern.
 
-### Clean Architecture + MVVM
+MyWallet membantu pengguna untuk:
+- Mencatat transaksi harian
+- Mengelola budget
+- Melihat statistik keuangan
+- Memantau pengeluaran
+- Mengontrol kondisi finansial secara realtime
 
+Dengan fitur:
+- Dashboard keuangan
+- Expense & income tracking
+- Transaction history
+- Budget management
+- Statistics & charts
+- Dark mode
+- Offline local storage
+
+---
+
+# ✨ Fitur Utama
+
+## Sprint 1 — Foundation
+- [x] Setup Kotlin Multiplatform Project
+- [x] Clean Architecture + MVVM
+- [x] Navigation Setup
+- [x] Dependency Injection dengan Koin
+- [x] Material 3 Theme
+- [x] GitHub Actions CI/CD Setup
+
+---
+
+## Sprint 2 — Core Features
+- [x] Dashboard Screen
+- [x] Add Transaction Feature
+- [x] Transaction History
+- [x] Category Management
+- [x] Navigation Multi-screen
+- [x] State Management dengan StateFlow
+
+---
+
+## Sprint 3 — Advanced Features
+- [x] Statistics & Financial Charts
+- [x] Budget Planning Feature
+- [x] Monthly Expense Analysis
+- [x] Search & Filter Transactions
+- [x] Local Database Integration
+- [x] Offline First Support
+
+---
+
+## Sprint 4 — Polish & Testing
+- [x] Dark Mode
+- [x] UI/UX Improvements
+- [x] Error Handling
+- [x] Unit Testing
+- [x] Responsive Layout
+- [x] Performance Optimization
+
+---
+
+## Sprint 5 — Final Preparation
+- [x] Documentation
+- [x] APK Build
+- [x] Final Testing
+- [x] Demo-ready Application
+- [x] Presentation Preparation
+
+---
+
+# 🏗️ Arsitektur & Teknologi
+
+## Clean Architecture + MVVM
+
+```text
+┌─────────────────────────────────────────────┐
+│           PRESENTATION LAYER                │
+│  Compose UI • Screens • ViewModel • State   │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│               DOMAIN LAYER                  │
+│     UseCase • Business Logic • Models       │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│                 DATA LAYER                  │
+│ Repository • Local Database • DataSource    │
+└─────────────────────────────────────────────┘
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
 
-### Tech Stack
+---
 
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
+# 🧰 Tech Stack
+
+| Layer | Teknologi |
+|-------|-----------|
+| **UI** | Compose Multiplatform |
+| **Language** | Kotlin Multiplatform |
+| **Architecture** | Clean Architecture + MVVM |
+| **State Management** | StateFlow |
+| **Dependency Injection** | Koin |
+| **Local Database** | SQLDelight |
 | **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
+| **Async Programming** | Kotlin Coroutines |
+| **Navigation** | Compose Navigation |
+| **Design System** | Material 3 |
 
-## 📁 Struktur Project
+---
 
-```
+# 📁 Struktur Project
+
+```text
 composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
+├── commonMain/kotlin/com/mywallet/
 │
-├── commonMain/sqldelight/         # SQLDelight schema
+├── di/
+│   ├── AppModule.kt
+│   ├── DataModule.kt
+│   └── ViewModelModule.kt
 │
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
+├── data/
+│   ├── local/
+│   │   ├── database/
+│   │   └── datastore/
+│   │
+│   ├── repository/
+│   └── model/
+│
+├── domain/
+│   ├── model/
+│   ├── repository/
+│   └── usecase/
+│
+├── presentation/
+│   ├── home/
+│   ├── addtransaction/
+│   ├── statistics/
+│   ├── history/
+│   ├── settings/
+│   ├── components/
+│   ├── navigation/
+│   └── theme/
+│
+├── androidMain/kotlin/
+└── iosMain/kotlin/
 ```
 
-## 🚀 Getting Started
+---
 
-### Prerequisites
+# 📚 Implementasi Berdasarkan Materi PAM 11–15
 
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
+## 📖 Pertemuan 11 — Planning & Setup
 
-### 👥 Ketentuan Kelompok
+### Implementasi
+- Setup Kotlin Multiplatform
+- Setup Repository GitHub
+- Clean Architecture
+- Koin Dependency Injection
+- GitHub Actions CI/CD
 
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
+### Hasil Pembelajaran
+✔ Struktur project modern  
+✔ Workflow development profesional  
+✔ Architecture scalable  
 
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
+---
 
-### Setup
+## 📖 Pertemuan 12 — Core Features
 
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
+### Implementasi
+- Dashboard Screen
+- Add Transaction
+- Transaction History
+- Navigation Compose
+- StateFlow State Management
 
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
+### Hasil Pembelajaran
+✔ CRUD operations  
+✔ Navigation multi-screen  
+✔ Reactive UI management  
 
-2. **Setup `local.properties`**
+---
 
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
+## 📖 Pertemuan 13 — Advanced Features
 
-   Dapatkan API key gratis di: https://aistudio.google.com/
+### Implementasi
+- Statistics Feature
+- Budget Management
+- Search & Filter
+- Offline Database
+- Monthly Analysis
 
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
+### Hasil Pembelajaran
+✔ Advanced state management  
+✔ Local data persistence  
+✔ Financial data visualization  
 
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
+---
 
-## 📚 Materi yang Dicakup
+## 📖 Pertemuan 14 — Polish & Testing
 
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
+### Implementasi
+- Dark Mode
+- Error Handling
+- Unit Testing
+- UI Improvements
+- Responsive Layout
 
-## 🧪 Testing
+### Hasil Pembelajaran
+✔ Better user experience  
+✔ Stable application structure  
+✔ Testing workflow  
+
+---
+
+## 📖 Pertemuan 15 — Final Preparation
+
+### Implementasi
+- Final Documentation
+- APK Build
+- Demo Preparation
+- Final Optimization
+
+### Hasil Pembelajaran
+✔ Production-like application  
+✔ Professional project documentation  
+
+---
+
+# 🚀 Cara Menjalankan
+
+## Prasyarat
+
+| Software | Versi Minimum |
+|----------|---------------|
+| Android Studio | Ladybug (2024.2.1) |
+| JDK | 17 |
+| Git | 2.x |
+| Android SDK | API 34+ |
+
+---
+
+# ⚙️ Setup Project
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/USERNAME/MyWallet.git
+cd MyWallet
+```
+
+---
+
+## 2. Build Project
+
+```bash
+./gradlew build
+```
+
+---
+
+## 3. Run Android
+
+```bash
+./gradlew :composeApp:installDebug
+```
+
+Atau jalankan langsung menggunakan Android Studio.
+
+---
+
+# 🎨 Design Concept
+
+MyWallet menggunakan konsep:
+- Modern Finance App
+- Clean UI
+- Minimalist Design
+- Productivity-focused Interface
+- User-friendly Experience
+
+## Color Palette
+- Emerald Green
+- Dark Navy
+- Soft White
+- Light Gray
+
+---
+
+# 📱 Main Screens
+
+- Splash Screen
+- Dashboard Screen
+- Add Transaction Screen
+- Transaction History
+- Statistics Screen
+- Budget Screen
+- Settings Screen
+
+---
+
+# 📈 Keunggulan Project
+
+## 💰 Financial Management
+Membantu pengguna mengontrol pengeluaran dan pemasukan harian.
+
+## 🏗️ Modern Architecture
+Menggunakan Clean Architecture dan MVVM Pattern.
+
+## 🌐 Cross Platform
+Satu codebase untuk Android dan iOS.
+
+## 🎨 Modern UI/UX
+Menggunakan Compose Multiplatform dan Material 3.
+
+## 📦 Scalable Structure
+Mudah dikembangkan untuk fitur tambahan di masa depan.
+
+---
+
+# 🧪 Testing
 
 ```bash
 # Run all tests
 ./gradlew allTests
 
-# Run common tests only
+# Android unit tests
 ./gradlew :composeApp:testDebugUnitTest
 ```
 
-## 📝 Tugas Mahasiswa
+---
 
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
+# 📝 Git Workflow
 
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
+```bash
+# Pindah ke branch project
+git checkout project/[NIM]-[NIM]-mywallet
 
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
+# Pull update terbaru
+git pull origin project/[NIM]-[NIM]-mywallet
 
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+# Commit changes
+git commit -m "feat: add transaction feature"
+git commit -m "fix: resolve dashboard bug"
+git commit -m "style: improve statistics UI"
+```
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+# 🔧 Troubleshooting
+
+| Masalah | Solusi |
+|---------|--------|
+| Gradle sync error | Pastikan menggunakan JDK 17 |
+| Build failed | Jalankan `./gradlew clean build` |
+| Dependency error | Sync Gradle ulang |
+| Emulator lambat | Gunakan emulator API 34 dengan RAM minimal 4GB |
+
+---
+
+# 📚 Referensi
+
+- Kotlin Multiplatform
+- Compose Multiplatform
+- Koin Dependency Injection
+- SQLDelight
+- Kotlin Coroutines
+- Material 3
+
+---
+
+# 📄 Lisensi
+
+Project ini dibuat untuk keperluan pembelajaran dan tugas besar mata kuliah Pengembangan Aplikasi Mobile (PAM).
+
+---
+
+# 💰 MyWallet
+
+> _“Track Smart, Spend Wise.”_
+````

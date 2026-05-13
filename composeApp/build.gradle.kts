@@ -117,11 +117,7 @@ android {
         versionName = "1.0.0"
         
         // Inject API key from local.properties
-        buildConfigField(
-            "String",
-            "GROQ_API_KEY",
-            "\"${localProperties.getProperty("GROQ_API_KEY", "")}\""
-        )
+        buildConfigField("String", "GROQ_API_KEY", "\"${project.findProperty("GROQ_API_KEY") ?: ""}\"")
     }
     
     packaging {

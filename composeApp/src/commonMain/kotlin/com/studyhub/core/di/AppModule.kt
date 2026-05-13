@@ -1,11 +1,13 @@
 package com.studyhub.core.di
 
 import com.studyhub.core.network.HttpClientFactory
+import com.studyhub.core.network.createHttpClient
 import com.studyhub.core.util.DatabaseDriverFactory
 import com.studyhub.data.local.NoteDatabase
 import com.studyhub.data.local.datastore.DataStoreFactory
 import com.studyhub.data.local.datastore.UserPreferences
 import com.studyhub.data.local.datastore.create
+import com.studyhub.data.remote.GroqApiClient
 import com.studyhub.data.remote.api.GroqService
 import com.studyhub.data.repository.AIRepositoryImpl
 import com.studyhub.data.repository.NoteRepositoryImpl
@@ -34,6 +36,8 @@ import org.koin.dsl.module
 
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
+    single { createHttpClient() }
+    single { GroqApiClient(get()) }
     singleOf(::GroqService)
 }
 

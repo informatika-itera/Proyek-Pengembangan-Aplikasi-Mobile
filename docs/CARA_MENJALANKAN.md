@@ -3,22 +3,23 @@
 Panduan lengkap untuk menjalankan template aplikasi **NoteAI** (Kotlin Multiplatform).
 
 > **Status target build:**
+>
 > - ✅ **Android** — jalur utama yang didukung penuh oleh template ini.
 > - ⚠️ **iOS** — kode shared (Kotlin) sudah ter-set untuk target iOS (X64/Arm64/SimulatorArm64),
 >   tetapi project Xcode (`iosApp/`) **belum disertakan** di template ini.
->   Lihat bagian *"Menjalankan iOS (lanjutan)"* di bawah jika Anda ingin mencoba target iOS.
+>   Lihat bagian _"Menjalankan iOS (lanjutan)"_ di bawah jika Anda ingin mencoba target iOS.
 
 ---
 
 ## 1. Prasyarat
 
-| Software           | Versi minimum             | Catatan                                        |
-| ------------------ | ------------------------- | ---------------------------------------------- |
-| **JDK**            | 17 (disarankan 17 / 21)   | Bawaan Android Studio sudah cukup              |
-| **Android Studio** | Ladybug (2024.2.1) atau ↑ | Wajib untuk Compose Multiplatform tooling      |
-| **Android SDK**    | API 34 / 35               | Diinstall via SDK Manager Android Studio       |
-| **Git**            | 2.x                       | Untuk clone & branching                        |
-| **Xcode** (opt.)   | 15.0+                     | Hanya kalau ingin build iOS, **macOS-only**    |
+| Software           | Versi minimum             | Catatan                                     |
+| ------------------ | ------------------------- | ------------------------------------------- |
+| **JDK**            | 17 (disarankan 17 / 21)   | Bawaan Android Studio sudah cukup           |
+| **Android Studio** | Ladybug (2024.2.1) atau ↑ | Wajib untuk Compose Multiplatform tooling   |
+| **Android SDK**    | API 34 / 35               | Diinstall via SDK Manager Android Studio    |
+| **Git**            | 2.x                       | Untuk clone & branching                     |
+| **Xcode** (opt.)   | 15.0+                     | Hanya kalau ingin build iOS, **macOS-only** |
 
 Hardware yang nyaman: RAM minimal 8 GB (16 GB lebih lega), free space ±10 GB.
 
@@ -88,7 +89,7 @@ GEMINI_API_KEY=AIzaSy....your_real_key....
 3. Klik **Trust Project**.
 4. Tunggu Gradle sync selesai. Sync pertama bisa 5–15 menit (download
    Compose Multiplatform, KMP runtime, dependencies).
-5. Bila ada notifikasi *"Install missing platform"*, klik **Install**.
+5. Bila ada notifikasi _"Install missing platform"_, klik **Install**.
 
 Saat sync sukses Anda akan melihat run configuration **composeApp** di toolbar.
 
@@ -204,15 +205,15 @@ Checklist setelah app jalan:
 
 ## 10. Troubleshooting Cepat
 
-| Gejala                                                 | Solusi                                                            |
-| ------------------------------------------------------ | ------------------------------------------------------------------ |
-| `SDK location not found`                               | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis. |
-| `GEMINI_API_KEY` kosong / 401 Unauthorized             | Periksa baris `GEMINI_API_KEY=...` di `local.properties` lalu rebuild. |
-| `Cannot resolve symbol 'NoteDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
-| Gradle sync lambat sekali pertama kali                 | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil. |
-| `Daemon ... was terminated` saat build                 | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`. |
-| Build error setelah ganti versi                        | `./gradlew clean` lalu rebuild; bila tetap gagal hapus folder `.gradle/` lokal lalu sync ulang. |
-| Error `Plugin com.android.application not found` di Linux/CI | Pastikan punya akses ke repo Google + Maven Central (cek setting proxy/firewall). |
+| Gejala                                                       | Solusi                                                                                                      |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `SDK location not found`                                     | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis.      |
+| `GEMINI_API_KEY` kosong / 401 Unauthorized                   | Periksa baris `GEMINI_API_KEY=...` di `local.properties` lalu rebuild.                                      |
+| `Cannot resolve symbol 'NoteDatabase'`                       | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
+| Gradle sync lambat sekali pertama kali                       | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil.                                    |
+| `Daemon ... was terminated` saat build                       | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`.                                           |
+| Build error setelah ganti versi                              | `./gradlew clean` lalu rebuild; bila tetap gagal hapus folder `.gradle/` lokal lalu sync ulang.             |
+| Error `Plugin com.android.application not found` di Linux/CI | Pastikan punya akses ke repo Google + Maven Central (cek setting proxy/firewall).                           |
 
 Lebih lengkap di [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md).
 
@@ -251,7 +252,7 @@ Pryk-PAM/
   melihat log Ktor karena kita pakai `enableLogging = true`).
 - **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
 - **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+  `/data/data/com.example.cakapAi/files/noteai.preferences_pb` (Android).
 
 ---
 

@@ -167,7 +167,7 @@ GEMINI_API_KEY=your_api_key_here
 - [ ] Repository GitHub sudah di-fork dan branch dibuat
 - [ ] Project bisa di-build tanpa error
 - [ ] Memahami struktur folder Clean Architecture
-- [ ] Koin DI sudah berjalan
+- [x] Koin DI sudah berjalan
 - [ ] Minimal 1 commit meaningful
 
 ### Sprint 2: Core Features (Minggu 12)

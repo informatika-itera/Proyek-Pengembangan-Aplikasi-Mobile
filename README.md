@@ -102,7 +102,7 @@ composeApp/src/
 │       └── theme/                 # Material theme + Dark Mode
 │
 ├── commonMain/sqldelight/         # SQLDelight schema
-│   └── com/example/tabungin/
+│   └── com/example/tabungin/data/local/
 │       └── TabunginDatabase.sq    # Target & Setoran schema + queries
 │
 ├── commonTest/kotlin/             # Shared tests

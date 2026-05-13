@@ -26,7 +26,10 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    
+
+    // iOS targets are disabled on Windows development environment.
+// Enable this block again when building on macOS.
+    /*
     listOf(
         iosX64(),
         iosArm64(),
@@ -37,6 +40,7 @@ kotlin {
             isStatic = true
         }
     }
+    */
     
     sourceSets {
         commonMain.dependencies {
@@ -97,11 +101,12 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
         }
-        
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            implementation(libs.sqldelight.native.driver)
-        }
+        /*
+iosMain.dependencies {
+    implementation(libs.ktor.client.darwin)
+    implementation(libs.sqldelight.native.driver)
+}
+*/
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.Roomie.presentation.util.AppStrings
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,7 +22,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Roomie - ITERA") })
+            TopAppBar(title = { Text("${AppStrings.APP_NAME} - ITERA") })
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -60,8 +61,7 @@ fun HomeContent(
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                // Label menggunakan teks statis yang nantinya bisa ditarik dari resource KMP
-                Text(text = "Ringkasan Laporan", style = MaterialTheme.typography.titleMedium)
+                Text(text = AppStrings.HOME_SUMMARY, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = summary)
             }
@@ -75,13 +75,13 @@ fun HomeContent(
                 onClick = onNavigateToMap,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Buka Peta")
+                Text(AppStrings.HOME_OPEN_MAP)
             }
             Button(
                 onClick = { onNavigateToFacilityDetail("Gedung-A") },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Detail")
+                Text(AppStrings.HOME_DETAIL)
             }
         }
     }

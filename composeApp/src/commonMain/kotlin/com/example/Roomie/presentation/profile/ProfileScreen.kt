@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.Roomie.domain.model.ReportStatus
+import com.example.Roomie.presentation.util.AppStrings
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,7 +24,7 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Profil Pengguna") })
+            TopAppBar(title = { Text(AppStrings.PROFILE_TITLE) })
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -76,7 +77,7 @@ fun ProfileContent(state: ProfileUiState.Success) {
 
         item {
             Text(
-                text = "Statistik Aspirasi",
+                text = AppStrings.PROFILE_STATS,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -85,15 +86,15 @@ fun ProfileContent(state: ProfileUiState.Success) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                StatCard("Total", state.reports.size.toString(), Modifier.weight(1f))
-                StatCard("Proses", (state.stats[ReportStatus.IN_PROGRESS] ?: 0).toString(), Modifier.weight(1f))
-                StatCard("Selesai", (state.stats[ReportStatus.DONE] ?: 0).toString(), Modifier.weight(1f))
+                StatCard(AppStrings.PROFILE_TOTAL, state.reports.size.toString(), Modifier.weight(1f))
+                StatCard(AppStrings.PROFILE_PROCESSED, (state.stats[ReportStatus.IN_PROGRESS] ?: 0).toString(), Modifier.weight(1f))
+                StatCard(AppStrings.PROFILE_COMPLETED, (state.stats[ReportStatus.DONE] ?: 0).toString(), Modifier.weight(1f))
             }
         }
 
         item {
             Text(
-                text = "Riwayat Laporan",
+                text = AppStrings.PROFILE_HISTORY,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

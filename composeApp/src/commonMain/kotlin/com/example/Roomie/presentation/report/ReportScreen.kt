@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.Roomie.domain.model.UrgencyLevel
+import com.example.Roomie.presentation.util.AppStrings
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,7 +23,7 @@ fun ReportScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Lapor Kerusakan") })
+            TopAppBar(title = { Text(AppStrings.REPORT_TITLE) })
         }
     ) { padding ->
         Column(
@@ -42,7 +43,7 @@ fun ReportScreen(
                     value = state.category,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Kategori Fasilitas") },
+                    label = { Text(AppStrings.REPORT_CATEGORY) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
@@ -66,7 +67,7 @@ fun ReportScreen(
             OutlinedTextField(
                 value = state.location,
                 onValueChange = viewModel::onLocationChange,
-                label = { Text("Lokasi Spesifik") },
+                label = { Text(AppStrings.REPORT_LOCATION) },
                 placeholder = { Text("Contoh: Gedung A Lantai 2 KM Laki-laki") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -75,7 +76,7 @@ fun ReportScreen(
             OutlinedTextField(
                 value = state.description,
                 onValueChange = viewModel::onDescriptionChange,
-                label = { Text("Deskripsi Kerusakan") },
+                label = { Text(AppStrings.REPORT_DESCRIPTION) },
                 placeholder = { Text("Ceritakan detail kerusakannya...") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
@@ -89,12 +90,12 @@ fun ReportScreen(
                     containerColor = MaterialTheme.colorScheme.secondary
                 )
             ) {
-                Text("Upload Foto Bukti (Klik di sini)")
+                Text(AppStrings.REPORT_PHOTO)
             }
 
             // Urgency
             Text(
-                text = "Tingkat Urgensi",
+                text = AppStrings.REPORT_URGENCY,
                 style = MaterialTheme.typography.titleSmall
             )
             Column {
@@ -130,15 +131,15 @@ fun ReportScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Kirim Laporan")
+                    Text(AppStrings.REPORT_SUBMIT)
                 }
             }
 
             if (state.isSubmitted) {
                 AlertDialog(
                     onDismissRequest = { /* Handle dismiss */ },
-                    title = { Text("Laporan Terkirim") },
-                    text = { Text("Terima kasih, laporan Anda telah kami terima dan akan segera diproses.") },
+                    title = { Text(AppStrings.REPORT_SUCCESS_TITLE) },
+                    text = { Text(AppStrings.REPORT_SUCCESS_MSG) },
                     confirmButton = {
                         TextButton(onClick = { /* Reset state atau navigasi */ }) {
                             Text("OK")

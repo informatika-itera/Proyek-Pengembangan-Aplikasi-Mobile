@@ -2,13 +2,19 @@ name: FoodSaver CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - project/123140089-123140125-FoodSaver
+
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - main
+      - project/123140089-123140125-FoodSaver
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 

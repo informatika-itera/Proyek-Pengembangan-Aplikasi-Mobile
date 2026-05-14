@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, "project/**" ]
+  pull_request:
+    branches: [ main, "project/**" ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (Android)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout kode
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup JDK 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # 3. Beri permission ke gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 4. Buat local.properties
+      - name: Create local.properties
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+          echo "sdk.dir=$ANDROID_HOME" >> local.properties
+
+      # 5. Build APK debug (skip unit test sementara)
+      - name: Build Debug APK
+        run: ./gradlew :composeApp:assembleDebug -x test --stacktrace
+
+      # 6. Upload APK sebagai artifact
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: cooknote-debug-apk
+          path: composeApp/build/outputs/apk/debug/*.apk
+          retention-days: 7

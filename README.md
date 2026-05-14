@@ -57,5 +57,5 @@ Proyek ini dilengkapi dengan **GitHub Actions** untuk memastikan setiap perubaha
 
 ---
 **Kelompok:**
-- Radit (NIM: 123140089)
-- Partner (NIM: 123140125)
+- Bening Apni Prameswari (NIM: 123140089)
+- Raditya Alrasyid Nugroho (NIM: 123140125)

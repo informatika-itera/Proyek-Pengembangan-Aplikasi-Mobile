@@ -1,0 +1,17 @@
+CREATE TABLE FacilityEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    capacity INTEGER AS kotlin.Int NOT NULL,
+    description TEXT NOT NULL,
+    status TEXT NOT NULL
+);
+
+getAllFacilities:
+SELECT * FROM FacilityEntity;
+
+getFacilityById:
+SELECT * FROM FacilityEntity WHERE id = ?;
+
+insertFacility:
+INSERT OR REPLACE INTO FacilityEntity(id, name, capacity, description, status)
+VALUES (?, ?, ?, ?, ?);

@@ -89,6 +89,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            implementation(libs.koin.test)
         }
         
         androidMain.dependencies {
@@ -106,22 +107,15 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.example.Roomie"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.example.Roomie"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
-        
-        // Inject API key from local.properties
-        buildConfigField(
-            "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
-        )
     }
     
     packaging {
@@ -152,8 +146,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("RoomieDatabase") {
+            packageName.set("com.example.Roomie.data.local")
         }
     }
 }

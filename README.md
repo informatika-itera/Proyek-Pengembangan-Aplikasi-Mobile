@@ -8,10 +8,11 @@ FitKos juga direncanakan memiliki AI Assistant yang dapat membaca data harian pe
 
 ## 👥 Tim Pengembangan
 
-| Nama | NIM | GitHub                                                     |
-|---|---|------------------------------------------------------------|---|
-| Nama Anggota 1 | 123140046 | [@10-046-JanaRohman](https://github.com/10-046-JanaRohman) |
-| Nama Anggota 2 | 123140173 | [@raapstronaut](https://github.com/raapstronaut)           |
+
+| Nama | NIM | GitHub |
+| --- | --- | --- |
+| Jana Rohman Wasiso | 123140046 | [@10-046-JanaRohman](https://github.com/10-046-JanaRohman) |
+| Muhammad Rafi Ilham | 123140173 | [@raapstronaut](https://github.com/raapstronaut) |
 
 ## ✨ Fitur Aplikasi
 

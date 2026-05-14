@@ -1,5 +1,5 @@
 # 🥗 FoodSaver
-![CI](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/ci.yml/badge.svg?branch=project/123140089-123140125-FoodSaver)
+![CI](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml/badge.svg?branch=project/123140089-123140125-FoodSaver)
 
 Aplikasi mobile multiplatform (Android-first) yang dirancang untuk membantu pengguna **mengelola stok bahan makanan**, **memantau tanggal kedaluwarsa secara proaktif**, dan **mengurangi limbah makanan** melalui bantuan asisten cerdas berbasis AI.
 

@@ -2,28 +2,19 @@ package com.example.foodsaver.presentation.navigation
 
 import kotlinx.serialization.Serializable
 
-sealed interface Route {
-    
+/**
+ * Definisi rute navigasi untuk FoodSaver.
+ */
+sealed class Screen {
     @Serializable
-    data object Home : Route
-    
-    @Serializable
-    data class AddNote(val noteId: Long? = null) : Route
-    
-    @Serializable
-    data class NoteDetail(val noteId: Long) : Route
-    
-    @Serializable
-    data class AIAssistant(
-        val noteId: Long? = null,
-        val initialText: String? = null
-    ) : Route
-}
+    data object Home : Screen()
 
-interface NavigationActions {
-    fun navigateToHome()
-    fun navigateToAddNote(noteId: Long? = null)
-    fun navigateToNoteDetail(noteId: Long)
-    fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
-    fun navigateBack()
+    @Serializable
+    data object AddFood : Screen()
+
+    @Serializable
+    data class FoodDetail(val id: Long) : Screen()
+
+    @Serializable
+    data object AIAssistant : Screen()
 }

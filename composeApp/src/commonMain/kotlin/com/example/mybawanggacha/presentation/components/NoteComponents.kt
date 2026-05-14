@@ -50,11 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.mybawanggacha.data.remote.dto.AnimeEntry
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsBytes
-import org.jetbrains.compose.resources.decodeToImageBitmap
-import org.koin.compose.koinInject
+import coil3.compose.AsyncImage
 
 @Composable
 fun AnimeRecommendationCard(
@@ -69,12 +65,14 @@ fun AnimeRecommendationCard(
         shape = RoundedCornerShape(8.dp),
     ) {
         Column {
-            KtorImage(
-                url = anime.images.jpg.large_image_url,
+            AsyncImage(
+                model = anime.images.jpg.large_image_url,
+                contentDescription = anime.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp),
-                contentDescription = anime.title
+                    .height(180.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentScale = ContentScale.Crop
             )
 
             Text(
@@ -85,40 +83,6 @@ fun AnimeRecommendationCard(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(8.dp)
             )
-        }
-    }
-}
-
-@Composable
-fun KtorImage(
-    url: String,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop
-) {
-    val client = koinInject<HttpClient>()
-    var bytes by remember(url) { mutableStateOf<ByteArray?>(null) }
-
-    LaunchedEffect(url) {
-        try {
-            bytes = client.get(url).bodyAsBytes()
-        } catch (e: Exception) {
-            println("Error loading image: ${e.message}")
-        }
-    }
-
-    val imageBitmap = bytes?.decodeToImageBitmap()
-
-    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
-        if (imageBitmap != null) {
-            androidx.compose.foundation.Image(
-                bitmap = imageBitmap,
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = contentScale
-            )
-        } else {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
         }
     }
 }

@@ -46,4 +46,5 @@ caches/
 daemon/
 kotlin-profile/
 native/
-wrapper/
+# Keep gradle/wrapper/ but exclude other wrapper dirs
+!/gradle/wrapper/

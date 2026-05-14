@@ -47,16 +47,21 @@ Lihat detail progress di [PLAN.md](PLAN.md)
 
 ![CI](https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
----
+## Dosen Pengampu
+### Pak Habib
+[GitHub: mh4Scripts](https://github.com/mh4Scripts)
 
 ## Member Kelompok
-1. Varasina Farmadani (123140107)
-2. Faiq Ghozy Erlangga (123140139)
+### Varasina Farmadani (123140107)
+[GitHub: sinavarasina](https://github.com/sinavarasina)
+### Faiq Ghozy Erlangga (123140139)
+[GitHub: Faiq1818](https://github.com/Faiq1818)
 
----
-
+**Program Studi Teknik Informatika**  
+Institut Teknologi Sumatera (ITERA)
 
 ## Lisensi
 
 MIT License
+
 

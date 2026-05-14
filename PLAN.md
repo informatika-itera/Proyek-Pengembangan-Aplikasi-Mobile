@@ -41,16 +41,16 @@
 
 ## Sprint 2 — Core Features
 
-- [ ] HomeScreen
+- [x] HomeScreen
 - [ ] MyListScreen (tab: Plan to Watch, Watching, Watched)
 - [ ] AddEditScreen (form CRUD)
-- [ ] Navigation setup (AppNavHost + Routes)
+- [x] Navigation setup (AppNavHost + Routes)
 - [ ] Domain model (AnimeEntry, WatchStatus)
-- [ ] SQLDelight database setup
+- [x] SQLDelight database setup
 - [ ] AnimeListRepository (interface + impl)
 - [ ] CRUD operations (Create, Read, Update, Delete)
 - [ ] UI States (Loading, Success, Error, Empty)
-- [ ] Koin modules (data + viewmodel)
+- [x] Koin modules (data + viewmodel)
 
 ---
 

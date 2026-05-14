@@ -27,6 +27,7 @@ import com.example.pantaujompo.presentation.screens.artikel.ArtikelScreen
 import com.example.pantaujompo.presentation.screens.profil.ProfilScreen
 import com.example.pantaujompo.presentation.screens.addedit.AddEditActivityScreen
 
+
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
@@ -84,16 +85,23 @@ fun AppNavHost(
             startDestination = Route.Beranda,
             modifier = modifier.padding(innerPadding)
         ) {
-            // 5 LAYAR UTAMA (Sekarang semuanya udah nyala!)
+            // 5 LAYAR UTAMA
             composable<Route.Beranda> {
                 DashboardScreen(onNavigateToAdd = { navController.navigate(Route.AddEditActivity(null)) })
             }
             composable<Route.Pemindai> { PemindaiScreen() }
-            composable<Route.Riwayat> { RiwayatScreen() }
-            composable<Route.Artikel> { ArtikelScreen() }
-            composable<Route.Profil> { ProfilScreen() } // Ini yang bikin crash tadi karena di-comment
 
-            // LAYAR FORM TAMBAH DATA
+            // INI YANG TADI ERROR BRAY, UDAH GUE FIX!
+            composable<Route.Riwayat> {
+                RiwayatScreen(
+                    onNavigateToEdit = { id -> navController.navigate(Route.AddEditActivity(id)) }
+                )
+            }
+
+            composable<Route.Artikel> { ArtikelScreen() }
+            composable<Route.Profil> { ProfilScreen() }
+
+            // LAYAR FORM TAMBAH/EDIT DATA
             composable<Route.AddEditActivity> { backStackEntry ->
                 val route: Route.AddEditActivity = backStackEntry.toRoute()
                 AddEditActivityScreen(

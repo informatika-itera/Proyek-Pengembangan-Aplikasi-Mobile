@@ -32,7 +32,8 @@ fun ProfilScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("METRIK PENGGUNA", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("METRIK PENGGUNA", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
 
         // Avatar & Info Card (Nama Bisa Diedit)
@@ -48,11 +49,11 @@ fun ProfilScreen(
                 Box(
                     modifier = Modifier.size(90.dp).border(2.dp, MaterialTheme.colorScheme.primary, CircleShape).padding(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
-                ) { Text("👩‍💻", style = MaterialTheme.typography.headlineLarge) }
+                ) { Text("👨‍💻", style = MaterialTheme.typography.headlineLarge) }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // NAMA BISA DIEDIT DI SINI (Transparan)
+                // NAMA BISA DIEDIT
                 TextField(
                     value = viewModel.nama,
                     onValueChange = { viewModel.nama = it },
@@ -112,14 +113,14 @@ fun ProfilScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { viewModel.saveProfile() }, // SEKARANG BAKAL NYIMPAN PERMANEN
+                    onClick = { viewModel.saveProfile() },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(Icons.Default.Save, contentDescription = "Simpan", tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(Icons.Default.Save, contentDescription = "Simpan", tint = Color.Black)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Perbarui Basis Data", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+                    Text("Perbarui Basis Data", color = Color.Black, fontWeight = FontWeight.Bold)
                 }
             }
         }

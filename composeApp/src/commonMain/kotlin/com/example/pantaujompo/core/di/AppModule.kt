@@ -14,6 +14,7 @@ import com.example.pantaujompo.domain.repository.ActivityRepository
 import com.example.pantaujompo.presentation.screens.profil.ProfilViewModel
 import com.example.pantaujompo.presentation.screens.addedit.AddEditViewModel
 import com.example.pantaujompo.presentation.screens.riwayat.RiwayatViewModel
+import com.example.pantaujompo.presentation.screens.home.DashboardViewModel
 
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -60,6 +61,7 @@ val viewModelModule = module {
     viewModelOf(::ProfilViewModel)
     viewModelOf(::AddEditViewModel)
     viewModelOf(::RiwayatViewModel)
+    viewModelOf(::DashboardViewModel)
 }
 
 // ==================== SHARED MODULES ====================

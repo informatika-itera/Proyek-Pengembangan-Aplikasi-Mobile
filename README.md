@@ -1,8 +1,14 @@
-# 📱 NoteAI - KMP Project Template
+# 📱 Cooknote - Smart Pantry & AI Assistant
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+Aplikasi manajemen bahan makanan dan asisten koki pintar berbasis AI menggunakan Kotlin Multiplatform (KMP). **Ubah sisa bahan di dapurmu menjadi resep lezat dan kurangi limbah makanan (*zero-waste*).**
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+## 👥 Informasi Kelompok
+**Program Studi Teknik Informatika - ITERA**
+
+| Nama | NIM | Rencana Peran |
+|------|-----|---------------|
+| M. Hafizurrahman Akbar | 123140123 | Domain & Data Layer |
+| Jordy Anugrah Akbar | 123140141 | Presentation Layer & UI |
 
 > **📚 Dokumentasi Lengkap**
 > 
@@ -17,17 +23,17 @@ Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan 
 
 ## ✨ Fitur Aplikasi
 
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
+- 📝 **Pantry Inventory** - Tambah, edit, hapus, dan kelola bahan makanan yang tersedia di dapur.
+- 🔍 **Smart Search & Filter** - Cari bahan makanan dan filter berdasarkan kategori bahan (Sayur, Daging, Bumbu, dll).
+- 🤖 **AI Chef Assistant** - Generate resep masakan selangkah demi selangkah secara cerdas hanya dengan menggunakan bahan yang tersisa di *pantry*.
+- 🌙 **Dark Mode** - Tema gelap/terang untuk kenyamanan penggunaan.
+- 📱 **Cross-Platform** - Android & iOS dari satu codebase menggunakan KMP.
 
 ## 🏗️ Arsitektur & Teknologi
 
 ### Clean Architecture + MVVM
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    PRESENTATION LAYER                        │
 │  ┌───────────────┐        ┌───────────────┐                 │
@@ -77,41 +83,14 @@ Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan 
 
 ## 📁 Struktur Project
 
-```
+```text
 composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
+├── commonMain/kotlin/com/example/cooknote/
 │   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
+│   ├── data/                      # Data layer (SQLDelight, Ktor, Repository Impl)
+│   ├── domain/                    # Domain layer (Models: PantryItem, Recipe, UseCases)
+│   └── presentation/              # Presentation layer (UI, Navigation, ViewModels)
+├── commonMain/sqldelight/         # SQLDelight schema (PantryEntity)
 ├── androidMain/kotlin/            # Android-specific (expect/actual)
 └── iosMain/kotlin/                # iOS-specific (expect/actual)
 ```
@@ -124,122 +103,66 @@ composeApp/src/
 - Xcode 15+ (untuk iOS)
 - JDK 17+
 
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
 ### Setup
 
-1. **Fork & Clone repository**
+1. **Clone repository**
    ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
+   git clone git@github.com:informatika-itera/Proyek-Pengembangan-Aplikasi-Mobile.git
+   cd Proyek-Pengembangan-Aplikasi-Mobile
    ```
 
-2. **Setup `local.properties`**
+2. **Gunakan Branch Kelompok**
+   ```bash
+   git checkout project/123140123-123140141-Cooknote
+   ```
 
-   Salin template, lalu isi API key:
+3. **Setup `local.properties`**
+   Salin template, lalu isi API key masing-masing anggota (jangan di-commit):
    ```bash
    cp local.properties.example local.properties
    # edit local.properties dan isi GEMINI_API_KEY=...
    ```
+   *Dapatkan API key gratis di: https://aistudio.google.com/*
 
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
+4. **Sync & Build**
    ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
+   ./gradlew build                       # build semua target
+   ./gradlew :composeApp:assembleDebug   # build APK debug saja
    ```
 
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
+## 📝 Tugas Mahasiswa (Sprint Plan)
 
 ### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
+- [x] Clone dan setup project
+- [x] Pahami struktur folder Clean Architecture
+- [x] Modifikasi tema/warna Cooknote (Hijau/Oranye)
+- [x] Update README identitas dan rancangan proyek
 
 ### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
+- [ ] Tambahkan domain model baru (`PantryItem` & `Recipe`)
+- [ ] Implementasi fitur CRUD bahan makanan
+- [ ] Implementasi local storage SQLite (SQLDelight) untuk bahan
 
 ### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
+- [ ] Implementasi search bahan makanan dengan debounce
+- [ ] Tambahkan filter kategori bahan (Sayur, Protein, Bumbu, dll)
+- [ ] Implementasi offline-first (menyimpan resep favorit lokal)
 
 ### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
+- [ ] Integrasikan fitur "Generate Resep dari Bahan" menggunakan Gemini API
+- [ ] Parsing hasil AI menjadi teks instruksi memasak yang mudah dibaca awam
+- [ ] UI polish, animasi, dan unit tests
 
 ### Sprint 5: Final
 - [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
+- [ ] Dokumentasi lengkap
+- [ ] Prepare presentasi & demo
 
 ## 📄 License
-
 MIT License - silakan gunakan untuk pembelajaran.
 
 ## 👨‍🏫 Dosen Pengampu
+### Pak Habib
+[GitHub: mh4Scripts](https://github.com/mh4Scripts)
 
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
-
----
-
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+**Program Studi Teknik Informatika** Institut Teknologi Sumatera (ITERA)

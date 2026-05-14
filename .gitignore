@@ -46,4 +46,4 @@ caches/
 daemon/
 kotlin-profile/
 native/
-wrapper/
+# wrapper/  <-- Removed this to allow gradle-wrapper.properties

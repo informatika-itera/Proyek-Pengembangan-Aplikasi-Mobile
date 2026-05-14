@@ -1,6 +1,7 @@
 # My Bawang Gacha
-> My Bawang Gacha adalah aplikasi Anime List dan Gacha yang dikembangkan menggunakan Kotlin Multiplatform.
+> My Bawang Gacha adalah aplikasi Anime List dan Gacha yang dikembangkan menggunakan Kotlin Multiplatform. 
 
+![CI](https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/KMP-ci.yml/badge.svg)
 ## Fitur Utama
 
 - Anime List: Menampilkan dan mengelola daftar anime.
@@ -42,10 +43,6 @@ Proyek ini menggunakan Clean Architecture dan MVVM:
 ## Project Plan
 
 Lihat detail progress di [PLAN.md](PLAN.md)
-
-## Status Badge
-
-![CI](https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
 ## Dosen Pengampu
 ### Pak Habib

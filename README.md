@@ -4,8 +4,8 @@
 **MetaForge** adalah aplikasi *mobile multiplatform* yang dirancang untuk memandu pemain Mobile Legends: Bang Bang (MLBB) dalam fase *draft pick*. MetaForge menggunakan **Sistem Skoring Algoritmik (Rule-Based System)** secara *offline* untuk menghitung poin sinergi dan persentase *counter* lawan.
 
 ## 2. Tim Pengembang
-* **Anggota 1:** [Anselmus Herpin Hasugian] - 123140020 - @[forkaton]
-* **Anggota 2:** [Adi Septriansyah] - 123140021 - @[Protoflicker]
+* **Anggota 1:** Anselmus Herpin Hasugian - 123140020 - @forkaton
+* **Anggota 2:** Adi Septriansyah - 123140021 - @Protoflicker
 
 ## 3. Fitur Utama
 ### Minimum Requirements

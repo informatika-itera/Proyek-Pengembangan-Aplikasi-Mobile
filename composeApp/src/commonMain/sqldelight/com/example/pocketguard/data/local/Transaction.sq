@@ -1,0 +1,35 @@
+CREATE TABLE TransactionEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    amount REAL NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL,
+    type TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+-- Mendapatkan semua transaksi (Read)
+getAllTransactions:
+SELECT * FROM TransactionEntity ORDER BY created_at DESC;
+
+-- Mendapatkan satu transaksi berdasarkan ID (Read)
+getTransactionById:
+SELECT * FROM TransactionEntity WHERE id = ?;
+
+-- Menambah transaksi baru (Create)
+insertTransaction:
+INSERT INTO TransactionEntity(amount, description, category, type, created_at)
+VALUES (?, ?, ?, ?, ?);
+
+-- Mendapatkan ID terakhir yang dimasukkan (Sangat berguna untuk Repository)
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- Memperbarui transaksi (Update)
+updateTransaction:
+UPDATE TransactionEntity
+SET amount = ?, description = ?, category = ?, type = ?, created_at = ?
+WHERE id = ?;
+
+-- Menghapus transaksi (Delete)
+deleteTransaction:
+DELETE FROM TransactionEntity WHERE id = ?;

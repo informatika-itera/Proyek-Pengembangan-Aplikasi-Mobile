@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">NoteAI</string>
+    <string name="app_name">PocketGuard</string>
     
     <!-- Navigation -->
     <string name="nav_home">Beranda</string>

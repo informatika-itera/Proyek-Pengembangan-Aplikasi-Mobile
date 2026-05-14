@@ -9,17 +9,12 @@ import com.example.mybawanggacha.domain.usecase.DeleteNoteUseCase
 import com.example.mybawanggacha.domain.usecase.GetAllNotesUseCase
 import com.example.mybawanggacha.domain.usecase.NoteSortBy
 import com.example.mybawanggacha.domain.usecase.SearchNotesUseCase
+import com.example.mybawanggacha.data.remote.dto.AnimeEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class HomeViewModel(
@@ -30,6 +25,9 @@ class HomeViewModel(
     private val jikanService: com.example.mybawanggacha.data.remote.api.JikanService
 ) : ViewModel() {
     
+    private val _animeRecommendations = MutableStateFlow<List<AnimeEntry>>(emptyList())
+    val animeRecommendations: StateFlow<List<AnimeEntry>> = _animeRecommendations.asStateFlow()
+
     init {
         fetchJikanData()
     }
@@ -37,8 +35,9 @@ class HomeViewModel(
     private fun fetchJikanData() {
         viewModelScope.launch {
             try {
-                val result = jikanService.fetch()
-                println("Jikan result: $result")
+                val response = jikanService.fetch()
+                val allEntries = response.data.flatMap { it.entry }
+                _animeRecommendations.value = allEntries
             } catch (e: Exception) {
                 println("Jikan error: ${e.message}")
             }

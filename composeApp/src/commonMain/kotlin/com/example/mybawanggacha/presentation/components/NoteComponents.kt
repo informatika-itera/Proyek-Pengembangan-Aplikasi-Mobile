@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,6 +42,91 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.mybawanggacha.domain.model.Note
 import com.example.mybawanggacha.domain.model.NoteColor
+
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.example.mybawanggacha.data.remote.dto.AnimeEntry
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsBytes
+import org.jetbrains.compose.resources.decodeToImageBitmap
+import org.koin.compose.koinInject
+
+@Composable
+fun AnimeRecommendationCard(
+    anime: AnimeEntry,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .height(110.dp),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row {
+            KtorImage(
+                url = anime.images.jpg.image_url,
+                modifier = Modifier
+                    .width(80.dp)
+                    .fillMaxHeight(),
+                contentDescription = anime.title
+            )
+            
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = anime.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun KtorImage(
+    url: String,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
+) {
+    val client = koinInject<HttpClient>()
+    var bytes by remember(url) { mutableStateOf<ByteArray?>(null) }
+    
+    LaunchedEffect(url) {
+        try {
+            bytes = client.get(url).bodyAsBytes()
+        } catch (e: Exception) {
+            println("Error loading image: ${e.message}")
+        }
+    }
+    
+    val imageBitmap = bytes?.decodeToImageBitmap()
+    
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
+        if (imageBitmap != null) {
+            androidx.compose.foundation.Image(
+                bitmap = imageBitmap,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = contentScale
+            )
+        } else {
+            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+        }
+    }
+}
 
 @Composable
 fun NoteCard(

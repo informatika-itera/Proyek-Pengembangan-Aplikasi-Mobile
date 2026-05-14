@@ -11,7 +11,7 @@ import org.koin.android.ext.koin.androidLogger
  * 
  * Entry point untuk inisialisasi app-wide dependencies.
  */
-class NoteAIApplication : Application() {
+class MetaForgeApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
@@ -21,7 +21,7 @@ class NoteAIApplication : Application() {
             platformModules = listOf(androidModule)
         ) {
             androidLogger()
-            androidContext(this@NoteAIApplication)
+            androidContext(this@MetaForgeApplication)
         }
     }
 }

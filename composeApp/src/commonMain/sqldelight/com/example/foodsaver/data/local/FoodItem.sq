@@ -1,0 +1,19 @@
+CREATE TABLE FoodItemEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    quantity REAL NOT NULL,
+    unit TEXT NOT NULL,
+    expiryDate INTEGER AS kotlinx.datetime.Instant NOT NULL,
+    category TEXT NOT NULL,
+    isConsumed INTEGER NOT NULL DEFAULT 0
+);
+
+insertFoodItem:
+INSERT OR REPLACE INTO FoodItemEntity(name, quantity, unit, expiryDate, category, isConsumed)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getAllFoodItems:
+SELECT * FROM FoodItemEntity ORDER BY expiryDate ASC;
+
+deleteFoodItem:
+DELETE FROM FoodItemEntity WHERE id = ?;

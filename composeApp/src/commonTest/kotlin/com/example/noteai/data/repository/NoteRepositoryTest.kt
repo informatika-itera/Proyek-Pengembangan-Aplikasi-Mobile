@@ -1,10 +1,10 @@
-package com.example.noteai.data.repository
+package com.example.foodsaver.data.repository
 
 import app.cash.turbine.test
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
-import com.example.noteai.domain.repository.NoteRepository
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.NoteColor
+import com.example.foodsaver.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -17,15 +17,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/**
- * Unit Tests untuk NoteRepository
- * 
- * Testing Guidelines:
- * 1. Gunakan FakeRepository untuk isolasi
- * 2. Test satu behavior per test
- * 3. Gunakan Turbine untuk test Flow
- * 4. Follow AAA pattern (Arrange, Act, Assert)
- */
 class NoteRepositoryTest {
     
     private lateinit var repository: FakeNoteRepository
@@ -35,29 +26,21 @@ class NoteRepositoryTest {
         repository = FakeNoteRepository()
     }
     
-    // ==================== INSERT TESTS ====================
-    
     @Test
     fun `insertNote should return new note id`() = runTest {
-        // Arrange
         val note = createTestNote(title = "Test Note")
         
-        // Act
         val id = repository.insertNote(note)
         
-        // Assert
         assertTrue(id > 0)
     }
     
     @Test
     fun `insertNote should add note to list`() = runTest {
-        // Arrange
         val note = createTestNote(title = "New Note")
         
-        // Act
         repository.insertNote(note)
         
-        // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
@@ -66,15 +49,11 @@ class NoteRepositoryTest {
         }
     }
     
-    // ==================== GET TESTS ====================
-    
     @Test
     fun `getAllNotes should return all notes`() = runTest {
-        // Arrange
         repository.insertNote(createTestNote(title = "Note 1"))
         repository.insertNote(createTestNote(title = "Note 2"))
         
-        // Act & Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertEquals(2, notes.size)
@@ -84,10 +63,8 @@ class NoteRepositoryTest {
     
     @Test
     fun `getNoteById should return correct note`() = runTest {
-        // Arrange
         val id = repository.insertNote(createTestNote(title = "Find Me"))
         
-        // Act & Assert
         repository.getNoteById(id).test {
             val note = awaitItem()
             assertNotNull(note)
@@ -98,7 +75,6 @@ class NoteRepositoryTest {
     
     @Test
     fun `getNoteById should return null for non-existent id`() = runTest {
-        // Act & Assert
         repository.getNoteById(999).test {
             val note = awaitItem()
             assertEquals(null, note)
@@ -106,15 +82,11 @@ class NoteRepositoryTest {
         }
     }
     
-    // ==================== SEARCH TESTS ====================
-    
     @Test
     fun `searchNotes should find notes by title`() = runTest {
-        // Arrange
         repository.insertNote(createTestNote(title = "Kotlin Tutorial"))
         repository.insertNote(createTestNote(title = "Java Guide"))
         
-        // Act & Assert
         repository.searchNotes("Kotlin").test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
@@ -125,11 +97,9 @@ class NoteRepositoryTest {
     
     @Test
     fun `searchNotes should find notes by content`() = runTest {
-        // Arrange
         repository.insertNote(createTestNote(title = "Recipe", content = "Add tomatoes"))
         repository.insertNote(createTestNote(title = "Shopping", content = "Buy milk"))
         
-        // Act & Assert
         repository.searchNotes("tomatoes").test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
@@ -138,17 +108,12 @@ class NoteRepositoryTest {
         }
     }
     
-    // ==================== DELETE TESTS ====================
-    
     @Test
     fun `deleteNote should remove note from list`() = runTest {
-        // Arrange
         val id = repository.insertNote(createTestNote(title = "To Delete"))
         
-        // Act
         repository.deleteNote(id)
         
-        // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertTrue(notes.isEmpty())
@@ -156,26 +121,19 @@ class NoteRepositoryTest {
         }
     }
     
-    // ==================== UPDATE TESTS ====================
-    
     @Test
     fun `updateNote should modify existing note`() = runTest {
-        // Arrange
         val id = repository.insertNote(createTestNote(title = "Original"))
         
-        // Act
         val updatedNote = createTestNote(id = id, title = "Updated")
         repository.updateNote(updatedNote)
         
-        // Assert
         repository.getNoteById(id).test {
             val note = awaitItem()
             assertEquals("Updated", note?.title)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== HELPER FUNCTIONS ====================
     
     private fun createTestNote(
         id: Long = 0,
@@ -196,12 +154,6 @@ class NoteRepositoryTest {
     }
 }
 
-/**
- * Fake Repository untuk Testing
- * 
- * In-memory implementation yang tidak bergantung pada database.
- * Digunakan untuk unit testing tanpa side effects.
- */
 class FakeNoteRepository : NoteRepository {
     
     private val notes = MutableStateFlow<List<Note>>(emptyList())

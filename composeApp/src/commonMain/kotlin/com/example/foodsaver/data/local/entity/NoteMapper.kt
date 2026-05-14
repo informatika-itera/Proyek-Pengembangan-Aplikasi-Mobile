@@ -1,9 +1,9 @@
-package com.example.noteai.data.local.entity
+package com.example.foodsaver.data.local.entity
 
 import com.example.foodsaver.data.local.NoteEntity
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.NoteColor
 import kotlinx.datetime.Instant
 
 fun NoteEntity.toDomain(): Note {

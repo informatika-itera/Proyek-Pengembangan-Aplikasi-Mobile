@@ -1,6 +1,6 @@
 package com.example.noteai.core.network
 
-import com.example.noteai.BuildConfig
+import com.example.foodsaver.BuildConfig
 
 /**
  * Android implementation of ApiConfig

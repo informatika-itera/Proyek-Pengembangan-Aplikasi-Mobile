@@ -1,0 +1,82 @@
+-- Note table schema for SQLDelight
+-- File: Note.sq
+
+CREATE TABLE NoteEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'GENERAL',
+    color TEXT NOT NULL DEFAULT 'DEFAULT',
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Get all notes ordered by updated_at descending
+getAllNotes:
+SELECT * FROM NoteEntity
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get pinned notes
+getPinnedNotes:
+SELECT * FROM NoteEntity
+WHERE is_pinned = 1
+ORDER BY updated_at DESC;
+
+-- Get notes by category
+getNotesByCategory:
+SELECT * FROM NoteEntity
+WHERE category = ?
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Search notes by title or content
+searchNotes:
+SELECT * FROM NoteEntity
+WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%'
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get single note by ID
+getNoteById:
+SELECT * FROM NoteEntity
+WHERE id = ?;
+
+-- Insert new note
+insertNote:
+INSERT INTO NoteEntity (title, content, category, color, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- Get last inserted ID
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- Update existing note
+updateNote:
+UPDATE NoteEntity
+SET title = ?, content = ?, category = ?, color = ?, is_pinned = ?, updated_at = ?
+WHERE id = ?;
+
+-- Delete note by ID
+deleteNoteById:
+DELETE FROM NoteEntity
+WHERE id = ?;
+
+-- Toggle pin status
+togglePin:
+UPDATE NoteEntity
+SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END, updated_at = ?
+WHERE id = ?;
+
+-- Delete multiple notes
+deleteNotesByIds:
+DELETE FROM NoteEntity
+WHERE id IN ?;
+
+-- Count all notes
+countNotes:
+SELECT COUNT(*) FROM NoteEntity;
+
+-- Count notes by category
+countNotesByCategory:
+SELECT category, COUNT(*) AS total
+FROM NoteEntity
+GROUP BY category;

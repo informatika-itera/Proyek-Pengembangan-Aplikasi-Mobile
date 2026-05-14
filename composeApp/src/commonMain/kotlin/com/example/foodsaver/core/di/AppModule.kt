@@ -1,25 +1,19 @@
-package com.example.noteai.core.di
+package com.example.foodsaver.core.di
 
 import app.cash.sqldelight.ColumnAdapter
 import com.example.foodsaver.data.local.FoodItemEntity
 import com.example.foodsaver.data.local.FoodSaverDatabase
-import com.example.noteai.core.network.HttpClientFactory
-import com.example.noteai.core.util.DatabaseDriverFactory
-import com.example.noteai.data.local.datastore.DataStoreFactory
-import com.example.noteai.data.local.datastore.UserPreferences
-import com.example.noteai.data.local.datastore.create
+import com.example.foodsaver.core.network.HttpClientFactory
+import com.example.foodsaver.core.util.DatabaseDriverFactory
+import com.example.foodsaver.data.local.datastore.DataStoreFactory
+import com.example.foodsaver.data.local.datastore.UserPreferences
+import com.example.foodsaver.data.local.datastore.create
 import com.example.noteai.data.remote.api.GeminiService
 import com.example.noteai.data.repository.AIRepositoryImpl
 import com.example.noteai.data.repository.NoteRepositoryImpl
 import com.example.noteai.domain.repository.AIRepository
 import com.example.noteai.domain.repository.NoteRepository
-import com.example.noteai.domain.usecase.DeleteNoteUseCase
-import com.example.noteai.domain.usecase.GenerateIdeasUseCase
-import com.example.noteai.domain.usecase.GetAllNotesUseCase
-import com.example.noteai.domain.usecase.ImproveWritingUseCase
-import com.example.noteai.domain.usecase.SaveNoteUseCase
-import com.example.noteai.domain.usecase.SearchNotesUseCase
-import com.example.noteai.domain.usecase.SummarizeNoteUseCase
+import com.example.noteai.domain.usecase.*
 import com.example.noteai.presentation.screens.addnote.AddNoteViewModel
 import com.example.noteai.presentation.screens.ai.AIAssistantViewModel
 import com.example.noteai.presentation.screens.detail.NoteDetailViewModel
@@ -33,14 +27,10 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-// ==================== NETWORK MODULE ====================
-
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
 }
-
-// ==================== DATABASE MODULE ====================
 
 val databaseModule = module {
     single {
@@ -59,21 +49,15 @@ val databaseModule = module {
     }
 }
 
-// ==================== PREFERENCES MODULE ====================
-
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
-
 val repositoryModule = module {
     singleOf(::NoteRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
-
-// ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
     singleOf(::GetAllNotesUseCase)
@@ -85,16 +69,12 @@ val useCaseModule = module {
     singleOf(::GenerateIdeasUseCase)
 }
 
-// ==================== VIEWMODEL MODULE ====================
-
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddNoteViewModel)
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
 }
-
-// ==================== SHARED MODULES ====================
 
 val sharedModules = listOf(
     networkModule,
@@ -104,8 +84,6 @@ val sharedModules = listOf(
     useCaseModule,
     viewModelModule
 )
-
-// ==================== INIT FUNCTION ====================
 
 fun initKoin(
     platformModules: List<Module> = emptyList(),

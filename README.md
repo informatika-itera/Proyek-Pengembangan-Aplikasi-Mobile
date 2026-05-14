@@ -1,5 +1,4 @@
 # MetaForge: MLBB Strategic Drafting Advisor
-![CI](![CI](https://github.com/forkaton/MetaForge/actions/workflows/ci.yml/badge.svg?branch=project/123140020-123140021-MetaForge))
 
 ## 1. Deskripsi Proyek
 **MetaForge** adalah aplikasi *mobile multiplatform* yang dirancang untuk memandu pemain Mobile Legends: Bang Bang (MLBB) dalam fase *draft pick*. MetaForge menggunakan **Sistem Skoring Algoritmik (Rule-Based System)** secara *offline* untuk menghitung poin sinergi dan persentase *counter* lawan.

@@ -1,245 +1,100 @@
-# 📱 NoteAI - KMP Project Template
+﻿# VulnLog
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+**Vulnerability Tracker & Bug Bounty Journal**
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+VulnLog adalah aplikasi mobile untuk mencatat dan mengelola temuan vulnerability saat bug bounty hunting. Dibangun dengan Kotlin Multiplatform (KMP) dan Compose Multiplatform, app ini bisa dipakai di Android dan iOS dari satu codebase.
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+Kenapa bikin ini? Karena kebanyakan bug hunter masih catat temuan di Notion/Google Docs yang formatnya berantakan. VulnLog hadir sebagai jurnal terstruktur yang bisa langsung track status temuan dari "Found" sampai "Paid".
 
-## ✨ Fitur Aplikasi
+## Fitur Utama
 
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
+### 1. Vulnerability Logging
+- Catat temuan vulnerability lengkap: judul, deskripsi, severity (Critical/High/Medium/Low), status, dan platform target.
+- Timestamp otomatis untuk setiap entry.
 
-## 🏗️ Arsitektur & Teknologi
+### 2. Severity Classification
+- Color-coded severity level sesuai standar CVSS (merah = Critical, oranye = High, kuning = Medium, biru = Low).
+- Filter dan sort berdasarkan severity.
 
-### Clean Architecture + MVVM
+### 3. Status Tracking
+- Track status temuan: New, Reported, Triaged, Accepted, Resolved, Paid.
+- Dashboard ringkasan per status.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
+### 4. AI Assistant
+- Bantu generate deskripsi vulnerability dari input singkat.
+- Suggest severity berdasarkan tipe vulnerability.
 
-### Tech Stack
+### 5. Search & Filter
+- Full-text search di semua catatan.
+- Filter berdasarkan severity, status, platform, dan tanggal.
 
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
+### 6. Dark Mode
+- Default dark theme dengan aksen neon green (terminal aesthetic).
 
-## 📁 Struktur Project
+## Arsitektur
+
+Clean Architecture dengan 3 layer:
+- **Presentation**: Jetpack Compose + ViewModel + StateFlow
+- **Domain**: Use Cases, Entities, Repository Interfaces
+- **Data**: Repository Implementations, SQLDelight (local), Ktor (remote)
 
 ```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
+composeApp/src/commonMain/kotlin/com/example/noteai/
++-- core/           # DI (Koin), network config, utilities
++-- data/           # Repository impl, local DB, remote API
++-- domain/         # Models, repository interfaces, use cases
++-- presentation/   # Screens, ViewModels, components, theme
 ```
 
-## 🚀 Getting Started
+## Tech Stack
 
-### Prerequisites
+| Layer | Teknologi |
+|-------|-----------|
+| Language | Kotlin |
+| UI | Compose Multiplatform |
+| Architecture | Clean Architecture + MVVM |
+| DI | Koin |
+| Database | SQLDelight |
+| Network | Ktor Client |
+| Serialization | kotlinx.serialization |
+| Async | Kotlin Coroutines & Flow |
+| AI | Google Gemini API |
 
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
+## Sprint Roadmap
 
-### 👥 Ketentuan Kelompok
+| Sprint | Fokus | Status |
+|--------|-------|--------|
+| Sprint 1 | Project setup, tema cybersecurity, README | In Progress |
+| Sprint 2 | CRUD vulnerability, severity system | Planned |
+| Sprint 3 | Search, filter, status tracking | Planned |
+| Sprint 4 | AI integration, UI polish | Planned |
+| Sprint 5 | Testing, bug fix, demo | Planned |
 
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
+## Setup
 
 ```bash
-# Run all tests
-./gradlew allTests
+# Clone repo
+git clone https://github.com/11-090-AndikaRahmanPratama/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
 
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
+# Checkout branch project
+git checkout project/123140075-123140090-VulnLog
+
+# Setup API key
+cp local.properties.example local.properties
+# Edit local.properties, isi GEMINI_API_KEY=...
+
+# Build
+./gradlew :composeApp:assembleDebug
 ```
 
-## 📝 Tugas Mahasiswa
+Dapatkan API key di: [Google AI Studio](https://aistudio.google.com)
 
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
+## Tim Pengembang
 
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
+| Nama | NIM | Role |
+|------|-----|------|
+| Andika Rahman Pratama | 123140090 | Developer |
+| Muhammad Farhan Muzakhi | 123140075 | Developer |
 
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
-
----
-
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+Program Studi Teknik Informatika - Institut Teknologi Sumatera (ITERA)

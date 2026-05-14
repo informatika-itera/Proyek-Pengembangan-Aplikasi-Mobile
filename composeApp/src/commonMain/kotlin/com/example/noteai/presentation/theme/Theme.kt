@@ -9,15 +9,19 @@ import androidx.compose.ui.graphics.Color
 
 // ==================== COLORS ====================
 
-private val Primary = Color(0xFF6750A4)
-private val OnPrimary = Color(0xFFFFFFFF)
-private val PrimaryContainer = Color(0xFFEADDFF)
-private val OnPrimaryContainer = Color(0xFF21005D)
+// ==================== COLORS COOKNOTE ====================
 
-private val Secondary = Color(0xFF625B71)
+// Hijau segar (Sayuran/Fresh)
+private val Primary = Color(0xFF2E7D32)
+private val OnPrimary = Color(0xFFFFFFFF)
+private val PrimaryContainer = Color(0xFFA5D6A7)
+private val OnPrimaryContainer = Color(0xFF003300)
+
+// Oranye hangat (Memasak/Rempah)
+private val Secondary = Color(0xFFE65100)
 private val OnSecondary = Color(0xFFFFFFFF)
-private val SecondaryContainer = Color(0xFFE8DEF8)
-private val OnSecondaryContainer = Color(0xFF1D192B)
+private val SecondaryContainer = Color(0xFFFFCC80)
+private val OnSecondaryContainer = Color(0xFF4E1D04)
 
 private val Tertiary = Color(0xFF7D5260)
 private val OnTertiary = Color(0xFFFFFFFF)
@@ -29,10 +33,11 @@ private val OnError = Color(0xFFFFFFFF)
 private val ErrorContainer = Color(0xFFF9DEDC)
 private val OnErrorContainer = Color(0xFF410E0B)
 
-private val BackgroundLight = Color(0xFFFFFBFE)
-private val OnBackgroundLight = Color(0xFF1C1B1F)
-private val SurfaceLight = Color(0xFFFFFBFE)
-private val OnSurfaceLight = Color(0xFF1C1B1F)
+// Netral/Background (Bersih seperti meja dapur)
+private val BackgroundLight = Color(0xFFF9FBE7)
+private val OnBackgroundLight = Color(0xFF1A1C18)
+private val SurfaceLight = Color(0xFFF9FBE7)
+private val OnSurfaceLight = Color(0xFF1A1C18)
 private val SurfaceVariantLight = Color(0xFFE7E0EC)
 private val OnSurfaceVariantLight = Color(0xFF49454F)
 

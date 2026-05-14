@@ -5,16 +5,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     
     <application
-        android:name=".NoteAIApplication"
+        android:name=".KelazZzApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NoteAI">
+        android:theme="@style/Theme.KelazZz">
         
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.NoteAI">
+            android:theme="@style/Theme.KelazZz">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

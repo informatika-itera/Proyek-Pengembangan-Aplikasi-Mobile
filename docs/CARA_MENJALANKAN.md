@@ -115,11 +115,11 @@ manual — wrapper akan mendownload Gradle 8.9 sendiri.
 Generate file SQLDelight (biasanya otomatis, tapi kalau perlu manual):
 
 ```bash
-./gradlew :composeApp:generateCommonMainNoteDatabaseInterface
+./gradlew :composeApp:generateCommonMainMetaForgeDatabaseInterface
 ```
 
 > Nama task ini berasal dari konfigurasi di `composeApp/build.gradle.kts`:
-> `sqldelight { databases { create("NoteDatabase") { ... } } }`.
+> `sqldelight { databases { create("MetaForgeDatabase") { ... } } }`.
 
 Jalankan unit test (commonTest):
 
@@ -208,7 +208,7 @@ Checklist setelah app jalan:
 | ------------------------------------------------------ | ------------------------------------------------------------------ |
 | `SDK location not found`                               | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis. |
 | `GEMINI_API_KEY` kosong / 401 Unauthorized             | Periksa baris `GEMINI_API_KEY=...` di `local.properties` lalu rebuild. |
-| `Cannot resolve symbol 'NoteDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
+| `Cannot resolve symbol 'MetaForgeDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainMetaForgeDatabaseInterface`, lalu **Build → Rebuild Project**. |
 | Gradle sync lambat sekali pertama kali                 | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil. |
 | `Daemon ... was terminated` saat build                 | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`. |
 | Build error setelah ganti versi                        | `./gradlew clean` lalu rebuild; bila tetap gagal hapus folder `.gradle/` lokal lalu sync ulang. |

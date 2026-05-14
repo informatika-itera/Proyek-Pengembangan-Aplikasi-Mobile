@@ -1,5 +1,7 @@
 # TripMate ✈️
 
+![CI](https://github.com/Ramaaaadevs/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=project/123140116-123140135-TripMate)
+
 > **Travel Planning & Tracking Companion** — Rencanakan, jalani, dan kenang perjalananmu dalam satu aplikasi.
 
 ## 📖 Tentang TripMate

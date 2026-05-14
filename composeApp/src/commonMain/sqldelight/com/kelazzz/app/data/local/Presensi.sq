@@ -1,0 +1,57 @@
+-- Presensi table schema for SQLDelight
+-- Menyimpan cache rekap presensi dari Pocket ITERA API
+-- Mendukung fitur Offline First
+
+CREATE TABLE PresensiEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mataKuliahId TEXT NOT NULL,
+    mataKuliahNama TEXT NOT NULL,
+    pertemuan INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    tanggal TEXT NOT NULL,
+    lastSync TEXT NOT NULL
+);
+
+-- Get all presensi records
+getAllPresensi:
+SELECT * FROM PresensiEntity
+ORDER BY tanggal DESC;
+
+-- Get presensi by mata kuliah
+getPresensiByMataKuliah:
+SELECT * FROM PresensiEntity
+WHERE mataKuliahId = ?
+ORDER BY pertemuan ASC;
+
+-- Get distinct mata kuliah list
+getDistinctMataKuliah:
+SELECT DISTINCT mataKuliahId, mataKuliahNama FROM PresensiEntity;
+
+-- Get attendance summary per mata kuliah
+getAttendanceSummary:
+SELECT mataKuliahId, mataKuliahNama,
+       COUNT(*) AS totalPertemuan,
+       SUM(CASE WHEN status = 'HADIR' THEN 1 ELSE 0 END) AS totalHadir,
+       SUM(CASE WHEN status = 'ALPHA' THEN 1 ELSE 0 END) AS totalAlpha,
+       SUM(CASE WHEN status = 'IZIN' THEN 1 ELSE 0 END) AS totalIzin,
+       SUM(CASE WHEN status = 'SAKIT' THEN 1 ELSE 0 END) AS totalSakit
+FROM PresensiEntity
+GROUP BY mataKuliahId;
+
+-- Insert presensi record
+insertPresensi:
+INSERT INTO PresensiEntity (mataKuliahId, mataKuliahNama, pertemuan, status, tanggal, lastSync)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Delete all presensi (for re-sync)
+deleteAllPresensi:
+DELETE FROM PresensiEntity;
+
+-- Delete presensi by mata kuliah
+deletePresensiByMataKuliah:
+DELETE FROM PresensiEntity
+WHERE mataKuliahId = ?;
+
+-- Count total presensi records
+countPresensi:
+SELECT COUNT(*) FROM PresensiEntity;

@@ -27,16 +27,16 @@ kotlin {
         }
     }
     
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
+//    listOf(
+//        iosX64(),
+//        iosArm64(),
+//        iosSimulatorArm64()
+//    ).forEach { iosTarget ->
+//        iosTarget.binaries.framework {
+//            baseName = "ComposeApp"
+//            isStatic = true
+//        }
+//    }
     
     sourceSets {
         commonMain.dependencies {
@@ -98,19 +98,19 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
         }
         
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            implementation(libs.sqldelight.native.driver)
-        }
+//        iosMain.dependencies {
+//            implementation(libs.ktor.client.darwin)
+//            implementation(libs.sqldelight.native.driver)
+//        }
     }
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.kelazzz.app"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.kelazzz.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -152,8 +152,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("KelazZzDatabase") {
+            packageName.set("com.kelazzz.app.data.local")
         }
     }
 }

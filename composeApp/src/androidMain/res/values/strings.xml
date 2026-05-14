@@ -1,162 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">NoteAI</string>
+    <string name="app_name">KelazZz</string>
     
     <!-- Navigation -->
-    <string name="nav_home">Beranda</string>
-    <string name="nav_add_note">Tambah Catatan</string>
-    <string name="nav_edit_note">Edit Catatan</string>
-    <string name="nav_note_detail">Detail Catatan</string>
-    <string name="nav_ai_assistant">Asisten AI</string>
-    <string name="nav_settings">Pengaturan</string>
+    <string name="nav_login">Login</string>
+    <string name="nav_home">Dashboard</string>
+    <string name="nav_daftar_presensi">Daftar Presensi</string>
+    <string name="nav_presensi">Presensi</string>
+    <string name="nav_kalender">Kalender Akademik</string>
+    <string name="nav_ai_asisten">AI Asisten</string>
+    <string name="nav_notifikasi">Notifikasi</string>
     
-    <!-- Home Screen -->
-    <string name="home_title">Catatan Saya</string>
-    <string name="home_search_hint">Cari catatan...</string>
-    <string name="home_empty_title">Belum Ada Catatan</string>
-    <string name="home_empty_message">Tap + untuk membuat catatan baru</string>
-    <string name="home_not_found_title">Tidak Ditemukan</string>
-    <string name="home_not_found_message">Coba ubah kata kunci atau filter</string>
-    <string name="home_filter_all">Semua</string>
+    <!-- Login Screen -->
+    <string name="login_title">Masuk ke KelazZz</string>
+    <string name="login_nim_label">NIM</string>
+    <string name="login_nim_hint">Masukkan NIM...</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_password_hint">Masukkan password...</string>
+    <string name="login_button">Masuk</string>
+    <string name="login_subtitle">Gunakan kredensial Pocket ITERA</string>
     
-    <!-- Sort Options -->
-    <string name="sort_title_asc">Judul (A-Z)</string>
-    <string name="sort_title_desc">Judul (Z-A)</string>
-    <string name="sort_created_asc">Dibuat (Lama)</string>
-    <string name="sort_created_desc">Dibuat (Baru)</string>
-    <string name="sort_updated_asc">Diupdate (Lama)</string>
-    <string name="sort_updated_desc">Diupdate (Baru)</string>
+    <!-- Home / Dashboard Screen -->
+    <string name="home_title">Dashboard</string>
+    <string name="home_welcome">Selamat Datang</string>
+    <string name="home_attendance_summary">Ringkasan Kehadiran</string>
+    <string name="home_upcoming_schedule">Agenda Terdekat</string>
+    <string name="home_ai_warning">Peringatan AI</string>
     
-    <!-- Note Categories -->
-    <string name="category_general">Umum</string>
-    <string name="category_work">Pekerjaan</string>
-    <string name="category_personal">Pribadi</string>
-    <string name="category_ideas">Ide</string>
-    <string name="category_todo">Tugas</string>
-    <string name="category_study">Belajar</string>
+    <!-- Presensi Screen -->
+    <string name="presensi_title">Presensi</string>
+    <string name="presensi_scan_qr">Scan QR Code</string>
+    <string name="presensi_manual_token">Input Token Manual</string>
+    <string name="presensi_token_label">Token Presensi</string>
+    <string name="presensi_token_hint">Masukkan token presensi...</string>
+    <string name="presensi_submit">Submit Presensi</string>
+    <string name="presensi_success">Presensi berhasil!</string>
+    <string name="presensi_failed">Presensi gagal</string>
     
-    <!-- Note Colors -->
-    <string name="color_default">Default</string>
-    <string name="color_red">Merah</string>
-    <string name="color_orange">Oranye</string>
-    <string name="color_yellow">Kuning</string>
-    <string name="color_green">Hijau</string>
-    <string name="color_blue">Biru</string>
-    <string name="color_purple">Ungu</string>
-    <string name="color_pink">Pink</string>
+    <!-- Daftar Presensi Screen -->
+    <string name="daftar_presensi_title">Rekap Kehadiran</string>
+    <string name="daftar_presensi_empty">Belum ada data presensi</string>
+    <string name="daftar_presensi_hadir">Hadir</string>
+    <string name="daftar_presensi_alpha">Alpha</string>
+    <string name="daftar_presensi_izin">Izin</string>
+    <string name="daftar_presensi_sakit">Sakit</string>
     
-    <!-- Add/Edit Note Screen -->
-    <string name="add_note_title">Catatan Baru</string>
-    <string name="edit_note_title">Edit Catatan</string>
-    <string name="note_title_label">Judul</string>
-    <string name="note_title_hint">Masukkan judul...</string>
-    <string name="note_content_label">Konten</string>
-    <string name="note_content_hint">Tulis catatan di sini...</string>
-    <string name="note_category_label">Kategori</string>
-    <string name="note_color_label">Warna</string>
-    <string name="note_save">Simpan</string>
-    <string name="note_cancel">Batal</string>
-    <string name="note_delete">Hapus</string>
-    <string name="note_untitled">Tanpa Judul</string>
-    <string name="note_validation_error">Judul atau konten harus diisi</string>
+    <!-- Kalender Akademik Screen -->
+    <string name="kalender_title">Kalender Akademik</string>
+    <string name="kalender_add">Tambah Jadwal</string>
+    <string name="kalender_edit">Edit Jadwal</string>
+    <string name="kalender_empty">Belum ada jadwal</string>
+    <string name="kalender_judul_label">Judul</string>
+    <string name="kalender_deskripsi_label">Deskripsi</string>
+    <string name="kalender_tanggal_label">Tanggal</string>
+    <string name="kalender_waktu_label">Waktu</string>
+    <string name="kalender_jenis_label">Jenis</string>
     
-    <!-- Note Detail Screen -->
-    <string name="detail_title">Detail Catatan</string>
-    <string name="detail_created">Dibuat</string>
-    <string name="detail_updated">Diperbarui</string>
-    <string name="detail_pin">Pin</string>
-    <string name="detail_unpin">Lepas Pin</string>
-    <string name="detail_share">Bagikan</string>
-    <string name="detail_edit">Edit</string>
-    <string name="detail_delete">Hapus</string>
-    <string name="detail_ai_assist">Bantuan AI</string>
-    <string name="detail_not_found_title">Catatan Tidak Ditemukan</string>
-    <string name="detail_not_found_message">Catatan mungkin sudah dihapus</string>
-    
-    <!-- AI Assistant Screen -->
-    <string name="ai_title">AI Assistant</string>
-    <string name="ai_select_action">Pilih Aksi</string>
-    <string name="ai_input_label">Teks Input</string>
-    <string name="ai_input_hint">Masukkan teks di sini...</string>
-    <string name="ai_input_error">Masukkan teks terlebih dahulu</string>
-    <string name="ai_action_summarize">Ringkas</string>
-    <string name="ai_action_summarize_desc">Buat ringkasan dari teks</string>
-    <string name="ai_action_ideas">Ide</string>
-    <string name="ai_action_ideas_desc">Generate ide berdasarkan topik</string>
-    <string name="ai_action_improve">Perbaiki</string>
-    <string name="ai_action_improve_desc">Perbaiki tulisan</string>
-    <string name="ai_action_translate">Terjemah</string>
-    <string name="ai_action_translate_desc">Terjemahkan ke bahasa lain</string>
-    <string name="ai_action_title">Judul</string>
-    <string name="ai_action_title_desc">Sarankan judul</string>
-    <string name="ai_action_chat">Tanya</string>
-    <string name="ai_action_chat_desc">Tanya AI tentang apapun</string>
-    <string name="ai_execute">Jalankan</string>
+    <!-- AI Asisten Screen -->
+    <string name="ai_title">AI Asisten Akademik</string>
+    <string name="ai_input_hint">Tanya apa saja tentang akademik...</string>
+    <string name="ai_send">Kirim</string>
     <string name="ai_processing">Memproses...</string>
-    <string name="ai_result_title">Hasil</string>
-    <string name="ai_copy">Salin</string>
-    <string name="ai_apply">Terapkan</string>
     
-    <!-- Writing Styles -->
-    <string name="style_neutral">Netral</string>
-    <string name="style_formal">Formal</string>
-    <string name="style_casual">Kasual</string>
-    <string name="style_academic">Akademik</string>
-    <string name="style_creative">Kreatif</string>
+    <!-- Notifikasi Screen -->
+    <string name="notifikasi_title">Notifikasi</string>
+    <string name="notifikasi_empty">Belum ada notifikasi</string>
+    
+    <!-- Status Kehadiran -->
+    <string name="status_aman">Aman</string>
+    <string name="status_warning">Warning</string>
+    <string name="status_bahaya">Bahaya</string>
+    
+    <!-- Jenis Jadwal -->
+    <string name="jenis_reminder">Pengingat</string>
+    <string name="jenis_tugas">Tugas</string>
+    <string name="jenis_ujian">Ujian</string>
+    <string name="jenis_kuis">Kuis</string>
+    <string name="jenis_presentasi">Presentasi</string>
+    <string name="jenis_lainnya">Lainnya</string>
     
     <!-- Dialogs -->
-    <string name="dialog_delete_title">Hapus Catatan</string>
-    <string name="dialog_delete_message">Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="dialog_delete_title">Hapus Jadwal</string>
+    <string name="dialog_delete_message">Apakah Anda yakin ingin menghapus jadwal ini?</string>
     <string name="dialog_confirm">Hapus</string>
     <string name="dialog_cancel">Batal</string>
+    <string name="dialog_logout_title">Keluar</string>
+    <string name="dialog_logout_message">Apakah Anda yakin ingin keluar dari KelazZz?</string>
+    <string name="dialog_logout_confirm">Keluar</string>
     
     <!-- Messages -->
-    <string name="msg_note_saved">Catatan berhasil disimpan</string>
-    <string name="msg_note_deleted">Catatan berhasil dihapus</string>
-    <string name="msg_note_pinned">Catatan disematkan</string>
-    <string name="msg_note_unpinned">Sematan dilepas</string>
-    <string name="msg_copied">Disalin ke clipboard</string>
-    <string name="msg_applied">Diterapkan ke catatan</string>
-    <string name="msg_save_failed">Gagal menyimpan</string>
-    <string name="msg_delete_failed">Gagal menghapus</string>
+    <string name="msg_presensi_success">Presensi berhasil dicatat!</string>
+    <string name="msg_jadwal_saved">Jadwal berhasil disimpan</string>
+    <string name="msg_jadwal_deleted">Jadwal berhasil dihapus</string>
+    <string name="msg_sync_success">Data berhasil disinkronkan</string>
+    <string name="msg_sync_failed">Gagal sinkronisasi data</string>
     
     <!-- Errors -->
     <string name="error_title">Terjadi Kesalahan</string>
     <string name="error_unknown">Terjadi kesalahan</string>
-    <string name="error_load_notes">Gagal memuat catatan</string>
-    <string name="error_save_note">Gagal menyimpan catatan</string>
-    <string name="error_delete_note">Gagal menghapus catatan</string>
-    <string name="error_ai_request">Gagal mendapatkan respons AI</string>
-    <string name="error_ai_empty">Respons kosong dari AI</string>
-    <string name="error_ai_blocked">Konten diblokir oleh AI</string>
     <string name="error_network">Tidak ada koneksi internet</string>
-    <string name="error_content_too_short">Konten terlalu pendek untuk diringkas</string>
-    <string name="error_content_empty">Konten tidak boleh kosong</string>
-    <string name="error_topic_empty">Topik tidak boleh kosong</string>
-    <string name="error_note_empty">Note tidak boleh kosong</string>
+    <string name="error_login_failed">Login gagal. Periksa NIM dan password.</string>
+    <string name="error_token_invalid">Token presensi tidak valid</string>
+    <string name="error_token_empty">Token presensi tidak boleh kosong</string>
     <string name="error_retry">Coba Lagi</string>
     
     <!-- Loading -->
     <string name="loading">Memuat...</string>
-    <string name="loading_ai">Memproses dengan AI...</string>
+    <string name="loading_sync">Menyinkronkan data...</string>
     
     <!-- Common Actions -->
     <string name="action_back">Kembali</string>
     <string name="action_close">Tutup</string>
-    <string name="action_search">Cari</string>
-    <string name="action_clear">Hapus</string>
-    <string name="action_sort">Urutkan</string>
+    <string name="action_save">Simpan</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_logout">Keluar</string>
     
     <!-- Accessibility -->
-    <string name="cd_add_note">Tambah catatan baru</string>
-    <string name="cd_search">Cari catatan</string>
-    <string name="cd_filter">Filter kategori</string>
-    <string name="cd_pin_note">Sematkan catatan</string>
-    <string name="cd_unpin_note">Lepas sematan catatan</string>
-    <string name="cd_delete_note">Hapus catatan</string>
+    <string name="cd_scan_qr">Scan QR Code presensi</string>
     <string name="cd_back">Kembali</string>
-    <string name="cd_close">Tutup</string>
-    <string name="cd_sort">Urutkan catatan</string>
-    <string name="cd_ai_assistant">Buka AI Assistant</string>
+    <string name="cd_notification">Lihat notifikasi</string>
+    <string name="cd_ai_assistant">Buka AI Asisten</string>
 </resources>

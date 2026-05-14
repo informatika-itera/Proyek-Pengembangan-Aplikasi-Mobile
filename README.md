@@ -4,7 +4,7 @@
 
 FitKos adalah aplikasi Android berbasis Kotlin yang dirancang untuk membantu penghuni kos menjaga pola hidup sehat sesuai budget harian. Aplikasi ini membantu pengguna mencatat makanan dan pengeluaran makan, memantau jumlah minum air, menandai olahraga ringan, serta mendapatkan tips sehat yang sederhana dan realistis.
 
-FitKos juga direncanakan memiliki AI Assistant yang dapat membaca data harian pengguna dan memberikan evaluasi serta saran sehat hemat dengan gaya bahasa yang santai dan mudah dipahami.
+FitKos juga direncanakan memiliki AI Assistant yang dapat membaca data harian pengguna, memberikan rekomendasi berdasarkan data yang diinput pengguna dan memberikan evaluasi serta saran sehat hemat dengan gaya bahasa yang santai dan mudah dipahami.
 
 ## 👥 Tim Pengembangan
 
@@ -18,6 +18,7 @@ FitKos juga direncanakan memiliki AI Assistant yang dapat membaca data harian pe
 ### 🟢 Fitur Minimum
 
 - [ ] Dashboard harian
+- [ ] Home Screen
 - [ ] Daily check-in
 - [ ] Catatan makanan dan budget harian
 - [ ] Water tracker

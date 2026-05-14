@@ -3,7 +3,7 @@ package com.example.metaforge.core.util
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.example.metaforge.data.local.NoteDatabase
+import com.example.metaforge.data.local.MetaForgeDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory
@@ -16,7 +16,7 @@ actual class DatabaseDriverFactory(
 ) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = MetaForgeDatabase.Schema,
             context = context,
             name = "noteai.db"
         )

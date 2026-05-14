@@ -3,7 +3,7 @@ package com.example.metaforge.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import com.example.metaforge.data.local.NoteDatabase
+import com.example.metaforge.data.local.MetaForgeDatabase
 import com.example.metaforge.data.local.entity.toDomain
 import com.example.metaforge.data.local.entity.toDomainList
 import com.example.metaforge.data.local.entity.toEntityValues
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
-class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
+class NoteRepositoryImpl(private val database: MetaForgeDatabase) : NoteRepository {
     
     private val queries = database.noteQueries
     

@@ -2,7 +2,7 @@ package com.example.metaforge.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.example.metaforge.data.local.NoteDatabase
+import com.example.metaforge.data.local.MetaForgeDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory
@@ -13,7 +13,7 @@ import com.example.metaforge.data.local.NoteDatabase
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = MetaForgeDatabase.Schema,
             name = "noteai.db"
         )
     }

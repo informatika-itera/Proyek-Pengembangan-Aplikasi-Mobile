@@ -2,7 +2,7 @@ package com.example.metaforge.core.di
 
 import com.example.metaforge.core.network.HttpClientFactory
 import com.example.metaforge.core.util.DatabaseDriverFactory
-import com.example.metaforge.data.local.NoteDatabase
+import com.example.metaforge.data.local.MetaForgeDatabase
 import com.example.metaforge.data.local.datastore.DataStoreFactory
 import com.example.metaforge.data.local.datastore.UserPreferences
 import com.example.metaforge.data.local.datastore.create
@@ -42,7 +42,7 @@ val networkModule = module {
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        NoteDatabase(driverFactory.createDriver())
+        MetaForgeDatabase(driverFactory.createDriver())
     }
 }
 

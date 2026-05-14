@@ -18,6 +18,9 @@ sealed interface Route {
         val noteId: Long? = null,
         val initialText: String? = null
     ) : Route
+
+    @Serializable
+    data class AnimeDetail(val url: String) : Route
 }
 
 interface NavigationActions {
@@ -25,5 +28,6 @@ interface NavigationActions {
     fun navigateToAddNote(noteId: Long? = null)
     fun navigateToNoteDetail(noteId: Long)
     fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
+    fun navigateToAnimeDetail(url: String)
     fun navigateBack()
 }

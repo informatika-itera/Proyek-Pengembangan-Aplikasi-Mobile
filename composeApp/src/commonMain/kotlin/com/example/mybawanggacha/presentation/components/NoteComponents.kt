@@ -59,11 +59,13 @@ import org.koin.compose.koinInject
 @Composable
 fun AnimeRecommendationCard(
     anime: AnimeEntry,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
     ) {
         Column {

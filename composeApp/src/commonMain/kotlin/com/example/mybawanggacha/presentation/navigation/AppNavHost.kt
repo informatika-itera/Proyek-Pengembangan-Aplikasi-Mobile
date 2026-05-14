@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.mybawanggacha.presentation.screens.addnote.AddNoteScreen
 import com.example.mybawanggacha.presentation.screens.ai.AIAssistantScreen
+import com.example.mybawanggacha.presentation.screens.anime.AnimeDetailScreen
 import com.example.mybawanggacha.presentation.screens.detail.NoteDetailScreen
 import com.example.mybawanggacha.presentation.screens.home.HomeScreen
 
@@ -28,7 +29,8 @@ fun AppNavHost(
             HomeScreen(
                 onNavigateToAddNote = { navigationActions.navigateToAddNote() },
                 onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                onNavigateToAI = { navigationActions.navigateToAIAssistant() },
+                onNavigateToAnimeDetail = { url -> navigationActions.navigateToAnimeDetail(url) }
             )
         }
         
@@ -65,6 +67,14 @@ fun AppNavHost(
                 onApplyResult = null
             )
         }
+
+        composable<Route.AnimeDetail> { backStackEntry ->
+            val route: Route.AnimeDetail = backStackEntry.toRoute()
+            AnimeDetailScreen(
+                url = route.url,
+                onNavigateBack = { navigationActions.navigateBack() }
+            )
+        }
     }
 }
 
@@ -86,6 +96,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
         
         override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
             navController.navigate(Route.AIAssistant(noteId, initialText))
+        }
+
+        override fun navigateToAnimeDetail(url: String) {
+            navController.navigate(Route.AnimeDetail(url))
         }
 
         override fun navigateBack() {

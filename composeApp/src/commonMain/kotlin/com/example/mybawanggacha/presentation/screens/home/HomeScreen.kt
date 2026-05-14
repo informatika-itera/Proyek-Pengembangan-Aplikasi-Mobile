@@ -55,6 +55,7 @@ fun HomeScreen(
     onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAI: () -> Unit,
+    onNavigateToAnimeDetail: (String) -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -139,6 +140,7 @@ fun HomeScreen(
                     items(animeRecommendations) { anime ->
                         AnimeRecommendationCard(
                             anime = anime,
+                            onClick = { onNavigateToAnimeDetail(anime.url) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

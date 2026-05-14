@@ -1,76 +1,63 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
+# MyWallet — Expense Tracker App
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+![CI](https://github.com/HANIFAHHASANAH-123140082/123140082-123140069-MyWallet/actions/workflows/ci.yml/badge.svg)
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-
-### Build and Run Android Application
-
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
-
-### Build and Run Desktop (JVM) Application
-
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
-
-### Build and Run Web Application
-
-To build and run the development version of the web app, use the run configuration from the run widget
-in your IDE's toolbar or run it directly from the terminal:
-- for the Wasm target (faster, modern browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-- for the JS target (slower, supports older browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:jsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:jsBrowserDevelopmentRun
-    ```
-
-### Build and Run iOS Application
-
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+Aplikasi mobile multiplatform untuk mencatat pengeluaran, budgeting, dan melihat statistik keuangan pribadi.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+## Tim
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+| Nama | NIM | GitHub                                                                     |
+|------|-----|----------------------------------------------------------------------------|
+| Hanifah Hasanah | 123140082 | [@HANIFAHHASANAH-123140082](https://github.com/HANIFAHHASANAH-123140082)   |
+| Zahwa Natasya Hamzah | 123140069 | [@15-069-ZahwaNatasyaHamzah](https://github.com/15-069-ZahwaNatasyaHamzah) |
+
+---
+
+## Deskripsi
+
+MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melacak pengeluaran harian, mengatur anggaran bulanan, dan memvisualisasikan pola pengeluaran. Dibangun dengan Kotlin Multiplatform dan Compose Multiplatform.
+
+---
+
+## Fitur
+
+### Minimum
+- [ ] Catat pengeluaran dengan kategori
+- [ ] Lihat daftar transaksi
+- [ ] Detail transaksi
+- [ ] Edit & hapus transaksi (CRUD)
+- [ ] Statistik pengeluaran per kategori dan per bulan
+- [ ] Minimal 5 screen dengan navigasi
+- [ ] State management dengan StateFlow + MVVM
+- [ ] Local database dengan SQLDelight
+- [ ] Dependency Injection dengan Koin
+- [ ] Minimal 10 unit tests, 3 UI tests, coverage > 50%
+
+### Bonus
+- [ ] iOS Support (+10%)
+- [ ] AI Integration dengan Gemini API (+10%)
+- [ ] Offline First (+5%)
+- [ ] Dark Mode (+5%)
+- [ ] Animations (+5%)
+- [ ] CI/CD (+5%)
+- [ ] Play Store Ready (+5%)
+
+---
+
+## Tech Stack
+
+| Kategori | Teknologi |
+|----------|-----------|
+| Framework | Kotlin Multiplatform, Compose Multiplatform |
+| Architecture | MVVM, Clean Architecture, Repository Pattern |
+| Async | Coroutines, Flow, StateFlow |
+| Networking | Ktor Client, Kotlinx Serialization |
+| Storage | SQLDelight, DataStore Preferences |
+| DI | Koin |
+| Testing | kotlin.test, MockK, Turbine, Compose Test |
+
+---
+
+## Arsitektur

@@ -1,0 +1,24 @@
+-- Menyimpan data dasar hero
+CREATE TABLE HeroEntity (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL, -- Tank, Marksman, dll
+    damage_type TEXT NOT NULL, -- Physical, Magical, True
+    tier_score REAL NOT NULL -- Base score berdasarkan Meta saat ini (misal: 10 untuk Meta, 5 untuk biasa)
+);
+
+-- Menyimpan skor sinergi (kawan)
+CREATE TABLE SynergyEntity (
+    hero_id INTEGER,
+    partner_id INTEGER,
+    synergy_score REAL NOT NULL, -- Nilai positif jika kombonya bagus (Misal: Johnson & Odette = +15)
+    PRIMARY KEY (hero_id, partner_id)
+);
+
+-- Menyimpan skor counter (lawan)
+CREATE TABLE CounterEntity (
+    hero_id INTEGER,
+    enemy_id INTEGER,
+    advantage_score REAL NOT NULL, -- Nilai positif jika hero_id meng-counter enemy_id (Misal: Phoveus vs Fanny = +20)
+    PRIMARY KEY (hero_id, enemy_id)
+);

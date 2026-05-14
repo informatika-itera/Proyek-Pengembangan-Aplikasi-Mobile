@@ -1,9 +1,5 @@
 # 🥗 FoodSaver
 
-![CI](https://github.com/beningapni/123140089-123140125-FoodSaver/actions/workflows/build.yml/badge.svg)
-
-> Manage Smarter. Waste Less. Eat Better.
-
 Aplikasi mobile multiplatform (Android-first) yang dirancang untuk membantu pengguna **mengelola stok bahan makanan**, **memantau tanggal kedaluwarsa secara proaktif**, dan **mengurangi limbah makanan** melalui bantuan asisten cerdas berbasis AI.
 
 ---
@@ -12,13 +8,11 @@ Aplikasi mobile multiplatform (Android-first) yang dirancang untuk membantu peng
 
 | Nama | NIM | GitHub | Role |
 |------|-----|--------|------|
-| Bening Apni Prameswari | 123140089 | [@beningapni](https://github.com/beningapni) | Lead & UI/UX Developer |
-| Raditya Alrasyid Nugroho | 123140125 | [@radityaalrasyid](https://github.com/radityaalrasyid) | Logic & Android Dev |
+| Bening Apni Prameswari | 123140089 | [@beningapniprameswari](https://github.com/beningapniprameswari) | Lead & UI/UX Developer |
+| Raditya Alrasyid Nugroho | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Dev |
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
 **Dosen:** Pak Habib ([@mh4Scripts](https://github.com/mh4Scripts))  
-**Institut:** Institut Teknologi Sumatera (ITERA)
-
 ---
 
 ## 📱 Deskripsi Aplikasi

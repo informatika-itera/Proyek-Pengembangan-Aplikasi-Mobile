@@ -1,5 +1,7 @@
 # KelazZz — Aplikasi Presensi Mahasiswa ITERA
 
+![CI](https://github.com/MuhammadBintangAl-Fasya/KelazZz/actions/workflows/ci.yml/badge.svg)
+
 > Aplikasi mobile multiplatform yang menghadirkan pengalaman presensi dan layanan akademik yang lebih cepat, cerdas, dan mudah digunakan bagi mahasiswa Institut Teknologi Sumatera.
 
 ---
@@ -331,6 +333,48 @@ Atau langsung melalui **Run > Run 'composeApp'** di Android Studio.
 | Sprint 4 | W14 | Kalender akademik, Gemini AI, FCM, dark mode, polish |
 | Sprint 5 | W15 | Testing, bug fix, persiapan demo |
 | **UAS** | W16 | **Final Demo Day** |
+
+### Task Assignment per Sprint
+
+#### Sprint 1 — Planning & Setup
+| Task | Assignee |
+|------|----------|
+| Buat repository, push initial project | Rifael |
+| Setup Clean Architecture & Koin DI | Rifael |
+| Setup CI/CD (GitHub Actions) | Bintang |
+| Tulis README & dokumentasi project | Bintang |
+
+#### Sprint 2 — Auth & Core Navigation
+| Task | Assignee |
+|------|----------|
+| Login screen + JWT auth via Pocket ITERA API | Bintang |
+| Session persistence dengan DataStore | Bintang |
+| Home/Dashboard screen + Bottom Navigation | Rifael |
+| Navigation setup (NavHost, Routes, arguments) | Rifael |
+
+#### Sprint 3 — Fitur Presensi
+| Task | Assignee |
+|------|----------|
+| QR Code scanner (CameraX + ML Kit) | Rifael |
+| Input token manual + validasi | Rifael |
+| Rekap presensi screen + API integration | Bintang |
+| SQLDelight cache untuk offline presensi | Bintang |
+
+#### Sprint 4 — Kalender + AI & Polish
+| Task | Assignee |
+|------|----------|
+| Kalender akademik pribadi (CRUD offline) | Bintang |
+| AI Early Warning kehadiran (Gemini API) | Rifael |
+| AI Chatbot asisten akademik | Rifael |
+| Dark mode + UI polish | Bintang |
+
+#### Sprint 5 — Testing & Final Prep
+| Task | Assignee |
+|------|----------|
+| Unit tests (domain & data layer) | Bintang |
+| UI tests (Compose Test) | Rifael |
+| Bug fixing & performance tuning | Bintang & Rifael |
+| Demo preparation & final documentation | Bintang & Rifael |
 
 ---
 

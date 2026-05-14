@@ -21,7 +21,7 @@ expect class DataStoreFactory {
     fun producePath(): String
 }
 
-internal const val DATA_STORE_FILE_NAME = "noteai.preferences_pb"
+internal const val DATA_STORE_FILE_NAME = "todomaster.preferences_pb"
 
 /**
  * Membuat DataStore<Preferences> dari [DataStoreFactory] platform-specific.

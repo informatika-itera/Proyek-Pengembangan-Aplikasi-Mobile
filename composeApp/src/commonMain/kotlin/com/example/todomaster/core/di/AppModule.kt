@@ -2,13 +2,14 @@ package com.example.todomaster.core.di
 
 import com.example.todomaster.core.network.HttpClientFactory
 import com.example.todomaster.core.util.DatabaseDriverFactory
-import com.example.todomaster.data.local.NoteDatabase
+
 import com.example.todomaster.data.local.datastore.DataStoreFactory
 import com.example.todomaster.data.local.datastore.UserPreferences
 import com.example.todomaster.data.local.datastore.create
 import com.example.todomaster.data.remote.api.GeminiService
 import com.example.todomaster.data.repository.AIRepositoryImpl
 import com.example.todomaster.data.repository.NoteRepositoryImpl
+import com.example.todomaster.data.local.NoteDatabase
 import com.example.todomaster.domain.repository.AIRepository
 import com.example.todomaster.domain.repository.NoteRepository
 import com.example.todomaster.domain.usecase.DeleteNoteUseCase

@@ -94,7 +94,7 @@ Dapatkan API key di: [Google AI Studio](https://aistudio.google.com)
 
 | Nama | NIM | Role |
 |------|-----|------|
-| Andika Rahman Pratama | 123140090 | Lead Developer |
+| Andika Rahman Pratama | 123140090 | Developer |
 | Muhammad Farhan Muzakhi | 123140075 | Developer |
 
 Program Studi Teknik Informatika - Institut Teknologi Sumatera (ITERA)

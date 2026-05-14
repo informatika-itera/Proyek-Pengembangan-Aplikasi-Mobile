@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, "project/*", "feature/*" ]
+  pull_request:
+    branches: [ main, "project/*" ]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew :composeApp:testDebugUnitTest --continue
+      - run: ./gradlew :composeApp:assembleDebug

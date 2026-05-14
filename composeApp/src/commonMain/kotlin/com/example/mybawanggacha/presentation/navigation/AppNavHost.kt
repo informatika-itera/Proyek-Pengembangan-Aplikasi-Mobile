@@ -30,7 +30,7 @@ fun AppNavHost(
                 onNavigateToAddNote = { navigationActions.navigateToAddNote() },
                 onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
                 onNavigateToAI = { navigationActions.navigateToAIAssistant() },
-                onNavigateToAnimeDetail = { url -> navigationActions.navigateToAnimeDetail(url) }
+                onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) }
             )
         }
         
@@ -71,7 +71,7 @@ fun AppNavHost(
         composable<Route.AnimeDetail> { backStackEntry ->
             val route: Route.AnimeDetail = backStackEntry.toRoute()
             AnimeDetailScreen(
-                url = route.url,
+                malId = route.malId,
                 onNavigateBack = { navigationActions.navigateBack() }
             )
         }
@@ -98,8 +98,8 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             navController.navigate(Route.AIAssistant(noteId, initialText))
         }
 
-        override fun navigateToAnimeDetail(url: String) {
-            navController.navigate(Route.AnimeDetail(url))
+        override fun navigateToAnimeDetail(malId: Int) {
+            navController.navigate(Route.AnimeDetail(malId))
         }
 
         override fun navigateBack() {

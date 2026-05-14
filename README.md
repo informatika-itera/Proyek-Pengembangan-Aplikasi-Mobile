@@ -1,72 +1,100 @@
-# CoffeSpace: Live Seat & Ambience Tracker ☕️📍
+﻿# VulnLog
 
-**CoffeSpace** adalah aplikasi mobile inovatif yang dibangun menggunakan **Kotlin Multiplatform (KMP)** dan **Compose Multiplatform**. Aplikasi ini dirancang untuk memecahkan masalah klasik mahasiswa teknik: mencari tempat ngerjain tugas (kafe) yang pasti ada kursinya, suasananya kondusif, dan fasilitasnya lengkap.
+**Vulnerability Tracker & Bug Bounty Journal**
 
-Aplikasi ini merupakan proyek **Tugas Besar Mata Kuliah Pengembangan Aplikasi Mobile** di Program Studi Teknik Informatika, **Institut Teknologi Sumatera (ITERA)**.
+VulnLog adalah aplikasi mobile untuk mencatat dan mengelola temuan vulnerability saat bug bounty hunting. Dibangun dengan Kotlin Multiplatform (KMP) dan Compose Multiplatform, app ini bisa dipakai di Android dan iOS dari satu codebase.
 
----
+Kenapa bikin ini? Karena kebanyakan bug hunter masih catat temuan di Notion/Google Docs yang formatnya berantakan. VulnLog hadir sebagai jurnal terstruktur yang bisa langsung track status temuan dari "Found" sampai "Paid".
 
-## 🚀 Overview
-Dalam ekosistem mahasiswa yang dinamis di Bandar Lampung, kafe bukan sekadar tempat minum kopi, melainkan ruang kerja ketiga (*third space*). **CoffeSpace** hadir untuk memberikan data real-time mengenai kepadatan dan suasana kafe, sehingga produktivitas tetap terjaga tanpa harus "hunting" tempat secara manual.
+## Fitur Utama
 
----
+### 1. Vulnerability Logging
+- Catat temuan vulnerability lengkap: judul, deskripsi, severity (Critical/High/Medium/Low), status, dan platform target.
+- Timestamp otomatis untuk setiap entry.
 
-## ✨ Fitur Utama (Scope Project)
+### 2. Severity Classification
+- Color-coded severity level sesuai standar CVSS (merah = Critical, oranye = High, kuning = Medium, biru = Low).
+- Filter dan sort berdasarkan severity.
 
-### 1. Real-time Seat Monitoring
-* Menampilkan status okupansi meja (Kosong, Tersedia, Penuh).
-* Integrasi database real-time untuk pembaruan status tanpa refresh.
+### 3. Status Tracking
+- Track status temuan: New, Reported, Triaged, Accepted, Resolved, Paid.
+- Dashboard ringkasan per status.
 
-### 2. Ambience Noise Detection
-* Memberikan label pada kafe berdasarkan tingkat kebisingan: **Quiet** (fokus), **Moderate** (santai), atau **Loud** (diskusi).
+### 4. AI Assistant
+- Bantu generate deskripsi vulnerability dari input singkat.
+- Suggest severity berdasarkan tipe vulnerability.
 
-### 3. Productivity Filters
-* Filter berdasarkan ketersediaan **Stopkontak** (Power Outlets).
-* Informasi kecepatan **Wi-Fi** (Speed Test results).
-* Penanda lokasi ramah kantong mahasiswa (Range harga menu).
+### 5. Search & Filter
+- Full-text search di semua catatan.
+- Filter berdasarkan severity, status, platform, dan tanggal.
 
-### 4. Location-Based Service (Maps)
-* Integrasi peta untuk menemukan kafe terdekat dari posisi pengguna saat ini.
+### 6. Dark Mode
+- Default dark theme dengan aksen neon green (terminal aesthetic).
 
----
+## Arsitektur
 
-## 🏗 Arsitektur & Teknologi
+Clean Architecture dengan 3 layer:
+- **Presentation**: Jetpack Compose + ViewModel + StateFlow
+- **Domain**: Use Cases, Entities, Repository Interfaces
+- **Data**: Repository Implementations, SQLDelight (local), Ktor (remote)
 
-Proyek ini menerapkan **Clean Architecture** untuk memastikan kode mudah diuji dan dikelola:
-* **Presentation Layer:** Jetpack Compose (Android) & Compose Multiplatform (iOS/Shared).
-* **Domain Layer:** Business logic, Use Cases, & Entities (Shared Module).
-* **Data Layer:** Repository pattern, Ktor (API), & SQLDelight (Local DB).
+```
+composeApp/src/commonMain/kotlin/com/example/noteai/
++-- core/           # DI (Koin), network config, utilities
++-- data/           # Repository impl, local DB, remote API
++-- domain/         # Models, repository interfaces, use cases
++-- presentation/   # Screens, ViewModels, components, theme
+```
 
-**Tech Stack:**
-- **Language:** Kotlin
-- **UI Framework:** Compose Multiplatform
-- **Dependency Injection:** Koin
-- **Networking:** Ktor
-- **Concurrency:** Kotlin Coroutines & Flow
+## Tech Stack
 
----
+| Layer | Teknologi |
+|-------|-----------|
+| Language | Kotlin |
+| UI | Compose Multiplatform |
+| Architecture | Clean Architecture + MVVM |
+| DI | Koin |
+| Database | SQLDelight |
+| Network | Ktor Client |
+| Serialization | kotlinx.serialization |
+| Async | Kotlin Coroutines & Flow |
+| AI | Google Gemini API |
 
-## 📈 Roadmap Sprint (Timeline)
+## Sprint Roadmap
 
-Sesuai dengan kurikulum Pertemuan 11 Pengembangan Aplikasi Mobile ITERA:
-* **Sprint 1 (Planning):** Architecture design, UI Mockup, & Repository setup.
-* **Sprint 2 (Core):** Authentication, Cafe Listing, & Google Maps integration.
-* **Sprint 3 (Advanced):** Real-time Seat tracking & Noise Indicator logic.
-* **Sprint 4 (Testing):** UI/UX Polishing, Bug fixing, & Unit Testing.
-* **Sprint 5 (Final):** Deployment & Presentation Preparation.
+| Sprint | Fokus | Status |
+|--------|-------|--------|
+| Sprint 1 | Project setup, tema cybersecurity, README | In Progress |
+| Sprint 2 | CRUD vulnerability, severity system | Planned |
+| Sprint 3 | Search, filter, status tracking | Planned |
+| Sprint 4 | AI integration, UI polish | Planned |
+| Sprint 5 | Testing, bug fix, demo | Planned |
 
----
+## Setup
 
-## 👥 Tim Pengembang
-* **Andika Rahman Pratama** (123140090) - [Leader
-* **Muhammad Farhan Muzakhi** (123140075) - [Coder]
+```bash
+# Clone repo
+git clone https://github.com/11-090-AndikaRahmanPratama/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
 
----
+# Checkout branch project
+git checkout project/123140075-123140090-VulnLog
 
-## 🛠 Cara Menjalankan
-1. Clone repository: `git clone https://github.com/[username]/coffespace.git`
-2. Buka di Android Studio (Versi Ladybug atau terbaru).
-3. Jalankan `:composeApp` pada perangkat Android atau simulator iOS.
+# Setup API key
+cp local.properties.example local.properties
+# Edit local.properties, isi GEMINI_API_KEY=...
 
----
-© 2026 - Teknik Informatika ITERA
+# Build
+./gradlew :composeApp:assembleDebug
+```
+
+Dapatkan API key di: [Google AI Studio](https://aistudio.google.com)
+
+## Tim Pengembang
+
+| Nama | NIM | Role |
+|------|-----|------|
+| Andika Rahman Pratama | 123140090 | Lead Developer |
+| Muhammad Farhan Muzakhi | 123140075 | Developer |
+
+Program Studi Teknik Informatika - Institut Teknologi Sumatera (ITERA)

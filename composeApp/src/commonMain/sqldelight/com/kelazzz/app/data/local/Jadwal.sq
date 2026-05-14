@@ -1,0 +1,78 @@
+-- Jadwal table schema for SQLDelight
+-- Menyimpan jadwal dan pengingat akademik yang dibuat user
+-- Mendukung Kalender Akademik Pribadi (fully offline)
+
+CREATE TABLE JadwalEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    judul TEXT NOT NULL,
+    deskripsi TEXT NOT NULL DEFAULT '',
+    tanggal TEXT NOT NULL,
+    waktu TEXT NOT NULL DEFAULT '',
+    jenis TEXT NOT NULL DEFAULT 'reminder',
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+);
+
+-- Get all jadwal ordered by date
+getAllJadwal:
+SELECT * FROM JadwalEntity
+ORDER BY tanggal ASC, waktu ASC;
+
+-- Get jadwal by date
+getJadwalByTanggal:
+SELECT * FROM JadwalEntity
+WHERE tanggal = ?
+ORDER BY waktu ASC;
+
+-- Get jadwal by jenis (reminder, tugas, ujian, etc.)
+getJadwalByJenis:
+SELECT * FROM JadwalEntity
+WHERE jenis = ?
+ORDER BY tanggal ASC, waktu ASC;
+
+-- Get single jadwal by ID
+getJadwalById:
+SELECT * FROM JadwalEntity
+WHERE id = ?;
+
+-- Get upcoming jadwal (from today onwards)
+getUpcomingJadwal:
+SELECT * FROM JadwalEntity
+WHERE tanggal >= ?
+ORDER BY tanggal ASC, waktu ASC
+LIMIT ?;
+
+-- Insert jadwal
+insertJadwal:
+INSERT INTO JadwalEntity (judul, deskripsi, tanggal, waktu, jenis, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- Get last inserted ID
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- Update jadwal
+updateJadwal:
+UPDATE JadwalEntity
+SET judul = ?, deskripsi = ?, tanggal = ?, waktu = ?, jenis = ?, updatedAt = ?
+WHERE id = ?;
+
+-- Delete jadwal by ID
+deleteJadwalById:
+DELETE FROM JadwalEntity
+WHERE id = ?;
+
+-- Delete past jadwal
+deletePastJadwal:
+DELETE FROM JadwalEntity
+WHERE tanggal < ?;
+
+-- Count all jadwal
+countJadwal:
+SELECT COUNT(*) FROM JadwalEntity;
+
+-- Search jadwal by judul
+searchJadwal:
+SELECT * FROM JadwalEntity
+WHERE judul LIKE '%' || ? || '%'
+ORDER BY tanggal ASC;

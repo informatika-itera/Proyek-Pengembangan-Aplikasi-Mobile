@@ -79,7 +79,7 @@ Database version mismatch
 val driver = AndroidSqliteDriver(
     schema = NoteDatabase.Schema,
     context = context,
-    name = "noteai.db",
+    name = "Roomie.db",
     callback = object : AndroidSqliteDriver.Callback(NoteDatabase.Schema) {
         override fun onUpgrade(
             db: SupportSQLiteDatabase,
@@ -110,7 +110,7 @@ Preview tidak muncul
 @Preview
 @Composable
 fun NoteCardPreview() {
-    NoteAITheme {
+    RoomieTheme {
         NoteCard(
             note = Note(title = "Preview", content = "Test"),
             onClick = {},
@@ -159,7 +159,7 @@ val sharedModules = listOf(
 override fun onCreate() {
     super.onCreate()
     initKoin(platformModules = listOf(androidModule)) {
-        androidContext(this@NoteAIApplication)
+        androidContext(this@RoomieApplication)
     }
 }
 ```

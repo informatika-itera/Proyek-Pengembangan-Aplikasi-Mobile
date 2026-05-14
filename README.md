@@ -1,8 +1,5 @@
 # My Bawang Gacha
-
-test
-
-My Bawang Gacha adalah aplikasi Anime List dan Gacha yang dikembangkan menggunakan Kotlin Multiplatform.
+> My Bawang Gacha adalah aplikasi Anime List dan Gacha yang dikembangkan menggunakan Kotlin Multiplatform.
 
 ## Fitur Utama
 
@@ -42,6 +39,24 @@ Proyek ini menggunakan Clean Architecture dan MVVM:
 - Dependency Injection: Koin
 - AI: Google Gemini API
 
+## Project Plan
+
+Lihat detail progress di [PLAN.md](PLAN.md)
+
+## Status Badge
+
+![CI](https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+
+---
+
+## Member Kelompok
+1. Varasina Farmadani (123140107)
+2. Faiq Ghozy Erlangga (123140139)
+
+---
+
+
 ## Lisensi
 
 MIT License
+

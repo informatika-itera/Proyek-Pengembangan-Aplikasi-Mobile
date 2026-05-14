@@ -1,3 +1,4 @@
+[![CI Status](https://github.com/Kalll11/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/Kalll11/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml)
 # 📝 TodoMaster - Student Task Management System
 
 **TodoMaster** adalah aplikasi manajemen tugas berbasis **Kotlin Multiplatform (KMP)** yang dirancang khusus untuk mengelola produktivitas mahasiswa secara efektif. Sistem ini difokuskan pada pengurangan beban kognitif (*cognitive load*) dengan cara membatasi paparan tugas harian, sehingga pengguna tidak merasa kewalahan.

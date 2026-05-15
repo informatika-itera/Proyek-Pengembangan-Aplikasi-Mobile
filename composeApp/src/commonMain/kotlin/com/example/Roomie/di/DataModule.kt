@@ -5,8 +5,10 @@ import com.example.Roomie.data.local.RoomieDatabase
 import com.example.Roomie.data.local.datastore.DataStoreFactory
 import com.example.Roomie.data.local.datastore.UserPreferences
 import com.example.Roomie.data.local.datastore.create
+import com.example.Roomie.data.repository.AuthRepositoryImpl
 import com.example.Roomie.data.repository.FacilityRepositoryImpl
 import com.example.Roomie.data.repository.ReportRepositoryImpl
+import com.example.Roomie.domain.repository.AuthRepository
 import com.example.Roomie.domain.repository.FacilityRepository
 import com.example.Roomie.domain.repository.ReportRepository
 import org.koin.core.module.dsl.singleOf
@@ -22,6 +24,7 @@ val dataModule = module {
     single { RoomieDatabase(get<DatabaseDriverFactory>().createDriver()) }
     
     // Repositories
+    singleOf(::AuthRepositoryImpl) bind AuthRepository::class
     single<ReportRepository> { ReportRepositoryImpl(get()) }
     single<FacilityRepository> { FacilityRepositoryImpl(get()) }
 }

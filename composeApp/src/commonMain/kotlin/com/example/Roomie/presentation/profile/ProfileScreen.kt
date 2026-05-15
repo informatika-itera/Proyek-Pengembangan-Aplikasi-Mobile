@@ -3,6 +3,8 @@ package com.example.Roomie.presentation.profile
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,7 +20,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onNavigateToAdmin: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -28,8 +30,12 @@ fun ProfileScreen(
             TopAppBar(
                 title = { Text(AppStrings.PROFILE_TITLE) },
                 actions = {
-                    TextButton(onClick = onNavigateToAdmin) {
-                        Text("Admin Mode", color = MaterialTheme.colorScheme.primary)
+                    IconButton(onClick = onLogout) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout, 
+                            contentDescription = "Keluar",
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             )

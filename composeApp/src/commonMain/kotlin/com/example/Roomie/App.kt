@@ -2,8 +2,10 @@ package com.example.Roomie
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material3.*
@@ -18,6 +20,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.Roomie.domain.model.UserRole
+import com.example.Roomie.presentation.AppViewModel
+import com.example.Roomie.presentation.auth.LoginScreen
 import com.example.Roomie.presentation.home.HomeScreen
 import com.example.Roomie.presentation.facility.BuildingListScreen
 import com.example.Roomie.presentation.facility.FacilityGridScreen
@@ -28,60 +33,77 @@ import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
 import com.example.Roomie.presentation.util.AppStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
+    data object Login : Screen("login", "Masuk", Icons.AutoMirrored.Filled.Login)
     data object Home : Screen("home", AppStrings.NAV_HOME, Icons.Default.Home)
     data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
     data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
-    data object AdminDashboard : Screen("admin_dashboard", AppStrings.ADMIN_DASHBOARD)
+    data object AdminDashboard : Screen("admin_dashboard", "Admin", Icons.Default.Dashboard)
     data object RoomDetail : Screen("room_detail/{roomId}", "Detail Ruangan") {
         fun createRoute(roomId: String) = "room_detail/$roomId"
     }
-    // Halaman lama FacilityDetail diganti dengan RoomDetail atau kita sesuaikan
 }
 
 @Composable
 @Preview
-fun App() {
+fun App(
+    viewModel: AppViewModel = koinViewModel()
+) {
+    val currentUser by viewModel.currentUser.collectAsState()
+    
     RoomieTheme {
         val navController = rememberNavController()
-        val items = listOf(
-            Screen.Home,
-            Screen.Facility,
-            Screen.Report,
-            Screen.Profile
-        )
+        
+        // Define navigation items based on role
+        val navItems = when (currentUser?.role) {
+            UserRole.STUDENT -> listOf(
+                Screen.Home,
+                Screen.Facility,
+                Screen.Report,
+                Screen.Profile
+            )
+            UserRole.ADMIN -> listOf(
+                Screen.AdminDashboard,
+                Screen.Facility,
+                Screen.Profile
+            )
+            else -> emptyList()
+        }
 
         Scaffold(
             bottomBar = {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
-                // Hanya tampilkan BottomBar jika di halaman utama
-                val showBottomBar = items.any { it.route == currentDestination?.route }
-                
-                if (showBottomBar) {
-                    NavigationBar {
-                        items.forEach { screen ->
-                            NavigationBarItem(
-                                icon = { screen.icon?.let { Icon(it, contentDescription = screen.title) } },
-                                label = { Text(screen.title) },
-                                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                                onClick = {
-                                    navController.navigate(screen.route) {
-                                        val startDest = navController.graph.findStartDestination().route
-                                        if (startDest != null) {
-                                            popUpTo(startDest) {
-                                                saveState = true
+                if (currentUser != null) {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    
+                    // Show BottomBar only if current destination is in navItems
+                    val showBottomBar = navItems.any { it.route == currentDestination?.route }
+                    
+                    if (showBottomBar) {
+                        NavigationBar {
+                            navItems.forEach { screen ->
+                                NavigationBarItem(
+                                    icon = { screen.icon?.let { Icon(it, contentDescription = screen.title) } },
+                                    label = { Text(screen.title) },
+                                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                    onClick = {
+                                        navController.navigate(screen.route) {
+                                            val startDest = navController.graph.findStartDestination().route
+                                            if (startDest != null) {
+                                                popUpTo(startDest) {
+                                                    saveState = true
+                                                }
                                             }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
@@ -89,9 +111,15 @@ fun App() {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Screen.Home.route,
+                startDestination = if (currentUser == null) Screen.Login.route else Screen.Home.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable(Screen.Login.route) {
+                    LoginScreen(onLoginSuccess = {
+                        // Navigasi akan otomatis terpicu oleh update currentUser state
+                    })
+                }
+
                 composable(Screen.Home.route) {
                     HomeScreen(
                         onNavigateToMap = { navController.navigate(Screen.Facility.route) }
@@ -133,7 +161,7 @@ fun App() {
                 
                 composable(Screen.Profile.route) {
                     ProfileScreen(
-                        onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) }
+                        onLogout = { viewModel.logout() }
                     )
                 }
 
@@ -141,6 +169,20 @@ fun App() {
                     AdminDashboardScreen(
                         onBack = { navController.popBackStack() }
                     )
+                }
+            }
+        }
+        
+        // Auto-navigation on auth change
+        LaunchedEffect(currentUser) {
+            if (currentUser == null) {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0)
+                }
+            } else {
+                val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
+                navController.navigate(dest) {
+                    popUpTo(0)
                 }
             }
         }

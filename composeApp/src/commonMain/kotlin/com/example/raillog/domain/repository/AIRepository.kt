@@ -1,12 +1,10 @@
 package com.example.raillog.domain.repository
 
 interface AIRepository {
-    suspend fun summarize(text: String): Result<String>
-    suspend fun generateIdeas(topic: String): Result<List<String>>
-    suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>
-    suspend fun translate(text: String, targetLanguage: String): Result<String>
-    suspend fun chat(message: String): Result<String>
-    suspend fun suggestTitle(content: String): Result<String>
+    suspend fun verifyDocument(content: String): Result<String>
+    suspend fun summarizeInspection(report: String): Result<String>
+    suspend fun suggestProcurement(supplyData: String): Result<String>
+    suspend fun detectAnomalies(documentContent: String): Result<String>
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

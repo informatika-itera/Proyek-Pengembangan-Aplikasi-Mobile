@@ -60,9 +60,6 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
-    viewModelOf(::AIAssistantViewModel)
 }
 
 // ==================== SHARED MODULES ====================

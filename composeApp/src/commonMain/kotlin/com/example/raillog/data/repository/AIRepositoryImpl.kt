@@ -3,93 +3,36 @@ package com.example.raillog.data.repository
 import com.example.raillog.data.remote.api.GeminiService
 import com.example.raillog.data.remote.api.SystemPrompts
 import com.example.raillog.domain.repository.AIRepository
-import com.example.raillog.domain.repository.WritingStyle
 
 class AIRepositoryImpl(
     private val geminiService: GeminiService
 ) : AIRepository {
-    
-    override suspend fun summarize(text: String): Result<String> {
-        val prompt = """
-            Rangkum teks berikut:
-            
-            $text
-        """.trimIndent()
-        
+
+    override suspend fun verifyDocument(content: String): Result<String> {
         return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.SUMMARIZER
+            prompt = "Verifikasi dokumen ini:\n\n$content",
+            systemPrompt = SystemPrompts.DOCUMENT_VERIFIER
         )
     }
-    
-    override suspend fun generateIdeas(topic: String): Result<List<String>> {
-        val prompt = """
-            Berikan 5 ide kreatif untuk topik: $topic
-        """.trimIndent()
-        
+
+    override suspend fun summarizeInspection(report: String): Result<String> {
         return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.IDEA_GENERATOR
-        ).map { response ->
-            response.lines()
-                .filter { it.isNotBlank() }
-                .map { line ->
-                    line.replace(Regex("^\\d+\\.\\s*"), "").trim()
-                }
-                .filter { it.isNotBlank() }
-        }
-    }
-    
-    override suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
-        val styleInstruction = when (style) {
-            WritingStyle.FORMAL -> "Gunakan gaya formal dan profesional."
-            WritingStyle.CASUAL -> "Gunakan gaya santai dan friendly."
-            WritingStyle.ACADEMIC -> "Gunakan gaya akademik dan ilmiah."
-            WritingStyle.CREATIVE -> "Gunakan gaya kreatif dan menarik."
-            WritingStyle.NEUTRAL -> "Gunakan gaya netral."
-        }
-        
-        val prompt = """
-            $styleInstruction
-            
-            Perbaiki tulisan berikut:
-            
-            $text
-        """.trimIndent()
-        
-        return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.WRITING_IMPROVER
+            prompt = "Ringkas laporan inspeksi ini:\n\n$report",
+            systemPrompt = SystemPrompts.INSPECTION_SUMMARIZER
         )
     }
-    
-    override suspend fun translate(text: String, targetLanguage: String): Result<String> {
-        val prompt = """
-            Terjemahkan ke bahasa $targetLanguage:
-            
-            $text
-        """.trimIndent()
-        
+
+    override suspend fun suggestProcurement(supplyData: String): Result<String> {
         return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.TRANSLATOR
+            prompt = "Berikan saran pengadaan untuk data berikut:\n\n$supplyData",
+            systemPrompt = SystemPrompts.SUPPLY_ADVISOR
         )
     }
-    
-    override suspend fun chat(message: String): Result<String> {
-        return geminiService.generateContent(prompt = message)
-    }
-    
-    override suspend fun suggestTitle(content: String): Result<String> {
-        val prompt = """
-            Berikan saran judul untuk konten berikut:
-            
-            $content
-        """.trimIndent()
-        
+
+    override suspend fun detectAnomalies(documentContent: String): Result<String> {
         return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.TITLE_SUGGESTER
-        ).map { it.trim().removeSurrounding("\"") }
+            prompt = "Deteksi anomali pada dokumen teknis berikut:\n\n$documentContent",
+            systemPrompt = SystemPrompts.ANOMALY_DETECTOR
+        )
     }
 }

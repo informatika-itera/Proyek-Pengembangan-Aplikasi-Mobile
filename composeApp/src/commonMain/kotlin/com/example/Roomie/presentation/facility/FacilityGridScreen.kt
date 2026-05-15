@@ -76,9 +76,8 @@ fun FacilityGridScreen(
                                     RoomItem(
                                         room = room,
                                         onClick = {
-                                            if (room.status == RoomStatus.AVAILABLE) {
-                                                onNavigateToDetail(room.id)
-                                            }
+                                            // Sekarang semua status bisa diklik untuk melihat detail
+                                            onNavigateToDetail(room.id)
                                         }
                                     )
                                 }

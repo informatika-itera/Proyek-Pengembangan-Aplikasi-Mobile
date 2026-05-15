@@ -82,7 +82,7 @@ fun App(
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
                     
-                    // Show BottomBar only if current destination is in navItems
+                    // Show BottomBar only if current destination is one of the main role screens
                     val showBottomBar = navItems.any { it.route == currentDestination?.route }
                     
                     if (showBottomBar) {
@@ -111,9 +111,15 @@ fun App(
                 }
             }
         ) { innerPadding ->
+            val startRoute = when {
+                currentUser == null -> Screen.Login.route
+                currentUser?.role == UserRole.ADMIN -> Screen.AdminDashboard.route
+                else -> Screen.Home.route
+            }
+
             NavHost(
                 navController = navController,
-                startDestination = if (currentUser == null) Screen.Login.route else Screen.Home.route,
+                startDestination = startRoute,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Login.route) {

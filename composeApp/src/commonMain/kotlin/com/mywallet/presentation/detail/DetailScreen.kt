@@ -11,12 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mywallet.domain.model.TransactionType
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material.icons.filled.Edit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     transactionId: Int,
     onNavigateBack: () -> Unit,
+    onNavigateToEdit: () -> Unit = {},
     viewModel: DetailViewModel = koinViewModel()
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -36,6 +38,9 @@ fun DetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Default.Delete, contentDescription = "Hapus")
                     }

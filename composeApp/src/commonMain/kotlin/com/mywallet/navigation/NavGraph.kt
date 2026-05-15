@@ -22,6 +22,7 @@ import androidx.navigation.navArgument
 import com.mywallet.presentation.add.AddTransactionScreen
 import com.mywallet.presentation.detail.DetailScreen
 import com.mywallet.presentation.home.HomeScreen
+import com.mywallet.presentation.add.EditTransactionScreen
 
 data class BottomNavItem(
     val title: String,
@@ -68,6 +69,17 @@ fun AppNavHost(
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getInt(NavArgs.TRANSACTION_ID) ?: return@composable
             DetailScreen(
+                transactionId = id,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEdit = { navController.navigate(Screen.EditTransaction.createRoute(id)) }
+            )
+        }
+        composable(
+            route = Screen.EditTransaction.route,
+            arguments = listOf(navArgument(NavArgs.TRANSACTION_ID) { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt(NavArgs.TRANSACTION_ID) ?: return@composable
+            EditTransactionScreen(
                 transactionId = id,
                 onNavigateBack = { navController.popBackStack() }
             )

@@ -41,18 +41,16 @@ class FacilityRepositoryImpl(
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { entities ->
-                entities.map { entity ->
-                    Room(
-                        id = entity.id,
-                        name = entity.name,
-                        floor = entity.floor.toInt(),
-                        status = RoomStatus.valueOf(entity.status),
-                        type = RoomType.valueOf(entity.type),
-                        capacity = entity.capacity.toInt(),
-                        hasAc = entity.hasAc == 1L,
-                        hasProjector = entity.hasProjector == 1L
-                    )
-                }
+                entities.map { it.toDomain() }
+            }
+    }
+
+    override fun getRoomsByBuilding(buildingId: String): Flow<List<Room>> {
+        return queries.getRoomsByBuilding(buildingId)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { entities ->
+                entities.map { it.toDomain() }
             }
     }
 
@@ -61,19 +59,21 @@ class FacilityRepositoryImpl(
             .asFlow()
             .mapToOneOrNull(Dispatchers.IO)
             .map { entity ->
-                entity?.let {
-                    Room(
-                        id = it.id,
-                        name = it.name,
-                        floor = it.floor.toInt(),
-                        status = RoomStatus.valueOf(it.status),
-                        type = RoomType.valueOf(it.type),
-                        capacity = it.capacity.toInt(),
-                        hasAc = it.hasAc == 1L,
-                        hasProjector = it.hasProjector == 1L
-                    )
-                }
+                entity?.toDomain()
             }
+    }
+
+    private fun com.example.Roomie.data.local.RoomEntity.toDomain(): Room {
+        return Room(
+            id = id,
+            name = name,
+            floor = floor.toInt(),
+            status = RoomStatus.valueOf(status),
+            type = RoomType.valueOf(type),
+            capacity = capacity.toInt(),
+            hasAc = hasAc == 1L,
+            hasProjector = hasProjector == 1L
+        )
     }
 
     suspend fun seedData() {
@@ -87,7 +87,6 @@ class FacilityRepositoryImpl(
                 queries.insertBuilding("GEDUNG-F", "Gedung F", "Ruang kelas dan pusat penelitian", 0L)
 
                 // Seed GKU2 Rooms
-                // Lantai 1 - 3
                 for (f in 1..3) {
                     for (i in 1..25) {
                         val roomNum = f * 100 + i
@@ -109,7 +108,6 @@ class FacilityRepositoryImpl(
                         )
                     }
                 }
-                // Lantai 4
                 for (i in 1..20) {
                     val roomNum = 400 + i
                     queries.insertRoom(

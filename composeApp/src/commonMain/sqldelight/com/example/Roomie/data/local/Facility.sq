@@ -30,6 +30,9 @@ VALUES (?, ?, ?, ?);
 getRoomsByFloor:
 SELECT * FROM RoomEntity WHERE buildingId = ? AND floor = ?;
 
+getRoomsByBuilding:
+SELECT * FROM RoomEntity WHERE buildingId = ?;
+
 getRoomById:
 SELECT * FROM RoomEntity WHERE id = ?;
 

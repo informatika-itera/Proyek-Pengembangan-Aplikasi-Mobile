@@ -4,13 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.repository.FacilityRepository
+import com.example.Roomie.data.repository.FacilityRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 sealed interface FacilityUiState {
     data object Loading : FacilityUiState
@@ -30,7 +31,34 @@ class FacilityViewModel(
     val uiState: StateFlow<FacilityUiState> = _uiState.asStateFlow()
 
     init {
-        observeRooms()
+        initData()
+    }
+
+    private fun initData() {
+        viewModelScope.launch {
+            // 1. Pastikan data sudah di-seed
+            (facilityRepository as? FacilityRepositoryImpl)?.seedData()
+            
+            // 2. Observasi data gedung GKU2 secara keseluruhan
+            observeGKU2Rooms()
+        }
+    }
+
+    private fun observeGKU2Rooms() {
+        viewModelScope.launch {
+            _uiState.value = FacilityUiState.Loading
+            
+            // Gunakan method baru yang mengambil semua ruangan dalam satu gedung
+            // Jika method baru belum ter-generate sempurna, kita gunakan alternatif yang stabil
+            facilityRepository.getRoomsByBuilding("GKU2")
+                .catch { e -> _uiState.value = FacilityUiState.Error(e.message ?: "Error") }
+                .collectLatest { allRooms ->
+                    if (allRooms.isNotEmpty()) {
+                        val currentFloor = (uiState.value as? FacilityUiState.Success)?.selectedFloor ?: 1
+                        _uiState.value = FacilityUiState.Success(allRooms, currentFloor)
+                    }
+                }
+        }
     }
 
     fun selectFloor(floor: Int) {
@@ -38,19 +66,5 @@ class FacilityViewModel(
         if (currentState is FacilityUiState.Success) {
             _uiState.update { currentState.copy(selectedFloor = floor) }
         }
-    }
-
-    private fun observeRooms() {
-        // Gabungkan flow dari semua lantai GKU2
-        combine(
-            facilityRepository.getRoomsByFloor("GKU2", 1),
-            facilityRepository.getRoomsByFloor("GKU2", 2),
-            facilityRepository.getRoomsByFloor("GKU2", 3),
-            facilityRepository.getRoomsByFloor("GKU2", 4)
-        ) { r1, r2, r3, r4 ->
-            r1 + r2 + r3 + r4
-        }.onEach { allRooms ->
-            _uiState.value = FacilityUiState.Success(allRooms)
-        }.launchIn(viewModelScope)
     }
 }

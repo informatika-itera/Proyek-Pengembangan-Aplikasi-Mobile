@@ -89,7 +89,8 @@ fun AppNavHost(
             val route: Route.AnimeDetail = backStackEntry.toRoute()
             AnimeDetailScreen(
                 malId = route.malId,
-                onNavigateBack = { navigationActions.navigateBack() }
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) }
             )
         }
     }

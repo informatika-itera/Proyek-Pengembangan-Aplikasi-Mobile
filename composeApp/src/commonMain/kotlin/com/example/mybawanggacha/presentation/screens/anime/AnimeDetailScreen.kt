@@ -1,6 +1,8 @@
 package com.example.mybawanggacha.presentation.screens.anime
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,12 +27,16 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.mybawanggacha.data.remote.dto.AnimeDetailData
+import com.example.mybawanggacha.data.remote.dto.AnimeEpisodeDto
 import com.example.mybawanggacha.data.remote.dto.AnimeExternalLinkDto
 import com.example.mybawanggacha.data.remote.dto.AnimeRelationEntryDto
 import com.example.mybawanggacha.presentation.components.ErrorState
@@ -48,6 +56,7 @@ import com.example.mybawanggacha.presentation.components.LoadingIndicator
 import com.example.mybawanggacha.presentation.components.MBGRailBackButton
 import com.example.mybawanggacha.presentation.components.MBGSideRailItem
 import com.example.mybawanggacha.presentation.components.MBGSideRailScaffold
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 private enum class AnimeDetailSection(
@@ -74,9 +83,12 @@ private fun animeDetailRailItems(): List<MBGSideRailItem> = AnimeDetailSection.e
 fun AnimeDetailScreen(
     malId: Int,
     onNavigateBack: () -> Unit,
+    onNavigateToAnimeDetail: (Int) -> Unit = {},
     viewModel: AnimeDetailViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     var selectedSection by remember { mutableStateOf(AnimeDetailSection.Overview) }
 
     LaunchedEffect(malId) {
@@ -103,9 +115,29 @@ fun AnimeDetailScreen(
                 )
                 is AnimeDetailUiState.Success -> AnimeDetailContent(
                     anime = state.anime,
-                    selectedSection = selectedSection
+                    episodes = state.episodes,
+                    selectedSection = selectedSection,
+                    onRelationEntryClick = { entry ->
+                        if (entry.type.equals("anime", ignoreCase = true)) {
+                            onNavigateToAnimeDetail(entry.mal_id)
+                        } else {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Detail ${entry.type.orUnknown()} belum diimplementasikan.",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    }
                 )
             }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+            )
         }
     }
 }
@@ -113,15 +145,20 @@ fun AnimeDetailScreen(
 @Composable
 private fun AnimeDetailContent(
     anime: AnimeDetailData,
-    selectedSection: AnimeDetailSection
+    episodes: List<AnimeEpisodeDto>,
+    selectedSection: AnimeDetailSection,
+    onRelationEntryClick: (AnimeRelationEntryDto) -> Unit
 ) {
     when (selectedSection) {
         AnimeDetailSection.Overview -> AnimeOverviewSection(anime)
         AnimeDetailSection.Synopsis -> AnimeSynopsisSection(anime)
-        AnimeDetailSection.Episodes -> AnimeEpisodeListSection(anime)
+        AnimeDetailSection.Episodes -> AnimeEpisodeListSection(anime, episodes)
         AnimeDetailSection.Info -> AnimeInfoSection(anime)
         AnimeDetailSection.Media -> AnimeMediaSection(anime)
-        AnimeDetailSection.Relations -> AnimeRelationsSection(anime)
+        AnimeDetailSection.Relations -> AnimeRelationsSection(
+            anime = anime,
+            onEntryClick = onRelationEntryClick
+        )
         AnimeDetailSection.ThemeSongs -> AnimeThemeSongsSection(anime)
     }
 }
@@ -253,13 +290,21 @@ private fun AnimeSynopsisSection(anime: AnimeDetailData) {
 }
 
 @Composable
-private fun AnimeEpisodeListSection(anime: AnimeDetailData) {
+private fun AnimeEpisodeListSection(
+    anime: AnimeDetailData,
+    episodes: List<AnimeEpisodeDto>
+) {
     val episodeCount = anime.episodes ?: 0
-    val episodes = if (episodeCount > 0) {
+    val episodeItems = if (episodes.isNotEmpty()) {
+        episodes.map { it.toEpisodeUiModel() }
+    } else if (episodeCount > 0) {
         (1..episodeCount).map { number ->
             EpisodeUiModel(
                 number = number,
                 title = "Episode $number",
+                metadata = "Detail episode belum dimuat dari Jikan.",
+                filler = false,
+                recap = false,
                 watched = false
             )
         }
@@ -284,7 +329,11 @@ private fun AnimeEpisodeListSection(anime: AnimeDetailData) {
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Status watched/unwatched masih UI skeleton.",
+                    text = if (episodes.isNotEmpty()) {
+                        "Episode dari ${anime.title}"
+                    } else {
+                        "Jumlah episode tersedia, tetapi detail episode belum tersedia."
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold
@@ -292,22 +341,37 @@ private fun AnimeEpisodeListSection(anime: AnimeDetailData) {
             }
         }
 
-        if (episodes.isEmpty()) {
+        if (episodeItems.isEmpty()) {
             item {
                 DetailTextBlock(
                     title = "Episode tidak tersedia",
-                    body = "Jumlah episode untuk anime ini tidak tersedia pada Jikan."
+                    body = "Jumlah episode untuk anime ${anime.title} pada Jikan."
                 )
             }
         } else {
             items(
-                items = episodes,
+                items = episodeItems,
                 key = { it.number }
             ) { episode ->
                 EpisodeRow(episode)
             }
         }
     }
+}
+
+private fun AnimeEpisodeDto.toEpisodeUiModel(): EpisodeUiModel {
+    return EpisodeUiModel(
+        number = mal_id,
+        title = title.orUnknown(),
+        metadata = listOfNotNull(
+            title_romanji?.takeIf { it.isNotBlank() },
+            title_japanese?.takeIf { it.isNotBlank() },
+            aired?.takeIf { it.isNotBlank() }
+        ).joinToString(" • ").ifBlank { "Tidak ada metadata episode." },
+        filler = filler,
+        recap = recap,
+        watched = false
+    )
 }
 
 @Composable
@@ -375,7 +439,10 @@ private fun AnimeMediaSection(anime: AnimeDetailData) {
 }
 
 @Composable
-private fun AnimeRelationsSection(anime: AnimeDetailData) {
+private fun AnimeRelationsSection(
+    anime: AnimeDetailData,
+    onEntryClick: (AnimeRelationEntryDto) -> Unit
+) {
     DetailSectionColumn(title = "Relations") {
         if (anime.relations.isEmpty()) {
             DetailTextBlock(
@@ -384,16 +451,87 @@ private fun AnimeRelationsSection(anime: AnimeDetailData) {
             )
         } else {
             anime.relations.forEachIndexed { index, relation ->
-                DetailTextBlock(
-                    title = relation.relation,
-                    body = relation.entry.joinRelationEntries()
-                )
+                RelationGroupTitle(relation.relation)
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    relation.entry.forEach { entry ->
+                        RelationEntryCard(
+                            entry = entry,
+                            onClick = { onEntryClick(entry) }
+                        )
+                    }
+                }
 
                 if (index != anime.relations.lastIndex) {
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RelationGroupTitle(title: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .height(18.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.primary)
+        )
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun RelationEntryCard(
+    entry: AnimeRelationEntryDto,
+    onClick: () -> Unit
+) {
+    val type = entry.type.orUnknown().replaceFirstChar { it.uppercase() }
+    val hint = if (entry.type.equals("anime", ignoreCase = true)) {
+        "Tap untuk membuka detail anime"
+    } else {
+        "Detail $type belum diimplementasikan"
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f))
+            .clickable(onClick = onClick)
+            .padding(14.dp)
+    ) {
+        Text(
+            text = entry.name,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "$type • $hint",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -655,24 +793,48 @@ private fun EpisodeRow(episode: EpisodeUiModel) {
             )
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = episode.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = episode.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    WatchedIndicator(watched = episode.watched)
+                }
 
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = if (episode.watched) "Ditonton" else "Belum ditonton",
+                    text = episode.metadata,
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (episode.watched) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
+
+                val flags = listOfNotNull(
+                    "Filler".takeIf { episode.filler },
+                    "Recap".takeIf { episode.recap }
+                ).joinToString(" • ")
+
+                if (flags.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = flags,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
 
@@ -681,6 +843,39 @@ private fun EpisodeRow(episode: EpisodeUiModel) {
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.64f)
         )
+    }
+}
+
+@Composable
+private fun WatchedIndicator(watched: Boolean) {
+    val shape = CircleShape
+    val borderColor = if (watched) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.76f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.72f)
+    }
+    val backgroundColor = if (watched) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f)
+    }
+
+    Box(
+        modifier = Modifier
+            .size(22.dp)
+            .clip(shape)
+            .background(backgroundColor)
+            .border(width = 1.dp, color = borderColor, shape = shape),
+        contentAlignment = Alignment.Center
+    ) {
+        if (watched) {
+            Text(
+                text = "✓",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -715,21 +910,11 @@ private fun <T> List<T>.joinNames(nameOf: (T) -> String): String {
     return joinToString { nameOf(it) }
 }
 
-private fun List<AnimeRelationEntryDto>.joinRelationEntries(): String {
-    return if (isEmpty()) {
-        "Belum ada data entry."
-    } else {
-        joinToString(separator = "\n") { entry ->
-            listOfNotNull(
-                entry.name,
-                entry.type?.let { "($it)" }
-            ).joinToString(" ")
-        }
-    }
-}
-
 private data class EpisodeUiModel(
     val number: Int,
     val title: String,
+    val metadata: String,
+    val filler: Boolean,
+    val recap: Boolean,
     val watched: Boolean
 )

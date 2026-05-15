@@ -8,21 +8,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // ==================== COLORS ====================
+//
+//private val Primary = Color(0xFF6750A4)
+//private val OnPrimary = Color(0xFFFFFFFF)
+//private val PrimaryContainer = Color(0xFFEADDFF)
+//private val OnPrimaryContainer = Color(0xFF21005D)
+//
+//private val Secondary = Color(0xFF625B71)
+//private val OnSecondary = Color(0xFFFFFFFF)
+//private val SecondaryContainer = Color(0xFFE8DEF8)
+//private val OnSecondaryContainer = Color(0xFF1D192B)
+//
+//private val Tertiary = Color(0xFF7D5260)
+//private val OnTertiary = Color(0xFFFFFFFF)
+//private val TertiaryContainer = Color(0xFFFFD8E4)
+//private val OnTertiaryContainer = Color(0xFF31111D)
 
-private val Primary = Color(0xFF6750A4)
-private val OnPrimary = Color(0xFFFFFFFF)
-private val PrimaryContainer = Color(0xFFEADDFF)
-private val OnPrimaryContainer = Color(0xFF21005D)
+// InventRa Custom Color Palette
+private val Primary        = Color(0xFF4D5B37)   // Hijau
+private val OnPrimary      = Color(0xFFFFFFFF)
+private val PrimaryContainer    = Color(0xFFCBD9AA)
+private val OnPrimaryContainer  = Color(0xFF111E00)
 
-private val Secondary = Color(0xFF625B71)
-private val OnSecondary = Color(0xFFFFFFFF)
-private val SecondaryContainer = Color(0xFFE8DEF8)
-private val OnSecondaryContainer = Color(0xFF1D192B)
+private val Secondary      = Color(0xFF17579F)   // Biru
+private val OnSecondary    = Color(0xFFFFFFFF)
+private val SecondaryContainer  = Color(0xFFD2E4FF)
+private val OnSecondaryContainer = Color(0xFF001B3E)
 
-private val Tertiary = Color(0xFF7D5260)
-private val OnTertiary = Color(0xFFFFFFFF)
-private val TertiaryContainer = Color(0xFFFFD8E4)
-private val OnTertiaryContainer = Color(0xFF31111D)
+private val Tertiary       = Color(0xFFCBCF1A)   // Kuning
+private val OnTertiary     = Color(0xFF313300)
+private val TertiaryContainer   = Color(0xFFEEF284)
+private val OnTertiaryContainer = Color(0xFF1F2100)
 
 private val Error = Color(0xFFB3261E)
 private val OnError = Color(0xFFFFFFFF)
@@ -103,7 +119,7 @@ private val DarkColorScheme = darkColorScheme(
 // ==================== THEME ====================
 
 @Composable
-fun NoteAITheme(
+fun InventRaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

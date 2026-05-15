@@ -8,20 +8,20 @@ import org.koin.android.ext.koin.androidLogger
 
 /**
  * Android Application class
- * 
+ *
  * Entry point untuk inisialisasi app-wide dependencies.
  */
-class NoteAIApplication : Application() {
-    
+class InventRaApplication : Application() {
+
     override fun onCreate() {
         super.onCreate()
-        
+
         // Initialize Koin DI
         initKoin(
             platformModules = listOf(androidModule)
         ) {
             androidLogger()
-            androidContext(this@NoteAIApplication)
+            androidContext(this@InventRaApplication)
         }
     }
 }

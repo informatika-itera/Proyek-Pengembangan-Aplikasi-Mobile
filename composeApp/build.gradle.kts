@@ -106,27 +106,38 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.dailybliss.app"
     compileSdk = 35
+    buildToolsVersion = "35.0.0"
+    ndkVersion = "27.0.12077973"
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.dailybliss.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
         
-        // Inject API key from local.properties
+        // Inject API key and model from local.properties
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "GEMINI_MODEL_NAME",
+            "\"${localProperties.getProperty("GEMINI_MODEL_NAME", "gemini-1.5-flash")}\""
         )
     }
     
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            // Support 16KB devices for 3rd party libs like Coil
+            useLegacyPackaging = true
         }
     }
     
@@ -152,8 +163,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("BlissDatabase") {
+            packageName.set("com.dailybliss.app.data.local")
         }
     }
 }

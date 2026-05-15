@@ -1,0 +1,61 @@
+CREATE TABLE MomentEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    media_url TEXT,
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Get all moments ordered by updated_at descending
+getAllMoments:
+SELECT * FROM MomentEntity
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get pinned moments
+getPinnedMoments:
+SELECT * FROM MomentEntity
+WHERE is_pinned = 1
+ORDER BY updated_at DESC;
+
+-- Search moments by title or content
+searchMoments:
+SELECT * FROM MomentEntity
+WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%'
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get single moment by ID
+getMomentById:
+SELECT * FROM MomentEntity
+WHERE id = ?;
+
+-- Insert new moment
+insertMoment:
+INSERT INTO MomentEntity (title, content, media_url, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Get last inserted ID
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- Update existing moment
+updateMoment:
+UPDATE MomentEntity
+SET title = ?, content = ?, media_url = ?, is_pinned = ?, updated_at = ?
+WHERE id = ?;
+
+-- Delete moment by ID
+deleteMoment:
+DELETE FROM MomentEntity
+WHERE id = ?;
+
+-- Delete multiple moments
+deleteMomentsByIds:
+DELETE FROM MomentEntity
+WHERE id IN ?;
+
+-- Count all moments
+countMoments:
+SELECT COUNT(*) FROM MomentEntity;
+

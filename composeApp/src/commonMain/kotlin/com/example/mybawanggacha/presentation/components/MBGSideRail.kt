@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -112,21 +114,20 @@ fun MBGVerticalRail(
     ) {
         topAction()
 
-        Column(
+        LazyColumn(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(22.dp, Alignment.CenterVertically)
         ) {
-            items.forEachIndexed { index, item ->
+            itemsIndexed(
+                items = items,
+                key = { _, item -> item.key }
+            ) { _, item ->
                 MBGVerticalRailItem(
                     item = item,
                     selected = item.key == selectedKey,
                     onClick = { onItemClick(item.key) }
                 )
-
-                if (index != items.lastIndex) {
-                    Spacer(modifier = Modifier.height(22.dp))
-                }
             }
         }
 

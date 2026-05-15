@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.mybawanggacha.data.remote.dto.AnimeDetailData
+import com.example.mybawanggacha.data.remote.dto.AnimeExternalLinkDto
+import com.example.mybawanggacha.data.remote.dto.AnimeRelationEntryDto
 import com.example.mybawanggacha.presentation.components.ErrorState
 import com.example.mybawanggacha.presentation.components.LoadingIndicator
 import com.example.mybawanggacha.presentation.components.MBGRailBackButton
@@ -53,7 +56,11 @@ private enum class AnimeDetailSection(
 ) {
     Overview("overview", "Overview"),
     Synopsis("synopsis", "Sinopsis"),
-    Episodes("episodes", "Episode List")
+    Episodes("episodes", "Episode"),
+    Info("info", "Info"),
+    Media("media", "Media"),
+    Relations("relations", "Relations"),
+    ThemeSongs("theme_songs", "Theme Songs")
 }
 
 private fun animeDetailRailItems(): List<MBGSideRailItem> = AnimeDetailSection.entries.map { section ->
@@ -112,6 +119,10 @@ private fun AnimeDetailContent(
         AnimeDetailSection.Overview -> AnimeOverviewSection(anime)
         AnimeDetailSection.Synopsis -> AnimeSynopsisSection(anime)
         AnimeDetailSection.Episodes -> AnimeEpisodeListSection(anime)
+        AnimeDetailSection.Info -> AnimeInfoSection(anime)
+        AnimeDetailSection.Media -> AnimeMediaSection(anime)
+        AnimeDetailSection.Relations -> AnimeRelationsSection(anime)
+        AnimeDetailSection.ThemeSongs -> AnimeThemeSongsSection(anime)
     }
 }
 
@@ -133,7 +144,7 @@ private fun AnimeOverviewSection(anime: AnimeDetailData) {
         )
 
         anime.title_english
-            ?.takeIf { it != anime.title }
+            ?.takeIf { it.isNotBlank() && it != anime.title }
             ?.let { englishTitle ->
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -145,6 +156,30 @@ private fun AnimeOverviewSection(anime: AnimeDetailData) {
                     overflow = TextOverflow.Ellipsis
                 )
             }
+
+        anime.title_japanese
+            ?.takeIf { it.isNotBlank() }
+            ?.let { japaneseTitle ->
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = japaneseTitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+        if (anime.title_synonyms.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = anime.title_synonyms.joinToString(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -167,51 +202,39 @@ private fun AnimeOverviewSection(anime: AnimeDetailData) {
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                ScoreCard(score = anime.score)
-                InfoCard(label = "Type", value = anime.type ?: "Unknown")
-                InfoCard(label = "Episodes", value = anime.episodes?.toString() ?: "Unknown")
+                ScoreCard(
+                    score = anime.score,
+                    scoredBy = anime.scored_by
+                )
+                InfoCard(label = "Type", value = anime.type.orUnknown())
+                InfoCard(label = "Episodes", value = anime.episodes.formatNumber())
+                InfoCard(label = "Source", value = anime.source.orUnknown())
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        DetailInfoGrid(anime)
-
-        if (anime.genres.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            DetailTextBlock(
-                title = "Genres",
-                body = anime.genres.joinToString { it.name }
+        DetailInfoRows(
+            rows = listOf(
+                "Status" to anime.status.orUnknown(),
+                "Airing" to anime.airing.formatAiringStatus(),
+                "Season" to formatSeason(anime),
+                "Aired" to anime.aired?.string.orUnknown(),
+                "Broadcast" to anime.broadcast?.string.orUnknown(),
+                "Rating" to anime.rating.orUnknown(),
+                "Duration" to anime.duration.orUnknown(),
+                "Rank" to anime.rank.formatRank(),
+                "Popularity" to anime.popularity.formatRank(),
+                "Members" to anime.members.formatNumber(),
+                "Favorites" to anime.favorites.formatNumber()
             )
-        }
-
-        if (anime.studios.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(12.dp))
-            DetailTextBlock(
-                title = "Studios",
-                body = anime.studios.joinToString { it.name }
-            )
-        }
+        )
     }
 }
 
 @Composable
 private fun AnimeSynopsisSection(anime: AnimeDetailData) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 8.dp, top = 32.dp, end = 20.dp, bottom = 32.dp)
-    ) {
-        Text(
-            text = "Sinopsis",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+    DetailSectionColumn(title = "Sinopsis") {
         DetailTextBlock(
             title = anime.title,
             body = anime.synopsis ?: "Belum ada sinopsis dari Jikan."
@@ -220,7 +243,7 @@ private fun AnimeSynopsisSection(anime: AnimeDetailData) {
         anime.background
             ?.takeIf { it.isNotBlank() }
             ?.let { background ->
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 DetailTextBlock(
                     title = "Background",
                     body = background
@@ -252,7 +275,7 @@ private fun AnimeEpisodeListSection(anime: AnimeDetailData) {
         item {
             Column {
                 Text(
-                    text = "Episode List",
+                    text = "Episode",
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold
@@ -288,7 +311,143 @@ private fun AnimeEpisodeListSection(anime: AnimeDetailData) {
 }
 
 @Composable
-private fun ScoreCard(score: Double?) {
+private fun AnimeInfoSection(anime: AnimeDetailData) {
+    DetailSectionColumn(title = "Info") {
+        DetailTextBlockIfNotEmpty(
+            title = "Genres",
+            body = anime.genres.joinNames { it.name }
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Themes",
+            body = anime.themes.joinNames { it.name }
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Demographics",
+            body = anime.demographics.joinNames { it.name }
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Explicit Genres",
+            body = anime.explicit_genres.joinNames { it.name }
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Studios",
+            body = anime.studios.joinNames { it.name }
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Producers",
+            body = anime.producers.joinNames { it.name }
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Licensors",
+            body = anime.licensors.joinNames { it.name }
+        )
+    }
+}
+
+@Composable
+private fun AnimeMediaSection(anime: AnimeDetailData) {
+    DetailSectionColumn(title = "Media") {
+        val trailerUrl = anime.trailer?.url
+            ?: anime.trailer?.embed_url
+            ?: anime.trailer?.youtube_id?.let { "YouTube ID: $it" }
+
+        DetailTextBlockIfNotEmpty(
+            title = "Trailer",
+            body = trailerUrl.orEmpty()
+        )
+
+        DetailLinkList(
+            title = "Streaming",
+            links = anime.streaming
+        )
+
+        DetailLinkList(
+            title = "External",
+            links = anime.external
+        )
+    }
+}
+
+@Composable
+private fun AnimeRelationsSection(anime: AnimeDetailData) {
+    DetailSectionColumn(title = "Relations") {
+        if (anime.relations.isEmpty()) {
+            DetailTextBlock(
+                title = "Belum ada relasi",
+                body = "Jikan belum menyediakan relasi untuk anime ini."
+            )
+        } else {
+            anime.relations.forEachIndexed { index, relation ->
+                DetailTextBlock(
+                    title = relation.relation,
+                    body = relation.entry.joinRelationEntries()
+                )
+
+                if (index != anime.relations.lastIndex) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnimeThemeSongsSection(anime: AnimeDetailData) {
+    DetailSectionColumn(title = "Theme Songs") {
+        DetailTextBlockIfNotEmpty(
+            title = "Openings",
+            body = anime.theme?.openings.orEmpty().joinToString(separator = "\n")
+        )
+
+        DetailTextBlockIfNotEmpty(
+            title = "Endings",
+            body = anime.theme?.endings.orEmpty().joinToString(separator = "\n")
+        )
+
+        if (anime.theme?.openings.isNullOrEmpty() && anime.theme?.endings.isNullOrEmpty()) {
+            DetailTextBlock(
+                title = "Belum ada theme songs",
+                body = "Opening dan ending belum tersedia dari Jikan."
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailSectionColumn(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 8.dp, top = 32.dp, end = 20.dp, bottom = 32.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        content()
+    }
+}
+
+@Composable
+private fun ScoreCard(
+    score: Double?,
+    scoredBy: Int?
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -316,9 +475,11 @@ private fun ScoreCard(score: Double?) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Score",
+                    text = "Score • ${scoredBy.formatNumber()} users",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -326,17 +487,9 @@ private fun ScoreCard(score: Double?) {
 }
 
 @Composable
-private fun DetailInfoGrid(anime: AnimeDetailData) {
-    val rows = listOf(
-        "Status" to (anime.status ?: "Unknown"),
-        "Season" to listOfNotNull(
-            anime.season?.replaceFirstChar { it.uppercase() },
-            anime.year?.toString()
-        ).joinToString(" ").ifBlank { "Unknown" },
-        "Rating" to (anime.rating ?: "Unknown"),
-        "Duration" to (anime.duration ?: "Unknown")
-    )
-
+private fun DetailInfoRows(
+    rows: List<Pair<String, String>>
+) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -412,6 +565,21 @@ private fun InfoCard(
 }
 
 @Composable
+private fun DetailTextBlockIfNotEmpty(
+    title: String,
+    body: String
+) {
+    if (body.isBlank()) return
+
+    DetailTextBlock(
+        title = title,
+        body = body
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
 private fun DetailTextBlock(
     title: String,
     body: String
@@ -448,6 +616,23 @@ private fun DetailTextBlock(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun DetailLinkList(
+    title: String,
+    links: List<AnimeExternalLinkDto>
+) {
+    if (links.isEmpty()) return
+
+    DetailTextBlock(
+        title = title,
+        body = links.joinToString(separator = "\n\n") { link ->
+            "${link.name}\n${link.url}"
+        }
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 @Composable
@@ -496,6 +681,50 @@ private fun EpisodeRow(episode: EpisodeUiModel) {
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.64f)
         )
+    }
+}
+
+private fun String?.orUnknown(): String {
+    return this?.takeIf { it.isNotBlank() } ?: "Unknown"
+}
+
+private fun Int?.formatNumber(): String {
+    return this?.toString() ?: "Unknown"
+}
+
+private fun Int?.formatRank(): String {
+    return this?.let { "#$it" } ?: "Unknown"
+}
+
+private fun Boolean?.formatAiringStatus(): String {
+    return when (this) {
+        true -> "Airing"
+        false -> "Not airing"
+        null -> "Unknown"
+    }
+}
+
+private fun formatSeason(anime: AnimeDetailData): String {
+    return listOfNotNull(
+        anime.season?.replaceFirstChar { it.uppercase() },
+        anime.year?.toString()
+    ).joinToString(" ").ifBlank { "Unknown" }
+}
+
+private fun <T> List<T>.joinNames(nameOf: (T) -> String): String {
+    return joinToString { nameOf(it) }
+}
+
+private fun List<AnimeRelationEntryDto>.joinRelationEntries(): String {
+    return if (isEmpty()) {
+        "Belum ada data entry."
+    } else {
+        joinToString(separator = "\n") { entry ->
+            listOfNotNull(
+                entry.name,
+                entry.type?.let { "($it)" }
+            ).joinToString(" ")
+        }
     }
 }
 

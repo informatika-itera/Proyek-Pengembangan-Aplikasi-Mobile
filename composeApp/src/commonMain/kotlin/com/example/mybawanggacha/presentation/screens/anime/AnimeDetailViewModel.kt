@@ -26,7 +26,7 @@ class AnimeDetailViewModel(
         viewModelScope.launch {
             _uiState.value = AnimeDetailUiState.Loading
             try {
-                val response = jikanService.fetchAnimeDetail(malId)
+                val response = jikanService.fetchAnimeFullDetail(malId)
                 _uiState.value = AnimeDetailUiState.Success(response.data)
             } catch (e: Exception) {
                 _uiState.value = AnimeDetailUiState.Error(e.message ?: "Unknown error occurred")

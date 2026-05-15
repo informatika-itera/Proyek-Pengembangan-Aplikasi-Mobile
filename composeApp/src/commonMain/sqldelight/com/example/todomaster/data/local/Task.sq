@@ -1,0 +1,40 @@
+CREATE TABLE TaskEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    priority_type INTEGER NOT NULL,
+    due_date INTEGER,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    sub_tasks TEXT,
+    created_at INTEGER NOT NULL
+);
+
+selectAllTasks:
+SELECT * FROM TaskEntity ORDER BY is_completed ASC, due_date ASC;
+
+selectTasksByPriority:
+SELECT * FROM TaskEntity WHERE priority_type = ? ORDER BY is_completed ASC, due_date ASC;
+
+selectTaskById:
+SELECT * FROM TaskEntity WHERE id = ?;
+
+selectTodayDoFirstCount:
+SELECT COUNT(*) FROM TaskEntity 
+WHERE priority_type = 1 AND is_completed = 0 AND created_at >= ?;
+
+insertTask:
+INSERT INTO TaskEntity(title, description, priority_type, due_date, is_completed, is_pinned, sub_tasks, created_at)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+
+updateTask:
+UPDATE TaskEntity SET 
+    title = ?, description = ?, priority_type = ?, due_date = ?, 
+    is_completed = ?, is_pinned = ?, sub_tasks = ?
+WHERE id = ?;
+
+deleteTaskById:
+DELETE FROM TaskEntity WHERE id = ?;
+
+toggleTaskCompletion:
+UPDATE TaskEntity SET is_completed = ? WHERE id = ?;

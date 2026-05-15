@@ -1,32 +1,23 @@
 package com.example.todomaster.core.di
 
+import com.example.todomaster.presentation.screens.home.HomeViewModel
+import org.koin.core.module.dsl.viewModelOf
 import com.example.todomaster.core.network.HttpClientFactory
 import com.example.todomaster.core.util.DatabaseDriverFactory
-
 import com.example.todomaster.data.local.datastore.DataStoreFactory
 import com.example.todomaster.data.local.datastore.UserPreferences
 import com.example.todomaster.data.local.datastore.create
 import com.example.todomaster.data.remote.api.GeminiService
 import com.example.todomaster.data.repository.AIRepositoryImpl
-import com.example.todomaster.data.repository.NoteRepositoryImpl
-import com.example.todomaster.data.local.NoteDatabase
+import com.example.todomaster.data.repository.TaskRepositoryImpl
+import com.example.todomaster.data.local.TaskDatabase
 import com.example.todomaster.domain.repository.AIRepository
-import com.example.todomaster.domain.repository.NoteRepository
-import com.example.todomaster.domain.usecase.DeleteNoteUseCase
-import com.example.todomaster.domain.usecase.GenerateIdeasUseCase
-import com.example.todomaster.domain.usecase.GetAllNotesUseCase
-import com.example.todomaster.domain.usecase.ImproveWritingUseCase
-import com.example.todomaster.domain.usecase.SaveNoteUseCase
-import com.example.todomaster.domain.usecase.SearchNotesUseCase
-import com.example.todomaster.domain.usecase.SummarizeNoteUseCase
-import com.example.todomaster.presentation.screens.addnote.AddNoteViewModel
-import com.example.todomaster.presentation.screens.ai.AIAssistantViewModel
-import com.example.todomaster.presentation.screens.detail.NoteDetailViewModel
-import com.example.todomaster.presentation.screens.home.HomeViewModel
+import com.example.todomaster.domain.repository.TaskRepository
+import com.example.todomaster.domain.usecase.AddTaskUseCase
+import com.example.todomaster.presentation.screens.addtask.AddTaskViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -43,7 +34,7 @@ val networkModule = module {
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        NoteDatabase(driverFactory.createDriver())
+        TaskDatabase(driverFactory.createDriver())
     }
 }
 
@@ -57,29 +48,21 @@ val preferencesModule = module {
 // ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
+    singleOf(::TaskRepositoryImpl) bind TaskRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
-    singleOf(::GetAllNotesUseCase)
-    singleOf(::SearchNotesUseCase)
-    singleOf(::SaveNoteUseCase)
-    singleOf(::DeleteNoteUseCase)
-    singleOf(::SummarizeNoteUseCase)
-    singleOf(::ImproveWritingUseCase)
-    singleOf(::GenerateIdeasUseCase)
+    singleOf(::AddTaskUseCase)
 }
 
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
-    viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::AddTaskViewModel)
 }
 
 // ==================== SHARED MODULES ====================

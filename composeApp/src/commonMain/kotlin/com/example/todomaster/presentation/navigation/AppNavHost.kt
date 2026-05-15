@@ -1,16 +1,18 @@
 package com.example.todomaster.presentation.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.todomaster.presentation.screens.addnote.AddNoteScreen
-import com.example.todomaster.presentation.screens.ai.AIAssistantScreen
-import com.example.todomaster.presentation.screens.detail.NoteDetailScreen
 import com.example.todomaster.presentation.screens.home.HomeScreen
+import com.example.todomaster.presentation.screens.addtask.AddTaskScreen
 
 @Composable
 fun AppNavHost(
@@ -18,74 +20,80 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
-    
+
     NavHost(
         navController = navController,
-        startDestination = Route.Home,
+        startDestination = Route.TaskList,
         modifier = modifier
     ) {
-        composable<Route.Home> {
+        composable<Route.TaskList> {
             HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                onNavigateToAddTask = { navigationActions.navigateToAddTask() },
+                onNavigateToTaskDetail = { taskId -> navigationActions.navigateToTaskDetail(taskId) }
             )
         }
-        
-        composable<Route.AddNote> { backStackEntry ->
-            val route: Route.AddNote = backStackEntry.toRoute()
-            AddNoteScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToAI = { text ->
-                    navigationActions.navigateToAIAssistant(
-                        noteId = route.noteId,
-                        initialText = text
-                    )
-                }
+
+        composable<Route.AddTask> { backStackEntry ->
+            val route: Route.AddTask = backStackEntry.toRoute()
+            AddTaskScreen(
+                onNavigateBack = { navigationActions.navigateBack() }
             )
         }
-        
-        composable<Route.NoteDetail> { backStackEntry ->
-            val route: Route.NoteDetail = backStackEntry.toRoute()
-            NoteDetailScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { navigationActions.navigateToAddNote(route.noteId) },
-                onShare = { _ -> }
-            )
+
+        composable<Route.TaskDetail> { backStackEntry ->
+            val route: Route.TaskDetail = backStackEntry.toRoute()
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Task Detail Screen (ID: ${route.taskId})")
+            }
         }
-        
+
+        composable<Route.Calendar> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Calendar Screen")
+            }
+        }
+
+        composable<Route.Statistics> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Statistics Screen")
+            }
+        }
+
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
-            AIAssistantScreen(
-                noteId = route.noteId,
-                initialText = route.initialText,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onApplyResult = null
-            )
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("AI Assistant Screen (Sprint 4)")
+            }
         }
     }
 }
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
-        override fun navigateToHome() {
-            navController.navigate(Route.Home) {
-                popUpTo(Route.Home) { inclusive = true }
+        override fun navigateToTaskList() {
+            navController.navigate(Route.TaskList) {
+                popUpTo(Route.TaskList) { inclusive = true }
             }
         }
-        
-        override fun navigateToAddNote(noteId: Long?) {
-            navController.navigate(Route.AddNote(noteId))
+
+        override fun navigateToAddTask(taskId: Long?) {
+            navController.navigate(Route.AddTask(taskId))
         }
-        
-        override fun navigateToNoteDetail(noteId: Long) {
-            navController.navigate(Route.NoteDetail(noteId))
+
+        override fun navigateToTaskDetail(taskId: Long) {
+            navController.navigate(Route.TaskDetail(taskId))
         }
-        
-        override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
-            navController.navigate(Route.AIAssistant(noteId, initialText))
+
+        override fun navigateToCalendar() {
+            navController.navigate(Route.Calendar)
+        }
+
+        override fun navigateToStatistics() {
+            navController.navigate(Route.Statistics)
+        }
+
+        override fun navigateToAIAssistant(taskId: Long?, initialText: String?) {
+            navController.navigate(Route.AIAssistant(taskId, initialText))
         }
 
         override fun navigateBack() {

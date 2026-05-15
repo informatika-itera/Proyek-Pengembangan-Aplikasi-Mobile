@@ -3,27 +3,35 @@ package com.example.todomaster.presentation.navigation
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
-    
+
     @Serializable
-    data object Home : Route
-    
+    data object TaskList : Route
+
     @Serializable
-    data class AddNote(val noteId: Long? = null) : Route
-    
+    data class AddTask(val taskId: Long? = null) : Route
+
     @Serializable
-    data class NoteDetail(val noteId: Long) : Route
-    
+    data class TaskDetail(val taskId: Long) : Route
+
+    @Serializable
+    data object Calendar : Route
+
+    @Serializable
+    data object Statistics : Route
+
     @Serializable
     data class AIAssistant(
-        val noteId: Long? = null,
+        val taskId: Long? = null,
         val initialText: String? = null
     ) : Route
 }
 
 interface NavigationActions {
-    fun navigateToHome()
-    fun navigateToAddNote(noteId: Long? = null)
-    fun navigateToNoteDetail(noteId: Long)
-    fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
+    fun navigateToTaskList()
+    fun navigateToAddTask(taskId: Long? = null)
+    fun navigateToTaskDetail(taskId: Long)
+    fun navigateToCalendar()
+    fun navigateToStatistics()
+    fun navigateToAIAssistant(taskId: Long? = null, initialText: String? = null)
     fun navigateBack()
 }

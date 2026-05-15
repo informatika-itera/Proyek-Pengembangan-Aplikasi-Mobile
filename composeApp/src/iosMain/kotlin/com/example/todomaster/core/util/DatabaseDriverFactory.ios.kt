@@ -2,7 +2,7 @@ package com.example.todomaster.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.example.todomaster.database.NoteDatabase
+import com.example.todomaster.data.local.TaskDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory
@@ -13,7 +13,7 @@ import com.example.todomaster.database.NoteDatabase
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = TaskDatabase.Schema,
             name = "todomaster.db"
         )
     }

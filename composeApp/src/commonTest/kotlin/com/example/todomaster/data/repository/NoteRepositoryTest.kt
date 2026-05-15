@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import com.example.todomaster.domain.model.Note
 import com.example.todomaster.domain.model.NoteCategory
 import com.example.todomaster.domain.model.NoteColor
-import com.example.todomaster.domain.repository.NoteRepository
+import com.example.todomaster.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -202,7 +202,7 @@ class NoteRepositoryTest {
  * In-memory implementation yang tidak bergantung pada database.
  * Digunakan untuk unit testing tanpa side effects.
  */
-class FakeNoteRepository : NoteRepository {
+class FakeNoteRepository : TaskRepository {
     
     private val notes = MutableStateFlow<List<Note>>(emptyList())
     private var nextId = 1L

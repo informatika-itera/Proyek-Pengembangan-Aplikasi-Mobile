@@ -152,7 +152,7 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
+        create("TaskDatabase") {
             packageName.set("com.example.todomaster.data.local")
         }
     }

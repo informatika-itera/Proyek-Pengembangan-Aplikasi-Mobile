@@ -51,6 +51,7 @@ import com.example.mybawanggacha.data.remote.dto.AnimeDetailData
 import com.example.mybawanggacha.data.remote.dto.AnimeEpisodeDto
 import com.example.mybawanggacha.data.remote.dto.AnimeExternalLinkDto
 import com.example.mybawanggacha.data.remote.dto.AnimeRelationEntryDto
+import com.example.mybawanggacha.data.remote.dto.RelationEntryPreviewDto
 import com.example.mybawanggacha.presentation.components.ErrorState
 import com.example.mybawanggacha.presentation.components.LoadingIndicator
 import com.example.mybawanggacha.presentation.components.MBGRailBackButton
@@ -116,6 +117,7 @@ fun AnimeDetailScreen(
                 is AnimeDetailUiState.Success -> AnimeDetailContent(
                     anime = state.anime,
                     episodes = state.episodes,
+                    relationPreviews = state.relationPreviews,
                     selectedSection = selectedSection,
                     onRelationEntryClick = { entry ->
                         if (entry.type.equals("anime", ignoreCase = true)) {
@@ -146,6 +148,7 @@ fun AnimeDetailScreen(
 private fun AnimeDetailContent(
     anime: AnimeDetailData,
     episodes: List<AnimeEpisodeDto>,
+    relationPreviews: Map<String, RelationEntryPreviewDto>,
     selectedSection: AnimeDetailSection,
     onRelationEntryClick: (AnimeRelationEntryDto) -> Unit
 ) {
@@ -157,6 +160,7 @@ private fun AnimeDetailContent(
         AnimeDetailSection.Media -> AnimeMediaSection(anime)
         AnimeDetailSection.Relations -> AnimeRelationsSection(
             anime = anime,
+            relationPreviews = relationPreviews,
             onEntryClick = onRelationEntryClick
         )
         AnimeDetailSection.ThemeSongs -> AnimeThemeSongsSection(anime)
@@ -332,7 +336,7 @@ private fun AnimeEpisodeListSection(
                     text = if (episodes.isNotEmpty()) {
                         "Episode dari ${anime.title}"
                     } else {
-                        "Jumlah episode tersedia, tetapi detail episode belum tersedia."
+                        ""
                     },
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -441,6 +445,7 @@ private fun AnimeMediaSection(anime: AnimeDetailData) {
 @Composable
 private fun AnimeRelationsSection(
     anime: AnimeDetailData,
+    relationPreviews: Map<String, RelationEntryPreviewDto>,
     onEntryClick: (AnimeRelationEntryDto) -> Unit
 ) {
     DetailSectionColumn(title = "Relations") {
@@ -459,6 +464,7 @@ private fun AnimeRelationsSection(
                     relation.entry.forEach { entry ->
                         RelationEntryCard(
                             entry = entry,
+                            preview = relationPreviews[entry.previewKey()],
                             onClick = { onEntryClick(entry) }
                         )
                     }
@@ -497,42 +503,76 @@ private fun RelationGroupTitle(title: String) {
 @Composable
 private fun RelationEntryCard(
     entry: AnimeRelationEntryDto,
+    preview: RelationEntryPreviewDto?,
     onClick: () -> Unit
 ) {
     val type = entry.type.orUnknown().replaceFirstChar { it.uppercase() }
-    val hint = if (entry.type.equals("anime", ignoreCase = true)) {
-        "Tap untuk membuka detail anime"
-    } else {
-        "Detail $type belum diimplementasikan"
-    }
+    val imageUrl = preview?.images?.jpg?.large_image_url
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f))
             .clickable(onClick = onClick)
-            .padding(14.dp)
+            .padding(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = entry.name,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        Box(
+            modifier = Modifier
+                .width(58.dp)
+                .height(82.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = entry.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = type.take(1),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = entry.name,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
 
-        Text(
-            text = "$type • $hint",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = type,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
+}
+
+private fun AnimeRelationEntryDto.previewKey(): String {
+    return "${type.orEmpty().lowercase()}:$mal_id"
 }
 
 @Composable

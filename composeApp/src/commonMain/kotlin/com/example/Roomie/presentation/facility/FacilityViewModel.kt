@@ -7,9 +7,10 @@ import com.example.Roomie.domain.repository.FacilityRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 sealed interface FacilityUiState {
     data object Loading : FacilityUiState
@@ -40,29 +41,16 @@ class FacilityViewModel(
     }
 
     private fun observeRooms() {
-        viewModelScope.launch {
-            _uiState.value = FacilityUiState.Loading
-            // Default ke GKU2 untuk sekarang sesuai request sebelumnya
-            facilityRepository.getRoomsByFloor("GKU2", 1).collectLatest {
-                // Repository kita sekarang sudah reactive (Flow)
-                // Tapi untuk filter lantai kita handle di state Success agar UI tetap smooth saat ganti tab
-            }
-            
-            // Re-implement observe logic to use full room list if needed or specialized flow
-            // For now, let's observe all GKU2 rooms and handle floor filtering in UI State
-            facilityRepository.getRoomsByFloor("GKU2", 1).collectLatest { roomsLvl1 ->
-                facilityRepository.getRoomsByFloor("GKU2", 2).collectLatest { roomsLvl2 ->
-                    facilityRepository.getRoomsByFloor("GKU2", 3).collectLatest { roomsLvl3 ->
-                        facilityRepository.getRoomsByFloor("GKU2", 4).collectLatest { roomsLvl4 ->
-                            val allGKU2Rooms = roomsLvl1 + roomsLvl2 + roomsLvl3 + roomsLvl4
-                            _uiState.value = FacilityUiState.Success(allGKU2Rooms)
-                        }
-                    }
-                }
-            }
-        }
+        // Gabungkan flow dari semua lantai GKU2
+        combine(
+            facilityRepository.getRoomsByFloor("GKU2", 1),
+            facilityRepository.getRoomsByFloor("GKU2", 2),
+            facilityRepository.getRoomsByFloor("GKU2", 3),
+            facilityRepository.getRoomsByFloor("GKU2", 4)
+        ) { r1, r2, r3, r4 ->
+            r1 + r2 + r3 + r4
+        }.onEach { allRooms ->
+            _uiState.value = FacilityUiState.Success(allRooms)
+        }.launchIn(viewModelScope)
     }
-    
-    // Simplification: In a real app, Repository should have a method to get all rooms of a building
-    // For Sprint 1 refinement, we use the existing interface
 }

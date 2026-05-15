@@ -1,6 +1,7 @@
 package com.example.mybawanggacha.data.remote.api
 
 import com.example.mybawanggacha.data.remote.dto.AnimeDetailResponse
+import com.example.mybawanggacha.data.remote.dto.AnimeEpisodesResponse
 import com.example.mybawanggacha.data.remote.dto.JikanRecommendationsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -21,5 +22,10 @@ class JikanService(private val client: HttpClient) {
 
     suspend fun fetchAnimeFullDetail(id: Int): AnimeDetailResponse {
         return client.get("${BASE_URL}anime/$id/full").body()
+    }
+
+
+    suspend fun fetchAnimeEpisodes(id: Int): AnimeEpisodesResponse {
+        return client.get("${BASE_URL}anime/$id/episodes").body()
     }
 }

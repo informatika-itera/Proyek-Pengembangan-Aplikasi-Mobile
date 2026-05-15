@@ -51,6 +51,25 @@ data class AnimeDetailData(
 )
 
 @Serializable
+data class AnimeEpisodesResponse(
+    val data: List<AnimeEpisodeDto> = emptyList()
+)
+
+@Serializable
+data class AnimeEpisodeDto(
+    val mal_id: Int,
+    val url: String? = null,
+    val title: String? = null,
+    val title_japanese: String? = null,
+    val title_romanji: String? = null,
+    val duration: Int? = null,
+    val aired: String? = null,
+    val filler: Boolean = false,
+    val recap: Boolean = false,
+    val synopsis: String? = null
+)
+
+@Serializable
 data class AnimeTrailerDto(
     val youtube_id: String? = null,
     val url: String? = null,

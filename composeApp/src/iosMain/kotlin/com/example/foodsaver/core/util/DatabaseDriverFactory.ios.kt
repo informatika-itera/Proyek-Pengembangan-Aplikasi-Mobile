@@ -2,7 +2,7 @@ package com.example.foodsaver.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-// import com.example.foodsaver.db.FoodSaverDatabase
+import com.example.foodsaver.data.local.FoodSaverDatabase
 
 /**
  * Implementasi iOS untuk DatabaseDriverFactory.
@@ -10,7 +10,7 @@ import app.cash.sqldelight.driver.native.NativeSqliteDriver
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
-            schema = NativeSqliteDriver.Schema, // Ganti ke FoodSaverDatabase.Schema nanti
+            schema = FoodSaverDatabase.Schema,
             name = "foodsaver.db"
         )
     }

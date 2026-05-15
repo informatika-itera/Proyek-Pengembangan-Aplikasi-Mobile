@@ -1,11 +1,17 @@
 package com.example.Roomie.presentation.report
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.Roomie.domain.model.Report
+import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.domain.model.UrgencyLevel
+import com.example.Roomie.domain.repository.ReportRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 data class ReportFormState(
     val category: String = "",
@@ -21,7 +27,9 @@ data class ReportFormState(
             !isLoading
 }
 
-class ReportViewModel : ViewModel() {
+class ReportViewModel(
+    private val reportRepository: ReportRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(ReportFormState())
     val state: StateFlow<ReportFormState> = _state.asStateFlow()
 
@@ -44,8 +52,22 @@ class ReportViewModel : ViewModel() {
     fun submitReport() {
         if (!_state.value.isSubmitEnabled) return
         
-        _state.update { it.copy(isLoading = true) }
-        // Simulasi pengiriman data
-        _state.update { it.copy(isLoading = false, isSubmitted = true) }
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            
+            val newReport = Report(
+                id = Clock.System.now().toEpochMilliseconds().toString(),
+                category = _state.value.category,
+                location = _state.value.location,
+                description = _state.value.description,
+                urgency = _state.value.urgency,
+                status = ReportStatus.PENDING,
+                createdAt = Clock.System.now().toEpochMilliseconds()
+            )
+            
+            reportRepository.submitReport(newReport)
+            
+            _state.update { it.copy(isLoading = false, isSubmitted = true) }
+        }
     }
 }

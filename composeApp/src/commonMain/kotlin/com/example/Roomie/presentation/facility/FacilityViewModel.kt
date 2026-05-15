@@ -3,12 +3,11 @@ package com.example.Roomie.presentation.facility
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
-import com.example.Roomie.domain.model.RoomStatus
-import com.example.Roomie.domain.model.RoomType
-import kotlinx.coroutines.delay
+import com.example.Roomie.domain.repository.FacilityRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,12 +22,14 @@ sealed interface FacilityUiState {
     data class Error(val message: String) : FacilityUiState
 }
 
-class FacilityViewModel : ViewModel() {
+class FacilityViewModel(
+    private val facilityRepository: FacilityRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
     val uiState: StateFlow<FacilityUiState> = _uiState.asStateFlow()
 
     init {
-        loadGKU2Data()
+        observeRooms()
     }
 
     fun selectFloor(floor: Int) {
@@ -38,55 +39,30 @@ class FacilityViewModel : ViewModel() {
         }
     }
 
-    private fun loadGKU2Data() {
+    private fun observeRooms() {
         viewModelScope.launch {
             _uiState.value = FacilityUiState.Loading
-            delay(800)
-            try {
-                val allRooms = mutableListOf<Room>()
-                
-                // Lantai 1 - 3 (101-125, 201-225, 301-325)
-                for (floor in 1..3) {
-                    for (i in 1..25) {
-                        val roomNum = floor * 100 + i
-                        allRooms.add(createDummyRoom(roomNum.toString(), floor))
+            // Default ke GKU2 untuk sekarang sesuai request sebelumnya
+            facilityRepository.getRoomsByFloor("GKU2", 1).collectLatest {
+                // Repository kita sekarang sudah reactive (Flow)
+                // Tapi untuk filter lantai kita handle di state Success agar UI tetap smooth saat ganti tab
+            }
+            
+            // Re-implement observe logic to use full room list if needed or specialized flow
+            // For now, let's observe all GKU2 rooms and handle floor filtering in UI State
+            facilityRepository.getRoomsByFloor("GKU2", 1).collectLatest { roomsLvl1 ->
+                facilityRepository.getRoomsByFloor("GKU2", 2).collectLatest { roomsLvl2 ->
+                    facilityRepository.getRoomsByFloor("GKU2", 3).collectLatest { roomsLvl3 ->
+                        facilityRepository.getRoomsByFloor("GKU2", 4).collectLatest { roomsLvl4 ->
+                            val allGKU2Rooms = roomsLvl1 + roomsLvl2 + roomsLvl3 + roomsLvl4
+                            _uiState.value = FacilityUiState.Success(allGKU2Rooms)
+                        }
                     }
                 }
-                
-                // Lantai 4 (401-420 + Aula)
-                for (i in 1..20) {
-                    val roomNum = 400 + i
-                    allRooms.add(createDummyRoom(roomNum.toString(), 4))
-                }
-                allRooms.add(
-                    Room(
-                        id = "AULA-GKU2",
-                        name = "Aula GKU 2",
-                        floor = 4,
-                        status = RoomStatus.AVAILABLE,
-                        type = RoomType.AULA,
-                        capacity = 300
-                    )
-                )
-                
-                _uiState.value = FacilityUiState.Success(allRooms)
-            } catch (e: Exception) {
-                _uiState.value = FacilityUiState.Error("Gagal memuat data GKU 2")
             }
         }
     }
-
-    private fun createDummyRoom(name: String, floor: Int): Room {
-        val status = when {
-            name.toInt() % 7 == 0 -> RoomStatus.MAINTENANCE
-            name.toInt() % 3 == 0 -> RoomStatus.BOOKED
-            else -> RoomStatus.AVAILABLE
-        }
-        return Room(
-            id = "GKU2-$name",
-            name = name,
-            floor = floor,
-            status = status
-        )
-    }
+    
+    // Simplification: In a real app, Repository should have a method to get all rooms of a building
+    // For Sprint 1 refinement, we use the existing interface
 }

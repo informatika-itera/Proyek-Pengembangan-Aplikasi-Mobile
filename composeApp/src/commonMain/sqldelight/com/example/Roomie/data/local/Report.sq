@@ -1,0 +1,22 @@
+CREATE TABLE ReportEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    category TEXT NOT NULL,
+    location TEXT NOT NULL,
+    description TEXT NOT NULL,
+    urgency TEXT NOT NULL,
+    status TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+getAllReports:
+SELECT * FROM ReportEntity ORDER BY createdAt DESC;
+
+insertReport:
+INSERT OR REPLACE INTO ReportEntity(id, category, location, description, urgency, status, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateReportStatus:
+UPDATE ReportEntity SET status = ? WHERE id = ?;
+
+deleteReport:
+DELETE FROM ReportEntity WHERE id = ?;

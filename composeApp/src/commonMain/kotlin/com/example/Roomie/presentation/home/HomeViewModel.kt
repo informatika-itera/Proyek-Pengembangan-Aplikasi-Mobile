@@ -2,13 +2,14 @@ package com.example.Roomie.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.Roomie.data.repository.ReportRepositoryImpl
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
-import com.example.Roomie.domain.model.UrgencyLevel
-import kotlinx.coroutines.delay
+import com.example.Roomie.domain.repository.ReportRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 sealed interface HomeUiState {
@@ -16,49 +17,32 @@ sealed interface HomeUiState {
     data class Success(
         val userName: String,
         val reportCountInProgress: Int,
-        val roomsBookedToday: Int,
         val recentReports: List<Report>,
         val banners: List<String>
     ) : HomeUiState
     data class Error(val message: String) : HomeUiState
 }
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val reportRepository: ReportRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadDashboardData()
+        // Seed initial reports if local
+        (reportRepository as? ReportRepositoryImpl)?.let {
+            viewModelScope.launch {
+                it.seedDummyReports()
+            }
+        }
+        observeDashboardData()
     }
 
-    fun loadDashboardData() {
+    private fun observeDashboardData() {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
-            try {
-                // Simulasi delay fetch data
-                delay(1200)
-                
-                val recentReports = listOf(
-                    Report(
-                        id = "1",
-                        category = "Gedung Kuliah",
-                        location = "GKU 2 - 101",
-                        description = "AC Mati",
-                        urgency = UrgencyLevel.MEDIUM,
-                        status = ReportStatus.IN_PROGRESS,
-                        createdAt = 1715673600000
-                    ),
-                    Report(
-                        id = "2",
-                        category = "Fasilitas Umum",
-                        location = "Kantin",
-                        description = "Keran bocor",
-                        urgency = UrgencyLevel.LOW,
-                        status = ReportStatus.PENDING,
-                        createdAt = 1715760000000
-                    )
-                )
-
+            reportRepository.getAllReports().collectLatest { reports ->
                 val banners = listOf(
                     "GKU 1 Lantai 2 sedang perbaikan AC",
                     "Peminjaman Lab Multimedia sudah dibuka!",
@@ -67,13 +51,10 @@ class HomeViewModel : ViewModel() {
 
                 _uiState.value = HomeUiState.Success(
                     userName = "Mulya Delani",
-                    reportCountInProgress = 2,
-                    roomsBookedToday = 1,
-                    recentReports = recentReports,
+                    reportCountInProgress = reports.count { it.status == ReportStatus.IN_PROGRESS },
+                    recentReports = reports.takeLast(3).reversed(),
                     banners = banners
                 )
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Terjadi kesalahan")
             }
         }
     }

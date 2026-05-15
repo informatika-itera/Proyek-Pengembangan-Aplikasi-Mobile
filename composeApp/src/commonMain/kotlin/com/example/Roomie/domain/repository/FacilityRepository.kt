@@ -1,9 +1,11 @@
 package com.example.Roomie.domain.repository
 
-import com.example.Roomie.domain.model.Facility
+import com.example.Roomie.domain.model.Building
+import com.example.Roomie.domain.model.Room
 import kotlinx.coroutines.flow.Flow
 
 interface FacilityRepository {
-    fun getFacilities(): Flow<List<Facility>>
-    fun getFacilityById(id: String): Flow<Facility?>
+    fun getBuildings(): Flow<List<Building>>
+    fun getRoomsByFloor(buildingId: String, floor: Int): Flow<List<Room>>
+    fun getRoomById(roomId: String): Flow<Room?>
 }

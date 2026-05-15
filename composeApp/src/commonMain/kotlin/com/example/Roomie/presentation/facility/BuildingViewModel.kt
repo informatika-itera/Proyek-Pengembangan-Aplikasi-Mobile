@@ -1,19 +1,32 @@
 package com.example.Roomie.presentation.facility
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Building
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.Roomie.domain.repository.FacilityRepository
+import com.example.Roomie.data.repository.FacilityRepositoryImpl
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class BuildingViewModel : ViewModel() {
-    private val _buildings = MutableStateFlow(
-        listOf(
-            Building("GKU1", "Gedung Kuliah Umum 1", "Gedung Kuliah Umum 1", false),
-            Building("GKU2", "Gedung Kuliah Umum 2", "Gedung kuliah Umum 2", true),
-            Building("GEDUNG-E", "Gedung E", "Gedung kuliah E", false),
-            Building("GEDUNG-F", "Gedung F", "Gedung kuliah F", false)
+class BuildingViewModel(
+    private val facilityRepository: FacilityRepository
+) : ViewModel() {
+    
+    init {
+        // Seed data if repository is local implementation
+        (facilityRepository as? FacilityRepositoryImpl)?.let {
+            viewModelScope.launch {
+                it.seedData()
+            }
+        }
+    }
+
+    val buildings: StateFlow<List<Building>> = facilityRepository.getBuildings()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
         )
-    )
-    val buildings: StateFlow<List<Building>> = _buildings.asStateFlow()
 }

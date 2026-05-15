@@ -1,26 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    
-    <!-- Internet permission for API calls -->
+
+    <!-- Internet permission for API calls (IslamAI & Prayer Time API) -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
+
+    <!-- Location permission for prayer time & qibla direction -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Notification permission for adzan (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Exact alarm for adzan notification -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- Keep screen on for tasbih -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
-        android:name=".NoteAIApplication"
+        android:name=".SholatYukApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NoteAI">
-        
+        android:theme="@style/Theme.SholatYuk">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.NoteAI">
+            android:theme="@style/Theme.SholatYuk">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
     </application>
-    
+
 </manifest>

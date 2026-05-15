@@ -21,8 +21,11 @@ class AddSupplyViewModel(
 
     fun onEvent(event: AddSupplyEvent) {
         when (event) {
-            is AddSupplyEvent.NameChanged -> _uiState.update { it.copy(name = event.name, error = null) }
-            is AddSupplyEvent.PartCodeChanged -> _uiState.update { it.copy(partCode = event.code, error = null) }
+            is AddSupplyEvent.NameChanged -> _uiState.update { it.copy(name = event.name, generalError = null) }
+            is AddSupplyEvent.PartCodeChanged -> {
+                // Hapus error saat user mulai mengetik lagi
+                _uiState.update { it.copy(partCode = event.code, partCodeError = null, generalError = null) }
+            }
             is AddSupplyEvent.CategoryChanged -> _uiState.update { it.copy(category = event.category) }
             is AddSupplyEvent.QuantityChanged -> _uiState.update { it.copy(quantity = event.quantity) }
             is AddSupplyEvent.UnitChanged -> _uiState.update { it.copy(unit = event.unit) }
@@ -35,10 +38,22 @@ class AddSupplyViewModel(
 
     private fun saveItem() {
         val state = _uiState.value
-        if (state.name.isBlank() || state.partCode.isBlank()) {
-            _uiState.update { it.copy(error = "Nama dan Kode Part wajib diisi!") }
-            return
+        var hasError = false
+
+        // Validasi Nama
+        if (state.name.isBlank()) {
+            _uiState.update { it.copy(generalError = "Nama Komponen wajib diisi!") }
+            hasError = true
         }
+
+        // Validasi Format ID Part (Contoh struktur: PRT-XXXX-000)
+        val partCodeRegex = Regex("^PRT-[A-Z0-9]{4}-\\d{3}\$")
+        if (state.partCode.isBlank() || !state.partCode.matches(partCodeRegex)) {
+            _uiState.update { it.copy(partCodeError = "Format tidak lengkap. Gunakan struktur PRT-XXXX-000.") }
+            hasError = true
+        }
+
+        if (hasError) return
 
         viewModelScope.launch {
             try {
@@ -56,7 +71,7 @@ class AddSupplyViewModel(
                 repository.insertItem(item)
                 _uiState.update { it.copy(isSaved = true) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(generalError = e.message) }
             }
         }
     }
@@ -65,13 +80,14 @@ class AddSupplyViewModel(
 data class AddSupplyUiState(
     val name: String = "",
     val partCode: String = "",
-    val category: PartCategory = PartCategory.MAINTENANCE,
+    val category: PartCategory = PartCategory.BOGIE,
     val quantity: String = "",
-    val unit: String = "pcs",
+    val unit: String = "Pcs",
     val supplier: String = "",
     val priority: Priority = Priority.NORMAL,
     val notes: String = "",
-    val error: String? = null,
+    val partCodeError: String? = null,
+    val generalError: String? = null,
     val isSaved: Boolean = false
 )
 

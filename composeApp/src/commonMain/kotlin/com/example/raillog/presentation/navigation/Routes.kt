@@ -8,22 +8,22 @@ sealed interface Route {
     data object Home : Route
     
     @Serializable
-    data class AddNote(val noteId: Long? = null) : Route
+    data class AddSupply(val itemId: Long? = null) : Route
     
     @Serializable
-    data class NoteDetail(val noteId: Long) : Route
+    data class SupplyDetail(val itemId: Long) : Route
     
     @Serializable
     data class AIAssistant(
-        val noteId: Long? = null,
+        val itemId: Long? = null,
         val initialText: String? = null
     ) : Route
 }
 
 interface NavigationActions {
     fun navigateToHome()
-    fun navigateToAddNote(noteId: Long? = null)
-    fun navigateToNoteDetail(noteId: Long)
+    fun navigateToAddSupply(noteId: Long? = null)
+    fun navigateToSupplyDetail(noteId: Long)
     fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
     fun navigateBack()
 }

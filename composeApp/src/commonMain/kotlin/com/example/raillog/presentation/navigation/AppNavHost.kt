@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.raillog.presentation.screens.addnote.AddNoteScreen
+import com.example.raillog.presentation.screens.addsupply.AddSupplyScreen
 import com.example.raillog.presentation.screens.ai.AIAssistantScreen
 import com.example.raillog.presentation.screens.detail.NoteDetailScreen
 import com.example.raillog.presentation.screens.home.HomeScreen
@@ -18,7 +18,7 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
-    
+
     NavHost(
         navController = navController,
         startDestination = Route.Home,
@@ -26,40 +26,33 @@ fun AppNavHost(
     ) {
         composable<Route.Home> {
             HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
+                onNavigateToAddNote = { navigationActions.navigateToAddSupply() },
+                onNavigateToDetail = { itemId -> navigationActions.navigateToSupplyDetail(itemId) },
                 onNavigateToAI = { navigationActions.navigateToAIAssistant() }
             )
         }
-        
-        composable<Route.AddNote> { backStackEntry ->
-            val route: Route.AddNote = backStackEntry.toRoute()
-            AddNoteScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToAI = { text ->
-                    navigationActions.navigateToAIAssistant(
-                        noteId = route.noteId,
-                        initialText = text
-                    )
-                }
+
+        composable<Route.AddSupply> { backStackEntry ->
+            val route: Route.AddSupply = backStackEntry.toRoute()
+            AddSupplyScreen(
+                onNavigateBack = { navigationActions.navigateBack() }
             )
         }
-        
-        composable<Route.NoteDetail> { backStackEntry ->
-            val route: Route.NoteDetail = backStackEntry.toRoute()
+
+        composable<Route.SupplyDetail> { backStackEntry ->
+            val route: Route.SupplyDetail = backStackEntry.toRoute()
             NoteDetailScreen(
-                noteId = route.noteId,
+                noteId = route.itemId,
                 onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { navigationActions.navigateToAddNote(route.noteId) },
+                onNavigateToEdit = { navigationActions.navigateToAddSupply(route.itemId) },
                 onShare = { _ -> }
             )
         }
-        
+
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
-                noteId = route.noteId,
+                noteId = route.itemId,
                 initialText = route.initialText,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onApplyResult = null
@@ -75,17 +68,17 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
                 popUpTo(Route.Home) { inclusive = true }
             }
         }
-        
-        override fun navigateToAddNote(noteId: Long?) {
-            navController.navigate(Route.AddNote(noteId))
+
+        override fun navigateToAddSupply(itemId: Long?) {
+            navController.navigate(Route.AddSupply(itemId))
         }
-        
-        override fun navigateToNoteDetail(noteId: Long) {
-            navController.navigate(Route.NoteDetail(noteId))
+
+        override fun navigateToSupplyDetail(itemId: Long) {
+            navController.navigate(Route.SupplyDetail(itemId))
         }
-        
-        override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
-            navController.navigate(Route.AIAssistant(noteId, initialText))
+
+        override fun navigateToAIAssistant(itemId: Long?, initialText: String?) {
+            navController.navigate(Route.AIAssistant(itemId, initialText))
         }
 
         override fun navigateBack() {

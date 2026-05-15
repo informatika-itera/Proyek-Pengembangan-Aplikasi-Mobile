@@ -5,9 +5,9 @@
     
     <!-- Navigation -->
     <string name="nav_home">Beranda</string>
-    <string name="nav_add_note">Tambah Momen</string>
-    <string name="nav_edit_note">Edit Momen</string>
-    <string name="nav_note_detail">Detail Momen</string>
+    <string name="nav_add_moment">Tambah Momen</string>
+    <string name="nav_edit_moment">Edit Momen</string>
+    <string name="nav_moment_detail">Detail Momen</string>
     <string name="nav_ai_assistant">Asisten AI</string>
     <string name="nav_settings">Pengaturan</string>
     
@@ -28,7 +28,7 @@
     <string name="sort_updated_asc">Diupdate (Lama)</string>
     <string name="sort_updated_desc">Diupdate (Baru)</string>
     
-    <!-- Note Categories -->
+    <!-- Moment Categories -->
     <string name="category_general">Umum</string>
     <string name="category_work">Pekerjaan</string>
     <string name="category_personal">Pribadi</string>
@@ -36,7 +36,7 @@
     <string name="category_todo">Tugas</string>
     <string name="category_study">Belajar</string>
     
-    <!-- Note Colors -->
+    <!-- Moment Colors -->
     <string name="color_default">Default</string>
     <string name="color_red">Merah</string>
     <string name="color_orange">Oranye</string>
@@ -46,22 +46,22 @@
     <string name="color_purple">Ungu</string>
     <string name="color_pink">Pink</string>
     
-    <!-- Add/Edit Note Screen -->
-    <string name="add_note_title">Momen Baru</string>
-    <string name="edit_note_title">Edit Momen</string>
-    <string name="note_title_label">Judul</string>
-    <string name="note_title_hint">Apa yang membuatmu bersyukur?</string>
-    <string name="note_content_label">Cerita</string>
-    <string name="note_content_hint">Ceritakan lebih detail di sini...</string>
-    <string name="note_category_label">Kategori</string>
-    <string name="note_color_label">Warna</string>
-    <string name="note_save">Simpan</string>
-    <string name="note_cancel">Batal</string>
-    <string name="note_delete">Hapus</string>
-    <string name="note_untitled">Tanpa Judul</string>
-    <string name="note_validation_error">Judul atau cerita harus diisi</string>
+    <!-- Add/Edit Moment Screen -->
+    <string name="add_moment_title">Momen Baru</string>
+    <string name="edit_moment_title">Edit Momen</string>
+    <string name="moment_title_label">Judul</string>
+    <string name="moment_title_hint">Apa yang membuatmu bersyukur?</string>
+    <string name="moment_content_label">Cerita</string>
+    <string name="moment_content_hint">Ceritakan lebih detail di sini...</string>
+    <string name="moment_category_label">Kategori</string>
+    <string name="moment_color_label">Warna</string>
+    <string name="moment_save">Simpan</string>
+    <string name="moment_cancel">Batal</string>
+    <string name="moment_delete">Hapus</string>
+    <string name="moment_untitled">Tanpa Judul</string>
+    <string name="moment_validation_error">Judul atau cerita harus diisi</string>
     
-    <!-- Note Detail Screen -->
+    <!-- Moment Detail Screen -->
     <string name="detail_title">Detail Momen</string>
     <string name="detail_created">Dibuat</string>
     <string name="detail_updated">Diperbarui</string>
@@ -112,10 +112,10 @@
     <string name="dialog_cancel">Batal</string>
     
     <!-- Messages -->
-    <string name="msg_note_saved">Momen berhasil disimpan</string>
-    <string name="msg_note_deleted">Momen berhasil dihapus</string>
-    <string name="msg_note_pinned">Momen disematkan</string>
-    <string name="msg_note_unpinned">Sematan dilepas</string>
+    <string name="msg_moment_saved">Momen berhasil disimpan</string>
+    <string name="msg_moment_deleted">Momen berhasil dihapus</string>
+    <string name="msg_moment_pinned">Momen disematkan</string>
+    <string name="msg_moment_unpinned">Sematan dilepas</string>
     <string name="msg_copied">Disalin ke clipboard</string>
     <string name="msg_applied">Diterapkan ke momen</string>
     <string name="msg_save_failed">Gagal menyimpan</string>
@@ -124,9 +124,9 @@
     <!-- Errors -->
     <string name="error_title">Terjadi Kesalahan</string>
     <string name="error_unknown">Terjadi kesalahan</string>
-    <string name="error_load_notes">Gagal memuat momen</string>
-    <string name="error_save_note">Gagal menyimpan momen</string>
-    <string name="error_delete_note">Gagal menghapus momen</string>
+    <string name="error_load_moments">Gagal memuat momen</string>
+    <string name="error_save_moment">Gagal menyimpan momen</string>
+    <string name="error_delete_moment">Gagal menghapus momen</string>
     <string name="error_ai_request">Gagal mendapatkan respons AI</string>
     <string name="error_ai_empty">Respons kosong dari AI</string>
     <string name="error_ai_blocked">Konten diblokir oleh AI</string>
@@ -134,7 +134,7 @@
     <string name="error_content_too_short">Konten terlalu pendek untuk diringkas</string>
     <string name="error_content_empty">Konten tidak boleh kosong</string>
     <string name="error_topic_empty">Topik tidak boleh kosong</string>
-    <string name="error_note_empty">Momen tidak boleh kosong</string>
+    <string name="error_moment_empty">Momen tidak boleh kosong</string>
     <string name="error_retry">Coba Lagi</string>
     
     <!-- Loading -->
@@ -149,12 +149,12 @@
     <string name="action_sort">Urutkan</string>
     
     <!-- Accessibility -->
-    <string name="cd_add_note">Tambah momen baru</string>
+    <string name="cd_add_moment">Tambah momen baru</string>
     <string name="cd_search">Cari momen</string>
     <string name="cd_filter">Filter kategori</string>
-    <string name="cd_pin_note">Sematkan momen</string>
-    <string name="cd_unpin_note">Lepas sematan momen</string>
-    <string name="cd_delete_note">Hapus momen</string>
+    <string name="cd_pin_moment">Sematkan momen</string>
+    <string name="cd_unpin_moment">Lepas sematan momen</string>
+    <string name="cd_delete_moment">Hapus momen</string>
     <string name="cd_back">Kembali</string>
     <string name="cd_close">Tutup</string>
     <string name="cd_sort">Urutkan momen</string>

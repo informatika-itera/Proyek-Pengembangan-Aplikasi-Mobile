@@ -145,7 +145,7 @@ fun AppNavHost(
 private class NavigationActionsImpl(private val navController: NavHostController) : NavigationActions {
     override fun navigateToHome() {
         navController.navigate(Route.Home) {
-            popUpTo(navController.graph.findStartDestination().id) {
+            popUpTo(Route.Home) {
                 saveState = true
             }
             launchSingleTop = true
@@ -163,7 +163,7 @@ private class NavigationActionsImpl(private val navController: NavHostController
 
     override fun navigateToAIAssistant() {
         navController.navigate(Route.AIAssistant) {
-            popUpTo(navController.graph.findStartDestination().id) {
+            popUpTo(Route.Home) {
                 saveState = true
             }
             launchSingleTop = true

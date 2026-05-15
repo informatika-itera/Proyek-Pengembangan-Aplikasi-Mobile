@@ -16,7 +16,8 @@ import kotlinx.serialization.json.Json
 
 class CreateMomentViewModel(
     private val saveMomentUseCase: SaveMomentUseCase,
-    private val getMomentByIdUseCase: GetMomentByIdUseCase
+    private val getMomentByIdUseCase: GetMomentByIdUseCase,
+    private val fileStorage: FileStorage
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreateMomentUiState())
@@ -94,7 +95,7 @@ class CreateMomentViewModel(
 
     fun addImageBlock(bytes: ByteArray, afterIndex: Int? = null) {
         viewModelScope.launch {
-            val localPath = FileStorage.saveImage(bytes)
+            val localPath = fileStorage.saveImage(bytes)
             if (localPath != null) {
                 _uiState.update { state ->
                     val newBlocks = state.contentBlocks.toMutableList()

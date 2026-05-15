@@ -12,7 +12,7 @@ import app.cash.sqldelight.db.SqlDriver
  * Kita menggunakan expect/actual pattern untuk menyediakan
  * implementasi yang tepat di setiap platform.
  */
-expect class DatabaseDriverFactory {
+expect class DatabaseDriverFactory(context: PlatformContext) {
     /**
      * Create SqlDriver instance
      * @return SqlDriver untuk platform ini

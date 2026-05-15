@@ -12,6 +12,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
+import com.dailybliss.app.core.util.PlatformContext
+
 @Composable
 actual fun rememberImagePickerLauncher(
     onResult: (ByteArray?) -> Unit
@@ -42,15 +44,10 @@ actual fun rememberImagePickerLauncher(
     }
 }
 
-actual object FileStorage {
-    private var appContext: Context? = null
-    
-    fun init(context: Context) {
-        appContext = context.applicationContext
-    }
-
+actual class FileStorage actual constructor(
+    private val context: PlatformContext
+) {
     actual suspend fun saveImage(bytes: ByteArray): String? = withContext(Dispatchers.IO) {
-        val context = appContext ?: return@withContext null
         try {
             val fileName = "moment_${UUID.randomUUID()}.jpg"
             val file = File(context.filesDir, fileName)

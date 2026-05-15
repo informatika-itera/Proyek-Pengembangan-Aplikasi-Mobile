@@ -1,10 +1,8 @@
 package com.dailybliss.app.data.repository
 
 import app.cash.turbine.test
-import com.dailybliss.app.domain.model.Note
-import com.dailybliss.app.domain.model.NoteCategory
-import com.dailybliss.app.domain.model.NoteColor
-import com.dailybliss.app.domain.repository.NoteRepository
+import com.dailybliss.app.domain.model.Moment
+import com.dailybliss.app.domain.repository.MomentRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -18,7 +16,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Unit Tests untuk NoteRepository
+ * Unit Tests untuk MomentRepository
  * 
  * Testing Guidelines:
  * 1. Gunakan FakeRepository untuk isolasi
@@ -26,42 +24,42 @@ import kotlin.test.assertTrue
  * 3. Gunakan Turbine untuk test Flow
  * 4. Follow AAA pattern (Arrange, Act, Assert)
  */
-class NoteRepositoryTest {
+class MomentRepositoryTest {
     
-    private lateinit var repository: FakeNoteRepository
+    private lateinit var repository: FakeMomentRepository
     
     @BeforeTest
     fun setup() {
-        repository = FakeNoteRepository()
+        repository = FakeMomentRepository()
     }
     
     // ==================== INSERT TESTS ====================
     
     @Test
-    fun `insertNote should return new note id`() = runTest {
+    fun `insertMoment should return new moment id`() = runTest {
         // Arrange
-        val note = createTestNote(title = "Test Note")
+        val moment = createTestMoment(title = "Test Moment")
         
         // Act
-        val id = repository.insertNote(note)
+        val id = repository.insertMoment(moment)
         
         // Assert
         assertTrue(id > 0)
     }
     
     @Test
-    fun `insertNote should add note to list`() = runTest {
+    fun `insertMoment should add moment to list`() = runTest {
         // Arrange
-        val note = createTestNote(title = "New Note")
+        val moment = createTestMoment(title = "New Moment")
         
         // Act
-        repository.insertNote(note)
+        repository.insertMoment(moment)
         
         // Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertEquals(1, notes.size)
-            assertEquals("New Note", notes.first().title)
+        repository.getAllMoments().test {
+            val moments = awaitItem()
+            assertEquals(1, moments.size)
+            assertEquals("New Moment", moments.first().title)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -69,39 +67,39 @@ class NoteRepositoryTest {
     // ==================== GET TESTS ====================
     
     @Test
-    fun `getAllNotes should return all notes`() = runTest {
+    fun `getAllMoments should return all moments`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote(title = "Note 1"))
-        repository.insertNote(createTestNote(title = "Note 2"))
+        repository.insertMoment(createTestMoment(title = "Moment 1"))
+        repository.insertMoment(createTestMoment(title = "Moment 2"))
         
         // Act & Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertEquals(2, notes.size)
+        repository.getAllMoments().test {
+            val moments = awaitItem()
+            assertEquals(2, moments.size)
             cancelAndIgnoreRemainingEvents()
         }
     }
     
     @Test
-    fun `getNoteById should return correct note`() = runTest {
+    fun `getMomentById should return correct moment`() = runTest {
         // Arrange
-        val id = repository.insertNote(createTestNote(title = "Find Me"))
+        val id = repository.insertMoment(createTestMoment(title = "Find Me"))
         
         // Act & Assert
-        repository.getNoteById(id).test {
-            val note = awaitItem()
-            assertNotNull(note)
-            assertEquals("Find Me", note.title)
+        repository.getMomentById(id).test {
+            val moment = awaitItem()
+            assertNotNull(moment)
+            assertEquals("Find Me", moment.title)
             cancelAndIgnoreRemainingEvents()
         }
     }
     
     @Test
-    fun `getNoteById should return null for non-existent id`() = runTest {
+    fun `getMomentById should return null for non-existent id`() = runTest {
         // Act & Assert
-        repository.getNoteById(999).test {
-            val note = awaitItem()
-            assertEquals(null, note)
+        repository.getMomentById(999).test {
+            val moment = awaitItem()
+            assertEquals(null, moment)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -109,31 +107,31 @@ class NoteRepositoryTest {
     // ==================== SEARCH TESTS ====================
     
     @Test
-    fun `searchNotes should find notes by title`() = runTest {
+    fun `searchMoments should find moments by title`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote(title = "Kotlin Tutorial"))
-        repository.insertNote(createTestNote(title = "Java Guide"))
+        repository.insertMoment(createTestMoment(title = "Kotlin Tutorial"))
+        repository.insertMoment(createTestMoment(title = "Java Guide"))
         
         // Act & Assert
-        repository.searchNotes("Kotlin").test {
-            val notes = awaitItem()
-            assertEquals(1, notes.size)
-            assertEquals("Kotlin Tutorial", notes.first().title)
+        repository.searchMoments("Kotlin").test {
+            val moments = awaitItem()
+            assertEquals(1, moments.size)
+            assertEquals("Kotlin Tutorial", moments.first().title)
             cancelAndIgnoreRemainingEvents()
         }
     }
     
     @Test
-    fun `searchNotes should find notes by content`() = runTest {
+    fun `searchMoments should find moments by content`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote(title = "Recipe", content = "Add tomatoes"))
-        repository.insertNote(createTestNote(title = "Shopping", content = "Buy milk"))
+        repository.insertMoment(createTestMoment(title = "Recipe", content = "Add tomatoes"))
+        repository.insertMoment(createTestMoment(title = "Shopping", content = "Buy milk"))
         
         // Act & Assert
-        repository.searchNotes("tomatoes").test {
-            val notes = awaitItem()
-            assertEquals(1, notes.size)
-            assertEquals("Recipe", notes.first().title)
+        repository.searchMoments("tomatoes").test {
+            val moments = awaitItem()
+            assertEquals(1, moments.size)
+            assertEquals("Recipe", moments.first().title)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -141,17 +139,17 @@ class NoteRepositoryTest {
     // ==================== DELETE TESTS ====================
     
     @Test
-    fun `deleteNote should remove note from list`() = runTest {
+    fun `deleteMoment should remove moment from list`() = runTest {
         // Arrange
-        val id = repository.insertNote(createTestNote(title = "To Delete"))
+        val id = repository.insertMoment(createTestMoment(title = "To Delete"))
         
         // Act
-        repository.deleteNote(id)
+        repository.deleteMoment(id)
         
         // Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertTrue(notes.isEmpty())
+        repository.getAllMoments().test {
+            val moments = awaitItem()
+            assertTrue(moments.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -159,36 +157,34 @@ class NoteRepositoryTest {
     // ==================== UPDATE TESTS ====================
     
     @Test
-    fun `updateNote should modify existing note`() = runTest {
+    fun `updateMoment should modify existing moment`() = runTest {
         // Arrange
-        val id = repository.insertNote(createTestNote(title = "Original"))
+        val id = repository.insertMoment(createTestMoment(title = "Original"))
         
         // Act
-        val updatedNote = createTestNote(id = id, title = "Updated")
-        repository.updateNote(updatedNote)
+        val updatedMoment = createTestMoment(id = id, title = "Updated")
+        repository.updateMoment(updatedMoment)
         
         // Assert
-        repository.getNoteById(id).test {
-            val note = awaitItem()
-            assertEquals("Updated", note?.title)
+        repository.getMomentById(id).test {
+            val moment = awaitItem()
+            assertEquals("Updated", moment?.title)
             cancelAndIgnoreRemainingEvents()
         }
     }
     
     // ==================== HELPER FUNCTIONS ====================
     
-    private fun createTestNote(
+    private fun createTestMoment(
         id: Long = 0,
         title: String = "Test",
-        content: String = "Content",
-        category: NoteCategory = NoteCategory.GENERAL
-    ): Note {
-        return Note(
+        content: String = "Content"
+    ): Moment {
+        return Moment(
             id = id,
             title = title,
             content = content,
-            category = category,
-            color = NoteColor.DEFAULT,
+            imageUrl = null,
             isPinned = false,
             createdAt = Clock.System.now(),
             updatedAt = Clock.System.now()
@@ -202,23 +198,19 @@ class NoteRepositoryTest {
  * In-memory implementation yang tidak bergantung pada database.
  * Digunakan untuk unit testing tanpa side effects.
  */
-class FakeNoteRepository : NoteRepository {
+class FakeMomentRepository : MomentRepository {
     
-    private val notes = MutableStateFlow<List<Note>>(emptyList())
+    private val moments = MutableStateFlow<List<Moment>>(emptyList())
     private var nextId = 1L
     
-    override fun getAllNotes(): Flow<List<Note>> = notes
+    override fun getAllMoments(): Flow<List<Moment>> = moments
     
-    override fun getPinnedNotes(): Flow<List<Note>> {
-        return notes.map { list -> list.filter { it.isPinned } }
+    override fun getPinnedMoments(): Flow<List<Moment>> {
+        return moments.map { list -> list.filter { it.isPinned } }
     }
     
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
-        return notes.map { list -> list.filter { it.category == category } }
-    }
-    
-    override fun searchNotes(query: String): Flow<List<Note>> {
-        return notes.map { list ->
+    override fun searchMoments(query: String): Flow<List<Moment>> {
+        return moments.map { list ->
             list.filter {
                 it.title.contains(query, ignoreCase = true) ||
                 it.content.contains(query, ignoreCase = true)
@@ -226,37 +218,28 @@ class FakeNoteRepository : NoteRepository {
         }
     }
     
-    override fun getNoteById(id: Long): Flow<Note?> {
-        return notes.map { list -> list.find { it.id == id } }
+    override fun getMomentById(id: Long): Flow<Moment?> {
+        return moments.map { list -> list.find { it.id == id } }
     }
     
-    override suspend fun insertNote(note: Note): Long {
+    override suspend fun insertMoment(moment: Moment): Long {
         val id = nextId++
-        val newNote = note.copy(id = id)
-        notes.update { it + newNote }
+        val newMoment = moment.copy(id = id)
+        moments.update { it + newMoment }
         return id
     }
     
-    override suspend fun updateNote(note: Note) {
-        notes.update { list ->
-            list.map { if (it.id == note.id) note else it }
+    override suspend fun updateMoment(moment: Moment) {
+        moments.update { list ->
+            list.map { if (it.id == moment.id) moment else it }
         }
     }
     
-    override suspend fun deleteNote(id: Long) {
-        notes.update { list -> list.filter { it.id != id } }
+    override suspend fun deleteMoment(id: Long) {
+        moments.update { list -> list.filter { it.id != id } }
     }
     
-    override suspend fun togglePinNote(id: Long) {
-        notes.update { list ->
-            list.map { 
-                if (it.id == id) it.copy(isPinned = !it.isPinned) else it 
-            }
-        }
-    }
-    
-    override suspend fun deleteNotes(ids: List<Long>) {
-        notes.update { list -> list.filter { it.id !in ids } }
+    override suspend fun deleteMoments(ids: List<Long>) {
+        moments.update { list -> list.filter { it.id !in ids } }
     }
 }
-

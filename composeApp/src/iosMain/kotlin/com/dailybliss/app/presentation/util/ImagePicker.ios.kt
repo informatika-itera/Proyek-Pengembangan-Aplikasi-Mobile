@@ -3,6 +3,8 @@ package com.dailybliss.app.presentation.util
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 
+import com.dailybliss.app.core.util.PlatformContext
+
 @Composable
 actual fun rememberImagePickerLauncher(
     onResult: (ByteArray?) -> Unit
@@ -14,6 +16,8 @@ actual fun rememberImagePickerLauncher(
     }
 }
 
-actual object FileStorage {
+actual class FileStorage actual constructor(
+    context: PlatformContext
+) {
     actual suspend fun saveImage(bytes: ByteArray): String? = null
 }

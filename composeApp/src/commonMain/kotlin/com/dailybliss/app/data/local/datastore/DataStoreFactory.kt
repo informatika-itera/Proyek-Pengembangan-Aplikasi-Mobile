@@ -3,6 +3,7 @@ package com.dailybliss.app.data.local.datastore
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.dailybliss.app.core.util.PlatformContext
 import okio.Path.Companion.toPath
 
 /**
@@ -16,7 +17,7 @@ import okio.Path.Companion.toPath
  * - `androidMain/.../DataStoreFactory.android.kt`
  * - `iosMain/.../DataStoreFactory.ios.kt`
  */
-expect class DataStoreFactory {
+expect class DataStoreFactory(context: PlatformContext) {
     /** Mengembalikan path absolut (tanpa nama file) tempat preferences disimpan. */
     fun producePath(): String
 }

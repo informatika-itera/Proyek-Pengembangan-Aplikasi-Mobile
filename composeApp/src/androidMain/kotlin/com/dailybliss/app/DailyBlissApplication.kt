@@ -15,13 +15,9 @@ class DailyBlissApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
-        
-        // Initialize File Storage
-        FileStorage.init(this)
-        
+
         // Initialize Koin DI
-        initKoin(
-            platformModules = listOf(androidModule)
+        initKoin(            platformModules = listOf(androidModule)
         ) {
             androidContext(this@DailyBlissApplication)
         }

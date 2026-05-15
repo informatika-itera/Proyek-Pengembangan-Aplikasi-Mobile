@@ -11,8 +11,8 @@ import com.dailybliss.app.data.local.BlissDatabase
  * Menggunakan AndroidSqliteDriver yang membungkus SQLite bawaan Android.
  * Database disimpan di internal storage aplikasi.
  */
-actual class DatabaseDriverFactory(
-    private val context: Context
+actual class DatabaseDriverFactory actual constructor(
+    private val context: PlatformContext
 ) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(

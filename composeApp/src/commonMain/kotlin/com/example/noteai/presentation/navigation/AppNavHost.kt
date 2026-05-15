@@ -18,7 +18,7 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
-    
+
     NavHost(
         navController = navController,
         startDestination = Route.Home,
@@ -26,36 +26,33 @@ fun AppNavHost(
     ) {
         composable<Route.Home> {
             HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                onNavigateToAddNote = { navigationActions.navigateToTranslate() },
+                onNavigateToDetail = { noteId -> navigationActions.navigateToDetail(noteId) },
+                onNavigateToAI = { navigationActions.navigateToAI() }
             )
         }
-        
+
         composable<Route.AddNote> { backStackEntry ->
             val route: Route.AddNote = backStackEntry.toRoute()
             AddNoteScreen(
                 noteId = route.noteId,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onNavigateToAI = { text ->
-                    navigationActions.navigateToAIAssistant(
-                        noteId = route.noteId,
-                        initialText = text
-                    )
+                    navigationActions.navigateToAI(noteId = route.noteId, initialText = text)
                 }
             )
         }
-        
+
         composable<Route.NoteDetail> { backStackEntry ->
             val route: Route.NoteDetail = backStackEntry.toRoute()
             NoteDetailScreen(
                 noteId = route.noteId,
                 onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { navigationActions.navigateToAddNote(route.noteId) },
+                onNavigateToEdit = { navigationActions.navigateToTranslate(route.noteId) },
                 onShare = { _ -> }
             )
         }
-        
+
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
@@ -71,25 +68,16 @@ fun AppNavHost(
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
         override fun navigateToHome() {
-            navController.navigate(Route.Home) {
-                popUpTo(Route.Home) { inclusive = true }
-            }
+            navController.navigate(Route.Home) { popUpTo(Route.Home) { inclusive = true } }
         }
-        
-        override fun navigateToAddNote(noteId: Long?) {
-            navController.navigate(Route.AddNote(noteId))
-        }
-        
-        override fun navigateToNoteDetail(noteId: Long) {
-            navController.navigate(Route.NoteDetail(noteId))
-        }
-        
-        override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
+        override fun navigateToTranslate(noteId: Long?) { navController.navigate(Route.AddNote(noteId)) }
+        override fun navigateToDetail(noteId: Long) { navController.navigate(Route.NoteDetail(noteId)) }
+        override fun navigateToAI(noteId: Long?, initialText: String?) {
             navController.navigate(Route.AIAssistant(noteId, initialText))
         }
-
-        override fun navigateBack() {
-            navController.popBackStack()
-        }
+        override fun navigateToVault() { navController.navigate(Route.Vault) }
+        override fun navigateToSettings() { navController.navigate(Route.Settings) }
+        override fun navigateToInsights() { navController.navigate(Route.Insights) }
+        override fun navigateBack() { navController.popBackStack() }
     }
 }

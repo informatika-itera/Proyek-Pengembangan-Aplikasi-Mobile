@@ -1,39 +1,15 @@
 package com.example.noteai.presentation.screens.detail
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,17 +26,17 @@ fun NoteDetailScreen(
     noteId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
-    onShare: (String) -> Unit,
+    onShare: (String) -> Unit, // Bisa dimanfaatkan nanti
     viewModel: NoteDetailViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(noteId) {
         viewModel.loadNote(noteId)
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -69,22 +45,31 @@ fun NoteDetailScreen(
             }
         }
     }
-    
+
     if (showDeleteDialog) {
-        DeleteConfirmationDialog(
-            onConfirm = {
-                showDeleteDialog = false
-                viewModel.deleteNote()
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Hapus dari Vault") },
+            text = { Text("Yakin ingin menghapus terjemahan ini dari riwayat?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    viewModel.deleteNote()
+                }) {
+                    Text("Hapus", color = MaterialTheme.colorScheme.error)
+                }
             },
-            onDismiss = { showDeleteDialog = false }
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Batal") }
+            }
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detail Catatan") },
+                title = { Text("Detail Terjemahan") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -93,29 +78,13 @@ fun NoteDetailScreen(
                 actions = {
                     val currentState = uiState
                     if (currentState is NoteDetailUiState.Success) {
-                        IconButton(onClick = { viewModel.togglePin() }) {
-                            Icon(
-                                imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
-                                contentDescription = if (currentState.note.isPinned) "Lepas Pin" else "Pin"
-                            )
-                        }
-                        
-                        IconButton(onClick = { 
-                            viewModel.getShareContent()?.let { onShare(it) }
-                        }) {
-                            Icon(Icons.Default.Share, contentDescription = "Bagikan")
-                        }
-                        
+                        // Tombol Edit
                         IconButton(onClick = { onNavigateToEdit(noteId) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
-                        
+                        // Tombol Hapus
                         IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                Icons.Default.Delete, 
-                                contentDescription = "Hapus",
-                                tint = MaterialTheme.colorScheme.error
-                            )
+                            Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -123,10 +92,8 @@ fun NoteDetailScreen(
         }
     ) { paddingValues ->
         when (val state = uiState) {
-            is NoteDetailUiState.Loading -> {
-                LoadingIndicator()
-            }
-            
+            is NoteDetailUiState.Loading -> LoadingIndicator()
+            is NoteDetailUiState.NotFound -> EmptyState(title = "Tidak Ditemukan", message = "Data mungkin sudah dihapus")
             is NoteDetailUiState.Success -> {
                 Column(
                     modifier = Modifier
@@ -135,65 +102,56 @@ fun NoteDetailScreen(
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    if (state.note.title.isNotBlank()) {
-                        Text(
-                            text = state.note.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    
+                    // Teks Asli (Disimpan di 'title')
+                    Text("Teks Asli (ID)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = state.note.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Kategori & Tanggal
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CategoryBadge(category = state.note.category.displayName)
-                        
                         Text(
                             text = state.note.updatedAt.formatToDisplay(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Hasil Terjemahan (Disimpan di 'content')
+                    Text("Terjemahan (EN)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = state.note.content,
                         style = MaterialTheme.typography.bodyLarge
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Tombol AI Context Assistant
+                    Button(
+                        onClick = { /* Nanti dihubungkan ke fitur AI Chat */ },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Icon(Icons.Outlined.AutoAwesome, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                        Text("Tanya AI tentang frasa ini")
+                    }
                 }
-            }
-            
-            is NoteDetailUiState.NotFound -> {
-                EmptyState(
-                    title = "Catatan Tidak Ditemukan",
-                    message = "Catatan mungkin sudah dihapus"
-                )
             }
         }
     }
-}
-
-@Composable
-private fun DeleteConfirmationDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Hapus Catatan") },
-        text = { Text("Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.") },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text("Hapus", color = MaterialTheme.colorScheme.error)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Batal")
-            }
-        }
-    )
 }

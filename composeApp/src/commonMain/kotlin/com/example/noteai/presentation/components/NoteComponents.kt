@@ -4,30 +4,14 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -49,17 +33,17 @@ fun NoteCard(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor by animateColorAsState(
-        targetValue = Color(note.color.hexValue),
-        label = "card_bg"
-    )
-    
+    // Warna latar belakang kartu menggunakan surfaceVariant agar adaptif terhadap tema (Light/Dark)
+    // dan memastikan teks tidak "nyaru" di mode gelap.
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -69,14 +53,15 @@ fun NoteCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = note.title.ifBlank { "Tanpa Judul" },
+                    text = note.title.ifBlank { "Teks Kosong" },
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary, // Aksen merah dominan
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 Row {
                     IconButton(
                         onClick = onPinClick,
@@ -89,7 +74,7 @@ fun NoteCard(
                             modifier = Modifier.size(18.dp)
                         )
                     }
-                    
+
                     IconButton(
                         onClick = onDeleteClick,
                         modifier = Modifier.size(32.dp)
@@ -103,7 +88,7 @@ fun NoteCard(
                     }
                 }
             }
-            
+
             if (note.content.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -114,8 +99,8 @@ fun NoteCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Spacer(modifier = Modifier.height(12.dp))
             CategoryBadge(category = note.category.displayName)
         }
     }
@@ -165,17 +150,17 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         icon?.invoke()
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
@@ -202,15 +187,15 @@ fun ErrorState(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         if (onRetry != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onRetry) {
@@ -236,7 +221,7 @@ fun ColorPickerRow(
                 targetValue = if (isSelected) 1f else 0.6f,
                 label = "color_alpha"
             )
-            
+
             Box(
                 modifier = Modifier
                     .size(32.dp)

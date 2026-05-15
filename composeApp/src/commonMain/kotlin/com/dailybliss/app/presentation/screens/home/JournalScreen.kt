@@ -24,33 +24,31 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(
+fun JournalScreen(
     onNavigateToCreateMoment: () -> Unit,
     onNavigateToMomentDetail: (Long) -> Unit,
-    viewModel: DashboardViewModel = koinViewModel()
+    viewModel: JournalViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
-        containerColor = Color.White,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0), // Clear default insets
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "DailyBliss",
+                        "Jurnal",
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.Gray,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
                             letterSpacing = (-0.5).sp
                         )
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Gray
-                ),
-                windowInsets = WindowInsets(0, 0, 0, 0) // Header literally at the top
+                    containerColor = Color.Transparent
+                )
             )
         },
         floatingActionButton = {
@@ -71,8 +69,8 @@ fun DashboardScreen(
                 .padding(top = paddingValues.calculateTopPadding())
         ) {
             when (val state = uiState) {
-                is HomeUiState.Loading -> LoadingIndicator()
-                is HomeUiState.Success -> {
+                is JournalUiState.Loading -> LoadingIndicator()
+                is JournalUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
@@ -89,13 +87,13 @@ fun DashboardScreen(
                         }
                     }
                 }
-                is HomeUiState.Empty -> {
+                is JournalUiState.Empty -> {
                     EmptyState(
                         title = "Mulai Menulis",
                         message = "Ceritakan hal-hal kecil yang membuatmu tersenyum hari ini."
                     )
                 }
-                is HomeUiState.Error -> {
+                is JournalUiState.Error -> {
                     Text(
                         text = "Error: ${state.message}", 
                         modifier = Modifier.padding(24.dp),

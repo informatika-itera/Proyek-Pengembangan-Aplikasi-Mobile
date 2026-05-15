@@ -123,14 +123,21 @@ class CreateMomentViewModel(
         _uiState.update { state ->
             if (state.contentBlocks.size > 1) {
                 val newBlocks = state.contentBlocks.toMutableList()
-                newBlocks.removeAt(index)
+                val removedBlock = newBlocks.removeAt(index)
+                
+                // If the removed block was an image and it was the current cover, 
+                // we'll let saveMoment handle finding the next best cover.
+                
                 val focusBackIndex = if (index > 0) index - 1 else 0
                 state.copy(
                     contentBlocks = newBlocks,
                     requestedFocusIndex = focusBackIndex
                 )
             } else {
-                state.copy(contentBlocks = listOf(ContentBlock.Text("")))
+                state.copy(
+                    contentBlocks = listOf(ContentBlock.Text("")),
+                    imageUrl = null // Reset cover if last block is cleared
+                )
             }
         }
     }
@@ -144,13 +151,15 @@ class CreateMomentViewModel(
         
         viewModelScope.launch {
             val serializedContent = json.encodeToString(MomentContent.serializer(), MomentContent(state.contentBlocks))
+            
+            // Re-calculate cover image: use the first image block found in the editor
             val mainImageUrl = state.contentBlocks.filterIsInstance<ContentBlock.Image>().firstOrNull()?.url
             
             val moment = Moment(
                 id = currentMomentId ?: 0,
                 title = state.title.trim(),
                 content = serializedContent,
-                imageUrl = mainImageUrl ?: state.imageUrl,
+                imageUrl = mainImageUrl, // Use the detected image block as cover (null if none)
                 createdAt = if (currentMomentId == null) Clock.System.now() else state.createdAt,
                 updatedAt = Clock.System.now()
             )

@@ -6,40 +6,41 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Using System Sans Serif as the high-quality alternative to Inter for maximum compatibility and performance
+// Using System Sans Serif and Serif for maximum compatibility and performance
 val Inter = FontFamily.SansSerif
+val Serif = FontFamily.Serif
 
 val Typography = Typography(
     headlineLarge = TextStyle(
-        fontFamily = Inter,
+        fontFamily = Serif,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = (-0.5).sp,
     ),
     headlineMedium = TextStyle(
-        fontFamily = Inter,
+        fontFamily = Serif,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = (-0.2).sp,
     ),
     headlineSmall = TextStyle(
-        fontFamily = Inter,
+        fontFamily = Serif,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
     ),
     titleLarge = TextStyle(
-        fontFamily = Inter,
+        fontFamily = Serif,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 26.sp,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
     ),
     titleMedium = TextStyle(
-        fontFamily = Inter,
+        fontFamily = Serif,
         fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
+        fontSize = 18.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.1.sp,
     ),

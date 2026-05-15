@@ -7,8 +7,8 @@ import com.dailybliss.app.domain.usecase.GetAllMomentsUseCase
 import com.dailybliss.app.domain.usecase.MomentSortBy
 import com.dailybliss.app.domain.usecase.SaveMomentUseCase
 import com.dailybliss.app.domain.usecase.SearchMomentsUseCase
-import com.dailybliss.app.presentation.screens.home.DashboardViewModel
-import com.dailybliss.app.presentation.screens.home.HomeUiState
+import com.dailybliss.app.presentation.screens.home.JournalViewModel
+import com.dailybliss.app.presentation.screens.home.JournalUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -24,10 +24,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Unit Tests untuk DashboardViewModel
+ * Unit Tests untuk JournalViewModel
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class DashboardViewModelTest {
+class JournalViewModelTest {
     
     private val testDispatcher = StandardTestDispatcher()
     
@@ -35,7 +35,7 @@ class DashboardViewModelTest {
     private lateinit var getAllMomentsUseCase: GetAllMomentsUseCase
     private lateinit var searchMomentsUseCase: SearchMomentsUseCase
     private lateinit var saveMomentUseCase: SaveMomentUseCase
-    private lateinit var viewModel: DashboardViewModel
+    private lateinit var viewModel: JournalViewModel
     
     @BeforeTest
     fun setup() {
@@ -46,7 +46,7 @@ class DashboardViewModelTest {
         searchMomentsUseCase = SearchMomentsUseCase(repository)
         saveMomentUseCase = SaveMomentUseCase(repository)
         
-        viewModel = DashboardViewModel(
+        viewModel = JournalViewModel(
             getAllMomentsUseCase = getAllMomentsUseCase,
             searchMomentsUseCase = searchMomentsUseCase,
             saveMomentUseCase = saveMomentUseCase
@@ -63,12 +63,12 @@ class DashboardViewModelTest {
         viewModel.uiState.test {
             // Initial loading state
             val loading = awaitItem()
-            assertTrue(loading is HomeUiState.Loading)
+            assertTrue(loading is JournalUiState.Loading)
             
             // After loading, should be empty (no moments)
             advanceUntilIdle()
             val empty = awaitItem()
-            assertTrue(empty is HomeUiState.Empty)
+            assertTrue(empty is JournalUiState.Empty)
             
             cancelAndIgnoreRemainingEvents()
         }
@@ -81,7 +81,7 @@ class DashboardViewModelTest {
         repository.insertMoment(createTestMoment("Moment 2"))
         
         // Create new viewmodel after inserting moments
-        val vm = DashboardViewModel(
+        val vm = JournalViewModel(
             getAllMomentsUseCase = getAllMomentsUseCase,
             searchMomentsUseCase = searchMomentsUseCase,
             saveMomentUseCase = saveMomentUseCase
@@ -93,8 +93,8 @@ class DashboardViewModelTest {
             advanceUntilIdle()
             
             val state = awaitItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(2, (state as HomeUiState.Success).moments.size)
+            assertTrue(state is JournalUiState.Success)
+            assertEquals(2, (state as JournalUiState.Success).moments.size)
             
             cancelAndIgnoreRemainingEvents()
         }
@@ -106,7 +106,7 @@ class DashboardViewModelTest {
         repository.insertMoment(createTestMoment("Kotlin Guide"))
         repository.insertMoment(createTestMoment("Java Tutorial"))
         
-        val vm = DashboardViewModel(
+        val vm = JournalViewModel(
             getAllMomentsUseCase = getAllMomentsUseCase,
             searchMomentsUseCase = searchMomentsUseCase,
             saveMomentUseCase = saveMomentUseCase
@@ -122,8 +122,8 @@ class DashboardViewModelTest {
             advanceUntilIdle()
             
             val state = expectMostRecentItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).moments.size)
+            assertTrue(state is JournalUiState.Success)
+            assertEquals(1, (state as JournalUiState.Success).moments.size)
             assertEquals("Kotlin Guide", state.moments.first().title)
             
             cancelAndIgnoreRemainingEvents()

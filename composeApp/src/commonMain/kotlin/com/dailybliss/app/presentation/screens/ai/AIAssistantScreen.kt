@@ -28,6 +28,8 @@ import com.dailybliss.app.presentation.components.LoadingIndicator
 import com.dailybliss.app.presentation.components.TypingIndicator
 import com.dailybliss.app.presentation.util.rememberImagePickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,25 +54,25 @@ fun AIAssistantScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Simple Header aligned at the very top
         CenterAlignedTopAppBar(
             title = { 
                 Text(
                     "Asisten AI", 
-                    color = Color.Gray, 
+                    color = MaterialTheme.colorScheme.primary, 
                     style = MaterialTheme.typography.titleLarge, 
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     letterSpacing = (-0.5).sp
                 )
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Gray)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = MaterialTheme.colorScheme.primary)
                 }
             },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White),
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
             windowInsets = WindowInsets(0, 0, 0, 0)
         )
 
@@ -88,7 +90,7 @@ fun AIAssistantScreen(
                     Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             "Halo! Bagikan hal baikmu hari ini dan saya akan meresponnya.",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.secondary,
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             modifier = Modifier.padding(horizontal = 32.dp)
@@ -144,27 +146,39 @@ fun ChatBubble(message: ChatMessage) {
     ) {
         Surface(
             color = if (isUser) 
-                Color(0xFF6200EE) // A deeper, more premium purple
+                MaterialTheme.colorScheme.primary
             else 
-                Color(0xFFF0F0F0), // A very light, clean gray
+                MaterialTheme.colorScheme.surfaceVariant,
             shape = RoundedCornerShape(
-                topStart = 24.dp,
-                topEnd = 24.dp,
-                bottomStart = if (isUser) 24.dp else 4.dp,
-                bottomEnd = if (isUser) 4.dp else 24.dp
+                topStart = 20.dp,
+                topEnd = 20.dp,
+                bottomStart = if (isUser) 20.dp else 4.dp,
+                bottomEnd = if (isUser) 4.dp else 20.dp
             ),
             modifier = Modifier.widthIn(max = 300.dp),
-            shadowElevation = if (isUser) 1.dp else 0.dp
+            shadowElevation = if (isUser) 2.dp else 0.dp
         ) {
-            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                if (message.imageBytes != null) {
+                    AsyncImage(
+                        model = message.imageBytes,
+                        contentDescription = "User Attachment",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .padding(bottom = 8.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                
                 if (message.text.isNotBlank()) {
                     Text(
                         text = message.text,
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            lineHeight = 26.sp,
-                            letterSpacing = 0.2.sp
+                            lineHeight = 24.sp
                         ),
-                        color = if (isUser) Color.White else Color(0xFF333333)
+                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else if (message.role == "model") {
                     TypingIndicator(modifier = Modifier.padding(vertical = 4.dp))
@@ -186,16 +200,39 @@ fun ChatInput(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.2f))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             if (selectedImage != null) {
-                Box(modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp).size(80.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFFF8F8F8))) {
-                    Icon(Icons.Default.AddAPhoto, null, modifier = Modifier.align(Alignment.Center), tint = Color.Gray)
-                    IconButton(onClick = onRemoveImage, modifier = Modifier.align(Alignment.TopEnd).size(24.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)) {
-                        Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Box(
+                    modifier = Modifier
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    AsyncImage(
+                        model = selectedImage,
+                        contentDescription = "Selected Image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    IconButton(
+                        onClick = onRemoveImage, 
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .size(20.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                    ) {
+                        Icon(
+                            Icons.Default.Close, 
+                            null, 
+                            tint = Color.White, 
+                            modifier = Modifier.size(12.dp)
+                        )
                     }
                 }
             }
@@ -207,7 +244,7 @@ fun ChatInput(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onPickImage, enabled = enabled, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.AddAPhoto, "Add Media", tint = Color.Gray, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.AddAPhoto, "Add Media", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                 }
                 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -219,11 +256,11 @@ fun ChatInput(
                         .weight(1f)
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
                         .padding(horizontal = 16.dp, vertical = 10.dp),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
                         if (message.isEmpty()) {
-                            Text("Bagikan syukurmu...", color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
+                            Text("Bagikan syukurmu...", color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.bodyLarge)
                         }
                         innerTextField()
                     },
@@ -237,7 +274,7 @@ fun ChatInput(
                     enabled = enabled && (message.isNotBlank() || selectedImage != null),
                     modifier = Modifier.size(32.dp)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = if (enabled && (message.isNotBlank() || selectedImage != null)) MaterialTheme.colorScheme.primary else Color.LightGray, modifier = Modifier.size(20.dp))
+                    Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = if (enabled && (message.isNotBlank() || selectedImage != null)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
                 }
             }
         }

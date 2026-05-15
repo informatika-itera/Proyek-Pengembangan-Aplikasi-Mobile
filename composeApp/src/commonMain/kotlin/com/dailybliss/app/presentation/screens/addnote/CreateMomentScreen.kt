@@ -74,95 +74,108 @@ fun CreateMomentScreen(
     }
     
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         if (uiState.isLoading) {
             LoadingIndicator()
         } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                contentPadding = PaddingValues(bottom = 120.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 12.dp, bottom = 8.dp, start = 8.dp, end = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                // Top Bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            "Back", 
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    TextButton(
+                        onClick = { viewModel.saveMoment() },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        IconButton(
-                            onClick = onNavigateBack
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Gray)
-                        }
-                        
+                        Text(
+                            "Simpan", 
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+                        )
+                    }
+                }
+
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 120.dp)
+                ) {
+                    item {
                         BasicTextField(
                             value = uiState.title,
                             onValueChange = viewModel::onTitleChange,
                             textStyle = MaterialTheme.typography.headlineMedium.copy(
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                lineHeight = 34.sp
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontWeight = FontWeight.Bold
                             ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             decorationBox = { innerTextField ->
                                 if (uiState.title.isEmpty()) {
                                     Text(
-                                        text = "Judul...",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        color = Color.LightGray,
-                                        fontWeight = FontWeight.Bold
+                                        text = "Judul Cerita",
+                                        style = MaterialTheme.typography.headlineMedium.copy(
+                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     )
                                 }
                                 innerTextField()
                             },
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 24.dp)
                         )
-                        
-                        Button(
-                            onClick = { viewModel.saveMoment() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                            modifier = Modifier.height(36.dp)
-                        ) {
-                            Text("Simpan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        }
                     }
-                }
 
-                itemsIndexed(uiState.contentBlocks) { index, block ->
-                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        when (block) {
-                            is ContentBlock.Text -> {
-                                TextBlockItem(
-                                    text = block.text,
-                                    onTextChange = { viewModel.onBlockChange(index, block.copy(text = it)) },
-                                    onRemove = { viewModel.removeBlock(index) },
-                                    onEnterPressed = { viewModel.addTextBlock(afterIndex = index) },
-                                    onAttachMedia = { 
-                                        activeBlockIndex = index
-                                        singleImagePicker.launch()
-                                    },
-                                    focusRequester = focusRequesters[index]
-                                )
-                            }
-                            is ContentBlock.Image -> {
-                                val isLast = index == uiState.contentBlocks.lastIndex
-                                val noTextBelow = uiState.contentBlocks.getOrNull(index + 1) !is ContentBlock.Text
-                                ImageBlockItem(
-                                    url = block.url,
-                                    showAddBlockButton = isLast || noTextBelow,
-                                    onRemove = { viewModel.removeBlock(index) },
-                                    onAddBlockBelow = { viewModel.addTextBlock(afterIndex = index) }
-                                )
+                    itemsIndexed(uiState.contentBlocks) { index, block ->
+                        Box(modifier = Modifier.padding(horizontal = 12.dp)) {
+                            when (block) {
+                                is ContentBlock.Text -> {
+                                    TextBlockItem(
+                                        text = block.text,
+                                        onTextChange = { viewModel.onBlockChange(index, block.copy(text = it)) },
+                                        onRemove = { viewModel.removeBlock(index) },
+                                        onEnterPressed = { viewModel.addTextBlock(afterIndex = index) },
+                                        onAttachMedia = { 
+                                            activeBlockIndex = index
+                                            singleImagePicker.launch()
+                                        },
+                                        focusRequester = focusRequesters[index]
+                                    )
+                                }
+                                is ContentBlock.Image -> {
+                                    val isLast = index == uiState.contentBlocks.lastIndex
+                                    val noTextBelow = uiState.contentBlocks.getOrNull(index + 1) !is ContentBlock.Text
+                                    ImageBlockItem(
+                                        url = block.url,
+                                        showAddBlockButton = isLast || noTextBelow,
+                                        onRemove = { viewModel.removeBlock(index) },
+                                        onAddBlockBelow = { viewModel.addTextBlock(afterIndex = index) }
+                                    )
+                                }
                             }
                         }
                     }

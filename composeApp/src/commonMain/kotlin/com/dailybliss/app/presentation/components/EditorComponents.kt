@@ -3,11 +3,11 @@ package com.dailybliss.app.presentation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,11 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -34,25 +34,35 @@ fun TextBlockItem(
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp),
+            .padding(vertical = 6.dp),
         verticalAlignment = Alignment.Top
     ) {
-        IconButton(
-            onClick = onAttachMedia,
-            modifier = Modifier.size(32.dp)
+        // Media Action Button - Top Aligned
+        Box(
+            modifier = Modifier.size(28.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = "Attach Media",
-                tint = Color.LightGray.copy(alpha = 0.6f),
-                modifier = Modifier.size(20.dp)
-            )
+            if (isFocused || text.isEmpty()) {
+                IconButton(
+                    onClick = onAttachMedia,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Image, // Replaced + with Image icon
+                        contentDescription = "Attach Image",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
         }
         
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         BasicTextField(
             value = text,
@@ -65,8 +75,9 @@ fun TextBlockItem(
             },
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 4.dp)
+                .padding(top = 2.dp) // Align text baseline better with top icons
                 .focusRequester(focusRequester)
+                .onFocusChanged { isFocused = it.isFocused }
                 .onKeyEvent { keyEvent ->
                     if (keyEvent.type == KeyEventType.KeyDown && 
                         keyEvent.key == Key.Backspace && 
@@ -78,8 +89,9 @@ fun TextBlockItem(
                     }
                 },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = Color.DarkGray,
-                lineHeight = 26.sp
+                color = MaterialTheme.colorScheme.onBackground,
+                lineHeight = 28.sp,
+                letterSpacing = 0.2.sp
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             decorationBox = { innerTextField ->
@@ -87,23 +99,31 @@ fun TextBlockItem(
                     Text(
                         text = "Tulis cerita...",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.LightGray.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                     )
                 }
                 innerTextField()
             }
         )
 
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+        // Remove Action Button - Top Aligned
+        Box(
+            modifier = Modifier.size(28.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "Remove Block",
-                tint = Color.LightGray.copy(alpha = 0.4f),
-                modifier = Modifier.size(16.dp)
-            )
+            if (isFocused) {
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Remove",
+                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -116,50 +136,67 @@ fun ImageBlockItem(
     onAddBlockBelow: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 12.dp)
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(start = 36.dp, end = 36.dp)) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 500.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentScale = ContentScale.Fit
-                )
-                
-                IconButton(
-                    onClick = onRemove,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .background(Color.Black.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                        .size(28.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Remove Image",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        ) {
+            AsyncImage(
+                model = url,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp),
+                contentScale = ContentScale.FillWidth
+            )
             
-            if (showAddBlockButton) {
-                TextButton(
-                    onClick = onAddBlockBelow,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color.LightGray)
-                ) {
-                    Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Tambah blok baru di sini", style = MaterialTheme.typography.labelMedium)
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp)
+                    .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    .size(28.dp)
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+        
+        if (showAddBlockButton) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
+                    .clickable { onAddBlockBelow() },
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Add,
+                        null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Tambah tulisan di bawah gambar",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }

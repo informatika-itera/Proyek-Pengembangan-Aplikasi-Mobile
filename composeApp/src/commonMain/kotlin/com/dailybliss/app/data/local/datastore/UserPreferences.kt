@@ -29,6 +29,61 @@ class UserPreferences(
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val NICKNAME = stringPreferencesKey("nickname")
+        val AI_LANGUAGE_STYLE = stringPreferencesKey("ai_language_style")
+        val COLOR_THEME = stringPreferencesKey("color_theme")
+    }
+    
+    // ==================== USER PROFILE ====================
+
+    /**
+     * Observe nickname
+     */
+    val nickname: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.NICKNAME] ?: "User"
+    }
+
+    /**
+     * Set nickname
+     */
+    suspend fun setNickname(name: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NICKNAME] = name
+        }
+    }
+
+    /**
+     * Observe AI language style
+     */
+    val aiLanguageStyle: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_LANGUAGE_STYLE] ?: "Santai/Kasual"
+    }
+
+    /**
+     * Set AI language style
+     */
+    suspend fun setAiLanguageStyle(style: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.AI_LANGUAGE_STYLE] = style
+        }
+    }
+
+    // ==================== THEME ====================
+
+    /**
+     * Observe color theme
+     */
+    val colorTheme: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.COLOR_THEME] ?: "Sage Green"
+    }
+
+    /**
+     * Set color theme
+     */
+    suspend fun setColorTheme(themeName: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.COLOR_THEME] = themeName
+        }
     }
     
     // ==================== DARK MODE ====================

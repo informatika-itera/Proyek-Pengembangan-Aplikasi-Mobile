@@ -6,6 +6,9 @@ sealed interface Route {
     
     @Serializable
     data object Home : Route
+
+    @Serializable
+    data object Journal : Route
     
     @Serializable
     data class CreateMoment(val momentId: Long? = null) : Route
@@ -22,6 +25,7 @@ sealed interface Route {
 
 interface NavigationActions {
     fun navigateToHome()
+    fun navigateToJournal()
     fun navigateToCreateMoment(momentId: Long? = null)
     fun navigateToMomentDetail(momentId: Long)
     fun navigateToAIAssistant()

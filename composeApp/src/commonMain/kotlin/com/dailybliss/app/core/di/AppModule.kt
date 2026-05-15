@@ -19,7 +19,9 @@ import com.dailybliss.app.domain.usecase.SearchMomentsUseCase
 import com.dailybliss.app.presentation.screens.addnote.CreateMomentViewModel
 import com.dailybliss.app.presentation.screens.ai.AIAssistantViewModel
 import com.dailybliss.app.presentation.screens.detail.MomentDetailViewModel
-import com.dailybliss.app.presentation.screens.home.DashboardViewModel
+import com.dailybliss.app.presentation.screens.home.JournalViewModel
+import com.dailybliss.app.presentation.screens.home.HomeViewModel
+import com.dailybliss.app.presentation.screens.settings.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -55,7 +57,7 @@ val preferencesModule = module {
 
 val repositoryModule = module {
     singleOf(::MomentRepositoryImpl) bind MomentRepository::class
-    singleOf(::AIRepositoryImpl) bind AIRepository::class
+    single { AIRepositoryImpl(get(), get()) } bind AIRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -71,10 +73,12 @@ val useCaseModule = module {
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
-    viewModelOf(::DashboardViewModel)
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::JournalViewModel)
     viewModelOf(::CreateMomentViewModel)
     viewModelOf(::MomentDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::SettingsViewModel)
 }
 
 // ==================== SHARED MODULES ====================

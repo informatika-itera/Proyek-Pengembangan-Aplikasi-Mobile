@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class DashboardViewModel(
+class JournalViewModel(
     private val getAllMomentsUseCase: GetAllMomentsUseCase,
     private val searchMomentsUseCase: SearchMomentsUseCase,
     private val saveMomentUseCase: SaveMomentUseCase
@@ -28,7 +28,7 @@ class DashboardViewModel(
     private val _sortBy = MutableStateFlow(MomentSortBy.UPDATED_DESC)
     val sortBy = _sortBy.asStateFlow()
 
-    val uiState: StateFlow<HomeUiState> = combine(
+    val uiState: StateFlow<JournalUiState> = combine(
         getAllMomentsUseCase(),
         _query,
         _sortBy
@@ -52,14 +52,14 @@ class DashboardViewModel(
         }
 
         if (filtered.isEmpty()) {
-            HomeUiState.Empty(query)
+            JournalUiState.Empty(query)
         } else {
-            HomeUiState.Success(filtered, query)
+            JournalUiState.Success(filtered, query)
         }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeUiState.Loading
+        initialValue = JournalUiState.Loading
     )
 
     fun onSearchQueryChange(newQuery: String) {
@@ -81,18 +81,18 @@ class DashboardViewModel(
     }
 }
 
-sealed interface HomeUiState {
-    data object Loading : HomeUiState
+sealed interface JournalUiState {
+    data object Loading : JournalUiState
     
     data class Success(
         val moments: List<Moment>,
         val query: String = ""
-    ) : HomeUiState
+    ) : JournalUiState
     
     data class Empty(
         val query: String = ""
-    ) : HomeUiState
+    ) : JournalUiState
     
-    data class Error(val message: String) : HomeUiState
+    data class Error(val message: String) : JournalUiState
 }
 

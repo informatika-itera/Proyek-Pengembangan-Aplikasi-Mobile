@@ -1,4 +1,4 @@
-# local.properties.example
+ local.properties.example
 # ================================================
 # COPY file ini menjadi `local.properties` di root project,
 # kemudian isi nilai-nilai sesuai dengan environment Anda.

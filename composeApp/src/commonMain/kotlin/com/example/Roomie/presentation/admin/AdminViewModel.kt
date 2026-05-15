@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
-import com.example.Roomie.domain.model.UrgencyLevel
-import com.example.Roomie.domain.repository.ReportRepository
+import com.example.Roomie.domain.usecase.GetAllReportsUseCase
+import com.example.Roomie.domain.usecase.UpdateReportStatusUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +23,8 @@ sealed interface AdminUiState {
 }
 
 class AdminViewModel(
-    private val reportRepository: ReportRepository
+    private val getAllReportsUseCase: GetAllReportsUseCase,
+    private val updateReportStatusUseCase: UpdateReportStatusUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<AdminUiState>(AdminUiState.Loading)
     val uiState: StateFlow<AdminUiState> = _uiState.asStateFlow()
@@ -35,11 +36,11 @@ class AdminViewModel(
     private fun observeAdminData() {
         viewModelScope.launch {
             _uiState.value = AdminUiState.Loading
-            reportRepository.getAllReports().collectLatest { reports ->
+            getAllReportsUseCase().collectLatest { reports ->
                 _uiState.value = AdminUiState.Success(
                     allReports = reports.reversed(),
                     pendingCount = reports.count { it.status == ReportStatus.PENDING },
-                    highUrgencyCount = reports.count { it.urgency == UrgencyLevel.HIGH }
+                    highUrgencyCount = reports.count { it.urgency.name == "HIGH" }
                 )
             }
         }
@@ -47,7 +48,7 @@ class AdminViewModel(
 
     fun updateReportStatus(reportId: String, newStatus: ReportStatus) {
         viewModelScope.launch {
-            reportRepository.updateReportStatus(reportId, newStatus)
+            updateReportStatusUseCase(reportId, newStatus)
         }
     }
 }

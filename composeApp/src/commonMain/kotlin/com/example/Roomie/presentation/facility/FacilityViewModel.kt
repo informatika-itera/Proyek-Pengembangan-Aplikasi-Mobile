@@ -3,8 +3,7 @@ package com.example.Roomie.presentation.facility
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
-import com.example.Roomie.domain.repository.FacilityRepository
-import com.example.Roomie.data.repository.FacilityRepositoryImpl
+import com.example.Roomie.domain.usecase.GetRoomsByBuildingUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,32 +24,19 @@ sealed interface FacilityUiState {
 }
 
 class FacilityViewModel(
-    private val facilityRepository: FacilityRepository
+    private val getRoomsByBuildingUseCase: GetRoomsByBuildingUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
     val uiState: StateFlow<FacilityUiState> = _uiState.asStateFlow()
 
     init {
-        initData()
-    }
-
-    private fun initData() {
-        viewModelScope.launch {
-            // 1. Pastikan data sudah di-seed
-            (facilityRepository as? FacilityRepositoryImpl)?.seedData()
-            
-            // 2. Observasi data gedung GKU2 secara keseluruhan
-            observeGKU2Rooms()
-        }
+        observeGKU2Rooms()
     }
 
     private fun observeGKU2Rooms() {
         viewModelScope.launch {
             _uiState.value = FacilityUiState.Loading
-            
-            // Gunakan method baru yang mengambil semua ruangan dalam satu gedung
-            // Jika method baru belum ter-generate sempurna, kita gunakan alternatif yang stabil
-            facilityRepository.getRoomsByBuilding("GKU2")
+            getRoomsByBuildingUseCase("GKU2")
                 .catch { e -> _uiState.value = FacilityUiState.Error(e.message ?: "Error") }
                 .collectLatest { allRooms ->
                     if (allRooms.isNotEmpty()) {

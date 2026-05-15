@@ -68,20 +68,20 @@ fun ProfileContent(state: ProfileUiState.Success) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            // Header Info
+            // Header Info Dinamis
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Mulya Delani",
+                        text = state.user?.name ?: "User",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "123140019",
+                        text = state.user?.nim ?: "-",
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = "Teknik Informatika ITERA",
+                        text = if (state.user?.role?.name == "ADMIN") "Staff Sarpras ITERA" else "Teknik Informatika ITERA",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

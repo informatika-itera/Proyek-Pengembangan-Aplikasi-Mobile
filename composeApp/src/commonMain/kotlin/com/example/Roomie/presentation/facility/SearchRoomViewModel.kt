@@ -3,7 +3,7 @@ package com.example.Roomie.presentation.facility
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
-import com.example.Roomie.domain.repository.FacilityRepository
+import com.example.Roomie.domain.usecase.SearchRoomsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SearchRoomViewModel(
-    private val facilityRepository: FacilityRepository
+    private val searchRoomsUseCase: SearchRoomsUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -27,7 +27,7 @@ class SearchRoomViewModel(
         .debounce(300)
         .flatMapLatest { query ->
             if (query.isBlank()) flowOf(emptyList())
-            else facilityRepository.searchRooms(query)
+            else searchRoomsUseCase(query)
         }
         .stateIn(
             scope = viewModelScope,

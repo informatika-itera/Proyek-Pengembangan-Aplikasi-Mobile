@@ -2,7 +2,7 @@ package com.example.Roomie.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.Roomie.domain.repository.AuthRepository
+import com.example.Roomie.domain.usecase.LoginUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,7 @@ data class LoginState(
 }
 
 class LoginViewModel(
-    private val authRepository: AuthRepository
+    private val loginUseCase: LoginUseCase
 ) : ViewModel() {
     
     private val _state = MutableStateFlow(LoginState())
@@ -38,7 +38,7 @@ class LoginViewModel(
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            val result = authRepository.login(currentId)
+            val result = loginUseCase(currentId)
             result.onSuccess {
                 _state.update { it.copy(isLoading = false, loginSuccess = true) }
             }.onFailure { e ->

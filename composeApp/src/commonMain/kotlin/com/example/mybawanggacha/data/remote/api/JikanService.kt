@@ -13,7 +13,7 @@ class JikanService(private val client: HttpClient) {
         private const val BASE_URL = "https://api.jikan.moe/v4/"
     }
 
-    suspend fun fetch(): JikanRecommendationsResponse {
+    suspend fun fetchAnimeRecommendations(): JikanRecommendationsResponse {
         return client.get("${BASE_URL}recommendations/anime").body()
     }
 

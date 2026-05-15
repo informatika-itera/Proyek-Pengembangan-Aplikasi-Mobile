@@ -1,4 +1,4 @@
-package com.example.noteai.core.network
+package com.example.edumate.core.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout

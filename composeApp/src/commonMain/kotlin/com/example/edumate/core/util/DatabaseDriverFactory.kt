@@ -1,4 +1,4 @@
-package com.example.noteai.core.util
+package com.example.edumate.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 

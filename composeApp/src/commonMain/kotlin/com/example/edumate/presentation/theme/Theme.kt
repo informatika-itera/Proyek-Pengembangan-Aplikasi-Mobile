@@ -1,4 +1,4 @@
-package com.example.noteai.presentation.theme
+package com.example.edumate.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

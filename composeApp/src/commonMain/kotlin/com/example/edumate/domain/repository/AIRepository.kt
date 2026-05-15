@@ -1,4 +1,4 @@
-package com.example.noteai.domain.repository
+package com.example.edumate.domain.repository
 
 interface AIRepository {
     suspend fun summarize(text: String): Result<String>

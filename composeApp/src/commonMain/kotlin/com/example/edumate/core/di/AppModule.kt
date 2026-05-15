@@ -1,103 +1,62 @@
-package com.example.noteai.core.di
+package com.example.edumate.core.di
 
-import com.example.noteai.core.network.HttpClientFactory
-import com.example.noteai.core.util.DatabaseDriverFactory
-import com.example.noteai.data.local.NoteDatabase
-import com.example.noteai.data.local.datastore.DataStoreFactory
-import com.example.noteai.data.local.datastore.UserPreferences
-import com.example.noteai.data.local.datastore.create
-import com.example.noteai.data.remote.api.GeminiService
-import com.example.noteai.data.repository.AIRepositoryImpl
-import com.example.noteai.data.repository.NoteRepositoryImpl
-import com.example.noteai.domain.repository.AIRepository
-import com.example.noteai.domain.repository.NoteRepository
-import com.example.noteai.domain.usecase.DeleteNoteUseCase
-import com.example.noteai.domain.usecase.GenerateIdeasUseCase
-import com.example.noteai.domain.usecase.GetAllNotesUseCase
-import com.example.noteai.domain.usecase.ImproveWritingUseCase
-import com.example.noteai.domain.usecase.SaveNoteUseCase
-import com.example.noteai.domain.usecase.SearchNotesUseCase
-import com.example.noteai.domain.usecase.SummarizeNoteUseCase
-import com.example.noteai.presentation.screens.addnote.AddNoteViewModel
-import com.example.noteai.presentation.screens.ai.AIAssistantViewModel
-import com.example.noteai.presentation.screens.detail.NoteDetailViewModel
-import com.example.noteai.presentation.screens.home.HomeViewModel
+import com.example.edumate.data.local.TaskDatabase
+import com.example.edumate.data.repository.TaskRepositoryImpl
+import com.example.edumate.domain.repository.TaskRepository
+import com.example.edumate.presentation.screens.add.AddEditViewModel
+import com.example.edumate.presentation.screens.detail.DetailViewModel
+import com.example.edumate.presentation.screens.home.HomeViewModel
+import com.example.edumate.data.repository.AIRepositoryImpl
+import com.example.edumate.domain.repository.AIRepository
+import com.example.edumate.presentation.screens.ai.AIAssistantViewModel
+
+// Semua import ini sekarang menggunakan edumate
+import com.example.edumate.core.network.HttpClientFactory
+import com.example.edumate.core.util.DatabaseDriverFactory
+import com.example.edumate.data.local.datastore.DataStoreFactory
+import com.example.edumate.data.local.datastore.UserPreferences
+import com.example.edumate.data.local.datastore.create
+import com.example.edumate.data.remote.api.GeminiService
+
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
-
-// ==================== NETWORK MODULE ====================
 
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
 }
 
-// ==================== DATABASE MODULE ====================
-
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        NoteDatabase(driverFactory.createDriver())
+        TaskDatabase(driverFactory.createDriver())
     }
 }
-
-// ==================== PREFERENCES MODULE ====================
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
-
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
+    single<TaskRepository> { TaskRepositoryImpl(get()) }
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
-// ==================== USE CASE MODULE ====================
-
-val useCaseModule = module {
-    singleOf(::GetAllNotesUseCase)
-    singleOf(::SearchNotesUseCase)
-    singleOf(::SaveNoteUseCase)
-    singleOf(::DeleteNoteUseCase)
-    singleOf(::SummarizeNoteUseCase)
-    singleOf(::ImproveWritingUseCase)
-    singleOf(::GenerateIdeasUseCase)
-}
-
-// ==================== VIEWMODEL MODULE ====================
-
 val viewModelModule = module {
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
-    viewModelOf(::AIAssistantViewModel)
+    factory { HomeViewModel(get()) }
+    factory { (taskId: Long?) -> AddEditViewModel(get(), taskId) }
+    factory { (taskId: Long) -> DetailViewModel(get(), taskId) }
+    factory { AIAssistantViewModel(get()) }
 }
 
-// ==================== SHARED MODULES ====================
+val sharedModules = listOf(networkModule, databaseModule, preferencesModule, repositoryModule, viewModelModule)
 
-val sharedModules = listOf(
-    networkModule,
-    databaseModule,
-    preferencesModule,
-    repositoryModule,
-    useCaseModule,
-    viewModelModule
-)
-
-// ==================== INIT FUNCTION ====================
-
-fun initKoin(
-    platformModules: List<Module> = emptyList(),
-    config: KoinAppDeclaration? = null
-) {
+fun initKoin(platformModules: List<Module> = emptyList(), config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
         modules(platformModules + sharedModules)

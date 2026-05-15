@@ -251,7 +251,7 @@ Pryk-PAM/
   melihat log Ktor karena kita pakai `enableLogging = true`).
 - **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
 - **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+  `/data/data/com.example.edumate/files/noteai.preferences_pb` (Android).
 
 ---
 

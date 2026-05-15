@@ -1,0 +1,52 @@
+package com.itera.news.data.repository
+
+import com.itera.news.data.local.dao.ArticleDao
+import com.itera.news.data.local.entity.toEntity
+import com.itera.news.data.remote.NewsApi
+import com.itera.news.domain.model.Article
+import com.itera.news.domain.repository.NewsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+
+// Tambahkan parameter dao: ArticleDao
+class NewsRepositoryImpl(
+    private val api: NewsApi,
+    private val dao: ArticleDao 
+) : NewsRepository {
+
+    // TODO: Masukkan API Key dari NewsAPI.org di sini (jika belum)
+    private val apiKey = "0faefcb90a144faf99a182e7ca3332d9" 
+
+    override fun getMbgNews(): Flow<Result<List<Article>>> = flow {
+        try {
+            val response = api.getMbgNews(apiKey = apiKey)
+            if (response.status == "ok") {
+                val articles = response.articles.map { it.toDomain() }
+                emit(Result.success(articles))
+            } else {
+                emit(Result.failure(Exception("Gagal mengambil data berita")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    override fun getBookmarkedArticles(): Flow<List<Article>> {
+        return dao.getBookmarkedArticles().map { entities -> 
+            entities.map { it.toDomain() } 
+        }
+    }
+
+    override fun isArticleBookmarked(url: String): Flow<Boolean> {
+        return dao.isArticleBookmarked(url)
+    }
+
+    override suspend fun saveArticle(article: Article) {
+        dao.insertArticle(article.toEntity())
+    }
+
+    override suspend fun deleteArticle(article: Article) {
+        dao.deleteArticle(article.toEntity())
+    }
+}

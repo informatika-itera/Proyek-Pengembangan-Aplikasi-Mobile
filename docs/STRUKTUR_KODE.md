@@ -547,7 +547,7 @@ Contoh: User menambah note baru
 
 | Type | Convention | Example |
 |------|------------|---------|
-| Package | lowercase | `com.example.noteai.domain` |
+| Package | lowercase | `bridgebit.domain` |
 | Class | PascalCase | `NoteRepository`, `HomeViewModel` |
 | Function | camelCase | `getAllNotes()`, `onSaveClick()` |
 | Variable | camelCase | `noteList`, `isLoading` |

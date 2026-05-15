@@ -19,6 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.Roomie.presentation.home.HomeScreen
+import com.example.Roomie.presentation.facility.BuildingListScreen
 import com.example.Roomie.presentation.facility.FacilityGridScreen
 import com.example.Roomie.presentation.facility.RoomDetailScreen
 import com.example.Roomie.presentation.report.ReportScreen
@@ -30,6 +31,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
     data object Home : Screen("home", AppStrings.NAV_HOME, Icons.Default.Home)
     data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
+    data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
     data object RoomDetail : Screen("room_detail/{roomId}", "Detail Ruangan") {
@@ -90,14 +92,21 @@ fun App() {
             ) {
                 composable(Screen.Home.route) {
                     HomeScreen(
-                        onNavigateToMap = { navController.navigate(Screen.Facility.route) },
-                        onNavigateToFacilityDetail = { id -> 
-                            navController.navigate(Screen.RoomDetail.createRoute(id)) 
-                        }
+                        onNavigateToMap = { navController.navigate(Screen.Facility.route) }
                     )
                 }
                 
                 composable(Screen.Facility.route) {
+                    BuildingListScreen(
+                        onBuildingClick = { building ->
+                            if (building.id == "GKU2") {
+                                navController.navigate(Screen.RoomSelection.route)
+                            }
+                        }
+                    )
+                }
+
+                composable(Screen.RoomSelection.route) {
                     FacilityGridScreen(
                         onNavigateToDetail = { roomId ->
                             navController.navigate(Screen.RoomDetail.createRoute(roomId))

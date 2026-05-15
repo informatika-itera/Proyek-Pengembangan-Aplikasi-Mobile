@@ -82,7 +82,7 @@ fun RoomDetailScreen(
                     icon = Icons.Default.People, 
                     label = if (isAula) "300 Kursi" else "40 Kursi"
                 )
-                FacilityInfoItem(Icons.Default.AcUnit, "AC Sentral")
+                FacilityInfoItem(Icons.Default.AcUnit, "AC")
                 FacilityInfoItem(Icons.Default.Videocam, "Proyektor")
             }
 

@@ -11,8 +11,16 @@ object AppStrings {
     
     // Home Screen
     const val HOME_TITLE = "Dashboard"
-    const val HOME_WELCOME = "Selamat Datang di Roomie"
+    const val HOME_GREETING = "Halo, Mulya!"
+    const val HOME_SUB_GREETING = "Mau kuliah di mana hari ini?"
     const val HOME_SUMMARY = "Ringkasan Laporan"
+    const val HOME_QUICK_ACTION = "Aksi Cepat"
+    const val HOME_REPORT_FAST = "Lapor Cepat"
+    const val HOME_SEARCH_ROOM = "Cari Ruang"
+    const val HOME_SCHEDULE = "Jadwal"
+    const val HOME_HELP = "Bantuan"
+    const val HOME_STATS_TITLE = "Status Aktivitas"
+    const val HOME_RECENT_ACTIVITY = "Aktivitas Terakhir"
     const val HOME_OPEN_FACILITY = "Cari Ruangan"
     const val HOME_DETAIL = "Detail"
     

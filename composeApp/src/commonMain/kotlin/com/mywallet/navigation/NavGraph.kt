@@ -23,7 +23,7 @@ import com.mywallet.presentation.add.AddTransactionScreen
 import com.mywallet.presentation.detail.DetailScreen
 import com.mywallet.presentation.home.HomeScreen
 import com.mywallet.presentation.add.EditTransactionScreen
-
+import com.mywallet.presentation.screens.history.HistoryScreen
 data class BottomNavItem(
     val title: String,
     val route: String,
@@ -90,7 +90,11 @@ fun AppNavHost(
             )
         }
         composable(Screen.History.route) {
-            Text("History Screen")
+            HistoryScreen(
+                onNavigateToDetail = { id ->
+                    navController.navigate(Screen.TransactionDetail.createRoute(id))
+                }
+            )
         }
         composable(Screen.Profile.route) {
             Text("Profile Screen")

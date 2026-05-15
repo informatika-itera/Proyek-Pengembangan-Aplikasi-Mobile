@@ -8,7 +8,9 @@ import com.example.raillog.data.local.datastore.UserPreferences
 import com.example.raillog.data.local.datastore.create
 import com.example.raillog.data.remote.api.GeminiService
 import com.example.raillog.data.repository.AIRepositoryImpl
+import com.example.raillog.data.repository.SupplyRepositoryImpl
 import com.example.raillog.domain.repository.AIRepository
+import com.example.raillog.domain.repository.SupplyRepository
 import com.example.raillog.presentation.screens.addnote.AddNoteViewModel
 import com.example.raillog.presentation.screens.ai.AIAssistantViewModel
 import com.example.raillog.presentation.screens.detail.NoteDetailViewModel
@@ -48,6 +50,7 @@ val preferencesModule = module {
 
 val repositoryModule = module {
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    singleOf(::SupplyRepositoryImpl) bind SupplyRepository::class
 }
 
 // ==================== USE CASE MODULE ====================

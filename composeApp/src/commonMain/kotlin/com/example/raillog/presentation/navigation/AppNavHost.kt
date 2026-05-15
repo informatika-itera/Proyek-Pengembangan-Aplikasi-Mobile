@@ -9,7 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.raillog.presentation.screens.addsupply.AddSupplyScreen
 import com.example.raillog.presentation.screens.ai.AIAssistantScreen
-import com.example.raillog.presentation.screens.detail.NoteDetailScreen
+import com.example.raillog.presentation.screens.detail.SupplyDetailScreen
 import com.example.raillog.presentation.screens.home.HomeScreen
 
 @Composable
@@ -41,11 +41,10 @@ fun AppNavHost(
 
         composable<Route.SupplyDetail> { backStackEntry ->
             val route: Route.SupplyDetail = backStackEntry.toRoute()
-            NoteDetailScreen(
-                noteId = route.itemId,
+            SupplyDetailScreen(
+                itemId = route.itemId,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onNavigateToEdit = { navigationActions.navigateToAddSupply(route.itemId) },
-                onShare = { _ -> }
             )
         }
 

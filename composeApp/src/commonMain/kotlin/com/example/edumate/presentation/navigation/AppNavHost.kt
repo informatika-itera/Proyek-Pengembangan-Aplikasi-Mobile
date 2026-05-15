@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.edumate.presentation.screens.add.AddEditScreen
+import com.example.edumate.presentation.screens.ai.AIAssistantScreen
 import com.example.edumate.presentation.screens.detail.DetailScreen
 import com.example.edumate.presentation.screens.home.HomeScreen
 
@@ -23,7 +24,8 @@ fun AppNavHost(
         composable<Route.Home> {
             HomeScreen(
                 onNavigateToAdd = { navController.navigate(Route.AddEditTask()) },
-                onNavigateToDetail = { taskId -> navController.navigate(Route.TaskDetail(taskId)) }
+                onNavigateToDetail = { taskId -> navController.navigate(Route.TaskDetail(taskId)) },
+                onNavigateToAIAssistant = { navController.navigate(Route.AIAssistant()) }
             )
         }
 
@@ -31,7 +33,10 @@ fun AppNavHost(
             val route = backStackEntry.toRoute<Route.AddEditTask>()
             AddEditScreen(
                 taskId = route.taskId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAIAssistant = { initialText ->
+                    navController.navigate(Route.AIAssistant(initialText = initialText))
+                }
             )
         }
 
@@ -40,7 +45,19 @@ fun AppNavHost(
             DetailScreen(
                 taskId = route.taskId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToEdit = { taskId -> navController.navigate(Route.AddEditTask(taskId)) }
+                onNavigateToEdit = { taskId -> navController.navigate(Route.AddEditTask(taskId)) },
+                onNavigateToAIAssistant = { initialText ->
+                    navController.navigate(Route.AIAssistant(taskId = route.taskId, initialText = initialText))
+                }
+            )
+        }
+
+        composable<Route.AIAssistant> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.AIAssistant>()
+            AIAssistantScreen(
+                noteId = route.taskId,
+                initialText = route.initialText,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

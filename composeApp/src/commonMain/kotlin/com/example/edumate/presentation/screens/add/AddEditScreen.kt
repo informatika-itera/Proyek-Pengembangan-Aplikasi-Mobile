@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +43,7 @@ import org.koin.core.parameter.parametersOf
 fun AddEditScreen(
     taskId: Long?,
     onNavigateBack: () -> Unit,
+    onNavigateToAIAssistant: (String) -> Unit,
     viewModel: AddEditViewModel = koinViewModel { parametersOf(taskId) }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -65,6 +69,16 @@ fun AddEditScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    }
+                },
+                actions = {
+                    TextButton(
+                        onClick = { onNavigateToAIAssistant(uiState.title.ifBlank { uiState.description }) },
+                        enabled = uiState.title.isNotBlank() || uiState.description.isNotBlank()
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("AI")
                     }
                 }
             )
@@ -92,6 +106,17 @@ fun AddEditScreen(
                 label = { Text("Deskripsi") },
                 modifier = Modifier.fillMaxWidth().height(120.dp),
                 maxLines = 5
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.deadlineText,
+                onValueChange = { viewModel.onEvent(AddEditEvent.EnteredDeadline(it)) },
+                label = { Text("Deadline (YYYY-MM-DD)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                supportingText = { Text("Opsional, agar tugas tersusun berdasarkan tenggat terdekat.") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -125,6 +150,13 @@ fun AddEditScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading
             ) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.width(18.dp).height(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Text(if (uiState.isLoading) "Menyimpan..." else "Simpan Tugas")
             }
         }

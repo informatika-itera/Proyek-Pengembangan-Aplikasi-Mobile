@@ -11,10 +11,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
 
 data class AddEditUiState(
     val title: String = "",
     val description: String = "",
+    val deadlineText: String = "",
     val priority: TaskPriority = TaskPriority.MEDIUM,
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
@@ -39,7 +45,7 @@ class AddEditViewModel(
 
     private fun loadTask(id: Long) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             val task = repository.getTaskById(id).firstOrNull()
             if (task != null) {
                 currentTask = task
@@ -47,6 +53,7 @@ class AddEditViewModel(
                     it.copy(
                         title = task.title,
                         description = task.description,
+                        deadlineText = task.deadline?.toDateText().orEmpty(),
                         priority = task.priority,
                         isLoading = false
                     )
@@ -59,9 +66,10 @@ class AddEditViewModel(
 
     fun onEvent(event: AddEditEvent) {
         when (event) {
-            is AddEditEvent.EnteredTitle -> _uiState.update { it.copy(title = event.value) }
-            is AddEditEvent.EnteredDescription -> _uiState.update { it.copy(description = event.value) }
-            is AddEditEvent.SelectedPriority -> _uiState.update { it.copy(priority = event.value) }
+            is AddEditEvent.EnteredTitle -> _uiState.update { it.copy(title = event.value, error = null) }
+            is AddEditEvent.EnteredDescription -> _uiState.update { it.copy(description = event.value, error = null) }
+            is AddEditEvent.EnteredDeadline -> _uiState.update { it.copy(deadlineText = event.value, error = null) }
+            is AddEditEvent.SelectedPriority -> _uiState.update { it.copy(priority = event.value, error = null) }
             is AddEditEvent.SaveTask -> saveTask()
         }
     }
@@ -73,29 +81,37 @@ class AddEditViewModel(
             return
         }
 
+        val deadline = state.deadlineText.toDeadlineInstantOrNull()
+        if (state.deadlineText.isNotBlank() && deadline == null) {
+            _uiState.update { it.copy(error = "Format deadline harus YYYY-MM-DD") }
+            return
+        }
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 if (currentTask != null) {
                     repository.updateTask(
                         currentTask!!.copy(
-                            title = state.title,
-                            description = state.description,
+                            title = state.title.trim(),
+                            description = state.description.trim(),
+                            deadline = deadline,
                             priority = state.priority
                         )
                     )
                 } else {
                     repository.insertTask(
                         Task(
-                            title = state.title,
-                            description = state.description,
+                            title = state.title.trim(),
+                            description = state.description.trim(),
+                            deadline = deadline,
                             priority = state.priority
                         )
                     )
                 }
                 _uiState.update { it.copy(isSaved = true, isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message, isLoading = false) }
+                _uiState.update { it.copy(error = e.message ?: "Gagal menyimpan tugas", isLoading = false) }
             }
         }
     }
@@ -104,6 +120,18 @@ class AddEditViewModel(
 sealed interface AddEditEvent {
     data class EnteredTitle(val value: String) : AddEditEvent
     data class EnteredDescription(val value: String) : AddEditEvent
+    data class EnteredDeadline(val value: String) : AddEditEvent
     data class SelectedPriority(val value: TaskPriority) : AddEditEvent
     data object SaveTask : AddEditEvent
+}
+
+private fun Instant.toDateText(): String {
+    return toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+}
+
+private fun String.toDeadlineInstantOrNull(): Instant? {
+    if (isBlank()) return null
+    return runCatching {
+        LocalDate.parse(trim()).atStartOfDayIn(TimeZone.currentSystemDefault())
+    }.getOrNull()
 }

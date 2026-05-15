@@ -3,6 +3,7 @@ package com.example.edumate.presentation.screens.ai
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.edumate.domain.repository.AIRepository
+import com.example.edumate.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,8 +14,15 @@ data class AIAssistantState(
     val isLoading: Boolean = false,
     val result: String? = null,
     val ideas: List<String> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val mode: AIWorkMode = AIWorkMode.IDEAS
 )
+
+enum class AIWorkMode(val title: String) {
+    IDEAS("Ide Tugas"),
+    SUMMARY("Ringkasan"),
+    IMPROVE("Perbaiki Tulisan")
+}
 
 class AIAssistantViewModel(
     private val aiRepository: AIRepository
@@ -23,9 +31,13 @@ class AIAssistantViewModel(
     private val _uiState = MutableStateFlow(AIAssistantState())
     val uiState: StateFlow<AIAssistantState> = _uiState.asStateFlow()
 
+    fun setMode(mode: AIWorkMode) {
+        _uiState.update { it.copy(mode = mode, error = null, result = null, ideas = emptyList()) }
+    }
+
     fun summarizeNote(content: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, result = null, ideas = emptyList()) }
             aiRepository.summarize(content).fold(
                 onSuccess = { result ->
                     _uiState.update { it.copy(isLoading = false, result = result) }
@@ -39,8 +51,8 @@ class AIAssistantViewModel(
 
     fun improveWriting(content: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            aiRepository.improveWriting(content).fold(
+            _uiState.update { it.copy(isLoading = true, error = null, result = null, ideas = emptyList()) }
+            aiRepository.improveWriting(content, WritingStyle.ACADEMIC).fold(
                 onSuccess = { result ->
                     _uiState.update { it.copy(isLoading = false, result = result) }
                 },
@@ -53,7 +65,7 @@ class AIAssistantViewModel(
 
     fun generateIdeas(topic: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, result = null, ideas = emptyList()) }
             aiRepository.generateIdeas(topic).fold(
                 onSuccess = { result ->
                     _uiState.update { it.copy(isLoading = false, ideas = result) }

@@ -12,7 +12,16 @@ CREATE TABLE TaskEntity (
 
 getAllTasks:
 SELECT * FROM TaskEntity
-ORDER BY is_completed ASC, deadline ASC, priority DESC;
+ORDER BY
+    is_completed ASC,
+    COALESCE(deadline, 9223372036854775807) ASC,
+    CASE priority
+        WHEN 'URGENT' THEN 0
+        WHEN 'HIGH' THEN 1
+        WHEN 'MEDIUM' THEN 2
+        ELSE 3
+    END ASC,
+    updated_at DESC;
 
 getTaskById:
 SELECT * FROM TaskEntity

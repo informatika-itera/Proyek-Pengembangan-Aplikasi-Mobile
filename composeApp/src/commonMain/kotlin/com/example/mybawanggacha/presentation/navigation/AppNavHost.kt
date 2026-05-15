@@ -10,8 +10,10 @@ import androidx.navigation.toRoute
 import com.example.mybawanggacha.presentation.screens.addnote.AddNoteScreen
 import com.example.mybawanggacha.presentation.screens.ai.AIAssistantScreen
 import com.example.mybawanggacha.presentation.screens.anime.AnimeDetailScreen
+import com.example.mybawanggacha.presentation.screens.anime.AnimeListScreen
 import com.example.mybawanggacha.presentation.screens.detail.NoteDetailScreen
 import com.example.mybawanggacha.presentation.screens.home.HomeScreen
+import com.example.mybawanggacha.presentation.screens.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -27,10 +29,25 @@ fun AppNavHost(
     ) {
         composable<Route.Home> {
             HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() },
+                onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) },
+                onNavigateToAnimeList = { navigationActions.navigateToAnimeList() },
+                onNavigateToSettings = { navigationActions.navigateToSettings() }
+            )
+        }
+
+        composable<Route.AnimeList> {
+            AnimeListScreen(
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateHome = { navigationActions.navigateToHome() },
                 onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) }
+            )
+        }
+
+        composable<Route.Settings> {
+            SettingsScreen(
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateHome = { navigationActions.navigateToHome() },
+                onNavigateToAnimeList = { navigationActions.navigateToAnimeList() }
             )
         }
         
@@ -84,6 +101,14 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             navController.navigate(Route.Home) {
                 popUpTo(Route.Home) { inclusive = true }
             }
+        }
+
+        override fun navigateToAnimeList() {
+            navController.navigate(Route.AnimeList)
+        }
+
+        override fun navigateToSettings() {
+            navController.navigate(Route.Settings)
         }
         
         override fun navigateToAddNote(noteId: Long?) {

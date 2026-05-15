@@ -3,38 +3,47 @@ package com.mywallet.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mywallet.domain.model.Transaction
-import com.mywallet.domain.model.TransactionType
+import com.mywallet.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(HomeUiState())
+class HomeViewModel(
+    private val repository: TransactionRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadData()
+        loadTransactions()
     }
 
-    private fun loadData() {
+    fun loadTransactions() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            
-            // Mock data using domain model
-            val mockTransactions = listOf(
-                Transaction(1, "Kiriman Orang Tua", 5000000.0, TransactionType.INCOME, "01 Oct 2023"),
-                Transaction(2, "Transfer UKT", 3500000.0, TransactionType.EXPENSE, "02 Oct 2023"),
-                Transaction(3, "Makan Siang", 50000.0, TransactionType.EXPENSE, "03 Oct 2023")
-            )
+            repository.getAllTransactions()
+                .catch { e -> _uiState.value = HomeUiState.Error(e.message ?: "Terjadi kesalahan") }
+                .collect { transactions ->
+                    if (transactions.isEmpty()) {
+                        _uiState.value = HomeUiState.Empty
+                    } else {
+                        val income = transactions.filter { it.type.name == "INCOME" }.sumOf { it.amount }
+                        val expense = transactions.filter { it.type.name == "EXPENSE" }.sumOf { it.amount }
+                        _uiState.value = HomeUiState.Success(
+                            transactions = transactions,
+                            balance = income - expense,
+                            totalIncome = income,
+                            totalExpense = expense
+                        )
+                    }
+                }
+        }
+    }
 
-            _uiState.value = HomeUiState(
-                balance = "Rp 1.450.000",
-                income = "Rp 5.000.000",
-                expense = "Rp 3.550.000",
-                transactions = mockTransactions,
-                isLoading = false
-            )
+    fun deleteTransaction(id: Int) {
+        viewModelScope.launch {
+            repository.deleteTransaction(id)
         }
     }
 }

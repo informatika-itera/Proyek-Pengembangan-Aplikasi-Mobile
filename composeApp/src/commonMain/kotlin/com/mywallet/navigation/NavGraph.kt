@@ -13,10 +13,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.mywallet.presentation.add.AddTransactionScreen
+import com.mywallet.presentation.detail.DetailScreen
 import com.mywallet.presentation.home.HomeScreen
 
 data class BottomNavItem(
@@ -28,26 +32,56 @@ data class BottomNavItem(
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(navController)
-        }
+        bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        NavHost(
+        AppNavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Home.route) {
-                HomeScreen()
-            }
-            composable(Screen.History.route) {
-                Text("History Screen")
-            }
-            composable(Screen.Profile.route) {
-                Text("Profile Screen")
-            }
+        )
+    }
+}
+
+@Composable
+fun AppNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route,
+        modifier = modifier
+    ) {
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onNavigateToDetail = { id ->
+                    navController.navigate(Screen.TransactionDetail.createRoute(id))
+                },
+                onNavigateToAdd = {
+                    navController.navigate(Screen.AddTransaction.route)
+                }
+            )
+        }
+        composable(
+            route = Screen.TransactionDetail.route,
+            arguments = listOf(navArgument(NavArgs.TRANSACTION_ID) { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt(NavArgs.TRANSACTION_ID) ?: return@composable
+            DetailScreen(
+                transactionId = id,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AddTransaction.route) {
+            AddTransactionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.History.route) {
+            Text("History Screen")
+        }
+        composable(Screen.Profile.route) {
+            Text("Profile Screen")
         }
     }
 }
@@ -59,11 +93,9 @@ fun BottomNavigationBar(navController: NavHostController) {
         BottomNavItem("Riwayat", Screen.History.route, Icons.Default.History),
         BottomNavItem("Profil", Screen.Profile.route, Icons.Default.Person)
     )
-
     NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-
         items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.title) },

@@ -1,174 +1,152 @@
 package com.mywallet.presentation.home
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.mywallet.presentation.components.TransactionItem
+import com.mywallet.domain.model.Transaction
+import com.mywallet.domain.model.TransactionType
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onNavigateToDetail: (Int) -> Unit,
+    onNavigateToAdd: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Halo, User!",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = "Selamat Datang Kembali",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            TopAppBar(title = { Text("MyWallet") })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavigateToAdd) {
+                Icon(Icons.Default.Add, contentDescription = "Tambah Transaksi")
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                BalanceCard(uiState.balance, uiState.income, uiState.expense)
+        when (val state = uiState) {
+            is HomeUiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Transaksi Terakhir",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    TextButton(onClick = { /* See All */ }) {
-                        Text("Lihat Semua")
+            is HomeUiState.Empty -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Belum ada transaksi", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Tap + untuk menambah transaksi", style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
-
-            items(uiState.transactions) { transaction ->
-                TransactionItem(transaction)
+            is HomeUiState.Success -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        SummaryCard(
+                            balance = state.balance,
+                            income = state.totalIncome,
+                            expense = state.totalExpense
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Transaksi", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                    items(state.transactions) { transaction ->
+                        TransactionCard(
+                            transaction = transaction,
+                            onClick = { onNavigateToDetail(transaction.id) }
+                        )
+                    }
+                }
             }
-            
-            item {
-                Spacer(modifier = Modifier.height(80.dp)) // Bottom Nav Spacer
+            is HomeUiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(state.message, color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = viewModel::loadTransactions) { Text("Coba Lagi") }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun BalanceCard(balance: String, income: String, expense: String) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-        )
-    )
+fun SummaryCard(balance: Double, income: Double, expense: Double) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("Saldo", style = MaterialTheme.typography.labelMedium)
+            Text(
+                "Rp ${balance.toLong()}",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            HorizontalDivider()
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("Pemasukan", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        "Rp ${income.toLong()}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Pengeluaran", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        "Rp ${expense.toLong()}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+    }
+}
 
+@Composable
+fun TransactionCard(transaction: Transaction, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(28.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            .clickable(onClick = onClick)
     ) {
-        Box(
-            modifier = Modifier
-                .background(gradient)
-                .fillMaxSize()
-                .padding(24.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "Total Saldo Anda",
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = balance,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = (-1).sp
-                        )
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.Black.copy(alpha = 0.15f))
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    BalanceInfo(
-                        label = "Pemasukan", 
-                        amount = income, 
-                        color = Color(0xFF6EE7B7) // Light Green for contrast on dark primary background
-                    )
-                    VerticalDivider(
-                        modifier = Modifier.height(30.dp),
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
-                    )
-                    BalanceInfo(
-                        label = "Pengeluaran", 
-                        amount = expense, 
-                        color = Color(0xFFFCA5A5) // Light Red for contrast on dark primary background
-                    )
-                }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(transaction.title, style = MaterialTheme.typography.bodyLarge)
+                Text(transaction.date, style = MaterialTheme.typography.bodySmall)
             }
+            Text(
+                "${if (transaction.type == TransactionType.INCOME) "+" else "-"} Rp ${transaction.amount.toLong()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (transaction.type == TransactionType.INCOME)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.error
+            )
         }
-    }
-}
-
-@Composable
-fun BalanceInfo(label: String, amount: String, color: Color) {
-    Column {
-        Text(
-            text = label,
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-            style = MaterialTheme.typography.labelSmall
-        )
-        Text(
-            text = amount,
-            color = color,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

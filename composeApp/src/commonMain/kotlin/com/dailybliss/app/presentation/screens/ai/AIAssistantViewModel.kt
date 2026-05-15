@@ -51,18 +51,17 @@ class AIAssistantViewModel(
                 // Send history excluding the placeholder
                 val history = _uiState.value.messages.dropLast(1)
                 
-                aiRepository.streamChat(history).collect { chunk ->
-                    _uiState.update { state ->
-                        val updatedMessages = state.messages.toMutableList()
-                        val lastIndex = updatedMessages.lastIndex
-                        if (lastIndex >= 0) {
-                            val lastMessage = updatedMessages[lastIndex]
-                            updatedMessages[lastIndex] = lastMessage.copy(text = lastMessage.text + chunk)
-                        }
-                        state.copy(messages = updatedMessages)
+                // Using non-streaming chat for better coherence as requested
+                val fullResponse = aiRepository.chat(history)
+                
+                _uiState.update { state ->
+                    val updatedMessages = state.messages.toMutableList()
+                    val lastIndex = updatedMessages.lastIndex
+                    if (lastIndex >= 0) {
+                        updatedMessages[lastIndex] = updatedMessages[lastIndex].copy(text = fullResponse)
                     }
+                    state.copy(messages = updatedMessages, isLoading = false)
                 }
-                _uiState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = "Gagal terhubung ke AI: ${e.message}") }
             }

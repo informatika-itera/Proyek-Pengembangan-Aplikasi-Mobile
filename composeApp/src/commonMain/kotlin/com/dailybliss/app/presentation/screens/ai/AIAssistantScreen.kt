@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dailybliss.app.presentation.components.LoadingIndicator
+import com.dailybliss.app.presentation.components.TypingIndicator
 import com.dailybliss.app.presentation.util.rememberImagePickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -100,14 +101,6 @@ fun AIAssistantScreen(
                 }
             }
             
-            if (uiState.isLoading && uiState.messages.lastOrNull()?.text?.isEmpty() == true) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.CenterStart) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
-            
             uiState.error?.let {
                 item {
                     Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodySmall)
@@ -146,26 +139,35 @@ fun AIAssistantScreen(
 fun ChatBubble(message: ChatMessage) {
     val isUser = message.role == "user"
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         contentAlignment = if (isUser) Alignment.CenterEnd else Alignment.CenterStart
     ) {
         Surface(
-            color = if (isUser) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            color = if (isUser) 
+                Color(0xFF6200EE) // A deeper, more premium purple
+            else 
+                Color(0xFFF0F0F0), // A very light, clean gray
             shape = RoundedCornerShape(
-                topStart = 16.dp,
-                topEnd = 16.dp,
-                bottomStart = if (isUser) 16.dp else 4.dp,
-                bottomEnd = if (isUser) 4.dp else 16.dp
+                topStart = 24.dp,
+                topEnd = 24.dp,
+                bottomStart = if (isUser) 24.dp else 4.dp,
+                bottomEnd = if (isUser) 4.dp else 24.dp
             ),
-            modifier = Modifier.widthIn(max = 280.dp)
+            modifier = Modifier.widthIn(max = 300.dp),
+            shadowElevation = if (isUser) 1.dp else 0.dp
         ) {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
                 if (message.text.isNotBlank()) {
                     Text(
                         text = message.text,
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                        color = Color.DarkGray
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            lineHeight = 26.sp,
+                            letterSpacing = 0.2.sp
+                        ),
+                        color = if (isUser) Color.White else Color(0xFF333333)
                     )
+                } else if (message.role == "model") {
+                    TypingIndicator(modifier = Modifier.padding(vertical = 4.dp))
                 }
             }
         }

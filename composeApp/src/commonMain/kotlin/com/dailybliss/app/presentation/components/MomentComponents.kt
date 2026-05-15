@@ -1,5 +1,6 @@
 package com.dailybliss.app.presentation.components
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +34,7 @@ fun PremiumBlissCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = 120.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
@@ -86,6 +90,49 @@ fun LoadingIndicator() {
             strokeWidth = 3.dp
         )
     }
+}
+
+@Composable
+fun TypingIndicator(
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition()
+    
+    @Composable
+    fun animateDot(delay: Int): androidx.compose.runtime.State<Float> {
+        return infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = -6f, // Slightly lower jump for smaller dots
+            animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                animation = androidx.compose.animation.core.tween(durationMillis = 500, delayMillis = delay, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+            )
+        )
+    }
+    
+    val dot1Offset by animateDot(0)
+    val dot2Offset by animateDot(150)
+    val dot3Offset by animateDot(300)
+    
+    Row(
+        modifier = modifier.padding(horizontal = 2.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp) // Tightened spacing
+    ) {
+        Dot(dot1Offset)
+        Dot(dot2Offset)
+        Dot(dot3Offset)
+    }
+}
+
+@Composable
+private fun Dot(offsetY: Float) {
+    Box(
+        modifier = Modifier
+            .size(4.dp) // Matches common body text font size
+            .offset(y = offsetY.dp)
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+    )
 }
 
 @Composable

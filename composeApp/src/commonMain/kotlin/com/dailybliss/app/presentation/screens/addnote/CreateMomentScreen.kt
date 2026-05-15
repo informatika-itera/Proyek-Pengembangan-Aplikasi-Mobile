@@ -89,12 +89,11 @@ fun CreateMomentScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 8.dp, start = 8.dp, end = 16.dp),
-                        verticalAlignment = Alignment.Top
+                            .padding(top = 12.dp, bottom = 8.dp, start = 8.dp, end = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
-                            onClick = onNavigateBack,
-                            modifier = Modifier.padding(top = 4.dp)
+                            onClick = onNavigateBack
                         ) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Gray)
                         }
@@ -121,7 +120,7 @@ fun CreateMomentScreen(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
                         )
                         
                         Button(
@@ -132,7 +131,7 @@ fun CreateMomentScreen(
                             ),
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                            modifier = Modifier.height(36.dp).padding(top = 4.dp)
+                            modifier = Modifier.height(36.dp)
                         ) {
                             Text("Simpan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }

@@ -8,7 +8,13 @@ import kotlinx.serialization.Serializable
 data class GeminiRequest(
     val contents: List<GeminiContent>,
     val generationConfig: GenerationConfig? = null,
-    val safetySettings: List<SafetySetting>? = null
+    val safetySettings: List<SafetySetting>? = null,
+    val system_instruction: GeminiSystemInstruction? = null
+)
+
+@Serializable
+data class GeminiSystemInstruction(
+    val parts: List<GeminiPart>
 )
 
 @Serializable
@@ -20,7 +26,8 @@ data class GeminiContent(
 @Serializable
 data class GeminiPart(
     val text: String? = null,
-    val inline_data: GeminiInlineData? = null
+    val inline_data: GeminiInlineData? = null,
+    val thought: Boolean? = null
 )
 
 @Serializable
@@ -82,7 +89,9 @@ data class GeminiError(
 // ==================== HELPER EXTENSIONS ====================
 
 fun GeminiResponse.getTextContent(): String? {
-    return candidates?.firstOrNull()?.content?.parts?.firstOrNull { it.text != null }?.text
+    return candidates?.firstOrNull()?.content?.parts?.firstOrNull { 
+        it.text != null && it.thought != true 
+    }?.text
 }
 
 fun GeminiResponse.isBlocked(): Boolean {

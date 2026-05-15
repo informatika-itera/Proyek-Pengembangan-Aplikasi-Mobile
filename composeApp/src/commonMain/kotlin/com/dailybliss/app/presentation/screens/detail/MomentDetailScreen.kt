@@ -108,12 +108,11 @@ fun MomentDetailScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 8.dp, start = 8.dp, end = 8.dp),
-                            verticalAlignment = Alignment.Top
+                                .padding(top = 12.dp, bottom = 8.dp, start = 8.dp, end = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
-                                onClick = onNavigateBack,
-                                modifier = Modifier.padding(top = 4.dp)
+                                onClick = onNavigateBack
                             ) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Gray)
                             }
@@ -140,12 +139,11 @@ fun MomentDetailScreen(
                                 },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                                    .padding(horizontal = 8.dp, vertical = 8.dp)
                             )
                             
                             IconButton(
-                                onClick = { showDeleteDialog = true },
-                                modifier = Modifier.padding(top = 4.dp)
+                                onClick = { showDeleteDialog = true }
                             ) {
                                 Icon(Icons.Outlined.Delete, "Delete", tint = Color.Gray)
                             }

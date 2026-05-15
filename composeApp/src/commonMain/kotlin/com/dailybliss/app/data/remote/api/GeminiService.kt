@@ -11,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.utils.io.readUTF8Line
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
@@ -21,27 +22,49 @@ class GeminiService(private val client: HttpClient) {
     
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+        private const val MAX_RETRIES = 5
+        private const val INITIAL_DELAY_MS = 1000L
+    }
+
+    private suspend fun <T> retryWithBackoff(
+        maxRetries: Int = MAX_RETRIES,
+        initialDelay: Long = INITIAL_DELAY_MS,
+        block: suspend () -> T
+    ): T {
+        var currentDelay = initialDelay
+        repeat(maxRetries) { attempt ->
+            try {
+                return block()
+            } catch (e: Exception) {
+                if (attempt == maxRetries - 1) throw e
+                delay(currentDelay)
+                currentDelay *= 2
+            }
+        }
+        throw Exception("Gagal setelah beberapa percobaan")
     }
     
     suspend fun streamContent(
-        contents: List<GeminiContent>
+        contents: List<GeminiContent>,
+        systemInstruction: String? = null
     ): Flow<String> = flow {
-        val model = ApiConfig.geminiModelName
-        if (model.isBlank()) {
-            throw Exception("GEMINI_MODEL_NAME belum diset di local.properties. AI tidak dapat digunakan.")
-        }
+        val modelName = ApiConfig.geminiModelName.ifBlank { "gemini-1.5-flash" }
         
-        val url = "$BASE_URL/models/$model:streamGenerateContent?alt=sse"
+        // Use streamGenerateContent for streaming
+        val url = "$BASE_URL/models/$modelName:streamGenerateContent?alt=sse"
         
         val request = GeminiRequest(
             contents = contents,
+            system_instruction = systemInstruction?.let { 
+                GeminiSystemInstruction(parts = listOf(GeminiPart(text = it))) 
+            },
             generationConfig = GenerationConfig(
-                temperature = 0.7,
+                temperature = 0.8,
                 maxOutputTokens = 2000
             )
         )
         
-        try {
+        retryWithBackoff {
             client.preparePost(url) {
                 header("x-goog-api-key", ApiConfig.geminiApiKey)
                 contentType(ContentType.Application.Json)
@@ -73,8 +96,6 @@ class GeminiService(private val client: HttpClient) {
                     }
                 }
             }
-        } catch (e: Exception) {
-            throw Exception("Terjadi kesalahan: ${e.message}")
         }
     }
 
@@ -82,50 +103,75 @@ class GeminiService(private val client: HttpClient) {
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
-        val model = ApiConfig.geminiModelName
-        if (model.isBlank()) {
-            throw Exception("GEMINI_MODEL_NAME belum diset di local.properties.")
-        }
-
-        val contents = mutableListOf<GeminiContent>()
-        
-        if (systemPrompt != null) {
-            contents.add(
+        retryWithBackoff {
+            val modelName = ApiConfig.geminiModelName.ifBlank { "gemini-1.5-flash" }
+            
+            val contents = listOf(
                 GeminiContent(
-                    parts = listOf(GeminiPart(text = systemPrompt)),
+                    parts = listOf(GeminiPart(text = prompt)),
                     role = "user"
                 )
             )
-            contents.add(
-                GeminiContent(
-                    parts = listOf(GeminiPart(text = "Baik, saya mengerti instruksinya.")),
-                    role = "model"
+            
+            val url = "$BASE_URL/models/$modelName:generateContent"
+            
+            val request = GeminiRequest(
+                contents = contents,
+                system_instruction = systemPrompt?.let { 
+                    GeminiSystemInstruction(parts = listOf(GeminiPart(text = it))) 
+                }
+            )
+
+            val response: HttpResponse = client.post(url) {
+                header("x-goog-api-key", ApiConfig.geminiApiKey)
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+            
+            if (response.status != HttpStatusCode.OK) {
+                val errorBody = response.bodyAsText()
+                throw Exception("API Error (${response.status.value}): $errorBody")
+            }
+            
+            val geminiResponse = response.body<GeminiResponse>()
+            geminiResponse.getErrorMessage()?.let { throw Exception(it) }
+            geminiResponse.getTextContent() ?: throw Exception("Respons kosong")
+        }
+    }
+
+    suspend fun generateChat(
+        contents: List<GeminiContent>,
+        systemInstruction: String? = null
+    ): Result<String> = runCatching {
+        retryWithBackoff {
+            val modelName = ApiConfig.geminiModelName.ifBlank { "gemini-1.5-flash" }
+            val url = "$BASE_URL/models/$modelName:generateContent"
+            
+            val request = GeminiRequest(
+                contents = contents,
+                system_instruction = systemInstruction?.let { 
+                    GeminiSystemInstruction(parts = listOf(GeminiPart(text = it))) 
+                },
+                generationConfig = GenerationConfig(
+                    temperature = 0.85, // Slightly higher for more natural flow
+                    maxOutputTokens = 2000
                 )
             )
+
+            val response: HttpResponse = client.post(url) {
+                header("x-goog-api-key", ApiConfig.geminiApiKey)
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+            
+            if (response.status != HttpStatusCode.OK) {
+                val errorBody = response.bodyAsText()
+                throw Exception("API Error (${response.status.value}): $errorBody")
+            }
+            
+            val geminiResponse = response.body<GeminiResponse>()
+            geminiResponse.getErrorMessage()?.let { throw Exception(it) }
+            geminiResponse.getTextContent() ?: throw Exception("Respons kosong")
         }
-        
-        contents.add(
-            GeminiContent(
-                parts = listOf(GeminiPart(text = prompt)),
-                role = "user"
-            )
-        )
-        
-        val url = "$BASE_URL/models/$model:generateContent"
-        
-        val response: HttpResponse = client.post(url) {
-            header("x-goog-api-key", ApiConfig.geminiApiKey)
-            contentType(ContentType.Application.Json)
-            setBody(GeminiRequest(contents = contents))
-        }
-        
-        if (response.status != HttpStatusCode.OK) {
-            val errorBody = response.bodyAsText()
-            throw Exception("API Error (${response.status.value}): $errorBody")
-        }
-        
-        val geminiResponse = response.body<GeminiResponse>()
-        geminiResponse.getErrorMessage()?.let { throw Exception(it) }
-        geminiResponse.getTextContent() ?: throw Exception("Respons kosong")
     }
 }

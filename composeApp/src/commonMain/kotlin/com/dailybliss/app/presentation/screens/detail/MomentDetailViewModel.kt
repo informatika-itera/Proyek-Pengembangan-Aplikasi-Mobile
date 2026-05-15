@@ -36,30 +36,28 @@ class MomentDetailViewModel(
         currentMomentId = id
         
         viewModelScope.launch {
-            getMomentByIdUseCase(id).collect { moment ->
-                if (moment != null) {
-                    val parsedContent = try {
-                        if (moment.content.startsWith("{\"blocks\":")) {
-                            json.decodeFromString<MomentContent>(moment.content)
-                        } else {
-                            MomentContent(listOf(ContentBlock.Text(moment.content)))
-                        }
-                    } catch (e: Exception) {
+            val moment = getMomentByIdUseCase(id).first()
+            if (moment != null) {
+                val parsedContent = try {
+                    if (moment.content.startsWith("{\"blocks\":")) {
+                        json.decodeFromString<MomentContent>(moment.content)
+                    } else {
                         MomentContent(listOf(ContentBlock.Text(moment.content)))
                     }
-
-                    _uiState.update { currentState ->
-                        val currentRequestedFocusIndex = if (currentState is MomentDetailUiState.Success) currentState.requestedFocusIndex else null
-                        MomentDetailUiState.Success(
-                            moment = moment,
-                            title = moment.title,
-                            contentBlocks = if (parsedContent.blocks.isEmpty()) listOf(ContentBlock.Text("")) else parsedContent.blocks,
-                            requestedFocusIndex = currentRequestedFocusIndex
-                        )
-                    }
-                } else {
-                    _uiState.value = MomentDetailUiState.NotFound
+                } catch (e: Exception) {
+                    MomentContent(listOf(ContentBlock.Text(moment.content)))
                 }
+
+                _uiState.update { 
+                    MomentDetailUiState.Success(
+                        moment = moment,
+                        title = moment.title,
+                        contentBlocks = if (parsedContent.blocks.isEmpty()) listOf(ContentBlock.Text("")) else parsedContent.blocks,
+                        requestedFocusIndex = null
+                    )
+                }
+            } else {
+                _uiState.value = MomentDetailUiState.NotFound
             }
         }
     }
@@ -68,7 +66,7 @@ class MomentDetailViewModel(
         val currentState = _uiState.value
         if (currentState is MomentDetailUiState.Success) {
             _uiState.value = currentState.copy(title = newTitle)
-            saveChanges()
+            saveChangesInternal()
         }
     }
 
@@ -79,7 +77,7 @@ class MomentDetailViewModel(
             if (index in newBlocks.indices) {
                 newBlocks[index] = block
                 _uiState.value = currentState.copy(contentBlocks = newBlocks)
-                saveChanges()
+                saveChangesInternal()
             }
         }
     }
@@ -94,7 +92,7 @@ class MomentDetailViewModel(
                 contentBlocks = newBlocks,
                 requestedFocusIndex = newIndex
             )
-            saveChanges()
+            saveChangesInternal()
         }
     }
 
@@ -111,7 +109,7 @@ class MomentDetailViewModel(
                         contentBlocks = newBlocks,
                         requestedFocusIndex = null
                     )
-                    saveChanges()
+                    saveChangesInternal()
                 }
             }
         }
@@ -135,12 +133,12 @@ class MomentDetailViewModel(
                     contentBlocks = newBlocks,
                     requestedFocusIndex = focusBackIndex
                 )
-                saveChanges()
+                saveChangesInternal()
             }
         }
     }
 
-    private fun saveChanges() {
+    private fun saveChangesInternal() {
         val state = _uiState.value
         if (state is MomentDetailUiState.Success) {
             viewModelScope.launch {
@@ -155,6 +153,13 @@ class MomentDetailViewModel(
                 )
                 saveMomentUseCase(updatedMoment)
             }
+        }
+    }
+
+    fun saveChanges() {
+        saveChangesInternal()
+        viewModelScope.launch {
+            _events.emit(MomentDetailEvent.MomentSaved)
         }
     }
 
@@ -180,5 +185,6 @@ sealed interface MomentDetailUiState {
 
 sealed interface MomentDetailEvent {
     data object MomentDeleted : MomentDetailEvent
+    data object MomentSaved : MomentDetailEvent
     data class Error(val message: String) : MomentDetailEvent
 }

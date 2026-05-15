@@ -36,11 +36,11 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 12.dp, top = 48.dp, end = 24.dp)
+                .padding(start = 4.dp, top = 32.dp, end = 18.dp)
         ) {
             Text(
                 text = "Settings",
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold
             )
@@ -49,7 +49,7 @@ fun SettingsScreen(
 
             Text(
                 text = "Pengaturan masih kosong untuk menjaga skeleton project tetap bersih.",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

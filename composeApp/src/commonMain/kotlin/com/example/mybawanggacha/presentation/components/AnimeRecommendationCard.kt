@@ -46,8 +46,8 @@ fun AnimePosterCard(
     imageUrl: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    posterWidth: Dp = 148.dp,
-    posterHeight: Dp = 214.dp
+    posterWidth: Dp = 132.dp,
+    posterHeight: Dp = 188.dp
 ) {
     Column(
         modifier = modifier
@@ -58,7 +58,7 @@ fun AnimePosterCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(posterHeight),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(18.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -75,11 +75,11 @@ fun AnimePosterCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold,
             maxLines = 2,
@@ -97,9 +97,9 @@ fun AnimeOverviewCard(
 ) {
     Card(
         modifier = modifier
-            .height(168.dp)
+            .height(144.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
@@ -111,8 +111,8 @@ fun AnimeOverviewCard(
                 contentDescription = title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(168.dp)
-                    .clip(RoundedCornerShape(28.dp)),
+                    .height(144.dp)
+                    .clip(RoundedCornerShape(22.dp)),
                 contentScale = ContentScale.Crop
             )
 
@@ -121,11 +121,11 @@ fun AnimeOverviewCard(
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.78f))
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,

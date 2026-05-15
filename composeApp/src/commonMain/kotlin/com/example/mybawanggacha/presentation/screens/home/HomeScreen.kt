@@ -87,14 +87,14 @@ private fun HomeAnimeOverview(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 12.dp, top = 48.dp, end = 24.dp, bottom = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(22.dp)
+        contentPadding = PaddingValues(start = 4.dp, top = 32.dp, end = 18.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         item {
             Column {
                 Text(
                     text = "Home",
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold
                 )
@@ -103,7 +103,7 @@ private fun HomeAnimeOverview(
 
                 Text(
                     text = "Ringkasan anime dari rekomendasi Jikan.",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -124,7 +124,7 @@ private fun HomeAnimeOverview(
         ) { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 rowItems.forEach { anime ->
                     AnimeOverviewCard(

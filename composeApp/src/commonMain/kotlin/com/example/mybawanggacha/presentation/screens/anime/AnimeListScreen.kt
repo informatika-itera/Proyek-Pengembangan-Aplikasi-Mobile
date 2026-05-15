@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -22,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mybawanggacha.data.remote.dto.AnimeEntry
@@ -66,23 +69,23 @@ fun AnimeListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 12.dp, top = 48.dp, end = 24.dp)
+                .padding(start = 4.dp, top = 32.dp, end = 18.dp)
         ) {
             Text(
                 text = "Anime List",
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             AnimeListTabRow(
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it }
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(modifier = Modifier.fillMaxSize()) {
                 when (selectedTab) {
@@ -93,15 +96,15 @@ fun AnimeListScreen(
                     )
                     AnimeListTab.WatchList -> EmptyState(
                         title = "Watch List masih kosong",
-                        message = "Storage dan aksi tambah ke watch list belum dihubungkan."
+                        message = "Storage dan fitur tambah ke watch list belum dihubungkan."
                     )
                     AnimeListTab.Watched -> EmptyState(
                         title = "Watched List masih kosong",
-                        message = "Progress episode akan masuk ke bagian ini nanti."
+                        message = "Progress episode akan masuk ke bagian ini."
                     )
                     AnimeListTab.NotPlanned -> EmptyState(
                         title = "Not Planned List masih kosong",
-                        message = "Status not planned akan dihubungkan setelah model lokal dibuat."
+                        message = "Status not planned akan implementasikan setelah model lokal dibuat."
                     )
                 }
             }
@@ -114,15 +117,25 @@ private fun AnimeListTabRow(
     selectedTab: AnimeListTab,
     onTabSelected: (AnimeListTab) -> Unit
 ) {
-    androidx.compose.foundation.layout.Row(
+    LazyRow(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(end = 20.dp)
     ) {
-        AnimeListTab.entries.forEach { tab ->
+        items(
+            items = AnimeListTab.entries,
+            key = { it.name }
+        ) { tab ->
             FilterChip(
                 selected = tab == selectedTab,
                 onClick = { onTabSelected(tab) },
-                label = { Text(tab.label) }
+                label = {
+                    Text(
+                        text = tab.label,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             )
         }
     }
@@ -155,16 +168,16 @@ private fun AnimeGrid(
     if (anime.isEmpty()) {
         EmptyState(
             title = "Belum ada rekomendasi",
-            message = "Jikan belum mengembalikan data anime."
+            message = "Jikan belum memberikan data anime."
         )
         return
     }
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 148.dp),
+        columns = GridCells.Adaptive(minSize = 132.dp),
         contentPadding = PaddingValues(bottom = 32.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(22.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         items(

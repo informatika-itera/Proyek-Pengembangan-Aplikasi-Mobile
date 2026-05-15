@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
@@ -68,7 +68,7 @@ fun MBGSideRailScaffold(
     onRailItemClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     railItems: List<MBGSideRailItem> = animeMainRailItems(),
-    railWidth: Dp = 96.dp,
+    railWidth: Dp = 64.dp,
     topAction: @Composable () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -106,7 +106,7 @@ fun MBGVerticalRail(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .padding(vertical = 24.dp),
+            .padding(vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -125,12 +125,12 @@ fun MBGVerticalRail(
                 )
 
                 if (index != items.lastIndex) {
-                    Spacer(modifier = Modifier.height(52.dp))
+                    Spacer(modifier = Modifier.height(22.dp))
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(36.dp))
     }
 }
 
@@ -145,34 +145,41 @@ fun MBGVerticalRailItem(
     val inactiveColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.58f)
     val labelColor = if (selected) activeColor else inactiveColor
 
-    Column(
+    Box(
         modifier = modifier
-            .width(72.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .width(42.dp)
+            .height(136.dp)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        item.icon?.let { imageVector ->
-            Icon(
-                imageVector = imageVector,
-                contentDescription = item.label,
-                tint = labelColor,
-                modifier = Modifier.size(22.dp)
+        Row(
+            modifier = Modifier
+                .rotate(-90f)
+                .requiredWidth(128.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            item.icon?.let { imageVector ->
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = item.label,
+                    tint = labelColor,
+                    modifier = Modifier.size(18.dp)
+                )
+
+                Spacer(modifier = Modifier.width(6.dp))
+            }
+
+            Text(
+                text = item.label,
+                style = MaterialTheme.typography.labelLarge,
+                color = labelColor,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                maxLines = 1,
+                softWrap = false,
+                textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
         }
-
-        Text(
-            text = item.label,
-            style = MaterialTheme.typography.titleMedium,
-            color = labelColor,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.rotate(-90f)
-        )
     }
 }
 
@@ -212,7 +219,7 @@ fun MBGRailIconButton(
 ) {
     Surface(
         modifier = modifier
-            .size(48.dp)
+            .size(40.dp)
             .clip(CircleShape)
             .clickable(onClick = onClick),
         shape = CircleShape,
@@ -223,7 +230,7 @@ fun MBGRailIconButton(
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
     }

@@ -12,6 +12,7 @@ import com.example.raillog.data.repository.SupplyRepositoryImpl
 import com.example.raillog.domain.repository.AIRepository
 import com.example.raillog.domain.repository.SupplyRepository
 import com.example.raillog.presentation.screens.addsupply.AddSupplyViewModel
+import com.example.raillog.presentation.screens.detail.SupplyDetailViewModel
 import com.example.raillog.presentation.screens.home.HomeViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -62,6 +63,7 @@ val useCaseModule = module {
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddSupplyViewModel)
+    viewModelOf(::SupplyDetailViewModel)
 }
 
 // ==================== SHARED MODULES ====================

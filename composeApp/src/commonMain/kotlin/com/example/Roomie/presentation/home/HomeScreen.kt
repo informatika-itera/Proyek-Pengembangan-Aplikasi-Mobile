@@ -75,7 +75,7 @@ fun HomeContent(
                 onClick = onNavigateToMap,
                 modifier = Modifier.weight(1f)
             ) {
-                Text(AppStrings.HOME_OPEN_MAP)
+                Text(AppStrings.HOME_OPEN_FACILITY)
             }
             Button(
                 onClick = { onNavigateToFacilityDetail("Gedung-A") },

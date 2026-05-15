@@ -5,7 +5,7 @@ object AppStrings {
     
     // Bottom Navigation
     const val NAV_HOME = "Beranda"
-    const val NAV_MAP = "Peta"
+    const val NAV_FACILITY = "Fasilitas"
     const val NAV_REPORT = "Lapor"
     const val NAV_PROFILE = "Profil"
     
@@ -13,7 +13,7 @@ object AppStrings {
     const val HOME_TITLE = "Dashboard"
     const val HOME_WELCOME = "Selamat Datang di Roomie"
     const val HOME_SUMMARY = "Ringkasan Laporan"
-    const val HOME_OPEN_MAP = "Buka Peta"
+    const val HOME_OPEN_FACILITY = "Cari Ruangan"
     const val HOME_DETAIL = "Detail"
     
     // Profile Screen

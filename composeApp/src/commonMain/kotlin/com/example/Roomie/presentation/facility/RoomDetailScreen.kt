@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
@@ -23,22 +24,25 @@ fun RoomDetailScreen(
     roomId: String?,
     onBack: () -> Unit
 ) {
+    val cleanRoomId = roomId?.replace("GKU2-", "") ?: ""
+    val isAula = roomId?.contains("AULA") == true
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Ruangan") },
+                title = { Text(if (isAula) "Detail Aula" else "Detail Ruangan") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        // Icon back bisa ditambahkan di sini
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 }
             )
         },
         bottomBar = {
-            BottomAppBar {
+            Surface(shadowElevation = 8.dp) {
                 Button(
                     onClick = { /* Implementasi Pinjam */ },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                    modifier = Modifier.fillMaxWidth().padding(16.dp)
                 ) {
                     Text("Pinjam Sekarang")
                 }
@@ -53,42 +57,43 @@ fun RoomDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Image Placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.medium),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Foto Ruangan $roomId", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-
             Text(
-                text = "Ruangan $roomId",
+                text = if (isAula) "Aula GKU 2" else "Ruangan $cleanRoomId",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
+            
+            val floor = if (isAula) "4" else cleanRoomId.take(1)
+            Text(
+                text = "Gedung Kuliah Umum 2 - Lantai $floor",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            HorizontalDivider()
 
             // Info Fasilitas
-            Text(text = "Fasilitas Tersedia", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Fasilitas Tersedia", style = MaterialTheme.typography.titleSmall)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                FacilityInfoItem(Icons.Default.People, "40 Kursi")
-                FacilityInfoItem(Icons.Default.AcUnit, "AC")
+                FacilityInfoItem(
+                    icon = Icons.Default.People, 
+                    label = if (isAula) "300 Kursi" else "40 Kursi"
+                )
+                FacilityInfoItem(Icons.Default.AcUnit, "AC Sentral")
                 FacilityInfoItem(Icons.Default.Videocam, "Proyektor")
             }
 
-            Divider()
+            HorizontalDivider()
 
             // Timeline Sederhana
-            Text(text = "Jadwal Hari Ini", style = MaterialTheme.typography.titleMedium)
-            repeat(3) { index ->
+            Text(text = "Jadwal Hari Ini", style = MaterialTheme.typography.titleSmall)
+            repeat(4) { index ->
                 TimelineItem(
                     time = "${8 + index * 2}:00 - ${10 + index * 2}:00",
-                    event = if (index == 1) "Matakuliah PAM" else "Tersedia",
+                    event = if (index == 1) "Mata Kuliah PAM" else "Tersedia",
                     isAvailable = index != 1
                 )
             }
@@ -99,8 +104,14 @@ fun RoomDetailScreen(
 @Composable
 fun FacilityInfoItem(icon: ImageVector, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        Text(text = label, style = MaterialTheme.typography.labelSmall)
+        Icon(
+            imageVector = icon, 
+            contentDescription = null, 
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = label, style = MaterialTheme.typography.labelMedium)
     }
 }
 
@@ -112,8 +123,9 @@ fun TimelineItem(time: String, event: String, isAvailable: Boolean) {
     ) {
         Text(
             text = time,
-            modifier = Modifier.width(100.dp),
-            style = MaterialTheme.typography.bodyMedium
+            modifier = Modifier.width(110.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold
         )
         Box(
             modifier = Modifier
@@ -122,13 +134,13 @@ fun TimelineItem(time: String, event: String, isAvailable: Boolean) {
                     if (isAvailable) Color(0xFFE8F5E9) else Color(0xFFFFEBEE),
                     MaterialTheme.shapes.small
                 )
-                .padding(8.dp)
+                .padding(12.dp)
         ) {
             Text(
                 text = event,
                 color = if (isAvailable) Color(0xFF2E7D32) else Color(0xFFC62828),
                 style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Bold
             )
         }
     }

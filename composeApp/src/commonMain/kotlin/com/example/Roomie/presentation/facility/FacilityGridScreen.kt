@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.model.RoomStatus
+import com.example.Roomie.domain.model.RoomType
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,11 +26,10 @@ fun FacilityGridScreen(
     viewModel: FacilityViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedRoomId by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Pilih Ruangan") })
+            TopAppBar(title = { Text("GKU 2 - ITERA") })
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -37,26 +38,50 @@ fun FacilityGridScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is FacilityUiState.Success -> {
-                    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                        RoomLegend()
-                        Spacer(modifier = Modifier.height(16.dp))
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(4),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.weight(1f)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Pemilihan Lantai (TabRow)
+                        ScrollableTabRow(
+                            selectedTabIndex = state.selectedFloor - 1,
+                            edgePadding = 16.dp,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            divider = {}
                         ) {
-                            items(state.rooms) { room ->
-                                RoomItem(
-                                    room = room,
-                                    isSelected = selectedRoomId == room.id,
-                                    onClick = {
-                                        if (room.status == RoomStatus.AVAILABLE) {
-                                            selectedRoomId = room.id
-                                            onNavigateToDetail(room.id)
-                                        }
-                                    }
+                            (1..4).forEach { floor ->
+                                Tab(
+                                    selected = state.selectedFloor == floor,
+                                    onClick = { viewModel.selectFloor(floor) },
+                                    text = { Text("Lantai $floor") }
                                 )
+                            }
+                        }
+
+                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                            RoomLegend()
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(5),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = state.filteredRooms,
+                                    key = { it.id },
+                                    span = { room ->
+                                        if (room.type == RoomType.AULA) GridItemSpan(5) 
+                                        else GridItemSpan(1)
+                                    }
+                                ) { room ->
+                                    RoomItem(
+                                        room = room,
+                                        onClick = {
+                                            if (room.status == RoomStatus.AVAILABLE) {
+                                                onNavigateToDetail(room.id)
+                                            }
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -76,30 +101,32 @@ fun FacilityGridScreen(
 @Composable
 fun RoomItem(
     room: Room,
-    isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = when {
-        isSelected -> Color.Blue
-        room.status == RoomStatus.AVAILABLE -> Color(0xFF4CAF50)
-        room.status == RoomStatus.BOOKED -> Color(0xFFF44336)
-        room.status == RoomStatus.MAINTENANCE -> Color(0xFFFFEB3B)
-        else -> Color.Gray
+    val backgroundColor = when (room.status) {
+        RoomStatus.AVAILABLE -> Color(0xFF4CAF50)
+        RoomStatus.BOOKED -> Color(0xFFF44336)
+        RoomStatus.MAINTENANCE -> Color(0xFFFFEB3B)
     }
 
     val contentColor = if (room.status == RoomStatus.MAINTENANCE) Color.Black else Color.White
 
     Card(
         modifier = Modifier
-            .aspectRatio(1f)
+            .then(
+                if (room.type == RoomType.AULA) Modifier.fillMaxWidth().height(80.dp)
+                else Modifier.aspectRatio(1f)
+            )
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                text = room.name.replace("Ruang ", ""),
+                text = room.name,
                 color = contentColor,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                style = if (room.type == RoomType.AULA) MaterialTheme.typography.titleLarge 
+                        else MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -120,7 +147,7 @@ fun RoomLegend() {
 @Composable
 fun LegendItem(label: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(16.dp).background(color, MaterialTheme.shapes.extraSmall))
+        Box(modifier = Modifier.size(12.dp).background(color, MaterialTheme.shapes.extraSmall))
         Spacer(modifier = Modifier.width(4.dp))
         Text(text = label, style = MaterialTheme.typography.labelSmall)
     }

@@ -58,7 +58,7 @@ fun ProfileContent(state: ProfileUiState.Success) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "MULYA Delani",
+                        text = "Mulya Delani",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )

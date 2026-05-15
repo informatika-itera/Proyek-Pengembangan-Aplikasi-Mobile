@@ -35,29 +35,21 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = CodeGeassColors.LelouchPrimary,
-    onPrimary = CodeGeassColors.LelouchOnPrimary,
+    primary = CodeGeassColors.LelouchTertiaryContainer,
+    onPrimary = CodeGeassColors.LelouchOnTertiaryContainer,
     primaryContainer = CodeGeassColors.LelouchPrimaryContainer,
     onPrimaryContainer = CodeGeassColors.LelouchOnPrimaryContainer,
     secondary = CodeGeassColors.LelouchSecondary,
     onSecondary = CodeGeassColors.LelouchOnSecondary,
-    secondaryContainer = CodeGeassColors.LelouchSecondaryContainer,
-    onSecondaryContainer = CodeGeassColors.LelouchOnSecondaryContainer,
-    tertiary = CodeGeassColors.LelouchTertiary,
-    onTertiary = CodeGeassColors.LelouchOnTertiary,
-    tertiaryContainer = CodeGeassColors.LelouchTertiaryContainer,
-    onTertiaryContainer = CodeGeassColors.LelouchOnTertiaryContainer,
-    error = CodeGeassColors.LelouchError,
-    onError = CodeGeassColors.LelouchOnError,
-    errorContainer = CodeGeassColors.LelouchErrorContainer,
-    onErrorContainer = CodeGeassColors.LelouchOnErrorContainer,
-    background = CodeGeassColors.LelouchBackground,
+    tertiary = CodeGeassColors.LelouchPrimary,
+    onTertiary = CodeGeassColors.LelouchOnPrimary,
+    background = CodeGeassColors.LelouchDeepBlack,
     onBackground = CodeGeassColors.LelouchOnBackground,
-    surface = CodeGeassColors.LelouchSurface,
+    surface = CodeGeassColors.LelouchSurfaceDark,
     onSurface = CodeGeassColors.LelouchOnSurface,
     surfaceVariant = CodeGeassColors.LelouchSurfaceVariant,
-    onSurfaceVariant = CodeGeassColors.LelouchOnSurfaceVariant,
-    outline = CodeGeassColors.LelouchOutline
+    onSurfaceVariant = CodeGeassColors.LelouchOnBackground,
+    outline = CodeGeassColors.LelouchPrimary
 )
 
 // ==================== THEME ====================
@@ -68,7 +60,7 @@ fun MBGTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    
+
     MaterialTheme(
         colorScheme = colorScheme,
         content = content

@@ -42,88 +42,41 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.mybawanggacha.domain.model.Note
 import com.example.mybawanggacha.domain.model.NoteColor
-
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.mybawanggacha.data.remote.dto.AnimeEntry
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsBytes
-import org.jetbrains.compose.resources.decodeToImageBitmap
-import org.koin.compose.koinInject
+import coil3.compose.AsyncImage
 
 @Composable
 fun AnimeRecommendationCard(
     anime: AnimeEntry,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
-            .height(110.dp),
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Row {
-            KtorImage(
-                url = anime.images.jpg.image_url,
+        Column {
+            AsyncImage(
+                model = anime.images.jpg.large_image_url,
+                contentDescription = anime.title,
                 modifier = Modifier
-                    .width(80.dp)
-                    .fillMaxHeight(),
-                contentDescription = anime.title
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentScale = ContentScale.Crop
             )
-            
-            Column(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = anime.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
 
-@Composable
-fun KtorImage(
-    url: String,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop
-) {
-    val client = koinInject<HttpClient>()
-    var bytes by remember(url) { mutableStateOf<ByteArray?>(null) }
-    
-    LaunchedEffect(url) {
-        try {
-            bytes = client.get(url).bodyAsBytes()
-        } catch (e: Exception) {
-            println("Error loading image: ${e.message}")
-        }
-    }
-    
-    val imageBitmap = bytes?.decodeToImageBitmap()
-    
-    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
-        if (imageBitmap != null) {
-            androidx.compose.foundation.Image(
-                bitmap = imageBitmap,
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = contentScale
+            Text(
+                text = anime.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(8.dp)
             )
-        } else {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
         }
     }
 }
@@ -140,7 +93,7 @@ fun NoteCard(
         targetValue = Color(note.color.hexValue),
         label = "card_bg"
     )
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -163,7 +116,7 @@ fun NoteCard(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 Row {
                     IconButton(
                         onClick = onPinClick,
@@ -176,7 +129,7 @@ fun NoteCard(
                             modifier = Modifier.size(18.dp)
                         )
                     }
-                    
+
                     IconButton(
                         onClick = onDeleteClick,
                         modifier = Modifier.size(32.dp)
@@ -190,7 +143,7 @@ fun NoteCard(
                     }
                 }
             }
-            
+
             if (note.content.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -201,7 +154,7 @@ fun NoteCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
             CategoryBadge(category = note.category.displayName)
         }
@@ -252,17 +205,17 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         icon?.invoke()
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
@@ -289,15 +242,15 @@ fun ErrorState(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         if (onRetry != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onRetry) {
@@ -323,7 +276,7 @@ fun ColorPickerRow(
                 targetValue = if (isSelected) 1f else 0.6f,
                 label = "color_alpha"
             )
-            
+
             Box(
                 modifier = Modifier
                     .size(32.dp)

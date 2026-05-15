@@ -13,4 +13,8 @@ class JikanService(private val client: HttpClient) {
     suspend fun fetch(): JikanRecommendationsResponse {
         return client.get("${BASE_URL}recommendations/anime").body()
     }
+
+    suspend fun fetchAnimeDetail(id: Int): com.example.mybawanggacha.data.remote.dto.AnimeDetailResponse {
+        return client.get("${BASE_URL}anime/$id").body()
+    }
 }

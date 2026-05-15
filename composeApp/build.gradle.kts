@@ -82,6 +82,10 @@ kotlin {
             // Navigation
             implementation(libs.navigation.compose)
 
+            // Coil
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
             implementation(compose.materialIconsExtended)
         }
 

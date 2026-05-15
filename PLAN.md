@@ -43,13 +43,13 @@
 
 - [x] HomeScreen
 - [ ] MyListScreen (tab: Plan to Watch, Watching, Watched)
-- [ ] AddEditScreen (form CRUD)
+- [? idk what is this mean] AddEditScreen (form CRUD)
 - [x] Navigation setup (AppNavHost + Routes)
-- [ ] Domain model (AnimeEntry, WatchStatus)
+- [? idk what is this mean] Domain model (AnimeEntry, WatchStatus)
 - [x] SQLDelight database setup
-- [ ] AnimeListRepository (interface + impl)
+- [? idk what is this mean] AnimeListRepository (interface + impl)
 - [ ] CRUD operations (Create, Read, Update, Delete)
-- [ ] UI States (Loading, Success, Error, Empty)
+- [x] UI States (Loading, Success, Error, Empty)
 - [x] Koin modules (data + viewmodel)
 
 ---

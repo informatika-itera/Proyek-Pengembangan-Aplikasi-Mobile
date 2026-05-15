@@ -21,6 +21,7 @@ import com.example.mybawanggacha.domain.usecase.SearchNotesUseCase
 import com.example.mybawanggacha.domain.usecase.SummarizeNoteUseCase
 import com.example.mybawanggacha.presentation.screens.addnote.AddNoteViewModel
 import com.example.mybawanggacha.presentation.screens.ai.AIAssistantViewModel
+import com.example.mybawanggacha.presentation.screens.anime.AnimeDetailViewModel
 import com.example.mybawanggacha.presentation.screens.detail.NoteDetailViewModel
 import com.example.mybawanggacha.presentation.screens.home.HomeViewModel
 import org.koin.core.context.startKoin
@@ -81,6 +82,7 @@ val viewModelModule = module {
     viewModelOf(::AddNoteViewModel)
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::AnimeDetailViewModel)
 }
 
 // ==================== SHARED MODULES ====================

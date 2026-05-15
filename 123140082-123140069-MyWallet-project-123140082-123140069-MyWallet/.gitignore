@@ -1,0 +1,49 @@
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Kotlin
+.kotlin/
+
+# Local configuration (secrets, machine-specific paths)
+local.properties
+
+# Android
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# iOS / Xcode
+xcuserdata/
+*.xcuserstate
+Pods/
+*.hmap
+*.xcframework
+DerivedData/
+
+# Misc
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+.tmp/
+caches/
+daemon/
+kotlin-profile/
+native/
+wrapper/

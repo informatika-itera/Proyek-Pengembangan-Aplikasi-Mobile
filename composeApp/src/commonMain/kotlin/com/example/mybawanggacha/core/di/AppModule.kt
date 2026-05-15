@@ -9,8 +9,10 @@ import com.example.mybawanggacha.data.local.datastore.create
 import com.example.mybawanggacha.data.remote.api.GeminiService
 import com.example.mybawanggacha.data.remote.api.JikanService
 import com.example.mybawanggacha.data.repository.AIRepositoryImpl
+import com.example.mybawanggacha.data.repository.AnimeRepositoryImpl
 import com.example.mybawanggacha.data.repository.NoteRepositoryImpl
 import com.example.mybawanggacha.domain.repository.AIRepository
+import com.example.mybawanggacha.domain.repository.AnimeRepository
 import com.example.mybawanggacha.domain.repository.NoteRepository
 import com.example.mybawanggacha.domain.usecase.DeleteNoteUseCase
 import com.example.mybawanggacha.domain.usecase.GenerateIdeasUseCase
@@ -62,6 +64,7 @@ val preferencesModule = module {
 val repositoryModule = module {
     singleOf(::NoteRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    singleOf(::AnimeRepositoryImpl) bind AnimeRepository::class
 }
 
 // ==================== USE CASE MODULE ====================

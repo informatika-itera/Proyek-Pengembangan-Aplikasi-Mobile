@@ -45,4 +45,12 @@ object AppStrings {
     
     // Facility Detail
     const val FACILITY_DETAIL_TITLE = "Detail Fasilitas"
+    
+    // Admin
+    const val ADMIN_DASHBOARD = "Admin Dashboard"
+    const val ADMIN_MANAGE_REPORTS = "Kelola Laporan"
+    const val ADMIN_MANAGE_ROOMS = "Kontrol Ruangan"
+    const val ADMIN_UPDATE_STATUS = "Update Status"
+    const val ADMIN_STATS_REPORTS = "Total Laporan Masuk"
+    const val ADMIN_STATS_ACTIVE_ROOMS = "Ruangan Aktif"
 }

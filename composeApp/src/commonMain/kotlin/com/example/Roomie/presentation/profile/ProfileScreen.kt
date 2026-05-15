@@ -18,13 +18,21 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    onNavigateToAdmin: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(AppStrings.PROFILE_TITLE) })
+            TopAppBar(
+                title = { Text(AppStrings.PROFILE_TITLE) },
+                actions = {
+                    TextButton(onClick = onNavigateToAdmin) {
+                        Text("Admin Mode", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            )
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {

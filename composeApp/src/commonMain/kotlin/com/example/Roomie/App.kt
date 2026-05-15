@@ -24,6 +24,7 @@ import com.example.Roomie.presentation.facility.FacilityGridScreen
 import com.example.Roomie.presentation.facility.RoomDetailScreen
 import com.example.Roomie.presentation.report.ReportScreen
 import com.example.Roomie.presentation.profile.ProfileScreen
+import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
 import com.example.Roomie.presentation.util.AppStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -34,6 +35,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
+    data object AdminDashboard : Screen("admin_dashboard", AppStrings.ADMIN_DASHBOARD)
     data object RoomDetail : Screen("room_detail/{roomId}", "Detail Ruangan") {
         fun createRoute(roomId: String) = "room_detail/$roomId"
     }
@@ -130,7 +132,15 @@ fun App() {
                 }
                 
                 composable(Screen.Profile.route) {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) }
+                    )
+                }
+
+                composable(Screen.AdminDashboard.route) {
+                    AdminDashboardScreen(
+                        onBack = { navController.popBackStack() }
+                    )
                 }
             }
         }

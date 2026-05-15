@@ -14,7 +14,9 @@ data class LoginState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val loginSuccess: Boolean = false
-)
+) {
+    val isButtonEnabled: Boolean get() = idNumber.isNotBlank() && !isLoading
+}
 
 class LoginViewModel(
     private val authRepository: AuthRepository
@@ -28,18 +30,19 @@ class LoginViewModel(
     }
 
     fun login() {
-        if (_state.value.idNumber.isBlank()) {
+        val currentId = _state.value.idNumber
+        if (currentId.isBlank()) {
             _state.update { it.copy(error = "NIM/NIP tidak boleh kosong") }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val result = authRepository.login(_state.value.idNumber)
+            _state.update { it.copy(isLoading = true, error = null) }
+            val result = authRepository.login(currentId)
             result.onSuccess {
                 _state.update { it.copy(isLoading = false, loginSuccess = true) }
             }.onFailure { e ->
-                _state.update { it.copy(isLoading = false, error = e.message) }
+                _state.update { it.copy(isLoading = false, error = e.message ?: "Login gagal") }
             }
         }
     }

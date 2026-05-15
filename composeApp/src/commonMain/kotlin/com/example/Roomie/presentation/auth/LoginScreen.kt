@@ -54,7 +54,8 @@ fun LoginScreen(
                 label = { Text("NIM / NIP") },
                 placeholder = { Text("Masukkan NIM atau NIP Admin") },
                 modifier = Modifier.fillMaxWidth(),
-                isError = state.error != null
+                isError = state.error != null,
+                singleLine = true
             )
 
             if (state.error != null) {
@@ -68,7 +69,7 @@ fun LoginScreen(
             Button(
                 onClick = viewModel::login,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = !state.isLoading
+                enabled = state.isButtonEnabled
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
@@ -81,9 +82,10 @@ fun LoginScreen(
             }
             
             Text(
-                text = "Gunakan NIM untuk Mahasiswa atau NIP untuk Admin",
+                text = "Gunakan NIM (9 digit) untuk Mahasiswa\nAtau NIP (3 digit) untuk Admin",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
     }

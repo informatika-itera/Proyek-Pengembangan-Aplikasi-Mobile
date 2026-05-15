@@ -4,15 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.repository.FacilityRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SearchRoomViewModel(
     private val facilityRepository: FacilityRepository
 ) : ViewModel() {
@@ -23,7 +26,7 @@ class SearchRoomViewModel(
     val searchResults: StateFlow<List<Room>> = _searchQuery
         .debounce(300)
         .flatMapLatest { query ->
-            if (query.isBlank()) kotlinx.coroutines.flow.flowOf(emptyList())
+            if (query.isBlank()) flowOf(emptyList())
             else facilityRepository.searchRooms(query)
         }
         .stateIn(

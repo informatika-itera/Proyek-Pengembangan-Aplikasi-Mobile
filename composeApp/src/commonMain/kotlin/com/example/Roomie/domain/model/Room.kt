@@ -19,5 +19,7 @@ data class Room(
     val type: RoomType = RoomType.REGULAR,
     val capacity: Int = 40,
     val hasAc: Boolean = true,
-    val hasProjector: Boolean = true
+    val hasProjector: Boolean = true,
+    val borrowerName: String? = null,
+    val maintenanceDescription: String? = null
 )

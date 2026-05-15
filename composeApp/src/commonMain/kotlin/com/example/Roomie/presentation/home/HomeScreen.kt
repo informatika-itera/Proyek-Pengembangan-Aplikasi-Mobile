@@ -26,7 +26,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToMap: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -51,7 +51,7 @@ fun HomeScreen(
                 is HomeUiState.Success -> {
                     HomeContent(
                         state = state,
-                        onNavigateToMap = onNavigateToMap,
+                        onNavigateToSearch = onNavigateToSearch,
                         onNavigateToReport = { /* Navigasi ke Lapor */ }
                     )
                 }
@@ -70,7 +70,7 @@ fun HomeScreen(
 @Composable
 fun HomeContent(
     state: HomeUiState.Success,
-    onNavigateToMap: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     onNavigateToReport: () -> Unit
 ) {
     LazyColumn(
@@ -168,7 +168,7 @@ fun HomeContent(
                         label = AppStrings.HOME_SEARCH_ROOM,
                         color = Color(0xFF2196F3),
                         modifier = Modifier.weight(1f),
-                        onClick = onNavigateToMap
+                        onClick = onNavigateToSearch
                     )
                     QuickActionItem(
                         icon = Icons.AutoMirrored.Filled.EventNote,

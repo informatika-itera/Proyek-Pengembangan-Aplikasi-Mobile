@@ -15,6 +15,8 @@ CREATE TABLE RoomEntity (
     capacity INTEGER NOT NULL,
     hasAc INTEGER NOT NULL DEFAULT 1,
     hasProjector INTEGER NOT NULL DEFAULT 1,
+    borrowerName TEXT,
+    maintenanceDescription TEXT,
     FOREIGN KEY(buildingId) REFERENCES BuildingEntity(id)
 );
 
@@ -33,12 +35,15 @@ SELECT * FROM RoomEntity WHERE buildingId = ? AND floor = ?;
 getRoomsByBuilding:
 SELECT * FROM RoomEntity WHERE buildingId = ?;
 
+searchRooms:
+SELECT * FROM RoomEntity WHERE name LIKE '%' || ? || '%';
+
 getRoomById:
 SELECT * FROM RoomEntity WHERE id = ?;
 
 insertRoom:
-INSERT OR REPLACE INTO RoomEntity(id, buildingId, name, floor, status, type, capacity, hasAc, hasProjector)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO RoomEntity(id, buildingId, name, floor, status, type, capacity, hasAc, hasProjector, borrowerName, maintenanceDescription)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateRoomStatus:
-UPDATE RoomEntity SET status = ? WHERE id = ?;
+UPDATE RoomEntity SET status = ?, borrowerName = ?, maintenanceDescription = ? WHERE id = ?;

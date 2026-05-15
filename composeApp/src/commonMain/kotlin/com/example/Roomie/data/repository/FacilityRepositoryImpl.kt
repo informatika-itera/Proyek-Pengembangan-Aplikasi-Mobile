@@ -54,6 +54,15 @@ class FacilityRepositoryImpl(
             }
     }
 
+    override fun searchRooms(query: String): Flow<List<Room>> {
+        return queries.searchRooms(query)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { entities ->
+                entities.map { it.toDomain() }
+            }
+    }
+
     override fun getRoomById(roomId: String): Flow<Room?> {
         return queries.getRoomById(roomId)
             .asFlow()
@@ -72,7 +81,9 @@ class FacilityRepositoryImpl(
             type = RoomType.valueOf(type),
             capacity = capacity.toInt(),
             hasAc = hasAc == 1L,
-            hasProjector = hasProjector == 1L
+            hasProjector = hasProjector == 1L,
+            borrowerName = borrowerName,
+            maintenanceDescription = maintenanceDescription
         )
     }
 
@@ -95,6 +106,7 @@ class FacilityRepositoryImpl(
                             roomNum % 3 == 0 -> RoomStatus.BOOKED
                             else -> RoomStatus.AVAILABLE
                         }
+                        
                         queries.insertRoom(
                             id = "GKU2-$roomNum",
                             buildingId = "GKU2",
@@ -104,7 +116,9 @@ class FacilityRepositoryImpl(
                             type = RoomType.REGULAR.name,
                             capacity = 40L,
                             hasAc = 1L,
-                            hasProjector = 1L
+                            hasProjector = 1L,
+                            borrowerName = if (status == RoomStatus.BOOKED) "Mata Kuliah PAM - Dosen X" else null,
+                            maintenanceDescription = if (status == RoomStatus.MAINTENANCE) "Perbaikan AC Sentral" else null
                         )
                     }
                 }
@@ -119,7 +133,9 @@ class FacilityRepositoryImpl(
                         type = RoomType.REGULAR.name,
                         capacity = 40L,
                         hasAc = 1L,
-                        hasProjector = 1L
+                        hasProjector = 1L,
+                        borrowerName = null,
+                        maintenanceDescription = null
                     )
                 }
                 queries.insertRoom(
@@ -131,7 +147,9 @@ class FacilityRepositoryImpl(
                     type = RoomType.AULA.name,
                     capacity = 300L,
                     hasAc = 1L,
-                    hasProjector = 1L
+                    hasProjector = 1L,
+                    borrowerName = null,
+                    maintenanceDescription = null
                 )
             }
         }

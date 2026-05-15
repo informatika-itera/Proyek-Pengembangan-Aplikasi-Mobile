@@ -27,6 +27,7 @@ import com.example.Roomie.presentation.home.HomeScreen
 import com.example.Roomie.presentation.facility.BuildingListScreen
 import com.example.Roomie.presentation.facility.FacilityGridScreen
 import com.example.Roomie.presentation.facility.RoomDetailScreen
+import com.example.Roomie.presentation.facility.SearchRoomScreen
 import com.example.Roomie.presentation.report.ReportScreen
 import com.example.Roomie.presentation.profile.ProfileScreen
 import com.example.Roomie.presentation.admin.AdminDashboardScreen
@@ -40,6 +41,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object Home : Screen("home", AppStrings.NAV_HOME, Icons.Default.Home)
     data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
     data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
+    data object SearchRoom : Screen("search_room", "Cari Ruangan")
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
     data object AdminDashboard : Screen("admin_dashboard", "Admin", Icons.Default.Dashboard)
@@ -115,14 +117,21 @@ fun App(
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Login.route) {
-                    LoginScreen(onLoginSuccess = {
-                        // Navigasi akan otomatis terpicu oleh update currentUser state
-                    })
+                    LoginScreen(onLoginSuccess = {})
                 }
 
                 composable(Screen.Home.route) {
                     HomeScreen(
-                        onNavigateToMap = { navController.navigate(Screen.Facility.route) }
+                        onNavigateToSearch = { navController.navigate(Screen.SearchRoom.route) }
+                    )
+                }
+                
+                composable(Screen.SearchRoom.route) {
+                    SearchRoomScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateToDetail = { roomId ->
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId))
+                        }
                     )
                 }
                 
@@ -180,9 +189,12 @@ fun App(
                     popUpTo(0)
                 }
             } else {
-                val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
-                navController.navigate(dest) {
-                    popUpTo(0)
+                val currentRoute = navController.currentDestination?.route
+                if (currentRoute == Screen.Login.route || currentRoute == null) {
+                    val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
+                    navController.navigate(dest) {
+                        popUpTo(0)
+                    }
                 }
             }
         }

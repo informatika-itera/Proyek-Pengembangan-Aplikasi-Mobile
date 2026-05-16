@@ -19,9 +19,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -62,17 +64,17 @@ fun animeMainRailItems(): List<MBGSideRailItem> = listOf(
     MBGSideRailItem(
         key = MBGMainRailKey.MyLibrary,
         label = "My Library",
-        icon = Icons.Default.Menu
+        icon = Icons.Default.CollectionsBookmark
     ),
     MBGSideRailItem(
         key = MBGMainRailKey.AnimeList,
         label = "Anime List",
-        icon = Icons.Default.Menu
+        icon = Icons.Default.SmartDisplay
     ),
     MBGSideRailItem(
         key = MBGMainRailKey.MangaList,
         label = "Manga List",
-        icon = Icons.Default.Menu
+        icon = Icons.Default.MenuBook
     )
 )
 

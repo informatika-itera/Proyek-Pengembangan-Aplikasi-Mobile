@@ -23,7 +23,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Theaters
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -46,21 +54,23 @@ import com.example.mybawanggacha.presentation.components.MBGSideRailItem
 
 internal enum class AnimeDetailSection(
     val key: String,
-    val label: String
+    val label: String,
+    val icon: ImageVector
 ) {
-    Overview("overview", "Overview"),
-    Synopsis("synopsis", "Sinopsis"),
-    Episodes("episodes", "Episode"),
-    Info("info", "Info"),
-    Media("media", "Media"),
-    Relations("relations", "Relations"),
-    ThemeSongs("theme_songs", "Theme Songs")
+    Overview("overview", "Overview", Icons.Default.Theaters),
+    Synopsis("synopsis", "Sinopsis", Icons.Default.Article),
+    Episodes("episodes", "Episode", Icons.Default.PlaylistPlay),
+    Info("info", "Info", Icons.Default.Info),
+    Media("media", "Media", Icons.Default.Movie),
+    Relations("relations", "Relations", Icons.Default.Link),
+    ThemeSongs("theme_songs", "Theme Songs", Icons.Default.MusicNote)
 }
 
 internal fun animeDetailRailItems(): List<MBGSideRailItem> = AnimeDetailSection.entries.map { section ->
     MBGSideRailItem(
         key = section.key,
-        label = section.label
+        label = section.label,
+        icon = section.icon
     )
 }
 

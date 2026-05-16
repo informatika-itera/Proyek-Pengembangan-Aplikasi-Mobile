@@ -10,8 +10,16 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
 import kotlinx.io.IOException
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 
 // ==================== DTOs ====================
 
@@ -25,8 +33,44 @@ data class PocketMeta(
 @Serializable
 data class LoginResponse(
     val meta: PocketMeta,
+    @Serializable(with = LoginDataSerializer::class)
     val data: LoginData? = null
 )
+
+/**
+ * Custom serializer untuk field `data` di LoginResponse.
+ *
+ * API Pocket ITERA mengembalikan format berbeda tergantung status:
+ * - Login berhasil: "data": { ... }  (JSON object)
+ * - Login gagal:    "data": []       (JSON array kosong)
+ *
+ * Serializer ini mendeteksi jika `data` adalah JsonArray dan
+ * mengkonversinya ke null agar tidak crash saat deserialization.
+ */
+object LoginDataSerializer : KSerializer<LoginData?> {
+    private val delegateSerializer = LoginData.serializer()
+    override val descriptor: SerialDescriptor = delegateSerializer.descriptor
+
+    override fun serialize(encoder: Encoder, value: LoginData?) {
+        if (value != null) {
+            encoder.encodeSerializableValue(delegateSerializer, value)
+        } else {
+            encoder.encodeNull()
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): LoginData? {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: return decoder.decodeSerializableValue(delegateSerializer)
+        
+        return when (val element = jsonDecoder.decodeJsonElement()) {
+            is JsonObject -> jsonDecoder.json.decodeFromJsonElement(delegateSerializer, element)
+            is JsonNull -> null
+            is JsonArray -> null  // API returns [] on failed login
+            else -> null
+        }
+    }
+}
 
 @Serializable
 data class LoginData(

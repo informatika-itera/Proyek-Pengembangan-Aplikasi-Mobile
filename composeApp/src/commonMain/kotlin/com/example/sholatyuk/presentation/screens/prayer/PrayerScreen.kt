@@ -29,7 +29,8 @@ import com.example.sholatyuk.presentation.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrayerScreen(
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToIslamAI: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -61,7 +62,8 @@ fun PrayerScreen(
             BottomNavigationBar(
                 currentRoute = "shalat",
                 onHomeClick = onNavigateToHome,
-                onShalatClick = {}
+                onShalatClick = {},
+                onIslamAIClick = onNavigateToIslamAI
             )
         },
         containerColor = DeepBlue

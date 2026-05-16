@@ -26,14 +26,16 @@ import com.example.sholatyuk.presentation.theme.*
 
 @Composable
 fun HomeScreen(
-    onNavigateToShalat: () -> Unit = {}
+    onNavigateToShalat: () -> Unit = {},
+    onNavigateToIslamAI: () -> Unit = {}
 ) {
     Scaffold(
         bottomBar = { 
             BottomNavigationBar(
                 currentRoute = "home",
                 onHomeClick = {},
-                onShalatClick = onNavigateToShalat
+                onShalatClick = onNavigateToShalat,
+                onIslamAIClick = onNavigateToIslamAI
             ) 
         },
         containerColor = DeepBlue
@@ -325,7 +327,7 @@ fun BottomNavigationBar(
     currentRoute: String,
     onHomeClick: () -> Unit = {},
     onShalatClick: () -> Unit = {},
-    onKajianClick: () -> Unit = {},
+    onIslamAIClick: () -> Unit = {},
     onLainnyaClick: () -> Unit = {}
 ) {
     NavigationBar(
@@ -360,10 +362,10 @@ fun BottomNavigationBar(
             )
         )
         NavigationBarItem(
-            selected = currentRoute == "kajian",
-            onClick = onKajianClick,
-            icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
-            label = { Text("Kajian") },
+            selected = currentRoute == "islamAI",
+            onClick = onIslamAIClick,
+            icon = { Icon(Icons.Default.AutoAwesome, contentDescription = null) },
+            label = { Text("IslamAI") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = AccentYellow,
                 selectedTextColor = AccentYellow,

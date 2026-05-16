@@ -4,17 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Translate
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.bridgebit.presentation.components.EmptyState
-import com.example.bridgebit.presentation.components.ErrorState
-import com.example.bridgebit.presentation.components.LoadingIndicator
-import com.example.bridgebit.presentation.components.TranslationCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,22 +24,19 @@ fun DashboardScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
+    // State UI untuk Simulasi Pencarian dan Filter
+    var searchText by remember { mutableStateOf("") }
+    var activeFilter by remember { mutableStateOf("Semua") }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("BridgeBit Dashboard") }
+                title = { Text("BridgeBit History") }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToWorkspace,
-                containerColor = MaterialTheme.colorScheme.primary, // Warna aksen merah dominan
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Translate,
-                    contentDescription = "Terjemahan Baru"
-                )
+            FloatingActionButton(onClick = onNavigateToWorkspace) {
+                Icon(Icons.Default.Add, contentDescription = "Terjemahan Baru")
             }
         }
     ) { paddingValues ->
@@ -50,49 +44,71 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-            when (val currentState = state) {
-                is DashboardUiState.Loading -> {
-                    LoadingIndicator()
-                }
+            // 🔎 FITUR NYARI (Search Bar Skeleton)
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                placeholder = { Text("Cari kata atau frasa...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true
+            )
 
-                is DashboardUiState.Empty -> {
-                    EmptyState(
-                        title = "Belum Ada Riwayat",
-                        message = "Mulai terjemahkan kata pertamamu sekarang!",
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Translate,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            )
-                        }
-                    )
-                }
+            // 🎛️ FITUR FILTER UI (Bahasa & Tema)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = MaterialTheme.colorScheme.primary)
 
-                is DashboardUiState.Error -> {
-                    ErrorState(
-                        message = currentState.message,
-                        onRetry = { /* Aksi opsional untuk memuat ulang data */ }
-                    )
-                }
+                InputChip(
+                    selected = activeFilter == "Semua",
+                    onClick = { activeFilter = "Semua" },
+                    label = { Text("Semua") }
+                )
+                InputChip(
+                    selected = activeFilter == "Bahasa",
+                    onClick = { activeFilter = "Bahasa" },
+                    label = { Text("Bahasa") }
+                )
+                InputChip(
+                    selected = activeFilter == "Tema",
+                    onClick = { activeFilter = "Tema" },
+                    label = { Text("Tema") }
+                )
+            }
 
-                is DashboardUiState.Success -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Menggunakan currentState.history yang sinkron dengan data class dari ViewModel
-                        items(currentState.history, key = { it.id }) { translation ->
-                            TranslationCard(
-                                translation = translation,
-                                onClick = { onNavigateToDetail(translation.id) },
-                                onVaultClick = { /* Bagian Vault akan ditangani oleh rekan tim di Data Layer */ },
-                                onDeleteClick = { viewModel.deleteTranslation(translation.id) }
-                            )
+            HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+
+            // Konten Riwayat List
+            Box(
+                modifier = Modifier.fillMaxSize().weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                when (state) {
+                    is DashboardUiState.Loading -> CircularProgressIndicator()
+                    is DashboardUiState.Empty -> Text("Belum ada riwayat terjemahan.")
+                    is DashboardUiState.Success -> {
+                        val historyList = (state as DashboardUiState.Success).history
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(historyList) { item ->
+                                // Menggunakan Komponen Custom yang sudah dibuat
+                                com.example.bridgebit.presentation.components.TranslationCard(
+                                    translation = item,
+                                    onClick = { onNavigateToDetail(item.id) },
+                                    onVaultClick = { /* Nanti ditambahkan UseCase Toggle Vault */ },
+                                    onDeleteClick = { viewModel.deleteTranslation(item.id) } // Delete UI terhubung!
+                                )
+                            }
                         }
                     }
+                    is DashboardUiState.Error -> Text("Terjadi kesalahan memuat data.")
                 }
             }
         }

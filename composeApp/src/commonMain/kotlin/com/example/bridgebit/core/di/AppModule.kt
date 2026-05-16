@@ -12,6 +12,7 @@ import com.example.bridgebit.domain.repository.TranslationRepository
 import com.example.bridgebit.domain.usecase.*
 import com.example.bridgebit.presentation.screens.dashboard.DashboardViewModel
 import com.example.bridgebit.presentation.screens.workspace.WorkspaceViewModel
+import com.example.bridgebit.presentation.screens.detail.TranslationDetailViewModel // Import baru
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -39,32 +40,23 @@ val preferencesModule = module {
 
 val repositoryModule = module {
     singleOf(::TranslationRepositoryImpl) bind TranslationRepository::class
-    // AIRepository dinonaktifkan sementara untuk Sprint 2
-    // singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
 val useCaseModule = module {
-    // Translation Use Cases
     singleOf(::GetAllHistoryUseCase)
     singleOf(::GetVaultPhrasesUseCase)
     singleOf(::SearchHistoryUseCase)
     singleOf(::SaveTranslationUseCase)
     singleOf(::DeleteTranslationUseCase)
     singleOf(::ToggleVaultStatusUseCase)
-
-    // AI Use Cases (Dinonaktifkan sementara)
-    // singleOf(::SummarizeTextUseCase)
-    // singleOf(::ImproveWritingUseCase)
-    // singleOf(::GenerateIdeasUseCase)
 }
 
 val viewModelModule = module {
     viewModelOf(::DashboardViewModel)
     viewModelOf(::WorkspaceViewModel)
 
-    // Screen lain dinonaktifkan sementara di Sprint 2
-    // viewModelOf(::TranslationDetailViewModel)
-    // viewModelOf(::AIAssistantViewModel)
+    // ViewModel Detail sudah dihidupkan
+    viewModelOf(::TranslationDetailViewModel)
 }
 
 val sharedModules = listOf(

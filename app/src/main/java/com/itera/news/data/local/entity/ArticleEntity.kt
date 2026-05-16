@@ -12,13 +12,14 @@ data class ArticleEntity(
     val description: String,
     val imageUrl: String,
     val publishedAt: String,
-    val sourceName: String
+    val sourceName: String,
+    val category: String
 ) {
     fun toDomain(): Article {
-        return Article(title, description, url, imageUrl, publishedAt, sourceName)
+        return Article(title, description, url, imageUrl, publishedAt, sourceName, category)
     }
 }
 
 fun Article.toEntity(): ArticleEntity {
-    return ArticleEntity(url, title, description, imageUrl, publishedAt, sourceName)
+    return ArticleEntity(url, title, description, imageUrl, publishedAt, sourceName, category)
 }

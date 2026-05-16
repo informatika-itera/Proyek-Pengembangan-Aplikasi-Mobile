@@ -7,10 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.bridgebit.presentation.screens.addnote.AddNoteScreen
-import com.example.bridgebit.presentation.screens.ai.AIAssistantScreen
-import com.example.bridgebit.presentation.screens.detail.NoteDetailScreen
-import com.example.bridgebit.presentation.screens.home.HomeScreen
+import com.example.bridgebit.presentation.screens.workspace.WorkspaceScreen
+import com.example.bridgebit.presentation.screens.dashboard.DashboardScreen
+// import com.example.bridgebit.presentation.screens.detail.TranslationDetailScreen
+// import com.example.bridgebit.presentation.screens.ai.AIAssistantScreen
 
 @Composable
 fun AppNavHost(
@@ -21,34 +21,39 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Route.Home,
+        startDestination = Route.Dashboard, // Diubah menjadi Dashboard
         modifier = modifier
     ) {
-        composable<Route.Home> {
-            HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToTranslate() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAI() }
+        // ==========================================
+        // 🔥 AKTIF UNTUK SPRINT 2
+        // ==========================================
+
+        composable<Route.Dashboard> {
+            DashboardScreen(
+                onNavigateToWorkspace = { navigationActions.navigateToWorkspace() },
+                // Fitur di bawah ini dimatikan sementara agar tidak error saat diklik
+                onNavigateToDetail = { /* translationId -> navigationActions.navigateToTranslationDetail(translationId) */ },
+                onNavigateToAI = { /* navigationActions.navigateToAI() */ }
             )
         }
 
-        composable<Route.AddNote> { backStackEntry ->
-            val route: Route.AddNote = backStackEntry.toRoute()
-            AddNoteScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToAI = { text ->
-                    navigationActions.navigateToAI(noteId = route.noteId, initialText = text)
-                }
+        composable<Route.Workspace> { backStackEntry ->
+            val route: Route.Workspace = backStackEntry.toRoute()
+            WorkspaceScreen(
+                // translationId = route.translationId,
+                onNavigateBack = { navigationActions.navigateBack() }
+                // onNavigateToDetail = { id -> navigationActions.navigateToTranslationDetail(id) },
+                // onNavigateToAI = { id, text -> navigationActions.navigateToAI(id, text) }
             )
         }
 
-        composable<Route.NoteDetail> { backStackEntry ->
-            val route: Route.NoteDetail = backStackEntry.toRoute()
-            NoteDetailScreen(
-                noteId = route.noteId,
+        /*
+        composable<Route.TranslationDetail> { backStackEntry ->
+            val route: Route.TranslationDetail = backStackEntry.toRoute()
+            TranslationDetailScreen(
+                translationId = route.translationId,
                 onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { navigationActions.navigateToTranslate(route.noteId) },
+                onNavigateToWorkspace = { navigationActions.navigateToWorkspace(route.translationId) },
                 onShare = { _ -> }
             )
         }
@@ -56,28 +61,48 @@ fun AppNavHost(
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
-                noteId = route.noteId,
+                translationId = route.translationId,
                 initialText = route.initialText,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onApplyResult = null
             )
         }
+        */
     }
 }
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
-        override fun navigateToHome() {
-            navController.navigate(Route.Home) { popUpTo(Route.Home) { inclusive = true } }
+        override fun navigateToDashboard() {
+            navController.navigate(Route.Dashboard) { popUpTo(Route.Dashboard) { inclusive = true } }
         }
-        override fun navigateToTranslate(noteId: Long?) { navController.navigate(Route.AddNote(noteId)) }
-        override fun navigateToDetail(noteId: Long) { navController.navigate(Route.NoteDetail(noteId)) }
-        override fun navigateToAI(noteId: Long?, initialText: String?) {
-            navController.navigate(Route.AIAssistant(noteId, initialText))
+
+        override fun navigateToWorkspace(translationId: Long?) {
+            navController.navigate(Route.Workspace(translationId))
         }
-        override fun navigateToVault() { navController.navigate(Route.Vault) }
-        override fun navigateToSettings() { navController.navigate(Route.Settings) }
-        override fun navigateToInsights() { navController.navigate(Route.Insights) }
-        override fun navigateBack() { navController.popBackStack() }
+
+        override fun navigateToTranslationDetail(translationId: Long) {
+            // Dinonaktifkan: navController.navigate(Route.TranslationDetail(translationId))
+        }
+
+        override fun navigateToAI(translationId: Long?, initialText: String?) {
+            // Dinonaktifkan: navController.navigate(Route.AIAssistant(translationId, initialText))
+        }
+
+        override fun navigateToVault() {
+            // Dinonaktifkan: navController.navigate(Route.Vault)
+        }
+
+        override fun navigateToSettings() {
+            // Dinonaktifkan: navController.navigate(Route.Settings)
+        }
+
+        override fun navigateToInsights() {
+            // Dinonaktifkan: navController.navigate(Route.Insights)
+        }
+
+        override fun navigateBack() {
+            navController.popBackStack()
+        }
     }
 }

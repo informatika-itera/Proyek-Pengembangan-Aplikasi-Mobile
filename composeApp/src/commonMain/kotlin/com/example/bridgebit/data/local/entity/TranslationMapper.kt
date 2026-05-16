@@ -1,12 +1,12 @@
 package com.example.bridgebit.data.local.entity
 
-import com.example.bridgebit.data.local.NoteEntity
+import com.example.bridgebit.data.local.TranslationEntity
 import com.example.bridgebit.domain.model.Note
 import com.example.bridgebit.domain.model.NoteCategory
 import com.example.bridgebit.domain.model.NoteColor
 import kotlinx.datetime.Instant
 
-fun NoteEntity.toDomain(): Note {
+fun TranslationEntity.toDomain(): Note {
     return Note(
         id = id,
         title = title,

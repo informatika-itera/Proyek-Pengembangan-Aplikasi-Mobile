@@ -1,8 +1,7 @@
-package com.example.bridgebit.presentation.screens.home
+package com.example.bridgebit.presentation.screens.dashboard
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Translate

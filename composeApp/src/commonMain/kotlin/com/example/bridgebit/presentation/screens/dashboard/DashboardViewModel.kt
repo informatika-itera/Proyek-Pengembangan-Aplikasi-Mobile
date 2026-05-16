@@ -1,4 +1,4 @@
-package com.example.bridgebit.presentation.screens.home
+package com.example.bridgebit.presentation.screens.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

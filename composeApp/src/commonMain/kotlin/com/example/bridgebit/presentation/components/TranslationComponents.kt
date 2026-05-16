@@ -21,12 +21,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.bridgebit.domain.model.Note
-import com.example.bridgebit.domain.model.NoteColor
+import com.example.bridgebit.domain.model.Translation
+import com.example.bridgebit.domain.model.TranslationColor
 
 @Composable
 fun NoteCard(
-    note: Note,
+    note: Translation,
     onClick: () -> Unit,
     onPinClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -206,15 +206,15 @@ fun ErrorState(
 
 @Composable
 fun ColorPickerRow(
-    selectedColor: NoteColor,
-    onColorSelected: (NoteColor) -> Unit,
+    selectedColor: TranslationColor,
+    onColorSelected: (TranslationColor) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        NoteColor.entries.forEach { color ->
+        TranslationColor.entries.forEach { color ->
             val isSelected = color == selectedColor
             val alpha by animateFloatAsState(
                 targetValue = if (isSelected) 1f else 0.6f,

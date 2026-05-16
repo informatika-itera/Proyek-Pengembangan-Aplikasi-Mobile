@@ -2,15 +2,12 @@ package com.example.bridgebit.core.di
 
 import com.example.bridgebit.core.network.HttpClientFactory
 import com.example.bridgebit.core.util.DatabaseDriverFactory
-import com.example.bridgebit.data.local.NoteDatabase
 import com.example.bridgebit.data.local.datastore.DataStoreFactory
 import com.example.bridgebit.data.local.datastore.UserPreferences
 import com.example.bridgebit.data.local.datastore.create
 import com.example.bridgebit.data.remote.api.GeminiService
 import com.example.bridgebit.data.repository.AIRepositoryImpl
-import com.example.bridgebit.data.repository.NoteRepositoryImpl
 import com.example.bridgebit.domain.repository.AIRepository
-import com.example.bridgebit.domain.repository.NoteRepository
 import com.example.bridgebit.domain.usecase.DeleteNoteUseCase
 import com.example.bridgebit.domain.usecase.GenerateIdeasUseCase
 import com.example.bridgebit.domain.usecase.GetAllNotesUseCase
@@ -18,10 +15,8 @@ import com.example.bridgebit.domain.usecase.ImproveWritingUseCase
 import com.example.bridgebit.domain.usecase.SaveNoteUseCase
 import com.example.bridgebit.domain.usecase.SearchNotesUseCase
 import com.example.bridgebit.domain.usecase.SummarizeNoteUseCase
-import com.example.bridgebit.presentation.screens.addnote.AddNoteViewModel
 import com.example.bridgebit.presentation.screens.ai.AIAssistantViewModel
-import com.example.bridgebit.presentation.screens.detail.NoteDetailViewModel
-import com.example.bridgebit.presentation.screens.home.HomeViewModel
+import com.example.bridgebit.presentation.screens.dashboard.HomeViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -42,7 +37,7 @@ val networkModule = module {
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        NoteDatabase(driverFactory.createDriver())
+        BridgeBitDatabase(driverFactory.createDriver()) // ✅ Ganti ke BridgeBitDatabase
     }
 }
 
@@ -56,7 +51,8 @@ val preferencesModule = module {
 // ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
+    // ✅ Ganti ke TranslationRepository
+    singleOf(::TranslationRepositoryImpl) bind TranslationRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
@@ -75,9 +71,9 @@ val useCaseModule = module {
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
+    viewModelOf(::HomeViewModel) // Atau DashboardViewModel jika sudah diganti
+    viewModelOf(::WorkspaceViewModel) // ✅
+    viewModelOf(::TranslationDetailViewModel) // ✅
     viewModelOf(::AIAssistantViewModel)
 }
 

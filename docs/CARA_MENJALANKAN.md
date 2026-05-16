@@ -57,7 +57,7 @@ Lalu edit `local.properties`:
 # macOS  :
 # sdk.dir=/Users/<USER>/Library/Android/sdk
 # Linux  :
-# sdk.dir=/home/<USER>/Android/Sdk
+# sdk.dir=/dashboard/<USER>/Android/Sdk
 # Windows:
 # sdk.dir=C\:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
 

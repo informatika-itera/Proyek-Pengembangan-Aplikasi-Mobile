@@ -1,4 +1,4 @@
-package com.example.bridgebit.presentation.screens.addnote
+package com.example.bridgebit.presentation.screens.workspace
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

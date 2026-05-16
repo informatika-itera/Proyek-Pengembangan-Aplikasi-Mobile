@@ -4,17 +4,17 @@ import kotlinx.serialization.Serializable
 
 sealed interface Route {
     @Serializable
-    data object Home : Route // Screen 1: Dashboard
+    data object Dashboard : Route // Screen 1: Dashboard (sebelumnya Home)
 
     @Serializable
-    data class AddNote(val noteId: Long? = null) : Route // Screen 2: Workspace
+    data class Workspace(val translationId: Long? = null) : Route // Screen 2: Workspace (sebelumnya AddNote)
 
     @Serializable
-    data class NoteDetail(val noteId: Long) : Route // Screen 3: Detail
+    data class TranslationDetail(val translationId: Long) : Route // Screen 3: Detail (sebelumnya NoteDetail)
 
     @Serializable
     data class AIAssistant(
-        val noteId: Long? = null,
+        val translationId: Long? = null,
         val initialText: String? = null
     ) : Route // Screen 4: AI Contextual Assistant
 
@@ -29,10 +29,10 @@ sealed interface Route {
 }
 
 interface NavigationActions {
-    fun navigateToHome()
-    fun navigateToTranslate(noteId: Long? = null)
-    fun navigateToDetail(noteId: Long)
-    fun navigateToAI(noteId: Long? = null, initialText: String? = null)
+    fun navigateToDashboard()
+    fun navigateToWorkspace(translationId: Long? = null)
+    fun navigateToTranslationDetail(translationId: Long)
+    fun navigateToAI(translationId: Long? = null, initialText: String? = null)
     fun navigateToVault()
     fun navigateToSettings()
     fun navigateToInsights()

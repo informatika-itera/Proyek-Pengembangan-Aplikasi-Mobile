@@ -3,59 +3,59 @@ package com.example.bridgebit.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import com.example.bridgebit.data.local.NoteDatabase
+import com.example.bridgebit.data.local.BridgeBitDatabase
 import com.example.bridgebit.data.local.entity.toDomain
 import com.example.bridgebit.data.local.entity.toDomainList
 import com.example.bridgebit.data.local.entity.toEntityValues
-import com.example.bridgebit.domain.model.Note
-import com.example.bridgebit.domain.model.NoteCategory
-import com.example.bridgebit.domain.repository.NoteRepository
+import com.example.bridgebit.domain.model.Translation
+import com.example.bridgebit.domain.model.TranslationCategory
+import com.example.bridgebit.domain.repository.TranslationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
-class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
+class NoteRepositoryImpl(private val database: BridgeBitDatabase) : TranslationRepository {
     
-    private val queries = database.noteQueries
+    private val queries = database.BridgeBitQueries
     
-    override fun getAllNotes(): Flow<List<Note>> {
+    override fun getAllNotes(): Flow<List<Translation>> {
         return queries.getAllNotes()
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
     
-    override fun getPinnedNotes(): Flow<List<Note>> {
+    override fun getPinnedNotes(): Flow<List<Translation>> {
         return queries.getPinnedNotes()
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
     
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
+    override fun getNotesByCategory(category: TranslationCategory): Flow<List<Translation>> {
         return queries.getNotesByCategory(category.name)
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
     
-    override fun searchNotes(query: String): Flow<List<Note>> {
+    override fun searchNotes(query: String): Flow<List<Translation>> {
         return queries.searchNotes(query, query)
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
     
-    override fun getNoteById(id: Long): Flow<Note?> {
+    override fun getNoteById(id: Long): Flow<Translation?> {
         return queries.getNoteById(id)
             .asFlow()
             .mapToOneOrNull(Dispatchers.Default)
             .map { entity -> entity?.toDomain() }
     }
     
-    override suspend fun insertNote(note: Note): Long = withContext(Dispatchers.Default) {
+    override suspend fun insertNote(note: Translation): Long = withContext(Dispatchers.Default) {
         val values = note.toEntityValues()
         queries.insertNote(
             title = values.title,
@@ -69,7 +69,7 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
         queries.lastInsertId().executeAsOne()
     }
     
-    override suspend fun updateNote(note: Note) = withContext(Dispatchers.Default) {
+    override suspend fun updateNote(note: Translation) = withContext(Dispatchers.Default) {
         val values = note.toEntityValues()
         queries.updateNote(
             id = note.id,

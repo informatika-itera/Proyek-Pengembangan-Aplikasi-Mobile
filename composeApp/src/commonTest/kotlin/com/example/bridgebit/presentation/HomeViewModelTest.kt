@@ -8,8 +8,8 @@ import com.example.bridgebit.domain.model.NoteColor
 import com.example.bridgebit.domain.usecase.DeleteNoteUseCase
 import com.example.bridgebit.domain.usecase.GetAllNotesUseCase
 import com.example.bridgebit.domain.usecase.SearchNotesUseCase
-import com.example.bridgebit.presentation.screens.home.HomeUiState
-import com.example.bridgebit.presentation.screens.home.HomeViewModel
+import com.example.bridgebit.presentation.screens.dashboard.HomeUiState
+import com.example.bridgebit.presentation.screens.dashboard.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

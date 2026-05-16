@@ -1,17 +1,17 @@
 package com.example.bridgebit.domain.usecase
 
-import com.example.bridgebit.domain.model.Note
-import com.example.bridgebit.domain.model.NoteCategory
+import com.example.bridgebit.domain.model.Translation
+import com.example.bridgebit.domain.model.TranslationCategory
 import com.example.bridgebit.domain.repository.AIRepository
-import com.example.bridgebit.domain.repository.NoteRepository
+import com.example.bridgebit.domain.repository.TranslationRepository
 import com.example.bridgebit.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class GetAllNotesUseCase(
-    private val repository: NoteRepository
+    private val repository: TranslationRepository
 ) {
-    operator fun invoke(sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC): Flow<List<Note>> {
+    operator fun invoke(sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC): Flow<List<Translation>> {
         return repository.getAllNotes().map { notes ->
             val (pinned, unpinned) = notes.partition { it.isPinned }
             val sortedPinned = sortNotes(pinned, sortBy)
@@ -20,7 +20,7 @@ class GetAllNotesUseCase(
         }
     }
     
-    private fun sortNotes(notes: List<Note>, sortBy: NoteSortBy): List<Note> {
+    private fun sortNotes(notes: List<Translation>, sortBy: NoteSortBy): List<Translation> {
         return when (sortBy) {
             NoteSortBy.TITLE_ASC -> notes.sortedBy { it.title.lowercase() }
             NoteSortBy.TITLE_DESC -> notes.sortedByDescending { it.title.lowercase() }
@@ -97,35 +97,35 @@ class DeleteNoteUseCase(
     }
 }
 
-class SummarizeNoteUseCase(
-    private val aiRepository: AIRepository
-) {
-    suspend operator fun invoke(content: String): Result<String> {
-        if (content.length < 50) {
-            return Result.failure(IllegalArgumentException("Konten terlalu pendek untuk diringkas"))
-        }
-        return aiRepository.summarize(content)
-    }
-}
+//class SummarizeNoteUseCase(
+//    private val aiRepository: AIRepository
+//) {
+//    suspend operator fun invoke(content: String): Result<String> {
+//        if (content.length < 50) {
+//            return Result.failure(IllegalArgumentException("Konten terlalu pendek untuk diringkas"))
+//        }
+//        return aiRepository.summarize(content)
+//    }
+//}
 
-class ImproveWritingUseCase(
-    private val aiRepository: AIRepository
-) {
-    suspend operator fun invoke(content: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String> {
-        if (content.isBlank()) {
-            return Result.failure(IllegalArgumentException("Konten tidak boleh kosong"))
-        }
-        return aiRepository.improveWriting(content, style)
-    }
-}
+//class ImproveWritingUseCase(
+//    private val aiRepository: AIRepository
+//) {
+//    suspend operator fun invoke(content: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String> {
+//        if (content.isBlank()) {
+//            return Result.failure(IllegalArgumentException("Konten tidak boleh kosong"))
+//        }
+//        return aiRepository.improveWriting(content, style)
+//    }
+//}
 
-class GenerateIdeasUseCase(
-    private val aiRepository: AIRepository
-) {
-    suspend operator fun invoke(topic: String): Result<List<String>> {
-        if (topic.isBlank()) {
-            return Result.failure(IllegalArgumentException("Topik tidak boleh kosong"))
-        }
-        return aiRepository.generateIdeas(topic)
-    }
-}
+//class GenerateIdeasUseCase(
+//    private val aiRepository: AIRepository
+//) {
+//    suspend operator fun invoke(topic: String): Result<List<String>> {
+//        if (topic.isBlank()) {
+//            return Result.failure(IllegalArgumentException("Topik tidak boleh kosong"))
+//        }
+//        return aiRepository.generateIdeas(topic)
+//    }
+//}

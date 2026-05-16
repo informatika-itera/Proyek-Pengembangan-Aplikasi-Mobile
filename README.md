@@ -1,5 +1,5 @@
 # BridgeBit
-
+[![CI](https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=project%2F123140002-123140032-BridgeBit)](https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml)
 
 ## Team
 - Ar'rauf Setiawan Muhammad Jabar (Domain + Data layer, Database, API) - @arrauf02
@@ -17,6 +17,47 @@ BridgeBit adalah aplikasi penerjemah cerdas berbasis AI yang dirancang untuk mem
 - [ ] **Learning Insights**: Statistik harian tentang perkembangan kosakata yang dipelajari.
 - [ ] **AI-Generated Quiz**: Kuis otomatis yang dibuat berdasarkan kata-kata yang paling sering dicari atau disimpan oleh pengguna.
 
+## 📁 Struktur Project
+
+```
+composeApp/src/
+├── commonMain/kotlin/com/example/bridgebit/
+│   ├── core/                      # Core utilities
+│   │   ├── di/                    # Koin modules (AppModule.kt)
+│   │   ├── network/               # API Config & HttpClient (Ktor)
+│   │   └── util/                  # Extensions & Platform Drivers
+│   │
+│   ├── data/                      # Data layer
+│   │   ├── local/
+│   │   │   ├── datastore/         # DataStore preferences (UserPreferences)
+│   │   │   └── entity/            # Database mappers (TranslationMapper)
+│   │   ├── remote/
+│   │   │   ├── api/               # API services (GeminiService)
+│   │   │   └── dto/               # Data Transfer Objects (GeminiDto)
+│   │   └── repository/            # Repository implementations (Translation, AI)
+│   │
+│   ├── domain/                    # Domain layer (pure Kotlin)
+│   │   ├── model/                 # Domain models (Translation)
+│   │   ├── repository/            # Repository interfaces
+│   │   └── usecase/               # Business logic (GetAllHistory, SaveTranslation, dll)
+│   │
+│   ├── presentation/              # Presentation layer
+│   │   ├── navigation/            # Navigation setup (AppNavHost, Routes)
+│   │   ├── screens/               # Screen composables + ViewModels
+│   │   │   ├── dashboard/         # Screen 1: Riwayat & Beranda
+│   │   │   ├── workspace/         # Screen 2: Input & Edit Terjemahan
+│   │   │   ├── detail/            # Screen 3: Detail Terjemahan
+│   │   │   └── ai/                # Screen 4: AI Contextual Assistant
+│   │   ├── components/            # Reusable UI components (TranslationCard)
+│   │   └── theme/                 # Material 3 theme configurations
+│   │
+│   └── App.kt                     # Main Compose entry point & Bottom Navigation
+│
+├── commonMain/sqldelight/         # SQLDelight schema (BridgeBit.sq)
+│
+├── androidMain/kotlin/            # Android-specific implementations (expect/actual)
+└── iosMain/kotlin/                # iOS-specific implementations (expect/actual)
+```
 ## Tech Stack
 KMP, Compose Multiplatform, Ktor, SQLDelight, Koin, Gemini API
 

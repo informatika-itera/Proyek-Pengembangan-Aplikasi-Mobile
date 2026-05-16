@@ -106,30 +106,31 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    // 1. UBAH namespace menjadi edumate
+    namespace = "com.example.edumate"
     compileSdk = 35
-    
+
     defaultConfig {
-        applicationId = "com.example.noteai"
+        // 2. UBAH applicationId menjadi edumate
+        applicationId = "com.example.edumate"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
-        
-        // Inject API key from local.properties
+
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
     }
-    
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -139,11 +140,11 @@ android {
             )
         }
     }
-    
+
     buildFeatures {
         buildConfig = true
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -152,8 +153,10 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        // 3. UBAH NoteDatabase menjadi TaskDatabase
+        create("TaskDatabase") {
+            // 4. UBAH package name databasenya
+            packageName.set("com.example.edumate.data.local")
         }
     }
 }

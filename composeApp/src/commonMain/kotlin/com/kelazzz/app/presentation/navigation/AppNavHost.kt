@@ -9,16 +9,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kelazzz.app.data.local.datastore.UserPreferences
-import com.kelazzz.app.presentation.screens.home.HomeScreen
 import com.kelazzz.app.presentation.screens.login.LoginScreen
+import kotlinx.serialization.Serializable
 import org.koin.compose.koinInject
 
 /**
- * Main navigation host untuk KelazZz
+ * Route khusus untuk MainScreen (wrapper dengan bottom nav).
+ * Dipisah dari Route biasa karena ini bukan tab, melainkan container.
+ */
+@Serializable
+data object MainRoute
+
+/**
+ * Root navigation host untuk KelazZz
  *
- * Start destination ditentukan berdasarkan login state:
- * - Sudah login → Home
- * - Belum login → Login
+ * Hanya 2 destination di level root:
+ * - Login → form login
+ * - MainRoute → MainScreen (berisi bottom nav + 5 tab)
  */
 @Composable
 fun AppNavHost(
@@ -28,7 +35,7 @@ fun AppNavHost(
     val preferences: UserPreferences = koinInject()
     val isLoggedIn by preferences.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
 
-    val startDestination: Route = if (isLoggedIn) Route.Home else Route.Login
+    val startDestination: Any = if (isLoggedIn) MainRoute else Route.Login
 
     NavHost(
         navController = navController,
@@ -38,30 +45,21 @@ fun AppNavHost(
         composable<Route.Login> {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Route.Home) {
+                    navController.navigate(MainRoute) {
                         popUpTo(Route.Login) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable<Route.Home> {
-            HomeScreen(
+        composable<MainRoute> {
+            MainScreen(
                 onLogout = {
                     navController.navigate(Route.Login) {
-                        popUpTo(Route.Home) { inclusive = true }
+                        popUpTo(MainRoute) { inclusive = true }
                     }
                 }
             )
         }
-
-        // TODO: Sprint 2 — more screens
-        // composable<Route.DaftarPresensi> { DaftarPresensiScreen(...) }
-        // composable<Route.Presensi> { PresensiScreen(...) }
-
-        // TODO: Sprint 3+
-        // composable<Route.Kalender> { KalenderScreen(...) }
-        // composable<Route.AIAsisten> { AIAsistenScreen(...) }
-        // composable<Route.Notifikasi> { NotifikasiScreen(...) }
     }
 }

@@ -107,7 +107,7 @@ fun MyListScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Daftar pribadi anime yang kamu simpan secara lokal.",
+                text = "Daftar yang kamu simpan",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.SemiBold

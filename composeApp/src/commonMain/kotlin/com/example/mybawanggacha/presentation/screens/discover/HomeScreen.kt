@@ -105,7 +105,7 @@ private fun HomeAnimeOverview(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Ringkasan anime dari rekomendasi Jikan.",
+                    text = "Ringkasan anime dari rekomendasi Jikan",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold

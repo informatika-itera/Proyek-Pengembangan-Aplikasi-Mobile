@@ -46,8 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import coil3.compose.SubcomposeAsyncImage
+
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -133,7 +132,7 @@ fun ProfileScreen(
             ) {
                 // ========== AVATAR — Foto dari API atau fallback ==========
                 ProfileAvatar(
-                    photoUrl = uiState.photoUrl,
+                    nama = uiState.nama,
                     modifier = Modifier.size(120.dp)
                 )
 
@@ -144,7 +143,7 @@ fun ProfileScreen(
                     text = uiState.nama,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     letterSpacing = 0.3.sp,
                     lineHeight = 34.sp
@@ -157,7 +156,7 @@ fun ProfileScreen(
                     text = uiState.nim,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     letterSpacing = 1.5.sp
                 )
             }
@@ -316,63 +315,41 @@ fun ProfileScreen(
 // ==================== HELPER COMPOSABLES ====================
 
 /**
- * Avatar profil yang memuat foto dari URL API.
- * Menampilkan fallback ikon Person jika URL kosong atau gagal dimuat.
+ * Avatar profil dengan inisial nama.
+ * Menggunakan inisial karena siakad.itera.ac.id diproteksi Cloudflare
+ * sehingga foto tidak bisa diakses langsung via URL.
  */
 @Composable
 private fun ProfileAvatar(
-    photoUrl: String,
+    nama: String,
     modifier: Modifier = Modifier
 ) {
+    val initials = nama.split(" ")
+        .take(2)
+        .mapNotNull { it.firstOrNull()?.uppercase() }
+        .joinToString("")
+        .ifEmpty { "?" }
+
     Box(
         modifier = modifier
             .clip(CircleShape)
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.secondaryContainer
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.tertiary
                     )
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (photoUrl.isNotBlank()) {
-            SubcomposeAsyncImage(
-                model = photoUrl,
-                contentDescription = "Foto Profil",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                loading = {
-                    // Fallback saat loading
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(56.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                error = {
-                    // Fallback jika gagal load
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(56.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            )
-        } else {
-            // Tidak ada URL foto
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                modifier = Modifier.size(56.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
+        Text(
+            text = initials,
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimary,
+            letterSpacing = 2.sp
+        )
     }
 }
 

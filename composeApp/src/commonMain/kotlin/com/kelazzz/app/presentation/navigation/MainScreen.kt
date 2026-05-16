@@ -155,7 +155,7 @@ fun MainScreen(
                                 painter = painterResource(Res.drawable.logo),
                                 contentDescription = "Logo KelazZz",
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(52.dp)
                                     .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )

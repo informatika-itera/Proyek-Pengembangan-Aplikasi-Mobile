@@ -68,7 +68,7 @@ class AuthRepositoryImpl(
                     nim = data.nimnrk,
                     name = data.nama,
                     email = data.email,
-                    photoUrl = data.photo
+                    photoUrl = data.photo.replace("http://", "https://")
                 )
                 preferences.saveDeviceInfo(device = DEVICE_NAME, deviceId = DEVICE_ID)
             } catch (e: Exception) {

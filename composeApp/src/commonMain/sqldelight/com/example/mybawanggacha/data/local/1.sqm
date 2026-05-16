@@ -10,3 +10,19 @@ CREATE TABLE IF NOT EXISTS Anime (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     mal_id INTEGER NOT NULL,
     name TEXT NOT NULL
+
+CREATE TABLE IF NOT EXISTS LibraryEntryEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    media_id INTEGER NOT NULL,
+    media_type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    image_url TEXT,
+    status TEXT NOT NULL,
+    progress INTEGER NOT NULL DEFAULT 0,
+    total_count INTEGER,
+    user_score INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(media_id, media_type)
+);

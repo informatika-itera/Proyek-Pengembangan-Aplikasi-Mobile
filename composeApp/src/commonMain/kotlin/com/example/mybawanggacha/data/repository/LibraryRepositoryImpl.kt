@@ -22,7 +22,7 @@ class LibraryRepositoryImpl(
     private val database: NoteDatabase
 ) : LibraryRepository {
 
-    private val queries = database.animeQueries
+    private val queries = database.libraryQueries
 
     override fun observeEntries(): Flow<List<LibraryEntry>> {
         return queries.getLibraryEntries()

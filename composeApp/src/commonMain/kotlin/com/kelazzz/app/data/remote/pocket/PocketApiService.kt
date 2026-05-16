@@ -2,10 +2,15 @@ package com.kelazzz.app.data.remote.pocket
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
-import kotlinx.serialization.SerialName
+import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
 
 // ==================== DTOs ====================
@@ -67,18 +72,59 @@ class PocketApiService(private val client: HttpClient) {
         password: String,
         device: String,
         deviceId: String
-    ): Result<LoginResponse> = runCatching {
-        client.submitForm(
-            url = "$BASE_URL/auth/login",
-            formParameters = Parameters.build {
-                append("username", username)
-                append("password", password)
-                append("device", device)
-                append("device_id", deviceId)
+    ): Result<LoginResponse> {
+        return try {
+            val response = client.submitForm(
+                url = "$BASE_URL/auth/login",
+                formParameters = Parameters.build {
+                    append("username", username)
+                    append("password", password)
+                    append("device", device)
+                    append("device_id", deviceId)
+                }
+            ) {
+                header("User-Agent", USER_AGENT)
+                header("Accept", "application/json")
             }
-        ) {
-            header("User-Agent", USER_AGENT)
-            header("Accept", "application/json")
-        }.body<LoginResponse>()
+            Result.success(response.body<LoginResponse>())
+        } catch (e: HttpRequestTimeoutException) {
+            Result.failure(
+                LoginException("Koneksi timeout. Server ITERA sedang lambat, coba lagi nanti.")
+            )
+        } catch (e: ClientRequestException) {
+            // HTTP 4xx — coba parse pesan error dari body response
+            val errorMessage = try {
+                val errorBody = e.response.body<LoginResponse>()
+                errorBody.meta.message
+            } catch (_: Exception) {
+                "Email atau password salah. Periksa kembali kredensial Anda."
+            }
+            Result.failure(LoginException(errorMessage))
+        } catch (e: ServerResponseException) {
+            // HTTP 5xx — server error
+            Result.failure(
+                LoginException("Server ITERA sedang gangguan (${e.response.status.value}). Coba lagi nanti.")
+            )
+        } catch (e: SerializationException) {
+            // Response tidak sesuai format (mungkin HTML dari Cloudflare)
+            Result.failure(
+                LoginException("Server mengembalikan format yang tidak valid. Coba lagi nanti.")
+            )
+        } catch (e: IOException) {
+            // Tidak ada koneksi internet / DNS gagal
+            Result.failure(
+                LoginException("Tidak ada koneksi internet. Periksa jaringan Anda dan coba lagi.")
+            )
+        } catch (e: Exception) {
+            // Fallback untuk error yang tidak terduga
+            Result.failure(
+                LoginException("Terjadi kesalahan: ${e.message ?: "Kesalahan tidak diketahui"}")
+            )
+        }
     }
 }
+
+/**
+ * Exception khusus untuk error login dengan pesan user-friendly
+ */
+class LoginException(message: String) : Exception(message)

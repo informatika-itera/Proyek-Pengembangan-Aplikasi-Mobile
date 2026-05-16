@@ -26,17 +26,25 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun login(username: String, password: String): Result<User> {
-        return apiService.login(
+        val apiResult = apiService.login(
             username = username,
             password = password,
             device = DEVICE_NAME,
             deviceId = DEVICE_ID
-        ).mapCatching { response ->
-            if (!response.meta.status || response.data == null) {
-                throw Exception(response.meta.message)
+        )
+
+        return apiResult.mapCatching { response ->
+            // API mengembalikan status false berarti kredensial salah atau error lain
+            if (!response.meta.status) {
+                val message = response.meta.message.ifBlank {
+                    "Login gagal. Periksa email dan password Anda."
+                }
+                throw Exception(message)
             }
 
             val data = response.data
+                ?: throw Exception("Login gagal. Data pengguna tidak ditemukan dari server.")
+
             val user = User(
                 userId = data.userId,
                 nama = data.nama,
@@ -48,10 +56,19 @@ class AuthRepositoryImpl(
                 token = data.token
             )
 
+            // Validasi token tidak kosong sebelum menyimpan
+            if (data.token.isBlank()) {
+                throw Exception("Login gagal. Token autentikasi tidak valid.")
+            }
+
             // Simpan semua ke DataStore untuk session persistence
-            preferences.saveAuthToken(data.token)
-            preferences.saveUserInfo(nim = data.nimnrk, name = data.nama)
-            preferences.saveDeviceInfo(device = DEVICE_NAME, deviceId = DEVICE_ID)
+            try {
+                preferences.saveAuthToken(data.token)
+                preferences.saveUserInfo(nim = data.nimnrk, name = data.nama)
+                preferences.saveDeviceInfo(device = DEVICE_NAME, deviceId = DEVICE_ID)
+            } catch (e: Exception) {
+                throw Exception("Login berhasil tetapi gagal menyimpan sesi. Coba login ulang.")
+            }
 
             user
         }

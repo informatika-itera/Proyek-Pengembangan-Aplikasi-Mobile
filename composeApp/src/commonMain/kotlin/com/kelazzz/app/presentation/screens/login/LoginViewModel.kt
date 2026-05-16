@@ -37,20 +37,38 @@ class LoginViewModel(
     fun login() {
         val state = _uiState.value
 
-        // Validasi
-        var hasError = false
+        // Cegah double-tap saat sedang loading
+        if (state.isLoading) return
+
+        // Validasi — single atomic update untuk menghindari UI flicker
+        var usernameError: String? = null
+        var passwordError: String? = null
 
         if (state.username.isBlank()) {
-            _uiState.update { it.copy(usernameError = "Email ITERA tidak boleh kosong") }
-            hasError = true
+            usernameError = "Email ITERA tidak boleh kosong"
+        } else if (state.username.contains("@") &&
+            !state.username.trim().endsWith("@student.itera.ac.id") &&
+            !state.username.trim().endsWith("@itera.ac.id")
+        ) {
+            usernameError = "Gunakan email ITERA (@student.itera.ac.id)"
         }
 
         if (state.password.isBlank()) {
-            _uiState.update { it.copy(passwordError = "Password tidak boleh kosong") }
-            hasError = true
+            passwordError = "Password tidak boleh kosong"
+        } else if (state.password.length < 6) {
+            passwordError = "Password minimal 6 karakter"
         }
 
-        if (hasError) return
+        if (usernameError != null || passwordError != null) {
+            _uiState.update {
+                it.copy(
+                    usernameError = usernameError,
+                    passwordError = passwordError,
+                    loginError = null
+                )
+            }
+            return
+        }
 
         // Tambahkan suffix email jika belum ada
         val email = if (state.username.contains("@")) {
@@ -59,7 +77,7 @@ class LoginViewModel(
             "${state.username.trim()}@student.itera.ac.id"
         }
 
-        _uiState.update { it.copy(isLoading = true, loginError = null) }
+        _uiState.update { it.copy(isLoading = true, loginError = null, usernameError = null, passwordError = null) }
 
         viewModelScope.launch {
             authRepository.login(email, state.password)

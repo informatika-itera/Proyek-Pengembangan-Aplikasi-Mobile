@@ -28,6 +28,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToSearch: () -> Unit,
     onNavigateToSchedule: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -54,6 +55,7 @@ fun HomeScreen(
                         state = state,
                         onNavigateToSearch = onNavigateToSearch,
                         onNavigateToSchedule = onNavigateToSchedule,
+                        onNavigateToHelp = onNavigateToHelp,
                         onNavigateToReport = { /* Navigasi ke Lapor */ }
                     )
                 }
@@ -74,6 +76,7 @@ fun HomeContent(
     state: HomeUiState.Success,
     onNavigateToSearch: () -> Unit,
     onNavigateToSchedule: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     onNavigateToReport: () -> Unit
 ) {
     LazyColumn(
@@ -185,7 +188,7 @@ fun HomeContent(
                         label = AppStrings.HOME_HELP,
                         color = Color(0xFFFF9800),
                         modifier = Modifier.weight(1f),
-                        onClick = {}
+                        onClick = onNavigateToHelp
                     )
                 }
             }

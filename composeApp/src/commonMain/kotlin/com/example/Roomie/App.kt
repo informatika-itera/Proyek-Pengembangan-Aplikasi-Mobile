@@ -29,6 +29,7 @@ import com.example.Roomie.presentation.facility.FacilityGridScreen
 import com.example.Roomie.presentation.facility.RoomDetailScreen
 import com.example.Roomie.presentation.facility.SearchRoomScreen
 import com.example.Roomie.presentation.facility.ScheduleScreen
+import com.example.Roomie.presentation.help.HelpScreen
 import com.example.Roomie.presentation.report.ReportScreen
 import com.example.Roomie.presentation.profile.ProfileScreen
 import com.example.Roomie.presentation.admin.AdminDashboardScreen
@@ -44,6 +45,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
     data object SearchRoom : Screen("search_room", "Cari Ruangan")
     data object Schedule : Screen("schedule", AppStrings.HOME_SCHEDULE)
+    data object Help : Screen("help", AppStrings.HOME_HELP)
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
     data object AdminDashboard : Screen("admin_dashboard", "Admin", Icons.Default.Dashboard)
@@ -131,12 +133,17 @@ fun App(
                 composable(Screen.Home.route) {
                     HomeScreen(
                         onNavigateToSearch = { navController.navigate(Screen.SearchRoom.route) },
-                        onNavigateToSchedule = { navController.navigate(Screen.Schedule.route) }
+                        onNavigateToSchedule = { navController.navigate(Screen.Schedule.route) },
+                        onNavigateToHelp = { navController.navigate(Screen.Help.route) }
                     )
                 }
 
                 composable(Screen.Schedule.route) {
                     ScheduleScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Screen.Help.route) {
+                    HelpScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Screen.SearchRoom.route) {

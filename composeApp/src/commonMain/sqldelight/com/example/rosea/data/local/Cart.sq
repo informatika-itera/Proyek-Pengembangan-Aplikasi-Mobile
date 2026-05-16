@@ -1,0 +1,35 @@
+CREATE TABLE CartEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER NOT NULL UNIQUE,
+    product_name TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    price REAL NOT NULL,
+    image_url TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    added_at INTEGER NOT NULL
+);
+
+-- READ: Melihat seluruh isi daftar belanjaan
+getCartItems:
+SELECT * FROM CartEntity
+ORDER BY added_at DESC;
+
+-- CREATE: Menambahkan produk baru ke dalam tas belanja
+insertCartItem:
+INSERT OR IGNORE INTO CartEntity (product_id, product_name, brand, price, image_url, quantity, added_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- UPDATE: Mengubah jumlah kuantitas produk (+ atau -) di dalam tas belanja
+updateCartItemQuantity:
+UPDATE CartEntity
+SET quantity = ?, added_at = ?
+WHERE product_id = ?;
+
+-- DELETE: Menghapus item dari daftar belanja jika tidak diinginkan
+deleteCartItem:
+DELETE FROM CartEntity
+WHERE product_id = ?;
+
+-- Menghapus seluruh isi keranjang setelah checkout sukses
+clearCart:
+DELETE FROM CartEntity;

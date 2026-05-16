@@ -1,0 +1,42 @@
+CREATE TABLE ProductEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price REAL NOT NULL,
+    category TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Mengambil semua produk untuk katalog utama
+getAllProducts:
+SELECT * FROM ProductEntity
+ORDER BY name ASC;
+
+-- Mengambil detail produk spesifik berdasarkan ID
+getProductById:
+SELECT * FROM ProductEntity
+WHERE id = ?;
+
+-- Fitur Lanjutan: Pencarian pintar berdasarkan nama atau brand produk
+searchProducts:
+SELECT * FROM ProductEntity
+WHERE name LIKE '%' || ? || '%' OR brand LIKE '%' || ? || '%'
+ORDER BY name ASC;
+
+-- Fitur Lanjutan: Menyaring produk berdasarkan kategori
+getProductsByCategory:
+SELECT * FROM ProductEntity
+WHERE category = ?
+ORDER BY name ASC;
+
+-- Menyimpan cache data produk dari internet (Offline-First)
+insertProduct:
+INSERT OR REPLACE INTO ProductEntity (id, name, brand, description, price, category, image_url, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Menghapus cache lama saat melakukan refresh data
+deleteAllProducts:
+DELETE FROM ProductEntity;

@@ -19,6 +19,7 @@ import com.example.rosea.data.repository.CartRepositoryImpl
 // === IMPORT VIEWMODEL ===
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
 import com.example.rosea.presentation.screens.home.HomeViewModel
+import com.example.rosea.presentation.screens.detail.DetailViewModel
 
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -72,6 +73,7 @@ val useCaseModule = module {
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::DetailViewModel)
 }
 
 // ==================== SHARED MODULES ====================

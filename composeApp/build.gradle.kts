@@ -152,8 +152,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("SholatYukDatabase") {
+            packageName.set("com.example.sholatyuk.data.local")
         }
     }
 }

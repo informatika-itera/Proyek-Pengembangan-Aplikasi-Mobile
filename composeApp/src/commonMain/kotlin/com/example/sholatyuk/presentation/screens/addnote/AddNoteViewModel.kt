@@ -136,3 +136,4 @@ sealed interface AddNoteEvent {
     data class Error(val message: String) : AddNoteEvent
 }
 
+

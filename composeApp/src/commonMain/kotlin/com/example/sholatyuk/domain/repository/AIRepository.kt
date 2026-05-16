@@ -17,3 +17,4 @@ enum class WritingStyle(val displayName: String, val prompt: String) {
     CREATIVE("Kreatif", "Perbaiki tulisan dengan gaya kreatif dan menarik")
 }
 
+

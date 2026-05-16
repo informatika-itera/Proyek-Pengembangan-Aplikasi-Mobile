@@ -2,7 +2,7 @@ package com.example.sholatyuk.core.di
 
 import com.example.sholatyuk.core.network.HttpClientFactory
 import com.example.sholatyuk.core.util.DatabaseDriverFactory
-import com.example.sholatyuk.data.local.NoteDatabase
+import com.example.sholatyuk.data.local.SholatYukDatabase
 import com.example.sholatyuk.data.local.datastore.DataStoreFactory
 import com.example.sholatyuk.data.local.datastore.UserPreferences
 import com.example.sholatyuk.data.local.datastore.create
@@ -42,7 +42,7 @@ val networkModule = module {
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        NoteDatabase(driverFactory.createDriver())
+        SholatYukDatabase(driverFactory.createDriver())
     }
 }
 
@@ -103,4 +103,5 @@ fun initKoin(
         modules(platformModules + sharedModules)
     }
 }
+
 

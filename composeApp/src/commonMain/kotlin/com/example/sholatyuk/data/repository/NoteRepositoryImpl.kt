@@ -3,7 +3,7 @@ package com.example.sholatyuk.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import com.example.sholatyuk.data.local.NoteDatabase
+import com.example.sholatyuk.data.local.SholatYukDatabase
 import com.example.sholatyuk.data.local.entity.toDomain
 import com.example.sholatyuk.data.local.entity.toDomainList
 import com.example.sholatyuk.data.local.entity.toEntityValues
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
-class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
+class NoteRepositoryImpl(private val database: SholatYukDatabase) : NoteRepository {
     
     private val queries = database.noteQueries
     
@@ -97,4 +97,5 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
         queries.deleteNotesByIds(ids)
     }
 }
+
 

@@ -3,7 +3,7 @@ package com.example.sholatyuk.core.util
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.example.sholatyuk.data.local.NoteDatabase
+import com.example.sholatyuk.data.local.SholatYukDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory
@@ -16,10 +16,11 @@ actual class DatabaseDriverFactory(
 ) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = SholatYukDatabase.Schema,
             context = context,
             name = "noteai.db"
         )
     }
 }
+
 

@@ -17,3 +17,4 @@ actual object ApiConfig {
     actual val geminiApiKey: String = BuildConfig.GEMINI_API_KEY
 }
 
+

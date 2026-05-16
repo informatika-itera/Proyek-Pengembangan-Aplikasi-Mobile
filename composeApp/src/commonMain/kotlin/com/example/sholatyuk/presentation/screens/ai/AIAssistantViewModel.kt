@@ -155,3 +155,4 @@ sealed interface AIAssistantEvent {
     data class ApplyToNote(val text: String) : AIAssistantEvent
 }
 
+

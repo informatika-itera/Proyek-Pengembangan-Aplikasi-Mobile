@@ -86,3 +86,4 @@ sealed interface NoteDetailEvent {
     data class Error(val message: String) : NoteDetailEvent
 }
 
+

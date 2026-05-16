@@ -87,3 +87,4 @@ suspend fun <T> safeApiCall(block: suspend () -> T): NetworkResult<T> {
     }
 }
 
+

@@ -2,6 +2,38 @@ package com.example.mybawanggacha.data.remote.dto
 
 import kotlinx.serialization.Serializable
 
+
+@Serializable
+data class JikanAnimeListResponse(
+    val data: List<AnimeCatalogItemDto> = emptyList()
+)
+
+@Serializable
+data class AnimeCatalogItemDto(
+    val mal_id: Int,
+    val url: String? = null,
+    val images: AnimeImages? = null,
+    val title: String,
+    val title_english: String? = null,
+    val type: String? = null,
+    val episodes: Int? = null,
+    val status: String? = null,
+    val score: Double? = null,
+    val season: String? = null,
+    val year: Int? = null
+)
+
+@Serializable
+data class JikanSeasonArchiveResponse(
+    val data: List<AnimeSeasonArchiveYearDto> = emptyList()
+)
+
+@Serializable
+data class AnimeSeasonArchiveYearDto(
+    val year: Int,
+    val seasons: List<String> = emptyList()
+)
+
 @Serializable
 data class JikanRecommendationsResponse(
     val data: List<RecommendationData>

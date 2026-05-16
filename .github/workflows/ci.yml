@@ -27,5 +27,8 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
         
+      - name: Run Detekt Static Analysis
+        run: ./gradlew detekt
+        
       - name: Run Unit Tests
         run: ./gradlew allTests

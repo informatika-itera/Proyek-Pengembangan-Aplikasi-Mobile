@@ -13,6 +13,8 @@ okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+detekt = "1.23.7"
+napier = "2.7.1"
 
 # Testing
 turbine = "1.2.0"
@@ -62,6 +64,9 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
 
+# Logging (Napier)
+napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
+
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
@@ -74,3 +79,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

@@ -2,6 +2,7 @@ package com.example.mybawanggacha.data.repository
 
 import com.example.mybawanggacha.data.local.NoteDatabase
 import com.example.mybawanggacha.data.remote.api.JikanService
+import com.example.mybawanggacha.data.remote.dto.AnimeCatalogItemDto
 import com.example.mybawanggacha.data.remote.dto.AnimeDetailData
 import com.example.mybawanggacha.data.remote.dto.AnimeEpisodeDto
 import com.example.mybawanggacha.data.remote.dto.AnimeExternalLinkDto
@@ -14,6 +15,8 @@ import com.example.mybawanggacha.domain.model.AnimeLink
 import com.example.mybawanggacha.domain.model.AnimeRelation
 import com.example.mybawanggacha.domain.model.AnimeRelationEntry
 import com.example.mybawanggacha.domain.model.AnimeRelationPreview
+import com.example.mybawanggacha.domain.model.AnimeSeason
+import com.example.mybawanggacha.domain.model.AnimeSeasonPeriod
 import com.example.mybawanggacha.domain.model.AnimeSummary
 import com.example.mybawanggacha.domain.model.AnimeThemeSongs
 import com.example.mybawanggacha.domain.repository.AnimeRepository
@@ -44,6 +47,47 @@ class AnimeRepositoryImpl(
                     imageUrl = entry.images.jpg.large_image_url
                 )
             }
+    }
+
+    override suspend fun getCurrentSeasonAnime(): List<AnimeSummary> = withContext(Dispatchers.Default) {
+        jikanService.fetchCurrentSeasonAnime()
+            .data
+            .toSummaryList()
+    }
+
+    override suspend fun getSeasonAnime(
+        year: Int,
+        season: AnimeSeason
+    ): List<AnimeSummary> = withContext(Dispatchers.Default) {
+        jikanService.fetchSeasonAnime(year = year, season = season.apiKey)
+            .data
+            .toSummaryList()
+    }
+
+    override suspend fun getUpcomingSeasonAnime(): List<AnimeSummary> = withContext(Dispatchers.Default) {
+        jikanService.fetchUpcomingSeasonAnime()
+            .data
+            .toSummaryList()
+    }
+
+    override suspend fun getTopAnime(): List<AnimeSummary> = withContext(Dispatchers.Default) {
+        jikanService.fetchTopAnime()
+            .data
+            .toSummaryList()
+    }
+
+    override suspend fun getAvailableSeasonPeriods(): List<AnimeSeasonPeriod> = withContext(Dispatchers.Default) {
+        jikanService.fetchSeasonArchive()
+            .data
+            .flatMap { yearDto ->
+                yearDto.seasons.mapNotNull { seasonKey ->
+                    AnimeSeason.fromApiKey(seasonKey)?.let { season ->
+                        AnimeSeasonPeriod(year = yearDto.year, season = season)
+                    }
+                }
+            }
+            .distinctBy { it.sortValue }
+            .sortedByDescending { it.sortValue }
     }
 
     override suspend fun getAnimeDetail(malId: Int): AnimeDetailBundle = withContext(Dispatchers.Default) {
@@ -132,6 +176,19 @@ class AnimeRepositoryImpl(
 
         return previews
     }
+}
+
+
+private fun List<AnimeCatalogItemDto>.toSummaryList(): List<AnimeSummary> {
+    return distinctBy { it.mal_id }
+        .map { item ->
+            AnimeSummary(
+                malId = item.mal_id,
+                title = item.title_english?.takeIf { it.isNotBlank() } ?: item.title,
+                imageUrl = item.images?.jpg?.large_image_url
+                    ?: item.images?.jpg?.image_url
+            )
+        }
 }
 
 private fun AnimeDetailData.toDomain(

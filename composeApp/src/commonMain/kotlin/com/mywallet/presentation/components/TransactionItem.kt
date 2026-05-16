@@ -1,6 +1,7 @@
 package com.mywallet.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,21 +16,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mywallet.domain.model.Transaction
 import com.mywallet.domain.model.TransactionType
-import com.mywallet.theme.AccentGreen
-import com.mywallet.theme.AccentRed
 
 @Composable
-fun TransactionItem(transaction: Transaction) {
+fun TransactionItem(
+    transaction: Transaction,
+    onClick: () -> Unit
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        shadowElevation = 1.dp
+        tonalElevation = 1.dp
     ) {
         Row(
             modifier = Modifier
@@ -39,21 +41,20 @@ fun TransactionItem(transaction: Transaction) {
         ) {
             val isIncome = transaction.type == TransactionType.INCOME
             val icon = if (isIncome) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward
-            
-            // Use semantic colors from MaterialTheme for better contrast and dark mode support
-            val color = if (isIncome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            val iconColor = if (isIncome) Color(0xFF10B981) else Color(0xFFEF4444)
+            val iconBg = if (isIncome) Color(0xFFD1FAE5) else Color(0xFFFEE2E2)
             
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color.copy(alpha = 0.12f)),
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = color,
+                    tint = iconColor,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -63,8 +64,10 @@ fun TransactionItem(transaction: Transaction) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = transaction.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.2.sp
+                    ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
@@ -75,10 +78,11 @@ fun TransactionItem(transaction: Transaction) {
             }
             
             Text(
-                text = (if (isIncome) "+" else "-") + "Rp ${transaction.amount.toInt()}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = color
+                text = (if (isIncome) "+" else "-") + " Rp ${transaction.amount.toLong()}",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = iconColor
+                )
             )
         }
     }

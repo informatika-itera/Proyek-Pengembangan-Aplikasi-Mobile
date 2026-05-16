@@ -2,68 +2,59 @@ package com.mywallet.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Premium Financial Palette (Green Dominant)
-val PrimaryGreen = Color(0xFF065F46) // Darker Emerald for better contrast
-val SecondaryGreen = Color(0xFF047857) // Dark Emerald
-val AccentGreen = Color(0xFF059669) // Readable Green for Income
-val AccentRed = Color(0xFFB91C1C) // Deep Red for Expense
+// Modern & Vibrant Palette (Indigo/Violet Dominant)
+val PalettePrimary = Color(0xFF6366F1) // Indigo 500
+val PalettePrimaryDark = Color(0xFF4F46E5) // Indigo 600
+val PaletteSecondary = Color(0xFF8B5CF6) // Violet 500
+val PaletteSuccess = Color(0xFF10B981) // Emerald 500 (Income)
+val PaletteDanger = Color(0xFFEF4444) // Red 500 (Expense)
 
-val LightBackground = Color(0xFFF0FDF4) // Very Light Green Tint
-val LightSurface = Color(0xFFFFFFFF)
-val LightOnBackground = Color(0xFF064E3B) // Very Dark Green for text
+val PaletteLightBackground = Color(0xFFF8FAFC) // Slate 50
+val PaletteLightSurface = Color(0xFFFFFFFF)
+val PaletteLightOnSurface = Color(0xFF0F172A) // Slate 900
 
-val DarkBackground = Color(0xFF064E3B) // Very Dark Green
-val DarkSurface = Color(0xFF065F46) // Slightly Lighter Dark Green
-val DarkOnBackground = Color(0xFFECFDF5) // Very Light Green for text
+val PaletteDarkBackground = Color(0xFF0F172A) // Slate 900
+val PaletteDarkSurface = Color(0xFF1E293B) // Slate 800
+val PaletteDarkOnSurface = Color(0xFFF1F5F9) // Slate 100
 
 // Material 3 Color Mappings - Light
-val primaryLight = PrimaryGreen
+val primaryLight = PalettePrimary
 val onPrimaryLight = Color.White
-val primaryContainerLight = Color(0xFFD1FAE5)
-val onPrimaryContainerLight = Color(0xFF064E3B) // High contrast
+val primaryContainerLight = Color(0xFFE0E7FF)
+val onPrimaryContainerLight = PalettePrimaryDark
 
-val secondaryLight = SecondaryGreen
+val secondaryLight = PaletteSecondary
 val onSecondaryLight = Color.White
-val secondaryContainerLight = Color(0xFFECFDF5)
-val onSecondaryContainerLight = Color(0xFF064E3B) // High contrast
+val secondaryContainerLight = Color(0xFFEDE9FE)
+val onSecondaryContainerLight = Color(0xFF7C3AED)
 
-val tertiaryLight = Color(0xFF0F766E) // Darker Teal
-val onTertiaryLight = Color.White
-val tertiaryContainerLight = Color(0xFFCCFBF1)
-val onTertiaryContainerLight = Color(0xFF042F2E)
-
-val errorLight = AccentRed
+val errorLight = PaletteDanger
 val onErrorLight = Color.White
 val errorContainerLight = Color(0xFFFEE2E2)
-val onErrorContainerLight = Color(0xFF7F1D1D)
+val onErrorContainerLight = Color(0xFF991B1B)
 
-val backgroundLight = LightBackground
-val onBackgroundLight = LightOnBackground
-val surfaceLight = LightSurface
-val onSurfaceLight = LightOnBackground
+val backgroundLight = PaletteLightBackground
+val onBackgroundLight = PaletteLightOnSurface
+val surfaceLight = PaletteLightSurface
+val onSurfaceLight = PaletteLightOnSurface
 
 // Material 3 Color Mappings - Dark
-val primaryDark = Color(0xFF6EE7B7) // Light Emerald
-val onPrimaryDark = Color(0xFF042F2E)
-val primaryContainerDark = Color(0xFF065F46)
-val onPrimaryContainerDark = Color(0xFFD1FAE5)
+val primaryDark = Color(0xFF818CF8)
+val onPrimaryDark = Color(0xFF1E1B4B)
+val primaryContainerDark = Color(0xFF312E81)
+val onPrimaryContainerDark = Color(0xFFE0E7FF)
 
-val secondaryDark = Color(0xFFA7F3D0)
-val onSecondaryDark = Color(0xFF042F2E)
-val secondaryContainerDark = Color(0xFF065F46)
-val onSecondaryContainerDark = Color(0xFFA7F3D0)
-
-val tertiaryDark = Color(0xFF5EEAD4)
-val onTertiaryDark = Color(0xFF042F2E)
-val tertiaryContainerDark = Color(0xFF0F766E)
-val onTertiaryContainerDark = Color(0xFFCCFBF1)
+val secondaryDark = Color(0xFFA78BFA)
+val onSecondaryDark = Color(0xFF2E1065)
+val secondaryContainerDark = Color(0xFF4C1D95)
+val onSecondaryContainerDark = Color(0xFFEDE9FE)
 
 val errorDark = Color(0xFFF87171)
 val onErrorDark = Color(0xFF450A0A)
 val errorContainerDark = Color(0xFF7F1D1D)
 val onErrorContainerDark = Color(0xFFFEE2E2)
 
-val backgroundDark = DarkBackground
-val onBackgroundDark = DarkOnBackground
-val surfaceDark = DarkSurface
-val onSurfaceDark = DarkOnBackground
+val backgroundDark = PaletteDarkBackground
+val onBackgroundDark = PaletteDarkOnSurface
+val surfaceDark = PaletteDarkSurface
+val onSurfaceDark = PaletteDarkOnSurface

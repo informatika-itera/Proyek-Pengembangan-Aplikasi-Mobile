@@ -3,15 +3,16 @@ package com.mywallet.presentation.screens.history
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mywallet.domain.model.Transaction
-import com.mywallet.domain.model.TransactionType
+import androidx.compose.ui.unit.sp
+import com.mywallet.presentation.components.TransactionItem
 import com.mywallet.presentation.home.HomeUiState
 import com.mywallet.presentation.home.HomeViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -25,8 +26,23 @@ fun HistoryScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(title = { Text("Riwayat Transaksi") })
+            CenterAlignedTopAppBar(
+                title = { 
+                    Text(
+                        "Riwayat Transaksi",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = (-0.5).sp
+                        )
+                    ) 
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
+            )
         }
     ) { padding ->
         when (val state = uiState) {
@@ -35,71 +51,38 @@ fun HistoryScreen(
                     CircularProgressIndicator()
                 }
             }
-            is HomeUiState.Empty -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Belum ada riwayat transaksi", style = MaterialTheme.typography.bodyLarge)
-                }
-            }
             is HomeUiState.Success -> {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        Text("Semua Transaksi", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Semua Catatan",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                     items(state.transactions) { transaction ->
-                        HistoryItemCard(
+                        TransactionItem(
                             transaction = transaction,
                             onClick = { onNavigateToDetail(transaction.id) }
                         )
                     }
+                    item {
+                        Spacer(modifier = Modifier.height(40.dp))
+                    }
                 }
             }
-            is HomeUiState.Error -> {
+            else -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.message, color = MaterialTheme.colorScheme.error)
+                    Text("Belum ada data", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun HistoryItemCard(transaction: Transaction, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(transaction.title, style = MaterialTheme.typography.bodyLarge)
-                Text(transaction.date, style = MaterialTheme.typography.bodySmall)
-                Text(
-                    if (transaction.type == TransactionType.INCOME) "Pemasukan" else "Pengeluaran",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (transaction.type == TransactionType.INCOME)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.error
-                )
-            }
-            Text(
-                "${if (transaction.type == TransactionType.INCOME) "+" else "-"} Rp ${transaction.amount.toLong()}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (transaction.type == TransactionType.INCOME)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.error
-            )
         }
     }
 }

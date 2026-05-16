@@ -29,6 +29,7 @@ fun HomeScreen(
     onNavigateToSearch: () -> Unit,
     onNavigateToSchedule: () -> Unit,
     onNavigateToHelp: () -> Unit,
+    onNavigateToReport: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -56,7 +57,7 @@ fun HomeScreen(
                         onNavigateToSearch = onNavigateToSearch,
                         onNavigateToSchedule = onNavigateToSchedule,
                         onNavigateToHelp = onNavigateToHelp,
-                        onNavigateToReport = { /* Navigasi ke Lapor */ }
+                        onNavigateToReport = onNavigateToReport
                     )
                 }
                 is HomeUiState.Error -> {

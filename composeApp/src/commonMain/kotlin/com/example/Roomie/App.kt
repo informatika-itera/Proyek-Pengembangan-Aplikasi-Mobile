@@ -134,7 +134,8 @@ fun App(
                     HomeScreen(
                         onNavigateToSearch = { navController.navigate(Screen.SearchRoom.route) },
                         onNavigateToSchedule = { navController.navigate(Screen.Schedule.route) },
-                        onNavigateToHelp = { navController.navigate(Screen.Help.route) }
+                        onNavigateToHelp = { navController.navigate(Screen.Help.route) },
+                        onNavigateToReport = { navController.navigate(Screen.Report.route) }
                     )
                 }
 

@@ -152,7 +152,7 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Logo KelazZz di samping judul (branding)
-                        if (currentTitle == "Home" || isOnProfileScreen) {
+                        if (!isOnProfileScreen) {
                             Image(
                                 painter = painterResource(Res.drawable.logo),
                                 contentDescription = "Logo KelazZz",
@@ -163,7 +163,10 @@ fun MainScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                         }
-                      
+                        Text(
+                            text = if (currentTitle == "Home") "KelazZz" else currentTitle,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 },
                 actions = {

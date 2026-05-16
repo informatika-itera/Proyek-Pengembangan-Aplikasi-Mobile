@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.Roomie.core.util.SecurityUtils
 import com.example.Roomie.domain.model.User
 import com.example.Roomie.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +18,7 @@ class UserPreferences(
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val USER_ID = stringPreferencesKey("user_id")
         val USER_NAME = stringPreferencesKey("user_name")
-        val USER_NIM = stringPreferencesKey("user_nim")
+        val USER_NIM = stringPreferencesKey("user_nim") // Will be obfuscated
         val USER_ROLE = stringPreferencesKey("user_role")
     }
     
@@ -35,10 +36,12 @@ class UserPreferences(
         val id = prefs[Keys.USER_ID]
         if (id == null) return@map null
         
+        val obfuscatedNim = prefs[Keys.USER_NIM] ?: ""
+        
         User(
             id = id,
             name = prefs[Keys.USER_NAME] ?: "",
-            nim = prefs[Keys.USER_NIM] ?: "",
+            nim = SecurityUtils.deobfuscate(obfuscatedNim),
             role = UserRole.valueOf(prefs[Keys.USER_ROLE] ?: UserRole.STUDENT.name)
         )
     }
@@ -47,7 +50,7 @@ class UserPreferences(
         dataStore.edit { prefs ->
             prefs[Keys.USER_ID] = user.id
             prefs[Keys.USER_NAME] = user.name
-            prefs[Keys.USER_NIM] = user.nim
+            prefs[Keys.USER_NIM] = SecurityUtils.obfuscate(user.nim)
             prefs[Keys.USER_ROLE] = user.role.name
         }
     }

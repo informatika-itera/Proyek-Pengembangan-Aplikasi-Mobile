@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,79 +47,74 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(top = 16.dp, bottom = 8.dp)
+                    .padding(vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Custom Neumorphic Top Bar
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "News MBG AI",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                // Symmetric Header
+                Text(
+                    text = "NEWS MBG AI",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 2.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Neumorphic Search Bar
+                // Symmetric Neumorphic Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
-                    placeholder = { Text("Cari berita...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    placeholder = { Text("Cari berita terbaru...", fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .neumorphicShadow(offset = 2.dp, blur = 4.dp, cornerRadius = 12.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                        .padding(horizontal = 24.dp)
+                        .neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 16.dp)
+                        .clip(RoundedCornerShape(16.dp)),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                     ),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     singleLine = true
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Category Filter Chips
+                // Symmetric Category Tabs
                 val categories = listOf("Semua", "Pro", "Kontra", "Netral")
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     items(categories) { category ->
                         val isSelected = selectedCategory == category
                         Box(
                             modifier = Modifier
                                 .neumorphicShadow(
-                                    offset = if (isSelected) 0.dp else 2.dp,
-                                    blur = if (isSelected) 0.dp else 4.dp,
-                                    cornerRadius = 20.dp
+                                    offset = if (isSelected) 0.dp else 3.dp,
+                                    blur = if (isSelected) 0.dp else 6.dp,
+                                    cornerRadius = 12.dp
                                 )
-                                .clip(RoundedCornerShape(20.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary 
                                     else MaterialTheme.colorScheme.surface
                                 )
                                 .clickable { viewModel.onCategorySelected(category) }
-                                .padding(horizontal = 20.dp, vertical = 8.dp)
+                                .padding(horizontal = 24.dp, vertical = 10.dp)
                         ) {
                             Text(
                                 text = category,
                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimary 
                                         else MaterialTheme.colorScheme.onSurface,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 14.sp
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 13.sp
                             )
                         }
                     }
@@ -134,7 +130,7 @@ fun HomeScreen(
             when (uiState) {
                 is NewsUiState.Loading -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         items(5) { ShimmerItem() }
@@ -150,8 +146,8 @@ fun HomeScreen(
                         )
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(24.dp)
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(28.dp)
                         ) {
                             items(articles) { article ->
                                 ArticleCard(article = article, onClick = { navigateToDetail(article.url) })
@@ -162,13 +158,17 @@ fun HomeScreen(
                 is NewsUiState.Error -> {
                     val errorMsg = (uiState as NewsUiState.Error).message
                     Column(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier.align(Alignment.Center).padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Ups! Ada kesalahan", fontWeight = FontWeight.Bold)
-                        Text(text = errorMsg, color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.fetchNews() }) {
+                        Text(text = "Ups! Terjadi kendala", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = errorMsg, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { viewModel.fetchNews() },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Text("Coba Lagi")
                         }
                     }
@@ -191,9 +191,9 @@ fun ShimmerItem() {
     )
 
     val shimmerColors = listOf(
-        Color.LightGray.copy(alpha = 0.6f),
-        Color.LightGray.copy(alpha = 0.2f),
-        Color.LightGray.copy(alpha = 0.6f),
+        Color.LightGray.copy(alpha = 0.3f),
+        Color.LightGray.copy(alpha = 0.1f),
+        Color.LightGray.copy(alpha = 0.3f),
     )
 
     val brush = Brush.linearGradient(
@@ -205,8 +205,9 @@ fun ShimmerItem() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(280.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(260.dp)
+            .neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
             .background(brush)
     )
 }
@@ -219,9 +220,9 @@ fun ArticleCard(article: Article, onClick: () -> Unit) {
             .neumorphicShadow(
                 offset = 6.dp,
                 blur = 12.dp,
-                cornerRadius = 16.dp
+                cornerRadius = 20.dp
             )
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surface)
             .clickable { onClick() }
     ) {
@@ -233,18 +234,19 @@ fun ArticleCard(article: Article, onClick: () -> Unit) {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .height(200.dp)
                 )
             }
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = article.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
+                    lineHeight = 22.sp,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -252,8 +254,9 @@ fun ArticleCard(article: Article, onClick: () -> Unit) {
                 ) {
                     Text(
                         text = article.sourceName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
                     )
                     
                     val glowColor = when(article.category) {

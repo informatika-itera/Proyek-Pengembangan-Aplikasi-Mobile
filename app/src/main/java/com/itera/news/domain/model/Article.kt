@@ -6,5 +6,6 @@ data class Article(
     val url: String,
     val imageUrl: String,
     val publishedAt: String,
-    val sourceName: String
+    val sourceName: String,
+    val category: String = "Netral"
 )

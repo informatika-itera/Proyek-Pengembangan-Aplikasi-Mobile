@@ -3,6 +3,7 @@ package com.itera.news.di
 import androidx.room.Room
 import com.itera.news.data.local.NewsDatabase
 import com.itera.news.data.remote.NewsApi
+import com.itera.news.data.remote.GeminiService
 import com.itera.news.data.repository.NewsRepositoryImpl
 import com.itera.news.domain.repository.NewsRepository
 import com.itera.news.domain.usecase.GetMbgNewsUseCase
@@ -45,11 +46,13 @@ val networkModule = module {
             .build()
             .create(NewsApi::class.java)
     }
+    
+    single { GeminiService("AIzaSyDLHNG88NgO55_vSkKYpLByYsxdcBls9xs") }
 }
 
 val repositoryModule = module {
-    // 2. Update dengan menambahkan get() kedua untuk parameter ArticleDao
-    single<NewsRepository> { NewsRepositoryImpl(get(), get()) }
+    // 2. Update dengan menambahkan get() ketiga untuk parameter GeminiService
+    single<NewsRepository> { NewsRepositoryImpl(get(), get(), get()) }
 }
 
 val useCaseModule = module {

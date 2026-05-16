@@ -12,11 +12,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.itera.news.domain.model.Article
 import com.itera.news.presentation.viewmodel.NewsUiState
-import com.itera.news.presentation.viewmodel.NewsViewModel
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import com.itera.news.ui.theme.neumorphicShadow
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,11 +34,12 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Berita Makan Bergizi Gratis") },
+                title = { Text("Berita Makan Bergizi", style = MaterialTheme.typography.headlineSmall) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                modifier = Modifier.padding(8.dp).neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 12.dp).clip(RoundedCornerShape(12.dp))
             )
         }
     ) { paddingValues ->
@@ -73,11 +78,17 @@ fun HomeScreen(
 
 @Composable
 fun ArticleCard(article: Article, onClick: () -> Unit) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .neumorphicShadow(
+                offset = 6.dp,
+                blur = 12.dp,
+                cornerRadius = 16.dp
+            )
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
     ) {
         Column {
             if (article.imageUrl.isNotEmpty()) {
@@ -98,11 +109,36 @@ fun ArticleCard(article: Article, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = article.sourceName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = article.sourceName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    val glowColor = when(article.category) {
+                        "Pro" -> Color(0xFF4CAF50)
+                        "Kontra" -> Color(0xFFF44336)
+                        else -> Color(0xFFFFEB3B)
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .neumorphicShadow(
+                                offset = 0.dp,
+                                blur = 10.dp,
+                                lightShadowColor = glowColor,
+                                darkShadowColor = glowColor,
+                                cornerRadius = 5.dp
+                            )
+                            .background(glowColor, CircleShape)
+                    )
+                }
             }
         }
     }

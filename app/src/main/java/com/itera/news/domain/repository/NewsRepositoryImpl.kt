@@ -2,9 +2,13 @@ package com.itera.news.data.repository
 
 import com.itera.news.data.local.dao.ArticleDao
 import com.itera.news.data.local.entity.toEntity
+import com.itera.news.data.remote.GeminiService
 import com.itera.news.data.remote.NewsApi
 import com.itera.news.domain.model.Article
 import com.itera.news.domain.repository.NewsRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -12,7 +16,8 @@ import kotlinx.coroutines.flow.map
 // Tambahkan parameter dao: ArticleDao
 class NewsRepositoryImpl(
     private val api: NewsApi,
-    private val dao: ArticleDao 
+    private val dao: ArticleDao,
+    private val geminiService: GeminiService
 ) : NewsRepository {
 
     // TODO: Masukkan API Key dari NewsAPI.org di sini (jika belum)
@@ -22,7 +27,15 @@ class NewsRepositoryImpl(
         try {
             val response = api.getMbgNews(apiKey = apiKey)
             if (response.status == "ok") {
-                val articles = response.articles.map { it.toDomain() }
+                val articles = coroutineScope {
+                    response.articles.map { dto ->
+                        async {
+                            val domainArticle = dto.toDomain()
+                            val category = geminiService.categorizeNews(domainArticle.title, domainArticle.description)
+                            domainArticle.copy(category = category)
+                        }
+                    }.awaitAll()
+                }
                 emit(Result.success(articles))
             } else {
                 emit(Result.failure(Exception("Gagal mengambil data berita")))

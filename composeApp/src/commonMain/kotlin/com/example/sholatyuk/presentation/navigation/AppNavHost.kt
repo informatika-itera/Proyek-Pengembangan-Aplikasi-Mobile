@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sholatyuk.presentation.screens.home.HomeScreen
+import com.example.sholatyuk.presentation.screens.prayer.PrayerScreen
 
 @Composable
 fun AppNavHost(
@@ -19,7 +20,26 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable<Route.Home> {
-            HomeScreen()
+            HomeScreen(
+                onNavigateToShalat = {
+                    navController.navigate(Route.Shalat) {
+                        popUpTo(Route.Home) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+        }
+        composable<Route.Shalat> {
+            PrayerScreen(
+                onNavigateToHome = {
+                    navController.navigate(Route.Home) {
+                        popUpTo(Route.Home) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
         }
     }
 }

@@ -26,12 +26,16 @@ import com.example.sholatyuk.presentation.theme.*
 
 @Composable
 fun HomeScreen(
-    onNavigateToAddNote: () -> Unit = {},
-    onNavigateToDetail: (Long) -> Unit = {},
-    onNavigateToAI: () -> Unit = {}
+    onNavigateToShalat: () -> Unit = {}
 ) {
     Scaffold(
-        bottomBar = { BottomNavigationBar() },
+        bottomBar = { 
+            BottomNavigationBar(
+                currentRoute = "home",
+                onHomeClick = {},
+                onShalatClick = onNavigateToShalat
+            ) 
+        },
         containerColor = DeepBlue
     ) { paddingValues ->
         Box(
@@ -317,15 +321,21 @@ fun MenuIconItem(item: MenuItem, modifier: Modifier = Modifier) {
 data class MenuItem(val title: String, val icon: ImageVector)
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(
+    currentRoute: String,
+    onHomeClick: () -> Unit = {},
+    onShalatClick: () -> Unit = {},
+    onKajianClick: () -> Unit = {},
+    onLainnyaClick: () -> Unit = {}
+) {
     NavigationBar(
         containerColor = DeepBlue,
         contentColor = TextWhite,
         tonalElevation = 8.dp
     ) {
         NavigationBarItem(
-            selected = true,
-            onClick = {},
+            selected = currentRoute == "home",
+            onClick = onHomeClick,
             icon = { Icon(Icons.Default.Home, contentDescription = null) },
             label = { Text("Beranda") },
             colors = NavigationBarItemDefaults.colors(
@@ -337,33 +347,42 @@ fun BottomNavigationBar() {
             )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = {},
+            selected = currentRoute == "shalat",
+            onClick = onShalatClick,
             icon = { Icon(Icons.Default.Mosque, contentDescription = null) },
             label = { Text("Shalat") },
             colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = AccentYellow,
+                selectedTextColor = AccentYellow,
                 unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f)
+                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                indicatorColor = Color.Transparent
             )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = {},
+            selected = currentRoute == "kajian",
+            onClick = onKajianClick,
             icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
             label = { Text("Kajian") },
             colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = AccentYellow,
+                selectedTextColor = AccentYellow,
                 unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f)
+                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                indicatorColor = Color.Transparent
             )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = {},
+            selected = currentRoute == "lainnya",
+            onClick = onLainnyaClick,
             icon = { Icon(Icons.Default.Apps, contentDescription = null) },
             label = { Text("Lainnya") },
             colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = AccentYellow,
+                selectedTextColor = AccentYellow,
                 unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f)
+                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                indicatorColor = Color.Transparent
             )
         )
     }

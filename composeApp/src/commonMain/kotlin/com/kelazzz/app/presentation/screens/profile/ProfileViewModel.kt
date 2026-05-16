@@ -34,7 +34,6 @@ class ProfileViewModel(
                         nama = user?.nama ?: "Mahasiswa",
                         nim = user?.nim ?: "-",
                         email = user?.email ?: "-",
-                        unit = user?.unit ?: "-",
                         level = user?.level ?: "-",
                         isLoading = false
                     )
@@ -66,7 +65,6 @@ data class ProfileUiState(
     val nama: String = "Mahasiswa",
     val nim: String = "-",
     val email: String = "-",
-    val unit: String = "-",
     val level: String = "-",
     val isLoading: Boolean = true,
     val showLogoutDialog: Boolean = false

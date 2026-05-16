@@ -3,9 +3,15 @@ package com.kelazzz.app.presentation.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -30,8 +36,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +58,9 @@ import com.kelazzz.app.presentation.screens.kalender.KalenderScreen
 import com.kelazzz.app.presentation.screens.presensi.PresensiScreen
 import com.kelazzz.app.presentation.screens.profile.ProfileScreen
 import com.kelazzz.app.presentation.screens.rekap.RekapScreen
+import kelazzz.composeapp.generated.resources.Res
+import kelazzz.composeapp.generated.resources.logo
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 // ==================== BOTTOM NAV ITEMS ====================
@@ -107,7 +119,7 @@ fun MainScreen(
     val homeViewModel: HomeViewModel = koinViewModel()
     val userName by homeViewModel.userName.collectAsStateWithLifecycle()
 
-    // Cek apakah sedang di Profile screen (untuk sembunyikan bottom bar)
+    // Cek apakah sedang di Profile screen
     val isOnProfileScreen = currentDestination?.hasRoute(Route.Profile::class) == true
 
     // Determine current tab title
@@ -121,29 +133,57 @@ fun MainScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    if (isOnProfileScreen) {
+                        // Tombol back saat di Profile screen
+                        IconButton(onClick = { innerNavController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Kembali",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                },
                 title = {
-                    Text(
-                        text = if (currentTitle == "Home") "KelazZz" else currentTitle,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Logo KelazZz di samping judul (branding)
+                        if (currentTitle == "Home" || isOnProfileScreen) {
+                            Image(
+                                painter = painterResource(Res.drawable.logo),
+                                contentDescription = "Logo KelazZz",
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                        }
+                        Text(
+                            text = if (currentTitle == "Home") "KelazZz" else currentTitle,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 },
                 actions = {
                     // Ikon profil — navigasi ke Profile screen
-                    IconButton(
-                        onClick = {
-                            if (!isOnProfileScreen) {
+                    if (!isOnProfileScreen) {
+                        IconButton(
+                            onClick = {
                                 innerNavController.navigate(Route.Profile) {
                                     launchSingleTop = true
                                 }
                             }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.AccountCircle,
+                                contentDescription = "Profil",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(28.dp)
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = "Profil",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(28.dp)
-                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

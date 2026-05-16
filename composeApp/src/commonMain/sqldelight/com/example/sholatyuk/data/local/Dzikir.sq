@@ -1,2 +1,20 @@
-dummy:
-SELECT 1;
+CREATE TABLE Dzikir (
+    id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    arabic TEXT NOT NULL,
+    latin TEXT NOT NULL,
+    translation TEXT NOT NULL
+);
+
+selectAllDzikir:
+SELECT * FROM Dzikir;
+
+insertDzikir:
+INSERT INTO Dzikir(
+    id,
+    title,
+    arabic,
+    latin,
+    translation
+)
+VALUES (?, ?, ?, ?, ?);

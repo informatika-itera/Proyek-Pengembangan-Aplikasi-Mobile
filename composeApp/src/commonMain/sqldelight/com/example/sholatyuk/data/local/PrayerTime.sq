@@ -1,2 +1,29 @@
-dummy:
-SELECT 1;
+CREATE TABLE PrayerTime (
+    id INTEGER NOT NULL PRIMARY KEY,
+    fajr TEXT NOT NULL,
+    dhuhr TEXT NOT NULL,
+    asr TEXT NOT NULL,
+    maghrib TEXT NOT NULL,
+    isha TEXT NOT NULL,
+    date TEXT NOT NULL,
+    city TEXT NOT NULL
+);
+
+selectPrayerTime:
+SELECT * FROM PrayerTime;
+
+insertPrayerTime:
+INSERT INTO PrayerTime(
+    id,
+    fajr,
+    dhuhr,
+    asr,
+    maghrib,
+    isha,
+    date,
+    city
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deletePrayerTime:
+DELETE FROM PrayerTime;

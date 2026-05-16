@@ -1,2 +1,21 @@
-dummy:
-SELECT 1;
+CREATE TABLE ChatHistory (
+    id INTEGER NOT NULL PRIMARY KEY,
+    message TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    timestamp TEXT NOT NULL
+);
+
+selectAllChatHistory:
+SELECT * FROM ChatHistory;
+
+insertChatHistory:
+INSERT INTO ChatHistory(
+    id,
+    message,
+    sender,
+    timestamp
+)
+VALUES (?, ?, ?, ?);
+
+deleteAllChatHistory:
+DELETE FROM ChatHistory;

@@ -1,2 +1,24 @@
-dummy:
-SELECT 1;
+CREATE TABLE TasbihCount (
+    id INTEGER NOT NULL PRIMARY KEY,
+    count INTEGER NOT NULL
+);
+
+selectTasbihCount:
+SELECT * FROM TasbihCount;
+
+insertTasbihCount:
+INSERT INTO TasbihCount(
+    id,
+    count
+)
+VALUES (?, ?);
+
+updateTasbihCount:
+UPDATE TasbihCount
+SET count = ?
+WHERE id = ?;
+
+resetTasbihCount:
+UPDATE TasbihCount
+SET count = 0
+WHERE id = ?;

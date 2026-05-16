@@ -64,7 +64,12 @@ class AuthRepositoryImpl(
             // Simpan semua ke DataStore untuk session persistence
             try {
                 preferences.saveAuthToken(data.token)
-                preferences.saveUserInfo(nim = data.nimnrk, name = data.nama)
+                preferences.saveUserInfo(
+                    nim = data.nimnrk,
+                    name = data.nama,
+                    email = data.email,
+                    photoUrl = data.photo
+                )
                 preferences.saveDeviceInfo(device = DEVICE_NAME, deviceId = DEVICE_ID)
             } catch (e: Exception) {
                 throw Exception("Login berhasil tetapi gagal menyimpan sesi. Coba login ulang.")
@@ -83,17 +88,24 @@ class AuthRepositoryImpl(
     override val currentUser: Flow<User?> = combine(
         preferences.authToken,
         preferences.userNim,
-        preferences.userName
-    ) { token, nim, name ->
+        preferences.userName,
+        preferences.userEmail,
+        preferences.userPhotoUrl
+    ) { values ->
+        val token = values[0]
+        val nim = values[1]
+        val name = values[2]
+        val email = values[3]
+        val photoUrl = values[4]
         if (token != null && nim != null && name != null) {
             User(
                 userId = "",
                 nama = name,
                 nim = nim,
-                email = "$nim@student.itera.ac.id",
+                email = email ?: "$nim@student.itera.ac.id",
                 unit = "",
                 level = "mahasiswa",
-                photoUrl = "",
+                photoUrl = photoUrl ?: "",
                 token = token
             )
         } else null

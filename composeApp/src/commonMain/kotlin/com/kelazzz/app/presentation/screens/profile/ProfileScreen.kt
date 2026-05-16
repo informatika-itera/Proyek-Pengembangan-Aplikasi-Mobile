@@ -1,7 +1,6 @@
 package com.kelazzz.app.presentation.screens.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,19 +40,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Profile Screen — menampilkan info mahasiswa + logout
  *
- * Diakses dari ikon profil di TopAppBar, bukan dari bottom nav.
- * Logo aplikasi ditampilkan di TopAppBar (bukan di sini) agar
- * tidak terlihat seperti foto profil user.
+ * Foto profil dimuat dari URL API (`data.photo`).
+ * Jika foto gagal dimuat, menampilkan fallback ikon Person.
  */
 @Composable
 fun ProfileScreen(
@@ -120,58 +121,44 @@ fun ProfileScreen(
                             MaterialTheme.colorScheme.surface
                         ),
                         startY = 0f,
-                        endY = 550f
+                        endY = 600f
                     )
                 )
-                .padding(top = 36.dp, bottom = 44.dp),
+                .padding(top = 32.dp, bottom = 48.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 24.dp)
             ) {
-                // Avatar lingkaran dengan ikon person (bukan logo)
-                Box(
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(52.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                // ========== AVATAR — Foto dari API atau fallback ==========
+                ProfileAvatar(
+                    photoUrl = uiState.photoUrl,
+                    modifier = Modifier.size(120.dp)
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Nama user — bold, prominent, theme-aware color
+                // Nama user — large, extra bold, prominent
                 Text(
                     text = uiState.nama,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onPrimary,
-                    letterSpacing = 0.3.sp
+                    textAlign = TextAlign.Center,
+                    letterSpacing = 0.3.sp,
+                    lineHeight = 34.sp
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // NIM — semi-bold, slightly smaller, kontras tapi tidak putih polos
+                // NIM — jelas, readable, semi-bold
                 Text(
                     text = uiState.nim,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                    letterSpacing = 1.sp
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                    letterSpacing = 1.5.sp
                 )
             }
         }
@@ -252,8 +239,8 @@ fun ProfileScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -326,7 +313,68 @@ fun ProfileScreen(
     }
 }
 
-// ==================== HELPER COMPOSABLE ====================
+// ==================== HELPER COMPOSABLES ====================
+
+/**
+ * Avatar profil yang memuat foto dari URL API.
+ * Menampilkan fallback ikon Person jika URL kosong atau gagal dimuat.
+ */
+@Composable
+private fun ProfileAvatar(
+    photoUrl: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.secondaryContainer
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        if (photoUrl.isNotBlank()) {
+            SubcomposeAsyncImage(
+                model = photoUrl,
+                contentDescription = "Foto Profil",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+                loading = {
+                    // Fallback saat loading
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                error = {
+                    // Fallback jika gagal load
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            )
+        } else {
+            // Tidak ada URL foto
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
 
 @Composable
 private fun ProfileInfoRow(

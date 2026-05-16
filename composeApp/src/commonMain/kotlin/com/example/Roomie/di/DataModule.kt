@@ -28,6 +28,6 @@ val dataModule = module {
     // Repositories
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class
     singleOf(::BookingRepositoryImpl) bind BookingRepository::class
-    single<ReportRepository> { ReportRepositoryImpl(get()) }
-    single<FacilityRepository> { FacilityRepositoryImpl(get()) }
+    singleOf(::ReportRepositoryImpl) bind ReportRepository::class
+    singleOf(::FacilityRepositoryImpl) bind FacilityRepository::class
 }

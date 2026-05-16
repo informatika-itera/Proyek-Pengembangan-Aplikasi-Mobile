@@ -9,8 +9,8 @@ object AppConfig {
     val current = AppEnvironment.DEV
 
     val databaseName: String = when (current) {
-        AppEnvironment.DEV -> "roomie_dev.db"
-        AppEnvironment.PROD -> "roomie.db"
+        AppEnvironment.DEV -> "roomie_dev_v1.db"
+        AppEnvironment.PROD -> "roomie_v1.db"
     }
 
     val baseUrl: String = when (current) {

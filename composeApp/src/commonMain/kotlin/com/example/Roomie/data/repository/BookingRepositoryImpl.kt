@@ -30,7 +30,7 @@ class BookingRepositoryImpl(
                         buildingName = entity.buildingName,
                         startTime = entity.startTime,
                         endTime = entity.endTime,
-                        status = BookingStatus.valueOf(entity.status),
+                        status = try { BookingStatus.valueOf(entity.status) } catch (e: Exception) { BookingStatus.UPCOMING },
                         subject = entity.subject
                     )
                 }

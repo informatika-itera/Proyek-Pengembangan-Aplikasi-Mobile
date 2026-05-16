@@ -29,8 +29,8 @@ class ReportRepositoryImpl(
                         category = entity.category,
                         location = entity.location,
                         description = entity.description,
-                        urgency = UrgencyLevel.valueOf(entity.urgency),
-                        status = ReportStatus.valueOf(entity.status),
+                        urgency = try { UrgencyLevel.valueOf(entity.urgency) } catch (e: Exception) { UrgencyLevel.LOW },
+                        status = try { ReportStatus.valueOf(entity.status) } catch (e: Exception) { ReportStatus.PENDING },
                         createdAt = entity.createdAt
                     )
                 }
@@ -38,19 +38,23 @@ class ReportRepositoryImpl(
     }
 
     override suspend fun updateReportStatus(reportId: String, status: ReportStatus) {
-        queries.updateReportStatus(status.name, reportId)
+        withContext(Dispatchers.IO) {
+            queries.updateReportStatus(status.name, reportId)
+        }
     }
 
     override suspend fun submitReport(report: Report) {
-        queries.insertReport(
-            id = report.id,
-            category = report.category,
-            location = report.location,
-            description = report.description,
-            urgency = report.urgency.name,
-            status = report.status.name,
-            createdAt = report.createdAt
-        )
+        withContext(Dispatchers.IO) {
+            queries.insertReport(
+                id = report.id,
+                category = report.category,
+                location = report.location,
+                description = report.description,
+                urgency = report.urgency.name,
+                status = report.status.name,
+                createdAt = report.createdAt
+            )
+        }
     }
 
     suspend fun seedDummyReports() {

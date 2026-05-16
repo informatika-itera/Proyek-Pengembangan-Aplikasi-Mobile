@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.rosea.presentation.screens.ai.AIAssistantScreen
+import com.example.rosea.presentation.screens.cart.CartScreen
 import com.example.rosea.presentation.screens.detail.DetailScreen
 import com.example.rosea.presentation.screens.home.HomeScreen
 
@@ -21,9 +22,9 @@ fun AppNavHost(
     ) {
         composable(Routes.HOME) {
             HomeScreen(
-                onNavigateToAddNote = { /* Tetap biarkan, nanti jadi CartScreen */ },
+                // Tombol Floating Action Button Tas Belanja sekarang aktif!
+                onNavigateToAddNote = { navController.navigate(Routes.CART) },
                 onNavigateToDetail = { productId ->
-                    // Pindah ke layar Detail dengan membawa ID Produk!
                     navController.navigate(Routes.createDetailRoute(productId))
                 },
                 onNavigateToAI = { navController.navigate(Routes.AI_ASSISTANT) }
@@ -37,6 +38,12 @@ fun AppNavHost(
             val productId = backStackEntry.arguments?.getLong("productId") ?: return@composable
             DetailScreen(
                 productId = productId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.CART) {
+            CartScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

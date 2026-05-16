@@ -20,6 +20,7 @@ import com.example.rosea.data.repository.CartRepositoryImpl
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
 import com.example.rosea.presentation.screens.home.HomeViewModel
 import com.example.rosea.presentation.screens.detail.DetailViewModel
+import com.example.rosea.presentation.screens.cart.CartViewModel
 
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -74,6 +75,7 @@ val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::DetailViewModel)
+    viewModelOf(::CartViewModel)
 }
 
 // ==================== SHARED MODULES ====================

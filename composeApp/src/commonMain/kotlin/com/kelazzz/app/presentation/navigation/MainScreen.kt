@@ -4,8 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
@@ -28,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -43,11 +43,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kelazzz.app.presentation.screens.ai.AIScreen
-import com.kelazzz.app.presentation.screens.home.HomeEvent
 import com.kelazzz.app.presentation.screens.home.HomeScreen
 import com.kelazzz.app.presentation.screens.home.HomeViewModel
 import com.kelazzz.app.presentation.screens.kalender.KalenderScreen
 import com.kelazzz.app.presentation.screens.presensi.PresensiScreen
+import com.kelazzz.app.presentation.screens.profile.ProfileScreen
 import com.kelazzz.app.presentation.screens.rekap.RekapScreen
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -107,19 +107,16 @@ fun MainScreen(
     val homeViewModel: HomeViewModel = koinViewModel()
     val userName by homeViewModel.userName.collectAsStateWithLifecycle()
 
-    // Handle logout event
-    LaunchedEffect(Unit) {
-        homeViewModel.events.collect { event ->
-            when (event) {
-                is HomeEvent.LoggedOut -> onLogout()
-            }
-        }
-    }
+    // Cek apakah sedang di Profile screen (untuk sembunyikan bottom bar)
+    val isOnProfileScreen = currentDestination?.hasRoute(Route.Profile::class) == true
 
     // Determine current tab title
-    val currentTitle = bottomNavItems.find { item ->
-        currentDestination?.hasRoute(item.route::class) == true
-    }?.label ?: "KelazZz"
+    val currentTitle = when {
+        isOnProfileScreen -> "Profil"
+        else -> bottomNavItems.find { item ->
+            currentDestination?.hasRoute(item.route::class) == true
+        }?.label ?: "KelazZz"
+    }
 
     Scaffold(
         topBar = {
@@ -131,11 +128,21 @@ fun MainScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = homeViewModel::logout) {
+                    // Ikon profil — navigasi ke Profile screen
+                    IconButton(
+                        onClick = {
+                            if (!isOnProfileScreen) {
+                                innerNavController.navigate(Route.Profile) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = "Profil",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 },
@@ -146,46 +153,53 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp
+            // Sembunyikan bottom bar saat di Profile screen
+            AnimatedVisibility(
+                visible = !isOnProfileScreen,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it })
             ) {
-                bottomNavItems.forEach { item ->
-                    val isSelected = currentDestination?.hasRoute(item.route::class) == true
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 4.dp
+                ) {
+                    bottomNavItems.forEach { item ->
+                        val isSelected = currentDestination?.hasRoute(item.route::class) == true
 
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = {
-                            if (!isSelected) {
-                                innerNavController.navigate(item.route) {
-                                    // Pop up to start destination agar back stack bersih
-                                    popUpTo(Route.Home) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                if (!isSelected) {
+                                    innerNavController.navigate(item.route) {
+                                        // Pop up to start destination agar back stack bersih
+                                        popUpTo(Route.Home) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                contentDescription = item.label
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                    contentDescription = item.label
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = item.label,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer
                             )
-                        },
-                        label = {
-                            Text(
-                                text = item.label,
-                                fontSize = 11.sp,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
                         )
-                    )
+                    }
                 }
             }
         }
@@ -209,6 +223,12 @@ fun MainScreen(
             }
             composable<Route.Kalender> {
                 KalenderScreen()
+            }
+            composable<Route.Profile> {
+                ProfileScreen(
+                    onLogout = onLogout,
+                    onBack = { innerNavController.popBackStack() }
+                )
             }
         }
     }

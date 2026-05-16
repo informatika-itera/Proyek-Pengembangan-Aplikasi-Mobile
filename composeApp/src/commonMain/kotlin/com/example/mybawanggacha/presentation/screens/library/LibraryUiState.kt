@@ -6,6 +6,9 @@ import com.example.mybawanggacha.domain.model.MediaType
 
 sealed interface LibraryUiState {
     data object Loading : LibraryUiState
+    data class Empty(
+        val selectedStatus: LibraryStatus?
+    ) : LibraryUiState
     data class Success(
         val entries: List<LibraryEntry>,
         val selectedStatus: LibraryStatus?

@@ -114,7 +114,7 @@ private fun LibraryEntryEditorContent(
             .padding(start = 4.dp, top = 32.dp, end = 20.dp, bottom = 32.dp)
     ) {
         Text(
-            text = if (state.entryId == null) "Tambah ke My List" else "Edit My List",
+            text = if (state.entryId == null) "Tambah ke My Library" else "Edit My Library",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold
@@ -150,7 +150,7 @@ private fun LibraryEntryEditorContent(
             OutlinedTextField(
                 value = state.progressText,
                 onValueChange = onProgressChange,
-                label = { Text("Progress") },
+                label = { Text("Progress episode") },
                 singleLine = true,
                 modifier = Modifier.weight(1f)
             )
@@ -158,7 +158,7 @@ private fun LibraryEntryEditorContent(
             OutlinedTextField(
                 value = state.totalText,
                 onValueChange = onTotalChange,
-                label = { Text("Total") },
+                label = { Text("Total episode") },
                 singleLine = true,
                 modifier = Modifier.weight(1f)
             )

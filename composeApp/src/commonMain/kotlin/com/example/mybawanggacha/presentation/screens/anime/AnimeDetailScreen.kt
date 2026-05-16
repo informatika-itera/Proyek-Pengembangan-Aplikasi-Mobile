@@ -96,7 +96,7 @@ fun AnimeDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Tambah ke My List"
+                            contentDescription = "Tambah ke My Library"
                         )
                     }
                 }

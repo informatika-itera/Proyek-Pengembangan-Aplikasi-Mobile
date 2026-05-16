@@ -125,10 +125,10 @@ fun MyListScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 when (val state = uiState) {
                     LibraryUiState.Loading -> LoadingIndicator()
+                    is LibraryUiState.Empty -> LibraryEmptyState(selectedStatus = state.selectedStatus)
                     is LibraryUiState.Error -> ErrorState(message = state.message)
                     is LibraryUiState.Success -> LibraryEntryList(
                         entries = state.entries,
-                        selectedStatus = state.selectedStatus,
                         onOpenEntry = onNavigateToDetail,
                         onEditEntry = onEditEntry,
                         onDeleteEntry = { deleteTarget = it }
@@ -171,21 +171,20 @@ private fun LibraryStatusFilterRow(
 }
 
 @Composable
+private fun LibraryEmptyState(selectedStatus: LibraryStatus?) {
+    EmptyState(
+        title = if (selectedStatus == null) "My Library masih kosong" else "Belum ada item ${selectedStatus.defaultLabel}",
+        message = "Tambahkan anime dari halaman detail, lalu atur status, progress, score, dan catatan di sini."
+    )
+}
+
+@Composable
 private fun LibraryEntryList(
     entries: List<LibraryEntry>,
-    selectedStatus: LibraryStatus?,
     onOpenEntry: (Int, MediaType) -> Unit,
     onEditEntry: (LibraryEntry) -> Unit,
     onDeleteEntry: (LibraryEntry) -> Unit
 ) {
-    if (entries.isEmpty()) {
-        EmptyState(
-            title = if (selectedStatus == null) "My Library masih kosong" else "Belum ada item ${selectedStatus.defaultLabel}",
-            message = "Tambahkan anime dari halaman detail, lalu atur status, progress, score, dan catatan di sini."
-        )
-        return
-    }
-
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 32.dp),

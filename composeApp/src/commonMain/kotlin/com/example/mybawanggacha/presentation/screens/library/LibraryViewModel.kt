@@ -29,10 +29,14 @@ class LibraryViewModel(
             entries.filter { it.status == status }
         } ?: entries
 
-        LibraryUiState.Success(
-            entries = filtered,
-            selectedStatus = selectedStatus
-        ) as LibraryUiState
+        if (filtered.isEmpty()) {
+            LibraryUiState.Empty(selectedStatus = selectedStatus)
+        } else {
+            LibraryUiState.Success(
+                entries = filtered,
+                selectedStatus = selectedStatus
+            )
+        }
     }
         .catch { error ->
             emit(LibraryUiState.Error(error.message ?: "Gagal memuat daftar anime/manga"))

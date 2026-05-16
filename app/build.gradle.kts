@@ -1,8 +1,7 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
-    // HAPUS BARIS kotlin.compose DARI SINI JIKA ADA
 }
 
 android {
@@ -39,7 +38,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1" // Tambahkan/pastikan baris ini ada
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
 }
 

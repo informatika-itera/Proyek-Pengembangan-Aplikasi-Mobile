@@ -27,6 +27,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HomeScreen(
     onNavigateToSearch: () -> Unit,
+    onNavigateToSchedule: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -52,6 +53,7 @@ fun HomeScreen(
                     HomeContent(
                         state = state,
                         onNavigateToSearch = onNavigateToSearch,
+                        onNavigateToSchedule = onNavigateToSchedule,
                         onNavigateToReport = { /* Navigasi ke Lapor */ }
                     )
                 }
@@ -71,6 +73,7 @@ fun HomeScreen(
 fun HomeContent(
     state: HomeUiState.Success,
     onNavigateToSearch: () -> Unit,
+    onNavigateToSchedule: () -> Unit,
     onNavigateToReport: () -> Unit
 ) {
     LazyColumn(
@@ -175,7 +178,7 @@ fun HomeContent(
                         label = AppStrings.HOME_SCHEDULE,
                         color = Color(0xFF4CAF50),
                         modifier = Modifier.weight(1f),
-                        onClick = {}
+                        onClick = onNavigateToSchedule
                     )
                     QuickActionItem(
                         icon = Icons.AutoMirrored.Filled.HelpOutline,

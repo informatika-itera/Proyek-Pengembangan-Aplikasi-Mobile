@@ -20,4 +20,7 @@ val domainModule = module {
     factoryOf(::GetAllReportsUseCase)
     factoryOf(::UpdateReportStatusUseCase)
     factoryOf(::SubmitReportUseCase)
+
+    // Booking UseCases
+    factoryOf(::GetAllBookingsUseCase)
 }

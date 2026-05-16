@@ -46,7 +46,13 @@ fun AppNavHost(
         }
 
         composable<Route.Home> {
-            HomeScreen()
+            HomeScreen(
+                onLogout = {
+                    navController.navigate(Route.Login) {
+                        popUpTo(Route.Home) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // TODO: Sprint 2 — more screens

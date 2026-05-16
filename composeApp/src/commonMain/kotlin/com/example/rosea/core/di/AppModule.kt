@@ -8,20 +8,18 @@ import com.example.rosea.data.local.datastore.UserPreferences
 import com.example.rosea.data.local.datastore.create
 import com.example.rosea.data.remote.api.GeminiService
 import com.example.rosea.data.repository.AIRepositoryImpl
-import com.example.rosea.data.repository.NoteRepositoryImpl
 import com.example.rosea.domain.repository.AIRepository
-import com.example.rosea.domain.repository.NoteRepository
-import com.example.rosea.domain.usecase.DeleteNoteUseCase
-import com.example.rosea.domain.usecase.GenerateIdeasUseCase
-import com.example.rosea.domain.usecase.GetAllNotesUseCase
-import com.example.rosea.domain.usecase.ImproveWritingUseCase
-import com.example.rosea.domain.usecase.SaveNoteUseCase
-import com.example.rosea.domain.usecase.SearchNotesUseCase
-import com.example.rosea.domain.usecase.SummarizeNoteUseCase
-import com.example.rosea.presentation.screens.addnote.AddNoteViewModel
+
+// === IMPORT REPOSITORY BARU ===
+import com.example.rosea.domain.repository.ProductRepository
+import com.example.rosea.data.repository.ProductRepositoryImpl
+import com.example.rosea.domain.repository.CartRepository
+import com.example.rosea.data.repository.CartRepositoryImpl
+
+// Import ViewModel yang tersisa
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
-import com.example.rosea.presentation.screens.detail.NoteDetailViewModel
-import com.example.rosea.presentation.screens.home.HomeViewModel
+// import com.example.rosea.presentation.screens.home.HomeViewModel
+
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -42,6 +40,7 @@ val networkModule = module {
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
+        // Nama instance database tetap NoteDatabase sesuai bawaan generator SQLDelight
         NoteDatabase(driverFactory.createDriver())
     }
 }
@@ -56,29 +55,32 @@ val preferencesModule = module {
 // ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
+    // Injeksi antarmuka repository ROSÉA ke implementasinya
+    singleOf(::ProductRepositoryImpl) bind ProductRepository::class
+    singleOf(::CartRepositoryImpl) bind CartRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
-    singleOf(::GetAllNotesUseCase)
-    singleOf(::SearchNotesUseCase)
-    singleOf(::SaveNoteUseCase)
-    singleOf(::DeleteNoteUseCase)
-    singleOf(::SummarizeNoteUseCase)
-    singleOf(::ImproveWritingUseCase)
-    singleOf(::GenerateIdeasUseCase)
+    // KOSONG SEMENTARA
+    // Semua UseCase NoteAI lama (SaveNoteUseCase, dll) sudah dihapus.
+    // Kita akan menyuntikkan Repository langsung ke ViewModel untuk versi sederhana,
+    // atau membuat UseCase Product baru nanti.
 }
 
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
+    // Viewmodel AI tetap dipertahankan karena independen
     viewModelOf(::AIAssistantViewModel)
+
+    // TODO: Komen sementara karena ViewModel ini masih berisi kode NoteAI lama.
+    // Jika tidak di-komen, aplikasi akan merah/error saat proses Build.
+    // viewModelOf(::HomeViewModel)
+    // viewModelOf(::NoteDetailViewModel)
+    // viewModelOf(::AddNoteViewModel)
 }
 
 // ==================== SHARED MODULES ====================

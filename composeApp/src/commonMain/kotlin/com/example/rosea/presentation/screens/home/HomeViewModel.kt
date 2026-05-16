@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rosea.domain.model.Note
 import com.example.rosea.domain.model.NoteCategory
-import com.example.rosea.domain.repository.NoteRepository
 import com.example.rosea.domain.usecase.DeleteNoteUseCase
 import com.example.rosea.domain.usecase.GetAllNotesUseCase
 import com.example.rosea.domain.usecase.NoteSortBy

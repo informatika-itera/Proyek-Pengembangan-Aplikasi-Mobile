@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.rosea.domain.model.Note
 import com.example.rosea.domain.model.NoteCategory
 import com.example.rosea.domain.model.NoteColor
-import com.example.rosea.domain.repository.NoteRepository
 import com.example.rosea.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

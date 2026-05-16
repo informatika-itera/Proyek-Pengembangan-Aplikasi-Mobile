@@ -3,7 +3,6 @@ package com.example.rosea.presentation.screens.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rosea.domain.model.Note
-import com.example.rosea.domain.repository.NoteRepository
 import com.example.rosea.domain.usecase.DeleteNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

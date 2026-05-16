@@ -4,7 +4,6 @@ import app.cash.turbine.test
 import com.example.rosea.domain.model.Note
 import com.example.rosea.domain.model.NoteCategory
 import com.example.rosea.domain.model.NoteColor
-import com.example.rosea.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

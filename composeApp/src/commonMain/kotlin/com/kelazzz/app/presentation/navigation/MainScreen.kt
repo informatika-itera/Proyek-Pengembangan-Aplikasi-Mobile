@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -155,16 +156,13 @@ fun MainScreen(
                                 painter = painterResource(Res.drawable.logo),
                                 contentDescription = "Logo KelazZz",
                                 modifier = Modifier
-                                    .size(52.dp)
-                                    .clip(CircleShape),
+                                    .size(80.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
                                 contentScale = ContentScale.Crop
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                         }
-                        Text(
-                            text = if (currentTitle == "Home") "KelazZz" else currentTitle,
-                            fontWeight = FontWeight.Bold
-                        )
+                      
                     }
                 },
                 actions = {

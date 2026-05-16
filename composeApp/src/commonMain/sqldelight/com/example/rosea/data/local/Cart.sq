@@ -17,7 +17,7 @@ ORDER BY added_at DESC;
 -- CREATE: Menambahkan produk baru ke dalam tas belanja
 insertCartItem:
 INSERT OR IGNORE INTO CartEntity (product_id, product_name, brand, price, image_url, quantity, added_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- UPDATE: Mengubah jumlah kuantitas produk (+ atau -) di dalam tas belanja
 updateCartItemQuantity:

@@ -16,9 +16,9 @@ import com.example.rosea.data.repository.ProductRepositoryImpl
 import com.example.rosea.domain.repository.CartRepository
 import com.example.rosea.data.repository.CartRepositoryImpl
 
-// Import ViewModel yang tersisa
+// === IMPORT VIEWMODEL ===
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
-// import com.example.rosea.presentation.screens.home.HomeViewModel
+import com.example.rosea.presentation.screens.home.HomeViewModel
 
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -65,22 +65,13 @@ val repositoryModule = module {
 
 val useCaseModule = module {
     // KOSONG SEMENTARA
-    // Semua UseCase NoteAI lama (SaveNoteUseCase, dll) sudah dihapus.
-    // Kita akan menyuntikkan Repository langsung ke ViewModel untuk versi sederhana,
-    // atau membuat UseCase Product baru nanti.
 }
 
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
-    // Viewmodel AI tetap dipertahankan karena independen
     viewModelOf(::HomeViewModel)
     viewModelOf(::AIAssistantViewModel)
-
-    // TODO: Komen sementara karena ViewModel ini masih berisi kode NoteAI lama.
-    // Jika tidak di-komen, aplikasi akan merah/error saat proses Build.
-    // viewModelOf(::NoteDetailViewModel)
-    // viewModelOf(::AddNoteViewModel)
 }
 
 // ==================== SHARED MODULES ====================

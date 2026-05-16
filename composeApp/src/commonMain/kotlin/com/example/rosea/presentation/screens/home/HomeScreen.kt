@@ -3,26 +3,32 @@ package com.example.rosea.presentation.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.NoteAlt
 import androidx.compose.material.icons.outlined.Sort
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,49 +48,52 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.rosea.domain.model.Note
-import com.example.rosea.domain.model.NoteCategory
-import com.example.rosea.domain.usecase.NoteSortBy
-import com.example.rosea.presentation.components.EmptyState
-import com.example.rosea.presentation.components.ErrorState
-import com.example.rosea.presentation.components.LoadingIndicator
-import com.example.rosea.presentation.components.NoteCard
+import coil3.compose.AsyncImage
+import com.example.rosea.domain.model.Product
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    // Param dibiarkan AddNote sementara agar file Navigasi tidak error, tapi iconnya sudah jadi Keranjang
     onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAI: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
+
     var showSearch by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     if (showSearch) {
                         SearchField(
-                            query = when (val state = uiState) {
-                                is HomeUiState.Success -> state.query
-                                is HomeUiState.Empty -> state.query
-                                else -> ""
-                            },
+                            query = searchQuery,
                             onQueryChange = viewModel::onSearchQueryChange,
                             onClear = {
-                                viewModel.clearSearch()
+                                viewModel.onSearchQueryChange("")
                                 showSearch = false
                             }
                         )
                     } else {
-                        Text("Rosea")
+                        Text(
+                            text = "ROSÉA",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 actions = {
@@ -92,31 +101,40 @@ fun HomeScreen(
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, contentDescription = "Cari")
                         }
-                        
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
+
+                        Box {
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
+                            }
+                            SortDropdownMenu(
+                                expanded = showSortMenu,
+                                currentSortBy = sortOrder,
+                                onSortSelected = {
+                                    viewModel.onSortOrderChange(it)
+                                    showSortMenu = false
+                                },
+                                onDismiss = { showSortMenu = false }
+                            )
                         }
-                        
-                        SortDropdownMenu(
-                            expanded = showSortMenu,
-                            currentSortBy = currentSortBy,
-                            onSortSelected = { 
-                                viewModel.onSortByChanged(it)
-                                showSortMenu = false
-                            },
-                            onDismiss = { showSortMenu = false }
-                        )
                     }
-                    
+
                     IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
+                        Icon(
+                            Icons.Outlined.AutoAwesome,
+                            contentDescription = "AI Beauty Advisor",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAddNote) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+            FloatingActionButton(
+                onClick = onNavigateToAddNote, // Nanti akan diarahkan ke Shopping Bag
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.ShoppingBag, contentDescription = "Tas Belanja")
             }
         }
     ) { paddingValues ->
@@ -125,57 +143,32 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Kategori Skincare/Makeup
+            val categories = listOf("Cleanser", "Toner", "Moisturizer", "Sunscreen", "Serum", "Mask")
             CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
-                    else -> null
-                },
-                onCategorySelected = viewModel::onCategorySelected
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = viewModel::onCategorySelect
             )
-            
+
             when (val state = uiState) {
                 is HomeUiState.Loading -> {
-                    LoadingIndicator()
+                    CircularProgressIndicator()
                 }
-                
                 is HomeUiState.Success -> {
-                    NotesList(
-                        notes = state.notes,
-                        onNoteClick = onNavigateToDetail,
-                        onPinClick = viewModel::togglePin,
-                        onDeleteClick = viewModel::deleteNote
-                    )
-                }
-                
-                is HomeUiState.Empty -> {
-                    EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
-                            "Tidak Ditemukan"
-                        } else {
-                            "Belum Ada Catatan"
-                        },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
-                        } else {
-                            "Tap + untuk membuat catatan baru"
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Outlined.NoteAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            )
+                    if (state.products.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Produk tidak ditemukan.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                    )
-                }
-                
-                is HomeUiState.Error -> {
-                    ErrorState(
-                        message = state.message,
-                        onRetry = { viewModel.clearSearch() }
-                    )
+                    } else {
+                        ProductGrid(
+                            products = state.products,
+                            onProductClick = onNavigateToDetail
+                        )
+                    }
                 }
             }
         }
@@ -191,16 +184,18 @@ private fun SearchField(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Cari catatan...") },
+        placeholder = { Text("Cari skincare atau brand...") },
         singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 8.dp),
         trailingIcon = {
             AnimatedVisibility(
                 visible = query.isNotBlank(),
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                IconButton(onClick = onClear) {
+                IconButton(onClick = { onQueryChange("") }) {
                     Icon(Icons.Default.Close, contentDescription = "Hapus")
                 }
             }
@@ -211,37 +206,34 @@ private fun SearchField(
 @Composable
 private fun SortDropdownMenu(
     expanded: Boolean,
-    currentSortBy: NoteSortBy,
-    onSortSelected: (NoteSortBy) -> Unit,
+    currentSortBy: SortOrder,
+    onSortSelected: (SortOrder) -> Unit,
     onDismiss: () -> Unit
 ) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss
     ) {
-        NoteSortBy.entries.forEach { sortBy ->
-            DropdownMenuItem(
-                text = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(sortBy.displayName)
-                        if (sortBy == currentSortBy) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                },
-                onClick = { onSortSelected(sortBy) }
-            )
-        }
+        DropdownMenuItem(
+            text = { Text("Relevansi", fontWeight = if (currentSortBy == SortOrder.NONE) FontWeight.Bold else FontWeight.Normal) },
+            onClick = { onSortSelected(SortOrder.NONE) }
+        )
+        DropdownMenuItem(
+            text = { Text("Harga: Rendah ke Tinggi", fontWeight = if (currentSortBy == SortOrder.PRICE_LOW_TO_HIGH) FontWeight.Bold else FontWeight.Normal) },
+            onClick = { onSortSelected(SortOrder.PRICE_LOW_TO_HIGH) }
+        )
+        DropdownMenuItem(
+            text = { Text("Harga: Tinggi ke Rendah", fontWeight = if (currentSortBy == SortOrder.PRICE_HIGH_TO_LOW) FontWeight.Bold else FontWeight.Normal) },
+            onClick = { onSortSelected(SortOrder.PRICE_HIGH_TO_LOW) }
+        )
     }
 }
 
 @Composable
 private fun CategoryFilterRow(
-    selectedCategory: NoteCategory?,
-    onCategorySelected: (NoteCategory?) -> Unit
+    categories: List<String>,
+    selectedCategory: String?,
+    onCategorySelected: (String?) -> Unit
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -254,42 +246,94 @@ private fun CategoryFilterRow(
                 label = { Text("Semua") }
             )
         }
-        
-        items(NoteCategory.entries) { category ->
+        items(categories) { category ->
             FilterChip(
                 selected = selectedCategory == category,
-                onClick = { 
-                    onCategorySelected(
-                        if (selectedCategory == category) null else category
-                    )
+                onClick = {
+                    onCategorySelected(if (selectedCategory == category) null else category)
                 },
-                label = { Text(category.displayName) }
+                label = { Text(category) }
             )
         }
     }
 }
 
 @Composable
-private fun NotesList(
-    notes: List<Note>,
-    onNoteClick: (Long) -> Unit,
-    onPinClick: (Long) -> Unit,
-    onDeleteClick: (Long) -> Unit
+private fun ProductGrid(
+    products: List<Product>,
+    onProductClick: (Long) -> Unit
 ) {
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2), // Membuat 2 kolom sejajar
         contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(
-            items = notes,
-            key = { it.id }
-        ) { note ->
-            NoteCard(
-                note = note,
-                onClick = { onNoteClick(note.id) },
-                onPinClick = { onPinClick(note.id) },
-                onDeleteClick = { onDeleteClick(note.id) }
+        items(products, key = { it.id }) { product ->
+            ProductCard(
+                product = product,
+                onClick = { onProductClick(product.id) }
             )
+        }
+    }
+}
+
+@Composable
+private fun ProductCard(
+    product: Product,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            // Gambar Produk dengan Placeholder abu-abu sementara gambar dimuat
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = product.brand,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Format Harga ke Rupiah untuk Kotlin Multiplatform
+                val priceStr = product.price.toLong().toString()
+                val formattedPrice = priceStr.reversed().chunked(3).joinToString(".").reversed()
+
+                Text(
+                    text = "Rp $formattedPrice",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 }

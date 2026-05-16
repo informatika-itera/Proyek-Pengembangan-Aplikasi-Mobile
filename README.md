@@ -1,4 +1,4 @@
-# MyWallet — Expense Tracker App
+# MyWallet - Expense Tracker App
 
 ![CI](https://github.com/HANIFAHHASANAH-123140082/123140082-123140069-MyWallet/actions/workflows/ci.yml/badge.svg)
 
@@ -8,9 +8,9 @@ Aplikasi mobile multiplatform untuk mencatat pengeluaran, budgeting, dan melihat
 
 ## Tim
 
-| Nama | NIM | GitHub                                                                     |
-|------|-----|----------------------------------------------------------------------------|
-| Hanifah Hasanah | 123140082 | [@HANIFAHHASANAH-123140082](https://github.com/HANIFAHHASANAH-123140082)   |
+| Nama | NIM | GitHub |
+|------|-----|--------|
+| Hanifah Hasanah | 123140082 | [@HANIFAHHASANAH-123140082](https://github.com/HANIFAHHASANAH-123140082) |
 | Zahwa Natasya Hamzah | 123140069 | [@15-069-ZahwaNatasyaHamzah](https://github.com/15-069-ZahwaNatasyaHamzah) |
 
 ---
@@ -24,25 +24,25 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 ## Fitur
 
 ### Minimum
-- [ ] Catat pengeluaran dengan kategori
-- [ ] Lihat daftar transaksi
-- [ ] Detail transaksi
-- [ ] Edit & hapus transaksi (CRUD)
+- [x] Catat pengeluaran dengan kategori
+- [x] Lihat daftar transaksi
+- [x] Detail transaksi
+- [x] Edit dan hapus transaksi (CRUD)
+- [x] Minimal 5 screen dengan navigasi
+- [x] State management dengan StateFlow + MVVM
+- [x] Dependency Injection dengan Koin
 - [ ] Statistik pengeluaran per kategori dan per bulan
-- [ ] Minimal 5 screen dengan navigasi
-- [ ] State management dengan StateFlow + MVVM
 - [ ] Local database dengan SQLDelight
-- [ ] Dependency Injection dengan Koin
-- [ ] Minimal 10 unit tests, 3 UI tests, coverage > 50%
+- [ ] Minimal 10 unit tests, 3 UI tests, coverage lebih dari 50%
 
 ### Bonus
-- [ ] iOS Support (+10%)
-- [ ] AI Integration dengan Gemini API (+10%)
-- [ ] Offline First (+5%)
-- [ ] Dark Mode (+5%)
-- [ ] Animations (+5%)
-- [ ] CI/CD (+5%)
-- [ ] Play Store Ready (+5%)
+- [ ] iOS Support 
+- [ ] AI Integration dengan Gemini API
+- [ ] Offline First 
+- [ ] Dark Mode 
+- [ ] Animations 
+- [x] CI/CD 
+- [ ] Play Store Ready
 
 ---
 
@@ -61,3 +61,80 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 ---
 
 ## Arsitektur
+
+PRESENTATION LAYER - UI (Composables), ViewModels, UI State
+
+DOMAIN LAYER - Use Cases, Domain Models, Repository Interfaces
+
+DATA LAYER - Repository Impl, Data Sources (Local), DTOs
+
+---
+
+## Struktur Folder
+
+composeApp/src/commonMain/kotlin/com/mywallet/
+- App.kt
+- di/ (Koin.kt, DataModule.kt, ViewModelModule.kt, Modules.kt)
+- data/local/ (TransactionLocalDataSource.kt)
+- data/repository/ (TransactionRepositoryImpl.kt)
+- data/model/ (TransactionEntity.kt)
+- domain/model/ (Transaction.kt)
+- domain/repository/ (TransactionRepository.kt)
+- domain/usecase/
+- navigation/ (NavGraph.kt, Screen.kt)
+- presentation/add/ (AddTransactionScreen.kt, AddTransactionViewModel.kt, EditTransactionScreen.kt)
+- presentation/components/ (TransactionItem.kt)
+- presentation/detail/ (DetailScreen.kt, DetailViewModel.kt)
+- presentation/home/ (HomeScreen.kt, HomeUiState.kt, HomeViewModel.kt)
+- presentation/screens/history/ (HistoryScreen.kt)
+
+---
+
+## Setup
+git clone https://github.com/HANIFAHHASANAH-123140082/123140082-123140069-MyWallet.git
+cd 123140082-123140069-MyWallet
+git checkout project/123140082-123140069-MyWallet
+.\gradlew.bat :composeApp:assembleDebug
+
+---
+
+## Sprint Plan
+
+| Sprint | Minggu | Target |
+|--------|--------|--------|
+| Sprint 1 | W11 | Planning, setup repo, CI/CD, arsitektur dasar |
+| Sprint 2 | W12 | Core features: screens, navigasi, data layer, CRUD |
+| Sprint 3 | W13 | Statistik, integrasi API, local DB |
+| Sprint 4 | W14 | UI polish, bug fixes, testing |
+| Sprint 5 | W15 | Final preparation, demo prep |
+| UAS | W16 | Final Demo Day |
+
+---
+
+## Task Assignment Sprint 1
+
+| Task |
+|------|
+| Setup GitHub repository |
+| Setup KMP project structure |
+| Clean Architecture folder |
+| Koin DI setup |
+| GitHub Actions CI |
+| README documentation |
+
+## Task Assignment Sprint 2
+
+| Task |
+|------|
+| HomeScreen + ViewModel |
+| DetailScreen + ViewModel |
+| AddTransactionScreen + ViewModel |
+| EditTransactionScreen |
+| HistoryScreen |
+| Navigation setup |
+| Data layer + Repository |
+| UI Design improvement |
+
+---
+
+Pengembangan Aplikasi Mobile 

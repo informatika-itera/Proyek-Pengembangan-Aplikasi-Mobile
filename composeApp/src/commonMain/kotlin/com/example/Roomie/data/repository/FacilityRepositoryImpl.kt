@@ -73,6 +73,22 @@ class FacilityRepositoryImpl(
             }
     }
 
+    override suspend fun updateRoomStatus(
+        roomId: String,
+        status: RoomStatus,
+        borrowerName: String?,
+        maintenanceDescription: String?
+    ) {
+        withContext(Dispatchers.IO) {
+            queries.updateRoomStatus(
+                status = status.name,
+                borrowerName = borrowerName,
+                maintenanceDescription = maintenanceDescription,
+                id = roomId
+            )
+        }
+    }
+
     private fun RoomEntity.toDomain(): Room {
         return Room(
             id = id,

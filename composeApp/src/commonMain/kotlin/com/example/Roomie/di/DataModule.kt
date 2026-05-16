@@ -5,10 +5,12 @@ import com.example.Roomie.data.local.RoomieDatabase
 import com.example.Roomie.data.local.datastore.DataStoreFactory
 import com.example.Roomie.data.local.datastore.UserPreferences
 import com.example.Roomie.data.local.datastore.create
+import com.example.Roomie.data.repository.AnnouncementRepositoryImpl
 import com.example.Roomie.data.repository.AuthRepositoryImpl
 import com.example.Roomie.data.repository.BookingRepositoryImpl
 import com.example.Roomie.data.repository.FacilityRepositoryImpl
 import com.example.Roomie.data.repository.ReportRepositoryImpl
+import com.example.Roomie.domain.repository.AnnouncementRepository
 import com.example.Roomie.domain.repository.AuthRepository
 import com.example.Roomie.domain.repository.BookingRepository
 import com.example.Roomie.domain.repository.FacilityRepository
@@ -30,4 +32,5 @@ val dataModule = module {
     singleOf(::BookingRepositoryImpl) bind BookingRepository::class
     singleOf(::ReportRepositoryImpl) bind ReportRepository::class
     singleOf(::FacilityRepositoryImpl) bind FacilityRepository::class
+    singleOf(::AnnouncementRepositoryImpl) bind AnnouncementRepository::class
 }

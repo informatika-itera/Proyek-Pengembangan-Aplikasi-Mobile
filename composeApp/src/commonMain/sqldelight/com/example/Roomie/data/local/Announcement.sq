@@ -1,0 +1,17 @@
+CREATE TABLE AnnouncementEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    author TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+getAllAnnouncements:
+SELECT * FROM AnnouncementEntity ORDER BY createdAt DESC;
+
+insertAnnouncement:
+INSERT OR REPLACE INTO AnnouncementEntity(id, title, message, author, createdAt)
+VALUES (?, ?, ?, ?, ?);
+
+deleteAnnouncement:
+DELETE FROM AnnouncementEntity WHERE id = ?;

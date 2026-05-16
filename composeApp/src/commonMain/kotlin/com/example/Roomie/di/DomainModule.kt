@@ -15,6 +15,7 @@ val domainModule = module {
     factoryOf(::GetRoomsByBuildingUseCase)
     factoryOf(::SearchRoomsUseCase)
     factoryOf(::GetRoomByIdUseCase)
+    factoryOf(::UpdateRoomStatusUseCase)
     
     // Report UseCases
     factoryOf(::GetAllReportsUseCase)
@@ -23,4 +24,8 @@ val domainModule = module {
 
     // Booking UseCases
     factoryOf(::GetAllBookingsUseCase)
+
+    // Announcement UseCases
+    factoryOf(::GetAllAnnouncementsUseCase)
+    factoryOf(::PostAnnouncementUseCase)
 }

@@ -35,6 +35,8 @@ class UserPreferences(
         val USER_NAME = stringPreferencesKey("user_name")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val DEVICE_NAME = stringPreferencesKey("device_name")
+        val DEVICE_ID = stringPreferencesKey("device_id")
     }
     
     // ==================== DARK MODE ====================
@@ -122,6 +124,23 @@ class UserPreferences(
     suspend fun setOnboardingCompleted() {
         dataStore.edit { prefs ->
             prefs[Keys.ONBOARDING_COMPLETED] = true
+        }
+    }
+    
+    // ==================== DEVICE INFO ====================
+    
+    val deviceId: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.DEVICE_ID]
+    }
+    
+    val deviceName: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.DEVICE_NAME]
+    }
+    
+    suspend fun saveDeviceInfo(device: String, deviceId: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.DEVICE_NAME] = device
+            prefs[Keys.DEVICE_ID] = deviceId
         }
     }
     

@@ -74,11 +74,11 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     // Viewmodel AI tetap dipertahankan karena independen
+    viewModelOf(::HomeViewModel)
     viewModelOf(::AIAssistantViewModel)
 
     // TODO: Komen sementara karena ViewModel ini masih berisi kode NoteAI lama.
     // Jika tidak di-komen, aplikasi akan merah/error saat proses Build.
-    // viewModelOf(::HomeViewModel)
     // viewModelOf(::NoteDetailViewModel)
     // viewModelOf(::AddNoteViewModel)
 }

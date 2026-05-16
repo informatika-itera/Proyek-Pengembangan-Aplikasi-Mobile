@@ -2,126 +2,95 @@ package com.example.rosea.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.rosea.domain.model.Note
-import com.example.rosea.domain.model.NoteCategory
-import com.example.rosea.domain.usecase.DeleteNoteUseCase
-import com.example.rosea.domain.usecase.GetAllNotesUseCase
-import com.example.rosea.domain.usecase.NoteSortBy
-import com.example.rosea.domain.usecase.SearchNotesUseCase
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.example.rosea.domain.model.Product
+import com.example.rosea.domain.repository.ProductRepository
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class)
 class HomeViewModel(
-    private val getAllNotesUseCase: GetAllNotesUseCase,
-    private val searchNotesUseCase: SearchNotesUseCase,
-    private val deleteNoteUseCase: DeleteNoteUseCase,
-    private val repository: NoteRepository
+    private val productRepository: ProductRepository
 ) : ViewModel() {
-    
+
     private val _searchQuery = MutableStateFlow("")
-    private val _selectedCategory = MutableStateFlow<NoteCategory?>(null)
-    private val _sortBy = MutableStateFlow(NoteSortBy.UPDATED_DESC)
-    private val _isLoading = MutableStateFlow(false)
-    
-    private val debouncedSearchQuery = _searchQuery.debounce(300)
-    
-    val sortBy: StateFlow<NoteSortBy> = _sortBy
-    
+    val searchQuery = _searchQuery.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory = _selectedCategory.asStateFlow()
+
+    private val _sortOrder = MutableStateFlow(SortOrder.NONE)
+    val sortOrder = _sortOrder.asStateFlow()
+
+    // Menggabungkan State secara reaktif (Memenuhi spesifikasi Sprint 3)
     val uiState: StateFlow<HomeUiState> = combine(
-        debouncedSearchQuery,
+        _searchQuery
+            .debounce(300L) // Fitur Lanjutan: Debounce menahan panggilan selama 300ms
+            .distinctUntilChanged(),
         _selectedCategory,
-        _sortBy
-    ) { query, category, sortBy ->
-        Triple(query, category, sortBy)
-    }.flatMapLatest { (query, category, sortBy) ->
-        if (query.isBlank() && category == null) {
-            getAllNotesUseCase(sortBy)
-        } else {
-            searchNotesUseCase(query, category)
+        _sortOrder
+    ) { query, category, sort ->
+        Triple(query, category, sort)
+    }.flatMapLatest { (query, category, sort) ->
+        val productFlow = when {
+            !category.isNullOrBlank() -> productRepository.getProductsByCategory(category)
+            query.isNotBlank() -> productRepository.searchProducts(query)
+            else -> productRepository.getAllProducts()
         }
-    }.combine(_isLoading) { notes, isLoading ->
-        when {
-            isLoading -> HomeUiState.Loading
-            notes.isEmpty() -> HomeUiState.Empty(
-                query = _searchQuery.value,
-                category = _selectedCategory.value
-            )
-            else -> HomeUiState.Success(
-                notes = notes,
-                query = _searchQuery.value,
-                category = _selectedCategory.value,
-                sortBy = _sortBy.value
-            )
+
+        productFlow.map { products ->
+            val processedList = when (sort) {
+                SortOrder.PRICE_LOW_TO_HIGH -> products.sortedBy { it.price }
+                SortOrder.PRICE_HIGH_TO_LOW -> products.sortedByDescending { it.price }
+                SortOrder.NONE -> products
+            }
+            HomeUiState.Success(processedList)
         }
-    }.catch { e ->
-        emit(HomeUiState.Error(e.message ?: "Terjadi kesalahan"))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState.Loading
     )
-    
-    // ==================== USER ACTIONS ====================
-    
+
+    init {
+        // Otomatis mengisi database lokal dengan dummy data kosmetik saat pertama kali aplikasi dibuka
+        prepopulateDummyProducts()
+    }
+
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
-    
-    fun clearSearch() {
-        _searchQuery.value = ""
-    }
-    
-    fun onCategorySelected(category: NoteCategory?) {
+
+    fun onCategorySelect(category: String?) {
         _selectedCategory.value = category
     }
-    
-    fun onSortByChanged(sortBy: NoteSortBy) {
-        _sortBy.value = sortBy
+
+    fun onSortOrderChange(order: SortOrder) {
+        _sortOrder.value = order
     }
-    
-    fun togglePin(noteId: Long) {
+
+    private fun prepopulateDummyProducts() {
         viewModelScope.launch {
-            repository.togglePinNote(noteId)
-        }
-    }
-    
-    fun deleteNote(noteId: Long) {
-        viewModelScope.launch {
-            deleteNoteUseCase(noteId)
-        }
-    }
-    
-    fun deleteNotes(noteIds: List<Long>) {
-        viewModelScope.launch {
-            repository.deleteNotes(noteIds)
+            productRepository.getAllProducts().first().let { currentList ->
+                if (currentList.isEmpty()) {
+                    val dummyData = listOf(
+                        Product(1, "Low pH Good Morning Gel Cleanser", "COSRX", "Pembersih wajah lembut dengan kadar pH rendah yang aman untuk kulit sensitif.", 145000.0, "Cleanser", "https://example.com/cosrx.jpg", 0, 0),
+                        Product(2, "Supple Preparation Unscented Toner", "Klairs", "Toner esensial berhidrasi tinggi tanpa kandungan wewangian atau alkohol.", 290000.0, "Toner", "https://example.com/klairs.jpg", 0, 0),
+                        Product(3, "Centella Calming Gel Cream", "iUNIK", "Pelembab bertekstur gel ringan yang sangat efektif menenangkan kulit berjerawat.", 195000.0, "Moisturizer", "https://example.com/iunik.jpg", 0, 0),
+                        Product(4, "Daily UV Defense Sunscreen SPF 36", "Innisfree", "Sunscreen berbasis air yang memberikan proteksi harian tanpa efek white-cast.", 160000.0, "Sunscreen", "https://example.com/innisfree.jpg", 0, 0)
+                    )
+                    dummyData.forEach { productRepository.insertProduct(it) }
+                }
+            }
         }
     }
 }
 
 sealed interface HomeUiState {
-    data object Loading : HomeUiState
-    
-    data class Success(
-        val notes: List<Note>,
-        val query: String = "",
-        val category: NoteCategory? = null,
-        val sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC
-    ) : HomeUiState
-    
-    data class Empty(
-        val query: String = "",
-        val category: NoteCategory? = null
-    ) : HomeUiState
-    
-    data class Error(val message: String) : HomeUiState
+    object Loading : HomeUiState
+    data class Success(val products: List<Product>) : HomeUiState
+}
+
+enum class SortOrder {
+    NONE, PRICE_LOW_TO_HIGH, PRICE_HIGH_TO_LOW
 }

@@ -23,7 +23,7 @@ WHERE id = ?;
 -- Fitur Lanjutan: Pencarian pintar berdasarkan nama atau brand produk
 searchProducts:
 SELECT * FROM ProductEntity
-WHERE name LIKE '%' || ? || '%' OR brand LIKE '%' || ? || '%'
+WHERE name LIKE :query OR brand LIKE :query
 ORDER BY name ASC;
 
 -- Fitur Lanjutan: Menyaring produk berdasarkan kategori

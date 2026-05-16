@@ -23,9 +23,10 @@ class NewsRepositoryImpl(
     // TODO: Masukkan API Key dari NewsAPI.org di sini (jika belum)
     private val apiKey = "0faefcb90a144faf99a182e7ca3332d9" 
 
-    override fun getMbgNews(): Flow<Result<List<Article>>> = flow {
+    override fun getMbgNews(query: String?): Flow<Result<List<Article>>> = flow {
         try {
-            val response = api.getMbgNews(apiKey = apiKey)
+            val searchQuery = query ?: "makan bergizi gratis OR gizi anak"
+            val response = api.getMbgNews(query = searchQuery, apiKey = apiKey)
             if (response.status == "ok") {
                 val articles = coroutineScope {
                     response.articles.map { dto ->

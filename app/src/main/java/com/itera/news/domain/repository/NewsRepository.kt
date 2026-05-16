@@ -4,7 +4,7 @@ import com.itera.news.domain.model.Article
 import kotlinx.coroutines.flow.Flow
 
 interface NewsRepository {
-    fun getMbgNews(): Flow<Result<List<Article>>>
+    fun getMbgNews(query: String? = null): Flow<Result<List<Article>>>
     
     // Fitur Bookmark
     fun getBookmarkedArticles(): Flow<List<Article>>

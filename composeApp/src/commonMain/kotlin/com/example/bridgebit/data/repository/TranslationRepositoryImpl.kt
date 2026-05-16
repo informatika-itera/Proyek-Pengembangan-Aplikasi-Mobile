@@ -8,7 +8,6 @@ import com.example.bridgebit.data.local.entity.toDomain
 import com.example.bridgebit.data.local.entity.toDomainList
 import com.example.bridgebit.data.local.entity.toEntityValues
 import com.example.bridgebit.domain.model.Translation
-import com.example.bridgebit.domain.model.TranslationCategory
 import com.example.bridgebit.domain.repository.TranslationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,84 +15,79 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
-class NoteRepositoryImpl(private val database: BridgeBitDatabase) : TranslationRepository {
-    
-    private val queries = database.BridgeBitQueries
-    
-    override fun getAllNotes(): Flow<List<Translation>> {
-        return queries.getAllNotes()
+class TranslationRepositoryImpl(private val database: BridgeBitDatabase) : TranslationRepository {
+
+    // Objek queries di-generate otomatis dari BridgeBit.sq
+    private val queries = database.bridgeBitQueries
+
+    override fun getAllHistory(): Flow<List<Translation>> {
+        return queries.getAllHistory()
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
-    
-    override fun getPinnedNotes(): Flow<List<Translation>> {
-        return queries.getPinnedNotes()
+
+    override fun getVaultPhrases(): Flow<List<Translation>> {
+        return queries.getVaultPhrases()
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
-    
-    override fun getNotesByCategory(category: TranslationCategory): Flow<List<Translation>> {
-        return queries.getNotesByCategory(category.name)
+
+    override fun searchHistory(query: String): Flow<List<Translation>> {
+        return queries.searchHistory(query, query)
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
-    
-    override fun searchNotes(query: String): Flow<List<Translation>> {
-        return queries.searchNotes(query, query)
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
-    }
-    
-    override fun getNoteById(id: Long): Flow<Translation?> {
-        return queries.getNoteById(id)
+
+    override fun getTranslationById(id: Long): Flow<Translation?> {
+        return queries.getTranslationById(id)
             .asFlow()
             .mapToOneOrNull(Dispatchers.Default)
             .map { entity -> entity?.toDomain() }
     }
-    
-    override suspend fun insertNote(note: Translation): Long = withContext(Dispatchers.Default) {
-        val values = note.toEntityValues()
-        queries.insertNote(
-            title = values.title,
-            content = values.content,
-            category = values.category,
-            color = values.color,
-            is_pinned = values.isPinned,
+
+    override suspend fun insertTranslation(translation: Translation): Long = withContext(Dispatchers.Default) {
+        val values = translation.toEntityValues()
+        queries.insertTranslation(
+            source_text = values.sourceText,
+            translated_text = values.translatedText,
+            source_language = values.sourceLanguage,
+            target_language = values.targetLanguage,
+            is_vaulted = if (values.isVaulted) 1L else 0L,
             created_at = values.createdAt,
             updated_at = values.updatedAt
         )
+        // Mengembalikan ID dari baris yang baru saja dimasukkan
         queries.lastInsertId().executeAsOne()
     }
-    
-    override suspend fun updateNote(note: Translation) = withContext(Dispatchers.Default) {
-        val values = note.toEntityValues()
-        queries.updateNote(
-            id = note.id,
-            title = values.title,
-            content = values.content,
-            category = values.category,
-            color = values.color,
-            is_pinned = values.isPinned,
+
+    override suspend fun updateTranslation(translation: Translation) = withContext(Dispatchers.Default) {
+        val values = translation.toEntityValues()
+        queries.updateTranslation(
+            id = translation.id,
+            source_text = values.sourceText,
+            translated_text = values.translatedText,
+            source_language = values.sourceLanguage,
+            target_language = values.targetLanguage,
+            is_vaulted = if (values.isVaulted) 1L else 0L,
             updated_at = Clock.System.now().toEpochMilliseconds()
         )
     }
-    
-    override suspend fun deleteNote(id: Long) = withContext(Dispatchers.Default) {
-        queries.deleteNoteById(id)
+
+    override suspend fun deleteTranslationById(id: Long) = withContext(Dispatchers.Default) {
+        queries.deleteTranslationById(id)
     }
-    
-    override suspend fun togglePinNote(id: Long) = withContext(Dispatchers.Default) {
-        queries.togglePin(
+
+    override suspend fun toggleVaultStatus(id: Long) = withContext(Dispatchers.Default) {
+        queries.toggleVaultStatus(
             id = id,
             updated_at = Clock.System.now().toEpochMilliseconds()
         )
     }
-    
-    override suspend fun deleteNotes(ids: List<Long>) = withContext(Dispatchers.Default) {
-        queries.deleteNotesByIds(ids)
+
+    override suspend fun deleteTranslationsByIds(ids: List<Long>) = withContext(Dispatchers.Default) {
+        queries.deleteTranslationsByIds(ids)
     }
 }

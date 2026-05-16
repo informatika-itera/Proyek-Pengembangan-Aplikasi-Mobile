@@ -1,46 +1,47 @@
 package com.example.bridgebit.data.local.entity
 
 import com.example.bridgebit.data.local.TranslationEntity
-import com.example.bridgebit.domain.model.Note
-import com.example.bridgebit.domain.model.NoteCategory
-import com.example.bridgebit.domain.model.NoteColor
-import kotlinx.datetime.Instant
+import com.example.bridgebit.domain.model.Translation
 
-fun TranslationEntity.toDomain(): Note {
-    return Note(
+// 1. Memetakan data dari Database (SQLite/SQLDelight) menjadi model Domain (Kotlin)
+fun TranslationEntity.toDomain(): Translation {
+    return Translation(
         id = id,
-        title = title,
-        content = content,
-        category = NoteCategory.fromString(category),
-        color = NoteColor.fromString(color),
-        isPinned = is_pinned == 1L,
-        createdAt = Instant.fromEpochMilliseconds(created_at),
-        updatedAt = Instant.fromEpochMilliseconds(updated_at)
+        sourceText = source_text,
+        translatedText = translated_text,
+        sourceLanguage = source_language,
+        targetLanguage = target_language,
+        isVaulted = is_vaulted == 1L, // Di database berupa angka (1/0), di Kotlin jadi Boolean
+        createdAt = created_at,
+        updatedAt = updated_at
     )
 }
 
-data class NoteEntityValues(
-    val title: String,
-    val content: String,
-    val category: String,
-    val color: String,
-    val isPinned: Long,
+// 2. Class perantara untuk membungkus data sebelum dimasukkan ke Database
+data class TranslationEntityValues(
+    val sourceText: String,
+    val translatedText: String,
+    val sourceLanguage: String,
+    val targetLanguage: String,
+    val isVaulted: Boolean,
     val createdAt: Long,
     val updatedAt: Long
 )
 
-fun Note.toEntityValues(): NoteEntityValues {
-    return NoteEntityValues(
-        title = title,
-        content = content,
-        category = category.name,
-        color = color.name,
-        isPinned = if (isPinned) 1L else 0L,
-        createdAt = createdAt.toEpochMilliseconds(),
-        updatedAt = updatedAt.toEpochMilliseconds()
+// 3. Memetakan data dari Domain (Kotlin) menjadi nilai yang siap dimasukkan ke Database
+fun Translation.toEntityValues(): TranslationEntityValues {
+    return TranslationEntityValues(
+        sourceText = sourceText,
+        translatedText = translatedText,
+        sourceLanguage = sourceLanguage,
+        targetLanguage = targetLanguage,
+        isVaulted = isVaulted,
+        createdAt = createdAt,
+        updatedAt = updatedAt
     )
 }
 
-fun List<NoteEntity>.toDomainList(): List<Note> {
+// 4. Memetakan daftar/List data dari Database menjadi daftar/List model Domain
+fun List<TranslationEntity>.toDomainList(): List<Translation> {
     return map { it.toDomain() }
 }

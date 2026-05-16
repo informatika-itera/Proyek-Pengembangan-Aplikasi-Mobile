@@ -1,73 +1,64 @@
 package com.example.bridgebit.presentation.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.bridgebit.presentation.screens.workspace.WorkspaceScreen
 import com.example.bridgebit.presentation.screens.dashboard.DashboardScreen
-// import com.example.bridgebit.presentation.screens.detail.TranslationDetailScreen
-// import com.example.bridgebit.presentation.screens.ai.AIAssistantScreen
 
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController(),
+    navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
 
     NavHost(
         navController = navController,
-        startDestination = Route.Dashboard, // Diubah menjadi Dashboard
+        startDestination = Route.Dashboard,
         modifier = modifier
     ) {
-        // ==========================================
-        // 🔥 AKTIF UNTUK SPRINT 2
-        // ==========================================
-
         composable<Route.Dashboard> {
             DashboardScreen(
                 onNavigateToWorkspace = { navigationActions.navigateToWorkspace() },
-                // Fitur di bawah ini dimatikan sementara agar tidak error saat diklik
-                onNavigateToDetail = { /* translationId -> navigationActions.navigateToTranslationDetail(translationId) */ },
-                onNavigateToAI = { /* navigationActions.navigateToAI() */ }
+                onNavigateToDetail = { id -> navigationActions.navigateToTranslationDetail(id) },
+                onNavigateToAI = { navigationActions.navigateToAI() }
             )
         }
 
         composable<Route.Workspace> { backStackEntry ->
             val route: Route.Workspace = backStackEntry.toRoute()
             WorkspaceScreen(
-                // translationId = route.translationId,
                 onNavigateBack = { navigationActions.navigateBack() }
-                // onNavigateToDetail = { id -> navigationActions.navigateToTranslationDetail(id) },
-                // onNavigateToAI = { id, text -> navigationActions.navigateToAI(id, text) }
             )
         }
 
-        /*
-        composable<Route.TranslationDetail> { backStackEntry ->
-            val route: Route.TranslationDetail = backStackEntry.toRoute()
-            TranslationDetailScreen(
-                translationId = route.translationId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToWorkspace = { navigationActions.navigateToWorkspace(route.translationId) },
-                onShare = { _ -> }
-            )
+        // --- Kerangka Layar Tambahan dari Target Fitur Readme ---
+
+        composable<Route.Vault> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Phrase Vault Screen (Tempat Menyimpan Kosakata Penting)")
+            }
         }
 
-        composable<Route.AIAssistant> { backStackEntry ->
-            val route: Route.AIAssistant = backStackEntry.toRoute()
-            AIAssistantScreen(
-                translationId = route.translationId,
-                initialText = route.initialText,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onApplyResult = null
-            )
+        composable<Route.Insights> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Learning Insights Screen (Statistik & Grafik Belajar Anda)")
+            }
         }
-        */
+
+        composable<Route.Settings> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Settings Screen (Pengaturan Aplikasi & Akun)")
+            }
+        }
     }
 }
 
@@ -76,33 +67,18 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
         override fun navigateToDashboard() {
             navController.navigate(Route.Dashboard) { popUpTo(Route.Dashboard) { inclusive = true } }
         }
-
         override fun navigateToWorkspace(translationId: Long?) {
             navController.navigate(Route.Workspace(translationId))
         }
-
         override fun navigateToTranslationDetail(translationId: Long) {
-            // Dinonaktifkan: navController.navigate(Route.TranslationDetail(translationId))
+            // Ditangani di Sprint berikutnya
         }
-
         override fun navigateToAI(translationId: Long?, initialText: String?) {
-            // Dinonaktifkan: navController.navigate(Route.AIAssistant(translationId, initialText))
+            // Ditangani di Sprint berikutnya
         }
-
-        override fun navigateToVault() {
-            // Dinonaktifkan: navController.navigate(Route.Vault)
-        }
-
-        override fun navigateToSettings() {
-            // Dinonaktifkan: navController.navigate(Route.Settings)
-        }
-
-        override fun navigateToInsights() {
-            // Dinonaktifkan: navController.navigate(Route.Insights)
-        }
-
-        override fun navigateBack() {
-            navController.popBackStack()
-        }
+        override fun navigateToVault() { navController.navigate(Route.Vault) }
+        override fun navigateToInsights() { navController.navigate(Route.Insights) }
+        override fun navigateToSettings() { navController.navigate(Route.Settings) }
+        override fun navigateBack() { navController.popBackStack() }
     }
 }

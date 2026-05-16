@@ -3,7 +3,7 @@ package com.example.bridgebit.core.util
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.example.bridgebit.data.local.NoteDatabase
+import com.example.bridgebit.data.local.BridgeBitDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory
@@ -16,7 +16,7 @@ actual class DatabaseDriverFactory(
 ) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = BridgeBitDatabase.Schema,
             context = context,
             name = "bridgebit.db"
         )

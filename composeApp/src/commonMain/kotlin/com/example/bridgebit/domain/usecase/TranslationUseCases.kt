@@ -1,82 +1,45 @@
 package com.example.bridgebit.domain.usecase
 
 import com.example.bridgebit.domain.model.Translation
-import com.example.bridgebit.domain.model.TranslationCategory
-import com.example.bridgebit.domain.repository.AIRepository
 import com.example.bridgebit.domain.repository.TranslationRepository
-import com.example.bridgebit.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
-class GetAllNotesUseCase(
-    private val repository: TranslationRepository
-) {
-    operator fun invoke(sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC): Flow<List<Translation>> {
-        return repository.getAllNotes().map { notes ->
-            val (pinned, unpinned) = notes.partition { it.isPinned }
-            val sortedPinned = sortNotes(pinned, sortBy)
-            val sortedUnpinned = sortNotes(unpinned, sortBy)
-            sortedPinned + sortedUnpinned
-        }
-    }
-    
-    private fun sortNotes(notes: List<Translation>, sortBy: NoteSortBy): List<Translation> {
-        return when (sortBy) {
-            NoteSortBy.TITLE_ASC -> notes.sortedBy { it.title.lowercase() }
-            NoteSortBy.TITLE_DESC -> notes.sortedByDescending { it.title.lowercase() }
-            NoteSortBy.CREATED_ASC -> notes.sortedBy { it.createdAt }
-            NoteSortBy.CREATED_DESC -> notes.sortedByDescending { it.createdAt }
-            NoteSortBy.UPDATED_ASC -> notes.sortedBy { it.updatedAt }
-            NoteSortBy.UPDATED_DESC -> notes.sortedByDescending { it.updatedAt }
-        }
+class GetAllHistoryUseCase(private val repository: TranslationRepository) {
+    operator fun invoke(): Flow<List<Translation>> {
+        return repository.getAllHistory()
     }
 }
 
-enum class NoteSortBy(val displayName: String) {
-    TITLE_ASC("Judul (A-Z)"),
-    TITLE_DESC("Judul (Z-A)"),
-    CREATED_ASC("Dibuat (Lama)"),
-    CREATED_DESC("Dibuat (Baru)"),
-    UPDATED_ASC("Diupdate (Lama)"),
-    UPDATED_DESC("Diupdate (Baru)")
+class GetVaultPhrasesUseCase(private val repository: TranslationRepository) {
+    operator fun invoke(): Flow<List<Translation>> {
+        return repository.getVaultPhrases()
+    }
 }
 
-class SearchNotesUseCase(
-    private val repository: NoteRepository
-) {
-    operator fun invoke(query: String, category: NoteCategory? = null): Flow<List<Note>> {
-        return if (query.isBlank() && category == null) {
-            repository.getAllNotes()
-        } else if (query.isBlank()) {
-            repository.getNotesByCategory(category!!)
+class SearchHistoryUseCase(private val repository: TranslationRepository) {
+    operator fun invoke(query: String): Flow<List<Translation>> {
+        return if (query.isBlank()) {
+            repository.getAllHistory()
         } else {
-            repository.searchNotes(query).map { notes ->
-                if (category != null) {
-                    notes.filter { it.category == category }
-                } else {
-                    notes
-                }
-            }
+            repository.searchHistory(query)
         }
     }
 }
 
-class SaveNoteUseCase(
-    private val repository: NoteRepository
-) {
-    suspend operator fun invoke(note: Note): Result<Long> {
+class SaveTranslationUseCase(private val repository: TranslationRepository) {
+    suspend operator fun invoke(translation: Translation): Result<Long> {
         return try {
-            if (note.title.isBlank() && note.content.isBlank()) {
-                return Result.failure(IllegalArgumentException("Note tidak boleh kosong"))
+            if (translation.sourceText.isBlank()) {
+                return Result.failure(IllegalArgumentException("Teks asli tidak boleh kosong"))
             }
-            
-            val id = if (note.id == 0L) {
-                repository.insertNote(note)
+
+            val id = if (translation.id == 0L) {
+                repository.insertTranslation(translation)
             } else {
-                repository.updateNote(note)
-                note.id
+                repository.updateTranslation(translation)
+                translation.id
             }
-            
+
             Result.success(id)
         } catch (e: Exception) {
             Result.failure(e)
@@ -84,12 +47,10 @@ class SaveNoteUseCase(
     }
 }
 
-class DeleteNoteUseCase(
-    private val repository: NoteRepository
-) {
+class DeleteTranslationUseCase(private val repository: TranslationRepository) {
     suspend operator fun invoke(id: Long): Result<Unit> {
         return try {
-            repository.deleteNote(id)
+            repository.deleteTranslationById(id)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -97,35 +58,22 @@ class DeleteNoteUseCase(
     }
 }
 
-//class SummarizeNoteUseCase(
-//    private val aiRepository: AIRepository
-//) {
-//    suspend operator fun invoke(content: String): Result<String> {
-//        if (content.length < 50) {
-//            return Result.failure(IllegalArgumentException("Konten terlalu pendek untuk diringkas"))
-//        }
-//        return aiRepository.summarize(content)
-//    }
-//}
+class ToggleVaultStatusUseCase(private val repository: TranslationRepository) {
+    suspend operator fun invoke(id: Long): Result<Unit> {
+        return try {
+            repository.toggleVaultStatus(id)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
 
-//class ImproveWritingUseCase(
-//    private val aiRepository: AIRepository
-//) {
-//    suspend operator fun invoke(content: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String> {
-//        if (content.isBlank()) {
-//            return Result.failure(IllegalArgumentException("Konten tidak boleh kosong"))
-//        }
-//        return aiRepository.improveWriting(content, style)
-//    }
-//}
-
-//class GenerateIdeasUseCase(
-//    private val aiRepository: AIRepository
-//) {
-//    suspend operator fun invoke(topic: String): Result<List<String>> {
-//        if (topic.isBlank()) {
-//            return Result.failure(IllegalArgumentException("Topik tidak boleh kosong"))
-//        }
-//        return aiRepository.generateIdeas(topic)
-//    }
-//}
+// ==========================================
+// AI USE CASES (Dinonaktifkan Sementara untuk Sprint 2)
+// ==========================================
+/*
+class SummarizeTextUseCase(private val aiRepository: AIRepository) { ... }
+class ImproveWritingUseCase(private val aiRepository: AIRepository) { ... }
+class GenerateIdeasUseCase(private val aiRepository: AIRepository) { ... }
+*/

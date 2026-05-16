@@ -1,5 +1,8 @@
 package com.example.mybawanggacha.domain.model
 
+import kotlin.time.Clock
+import kotlin.time.Instant
+
 data class AnimeSummary(
     val malId: Int,
     val title: String,
@@ -93,3 +96,75 @@ data class AnimeLink(
     val name: String,
     val url: String
 )
+
+data class LibraryEntry(
+    val id: Long = 0,
+    val mediaId: Int,
+    val mediaType: MediaType,
+    val title: String,
+    val imageUrl: String? = null,
+    val status: LibraryStatus = LibraryStatus.PlanToWatch,
+    val progress: UserProgress = UserProgress(),
+    val userScore: UserScore? = null,
+    val notes: String? = null,
+    val createdAt: Instant = Clock.System.now(),
+    val updatedAt: Instant = Clock.System.now()
+)
+
+enum class MediaType(val storageKey: String, val displayName: String) {
+    Anime("ANIME", "Anime"),
+    Manga("MANGA", "Manga");
+
+    companion object {
+        fun fromStorageKey(value: String?): MediaType {
+            return entries.firstOrNull { it.storageKey.equals(value, ignoreCase = true) }
+                ?: Anime
+        }
+    }
+}
+
+enum class LibraryStatus(val storageKey: String, val defaultLabel: String) {
+    PlanToWatch("PLAN_TO_WATCH", "Plan"),
+    Watching("WATCHING", "Watching"),
+    Completed("COMPLETED", "Completed"),
+    OnHold("ON_HOLD", "On Hold"),
+    Dropped("DROPPED", "Dropped");
+
+    fun labelFor(mediaType: MediaType): String {
+        return when (this) {
+            PlanToWatch -> if (mediaType == MediaType.Manga) "Plan to Read" else "Plan to Watch"
+            Watching -> if (mediaType == MediaType.Manga) "Reading" else "Watching"
+            Completed -> if (mediaType == MediaType.Manga) "Read" else "Watched"
+            OnHold -> "On Hold"
+            Dropped -> "Dropped"
+        }
+    }
+
+    companion object {
+        fun fromStorageKey(value: String?): LibraryStatus {
+            return entries.firstOrNull { it.storageKey.equals(value, ignoreCase = true) }
+                ?: PlanToWatch
+        }
+    }
+}
+
+data class UserProgress(
+    val current: Int = 0,
+    val total: Int? = null
+) {
+    init {
+        require(current >= 0) { "Progress tidak boleh negatif" }
+        require(total == null || total >= 0) { "Total tidak boleh negatif" }
+        require(total == null || current <= total) { "Progress tidak boleh lebih besar dari total" }
+    }
+
+    fun format(): String {
+        return total?.let { "$current/$it" } ?: current.toString()
+    }
+}
+
+data class UserScore(val value: Int) {
+    init {
+        require(value in 1..10) { "Score harus berada di rentang 1 sampai 10" }
+    }
+}

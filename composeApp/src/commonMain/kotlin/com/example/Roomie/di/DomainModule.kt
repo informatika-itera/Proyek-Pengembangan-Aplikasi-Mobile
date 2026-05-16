@@ -1,7 +1,23 @@
 package com.example.Roomie.di
 
+import com.example.Roomie.domain.usecase.*
+import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 
 val domainModule = module {
-    // UseCases (To be implemented)
+    // Auth UseCases
+    factoryOf(::GetCurrentUserUseCase)
+    factoryOf(::LoginUseCase)
+    factoryOf(::LogoutUseCase)
+    
+    // Facility UseCases
+    factoryOf(::GetBuildingsUseCase)
+    factoryOf(::GetRoomsByBuildingUseCase)
+    factoryOf(::SearchRoomsUseCase)
+    factoryOf(::GetRoomByIdUseCase)
+    
+    // Report UseCases
+    factoryOf(::GetAllReportsUseCase)
+    factoryOf(::UpdateReportStatusUseCase)
+    factoryOf(::SubmitReportUseCase)
 }

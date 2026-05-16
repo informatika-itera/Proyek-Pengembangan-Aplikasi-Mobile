@@ -5,15 +5,23 @@ object AppStrings {
     
     // Bottom Navigation
     const val NAV_HOME = "Beranda"
-    const val NAV_MAP = "Peta"
+    const val NAV_FACILITY = "Fasilitas"
     const val NAV_REPORT = "Lapor"
     const val NAV_PROFILE = "Profil"
     
     // Home Screen
     const val HOME_TITLE = "Dashboard"
-    const val HOME_WELCOME = "Selamat Datang di Roomie"
+    const val HOME_GREETING = "Halo, Mulya!"
+    const val HOME_SUB_GREETING = "Mau kuliah di mana hari ini?"
     const val HOME_SUMMARY = "Ringkasan Laporan"
-    const val HOME_OPEN_MAP = "Buka Peta"
+    const val HOME_QUICK_ACTION = "Aksi Cepat"
+    const val HOME_REPORT_FAST = "Lapor Cepat"
+    const val HOME_SEARCH_ROOM = "Cari Ruang"
+    const val HOME_SCHEDULE = "Jadwal"
+    const val HOME_HELP = "Bantuan"
+    const val HOME_STATS_TITLE = "Status Aktivitas"
+    const val HOME_RECENT_ACTIVITY = "Aktivitas Terakhir"
+    const val HOME_OPEN_FACILITY = "Cari Ruangan"
     const val HOME_DETAIL = "Detail"
     
     // Profile Screen
@@ -37,4 +45,12 @@ object AppStrings {
     
     // Facility Detail
     const val FACILITY_DETAIL_TITLE = "Detail Fasilitas"
+    
+    // Admin
+    const val ADMIN_DASHBOARD = "Admin Dashboard"
+    const val ADMIN_MANAGE_REPORTS = "Kelola Laporan"
+    const val ADMIN_MANAGE_ROOMS = "Kontrol Ruangan"
+    const val ADMIN_UPDATE_STATUS = "Update Status"
+    const val ADMIN_STATS_REPORTS = "Total Laporan Masuk"
+    const val ADMIN_STATS_ACTIVE_ROOMS = "Ruangan Aktif"
 }

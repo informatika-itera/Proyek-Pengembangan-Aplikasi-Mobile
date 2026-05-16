@@ -4,65 +4,54 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
-import com.example.Roomie.domain.model.UrgencyLevel
+import com.example.Roomie.domain.model.User
+import com.example.Roomie.domain.usecase.GetCurrentUserUseCase
+import com.example.Roomie.domain.usecase.GetAllReportsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 sealed interface ProfileUiState {
     data object Loading : ProfileUiState
     data class Success(
+        val user: User?,
         val reports: List<Report>,
         val stats: Map<ReportStatus, Int>
     ) : ProfileUiState
     data class Error(val message: String) : ProfileUiState
 }
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val getAllReportsUseCase: GetAllReportsUseCase
+) : ViewModel() {
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfileData()
+        observeProfileData()
     }
 
-    fun loadProfileData() {
+    private fun observeProfileData() {
         viewModelScope.launch {
             _uiState.value = ProfileUiState.Loading
-            try {
-                // Simulasi data fetch (nantinya dari Repository)
-                kotlinx.coroutines.delay(1000)
-                val dummyReports = listOf(
-                    Report(
-                        id = "1",
-                        category = "Gedung Kuliah",
-                        location = "Gedung E 203",
-                        description = "AC Mati dan bocor",
-                        urgency = UrgencyLevel.MEDIUM,
-                        status = ReportStatus.DONE,
-                        createdAt = 1715673600000
-                    ),
-                    Report(
-                        id = "2",
-                        category = "Lab",
-                        location = "Lab Multimedia",
-                        description = "PC No. 12 tidak bisa menyala",
-                        urgency = UrgencyLevel.HIGH,
-                        status = ReportStatus.IN_PROGRESS,
-                        createdAt = 1715760000000
+            
+            // Observe both user session and reports
+            getCurrentUserUseCase().collectLatest { user ->
+                getAllReportsUseCase().collectLatest { reports ->
+                    val stats = mapOf(
+                        ReportStatus.PENDING to reports.count { it.status == ReportStatus.PENDING },
+                        ReportStatus.IN_PROGRESS to reports.count { it.status == ReportStatus.IN_PROGRESS },
+                        ReportStatus.DONE to reports.count { it.status == ReportStatus.DONE }
                     )
-                )
-                
-                val stats = mapOf(
-                    ReportStatus.PENDING to 0,
-                    ReportStatus.IN_PROGRESS to 1,
-                    ReportStatus.DONE to 1
-                )
-                
-                _uiState.value = ProfileUiState.Success(dummyReports, stats)
-            } catch (e: Exception) {
-                _uiState.value = ProfileUiState.Error(e.message ?: "Terjadi kesalahan memuat profil")
+                    _uiState.value = ProfileUiState.Success(
+                        user = user,
+                        reports = reports.reversed(),
+                        stats = stats
+                    )
+                }
             }
         }
     }

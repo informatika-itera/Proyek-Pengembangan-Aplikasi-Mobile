@@ -2,10 +2,12 @@ package com.example.Roomie
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,93 +20,154 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.Roomie.domain.model.UserRole
+import com.example.Roomie.presentation.AppViewModel
+import com.example.Roomie.presentation.auth.LoginScreen
 import com.example.Roomie.presentation.home.HomeScreen
-import com.example.Roomie.presentation.map.MapScreen
-import com.example.Roomie.presentation.facility.FacilityDetailScreen
+import com.example.Roomie.presentation.facility.BuildingListScreen
+import com.example.Roomie.presentation.facility.FacilityGridScreen
+import com.example.Roomie.presentation.facility.RoomDetailScreen
+import com.example.Roomie.presentation.facility.SearchRoomScreen
 import com.example.Roomie.presentation.report.ReportScreen
 import com.example.Roomie.presentation.profile.ProfileScreen
+import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
+import com.example.Roomie.presentation.util.AppStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
-    data object Home : Screen("home", "Beranda", Icons.Default.Home)
-    data object Map : Screen("map", "Peta", Icons.Default.LocationOn)
-    data object Report : Screen("report", "Lapor", Icons.Default.AddCircle)
-    data object Profile : Screen("profile", "Profil", Icons.Default.AccountCircle)
-    data object FacilityDetail : Screen("facility_detail/{facilityId}", "Detail") {
-        fun createRoute(facilityId: String) = "facility_detail/$facilityId"
+    data object Login : Screen("login", "Masuk", Icons.AutoMirrored.Filled.Login)
+    data object Home : Screen("home", AppStrings.NAV_HOME, Icons.Default.Home)
+    data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
+    data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
+    data object SearchRoom : Screen("search_room", "Cari Ruangan")
+    data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
+    data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
+    data object AdminDashboard : Screen("admin_dashboard", "Admin", Icons.Default.Dashboard)
+    data object RoomDetail : Screen("room_detail/{roomId}", "Detail Ruangan") {
+        fun createRoute(roomId: String) = "room_detail/$roomId"
     }
 }
 
 @Composable
 @Preview
-fun App() {
+fun App(
+    viewModel: AppViewModel = koinViewModel()
+) {
+    val currentUser by viewModel.currentUser.collectAsState()
+    
     RoomieTheme {
         val navController = rememberNavController()
-        val items = listOf(
-            Screen.Home,
-            Screen.Map,
-            Screen.Report,
-            Screen.Profile
-        )
+        
+        // Define navigation items based on role
+        val navItems = when (currentUser?.role) {
+            UserRole.STUDENT -> listOf(
+                Screen.Home,
+                Screen.Facility,
+                Screen.Report,
+                Screen.Profile
+            )
+            UserRole.ADMIN -> listOf(
+                Screen.AdminDashboard,
+                Screen.Facility,
+                Screen.Profile
+            )
+            else -> emptyList()
+        }
 
         Scaffold(
             bottomBar = {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
-                // Hanya tampilkan BottomBar jika di halaman utama (bukan detail)
-                val showBottomBar = items.any { it.route == currentDestination?.route }
-                
-                if (showBottomBar) {
-                    NavigationBar {
-                        items.forEach { screen ->
-                            NavigationBarItem(
-                                icon = { screen.icon?.let { Icon(it, contentDescription = screen.title) } },
-                                label = { Text(screen.title) },
-                                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                                onClick = {
-                                    navController.navigate(screen.route) {
-                                        val startDest = navController.graph.findStartDestination().route
-                                        if (startDest != null) {
-                                            popUpTo(startDest) {
-                                                saveState = true
+                if (currentUser != null) {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    
+                    // Show BottomBar only if current destination is one of the main role screens
+                    val showBottomBar = navItems.any { it.route == currentDestination?.route }
+                    
+                    if (showBottomBar) {
+                        NavigationBar {
+                            navItems.forEach { screen ->
+                                NavigationBarItem(
+                                    icon = { screen.icon?.let { Icon(it, contentDescription = screen.title) } },
+                                    label = { Text(screen.title) },
+                                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                    onClick = {
+                                        navController.navigate(screen.route) {
+                                            val startDest = navController.graph.findStartDestination().route
+                                            if (startDest != null) {
+                                                popUpTo(startDest) {
+                                                    saveState = true
+                                                }
                                             }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
             }
         ) { innerPadding ->
+            val startRoute = when {
+                currentUser == null -> Screen.Login.route
+                currentUser?.role == UserRole.ADMIN -> Screen.AdminDashboard.route
+                else -> Screen.Home.route
+            }
+
             NavHost(
                 navController = navController,
-                startDestination = Screen.Home.route,
+                startDestination = startRoute,
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable(Screen.Login.route) {
+                    LoginScreen(onLoginSuccess = {})
+                }
+
                 composable(Screen.Home.route) {
                     HomeScreen(
-                        onNavigateToMap = { navController.navigate(Screen.Map.route) },
-                        onNavigateToFacilityDetail = { id -> 
-                            navController.navigate(Screen.FacilityDetail.createRoute(id)) 
+                        onNavigateToSearch = { navController.navigate(Screen.SearchRoom.route) }
+                    )
+                }
+                
+                composable(Screen.SearchRoom.route) {
+                    SearchRoomScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateToDetail = { roomId ->
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId))
                         }
                     )
                 }
                 
-                composable(Screen.Map.route) {
-                    MapScreen()
+                composable(Screen.Facility.route) {
+                    BuildingListScreen(
+                        onBuildingClick = { building ->
+                            if (building.id == "GKU2") {
+                                navController.navigate(Screen.RoomSelection.route)
+                            }
+                        }
+                    )
+                }
+
+                composable(Screen.RoomSelection.route) {
+                    FacilityGridScreen(
+                        onNavigateToDetail = { roomId ->
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId))
+                        }
+                    )
                 }
                 
                 composable(
-                    route = Screen.FacilityDetail.route,
-                    arguments = listOf(navArgument("facilityId") { type = NavType.StringType })
+                    route = Screen.RoomDetail.route,
+                    arguments = listOf(navArgument("roomId") { type = NavType.StringType })
                 ) { backStackEntry ->
-                    val facilityId = backStackEntry.arguments?.getString("facilityId")
-                    FacilityDetailScreen(facilityId)
+                    val roomId = backStackEntry.arguments?.getString("roomId")
+                    RoomDetailScreen(
+                        roomId = roomId,
+                        onBack = { navController.popBackStack() }
+                    )
                 }
                 
                 composable(Screen.Report.route) {
@@ -112,7 +175,32 @@ fun App() {
                 }
                 
                 composable(Screen.Profile.route) {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onLogout = { viewModel.logout() }
+                    )
+                }
+
+                composable(Screen.AdminDashboard.route) {
+                    AdminDashboardScreen(
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+            }
+        }
+        
+        // Auto-navigation on auth change
+        LaunchedEffect(currentUser) {
+            if (currentUser == null) {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0)
+                }
+            } else {
+                val currentRoute = navController.currentDestination?.route
+                if (currentRoute == Screen.Login.route || currentRoute == null) {
+                    val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
+                    navController.navigate(dest) {
+                        popUpTo(0)
+                    }
                 }
             }
         }

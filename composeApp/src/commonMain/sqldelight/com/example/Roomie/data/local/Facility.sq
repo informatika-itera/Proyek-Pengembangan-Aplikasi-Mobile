@@ -1,17 +1,49 @@
-CREATE TABLE FacilityEntity (
+CREATE TABLE BuildingEntity (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
-    capacity INTEGER AS kotlin.Int NOT NULL,
     description TEXT NOT NULL,
-    status TEXT NOT NULL
+    isAvailable INTEGER NOT NULL DEFAULT 0 -- 0 false, 1 true
 );
 
-getAllFacilities:
-SELECT * FROM FacilityEntity;
+CREATE TABLE RoomEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    buildingId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    floor INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    type TEXT NOT NULL,
+    capacity INTEGER NOT NULL,
+    hasAc INTEGER NOT NULL DEFAULT 1,
+    hasProjector INTEGER NOT NULL DEFAULT 1,
+    borrowerName TEXT,
+    maintenanceDescription TEXT,
+    FOREIGN KEY(buildingId) REFERENCES BuildingEntity(id)
+);
 
-getFacilityById:
-SELECT * FROM FacilityEntity WHERE id = ?;
+-- Buildings
+getAllBuildings:
+SELECT * FROM BuildingEntity;
 
-insertFacility:
-INSERT OR REPLACE INTO FacilityEntity(id, name, capacity, description, status)
-VALUES (?, ?, ?, ?, ?);
+insertBuilding:
+INSERT OR REPLACE INTO BuildingEntity(id, name, description, isAvailable)
+VALUES (?, ?, ?, ?);
+
+-- Rooms
+getRoomsByFloor:
+SELECT * FROM RoomEntity WHERE buildingId = ? AND floor = ?;
+
+getRoomsByBuilding:
+SELECT * FROM RoomEntity WHERE buildingId = ?;
+
+searchRooms:
+SELECT * FROM RoomEntity WHERE name LIKE '%' || ? || '%';
+
+getRoomById:
+SELECT * FROM RoomEntity WHERE id = ?;
+
+insertRoom:
+INSERT OR REPLACE INTO RoomEntity(id, buildingId, name, floor, status, type, capacity, hasAc, hasProjector, borrowerName, maintenanceDescription)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateRoomStatus:
+UPDATE RoomEntity SET status = ?, borrowerName = ?, maintenanceDescription = ? WHERE id = ?;

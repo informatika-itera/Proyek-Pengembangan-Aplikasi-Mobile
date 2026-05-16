@@ -50,14 +50,14 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
 - [x] AnimeDetailScreen
   - menampilkan detail anime
   - menerima argument ID dari navigation
-- [ ] MyListScreen
+- [X] MyListScreen
   - tab/list status:
     - Plan to Watch / Plan to Read
     - Watching / Reading
     - Completed / Watched
     - On Hold
     - Dropped
-- [ ] ListEntryEditor
+- [X] ListEntryEditor
   - form tambah/edit item ke daftar pribadi
   - edit status
   - edit progress episode/chapter
@@ -75,7 +75,7 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
   - `AnimeDetail`
   - `AnimeEpisode`
   - `AnimeRelation`
-- [ ] Domain model list management:
+- [X] Domain model list management:
   - `LibraryEntry`
   - `MediaType`
   - `LibraryStatus`
@@ -84,18 +84,18 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
 - [x] Repository pattern untuk anime detail/recommendation:
   - `AnimeRepository`
   - `AnimeRepositoryImpl`
-- [ ] Repository untuk list lokal pengguna:
+- [X] Repository untuk list lokal pengguna:
   - `LibraryRepository`
   - `LibraryRepositoryImpl`
 - [x] SQLDelight database setup
-- [ ] SQLDelight table untuk library:
+- [X] SQLDelight table untuk library:
   - saved anime/manga
   - status
   - progress episode/chapter
   - user score
   - updated timestamp
 - [x] SQLDelight table untuk episode progress anime
-- [ ] CRUD library:
+- [X] CRUD library:
   - Create: tambah anime/manga ke list
   - Read: tampilkan list berdasarkan status
   - Update: ubah status/progress/rating
@@ -111,9 +111,9 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
 - [x] ViewModel menggunakan repository, bukan langsung service API
 - [x] DTO Jikan tidak dibawa langsung ke UI detail
 - [x] Koin modules untuk data + ViewModel
-- [ ] Basic validation untuk form list entry
-- [ ] Confirm dialog saat delete item dari list
-- [ ] Basic manual test untuk flow CRUD
+- [X] Basic validation untuk form list entry
+- [X] Confirm dialog saat delete item dari list
+- [X] Basic manual test untuk flow CRUD
 
 ---
 

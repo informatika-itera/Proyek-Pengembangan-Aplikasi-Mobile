@@ -18,7 +18,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = NoteDatabase.Schema,
             context = context,
-            name = "noteai.db"
+            name = "rosea.db"
         )
     }
 }

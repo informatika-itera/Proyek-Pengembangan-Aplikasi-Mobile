@@ -1,4 +1,4 @@
-# ProGuard Rules for NoteAI
+# ProGuard Rules for Rosea
 # ===========================
 
 # Keep Kotlin Serialization

@@ -2,6 +2,7 @@ package com.example.mybawanggacha.presentation.screens.anime.detail
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +38,7 @@ fun AnimeDetailScreen(
     malId: Int,
     onNavigateBack: () -> Unit,
     onNavigateToAnimeDetail: (Int) -> Unit = {},
-    onNavigateToLibraryEditor: (AnimeDetail) -> Unit = {},
+    onNavigateToLibraryEditor: (AnimeDetail, Long?) -> Unit = { _, _ -> },
     viewModel: AnimeDetailViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -86,15 +87,21 @@ fun AnimeDetailScreen(
                             }
                         }
                     )
+                    val isInLibrary = state.libraryEntryId != null
+
                     FloatingActionButton(
-                        onClick = { onNavigateToLibraryEditor(state.anime) },
+                        onClick = { onNavigateToLibraryEditor(state.anime, state.libraryEntryId) },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(end = 16.dp, bottom = 80.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Tambah ke My Library"
+                            imageVector = if (isInLibrary) Icons.Default.Edit else Icons.Default.Add,
+                            contentDescription = if (isInLibrary) {
+                                "Edit My Library"
+                            } else {
+                                "Tambah ke My Library"
+                            }
                         )
                     }
                 }

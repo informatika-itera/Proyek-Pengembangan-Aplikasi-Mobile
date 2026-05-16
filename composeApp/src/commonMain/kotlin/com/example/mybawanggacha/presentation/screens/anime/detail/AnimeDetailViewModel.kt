@@ -27,11 +27,18 @@ class AnimeDetailViewModel(
             _uiState.value = AnimeDetailUiState.Loading
 
             runCatching {
-                animeRepository.getAnimeDetail(malId)
-            }.onSuccess { detail ->
+                val detail = animeRepository.getAnimeDetail(malId)
+                val existingEntry = libraryRepository.getEntry(
+                    mediaId = detail.anime.malId,
+                    mediaType = MediaType.Anime
+                )
+
+                detail to existingEntry
+            }.onSuccess { (detail, existingEntry) ->
                 _uiState.value = AnimeDetailUiState.Success(
                     anime = detail.anime,
-                    episodes = detail.episodes
+                    episodes = detail.episodes,
+                    libraryEntryId = existingEntry?.id
                 )
             }.onFailure { error ->
                 _uiState.value = AnimeDetailUiState.Error(
@@ -70,11 +77,16 @@ class AnimeDetailViewModel(
 
                 _uiState.value = latestState.copy(episodes = updatedEpisodes)
 
-                syncLibraryProgressFromEpisodes(
+                val savedEntryId = syncLibraryProgressFromEpisodes(
                     anime = latestState.anime,
                     watchedCount = updatedEpisodes.count { it.watched },
                     totalEpisodes = latestState.anime.episodes ?: updatedEpisodes.size.takeIf { it > 0 }
                 )
+
+                if (savedEntryId != null) {
+                    val refreshedState = _uiState.value as? AnimeDetailUiState.Success ?: return@onSuccess
+                    _uiState.value = refreshedState.copy(libraryEntryId = savedEntryId)
+                }
             }
         }
     }
@@ -83,7 +95,7 @@ class AnimeDetailViewModel(
         anime: AnimeDetail,
         watchedCount: Int,
         totalEpisodes: Int?
-    ) {
+    ): Long? {
         val existingEntry = libraryRepository.getEntry(
             mediaId = anime.malId,
             mediaType = MediaType.Anime
@@ -95,7 +107,7 @@ class AnimeDetailViewModel(
             else -> LibraryStatus.Watching
         }
 
-        runCatching {
+        return runCatching {
             libraryRepository.upsertEntry(
                 LibraryEntry(
                     id = existingEntry?.id ?: 0L,
@@ -112,6 +124,6 @@ class AnimeDetailViewModel(
                     notes = existingEntry?.notes
                 )
             )
-        }
+        }.getOrNull()
     }
 }

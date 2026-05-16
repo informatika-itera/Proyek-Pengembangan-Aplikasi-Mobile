@@ -148,13 +148,14 @@ fun AppNavHost(
                 malId = route.malId,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) },
-                onNavigateToLibraryEditor = { anime ->
+                onNavigateToLibraryEditor = { anime, entryId ->
                     navigationActions.navigateToLibraryEntryEditor(
                         mediaId = anime.malId,
                         mediaType = MediaType.Anime.storageKey,
                         title = anime.title,
                         imageUrl = anime.imageUrl,
-                        totalCount = anime.episodes
+                        totalCount = anime.episodes,
+                        entryId = entryId
                     )
                 }
             )

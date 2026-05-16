@@ -9,7 +9,9 @@ import com.kelazzz.app.data.local.datastore.create
 import com.kelazzz.app.data.remote.gemini.GeminiService
 import com.kelazzz.app.data.remote.pocket.PocketApiService
 import com.kelazzz.app.data.repository.AuthRepositoryImpl
+import com.kelazzz.app.data.repository.JadwalRepositoryImpl
 import com.kelazzz.app.domain.repository.AuthRepository
+import com.kelazzz.app.domain.repository.JadwalRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -40,4 +42,5 @@ val dataModule = module {
     
     // ==================== REPOSITORIES ====================
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
+    single<JadwalRepository> { JadwalRepositoryImpl(get()) }
 }

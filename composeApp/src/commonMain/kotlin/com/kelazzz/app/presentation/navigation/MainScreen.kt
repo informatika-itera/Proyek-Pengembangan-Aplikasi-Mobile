@@ -55,6 +55,7 @@ import androidx.navigation.compose.rememberNavController
 import com.kelazzz.app.presentation.screens.ai.AIScreen
 import com.kelazzz.app.presentation.screens.home.HomeScreen
 import com.kelazzz.app.presentation.screens.home.HomeViewModel
+import com.kelazzz.app.presentation.screens.jadwal.JadwalScreen
 import com.kelazzz.app.presentation.screens.kalender.KalenderScreen
 import com.kelazzz.app.presentation.screens.presensi.PresensiScreen
 import com.kelazzz.app.presentation.screens.profile.ProfileScreen
@@ -100,7 +101,7 @@ val bottomNavItems = listOf(
     ),
     BottomNavItem(
         route = Route.Kalender,
-        label = "Kalender",
+        label = "Jadwal",
         selectedIcon = Icons.Filled.CalendarMonth,
         unselectedIcon = Icons.Outlined.CalendarMonth
     )
@@ -260,7 +261,7 @@ fun MainScreen(
                 AIScreen()
             }
             composable<Route.Kalender> {
-                KalenderScreen()
+                JadwalScreen()
             }
             composable<Route.Profile> {
                 ProfileScreen(

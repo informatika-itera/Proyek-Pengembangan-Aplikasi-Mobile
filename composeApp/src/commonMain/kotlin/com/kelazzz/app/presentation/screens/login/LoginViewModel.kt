@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
@@ -82,7 +83,8 @@ class LoginViewModel(
         viewModelScope.launch {
             authRepository.login(email, state.password)
                 .onSuccess { user ->
-                    _uiState.update { it.copy(isLoading = false) }
+                    _uiState.update { it.copy(isLoading = false, loginSuccessMessage = "Halo, ${user.nama}!") }
+                    delay(1500L)
                     _events.emit(LoginEvent.LoginSuccess(user.nama))
                 }
                 .onFailure { error ->
@@ -104,7 +106,8 @@ data class LoginUiState(
     val isPasswordVisible: Boolean = false,
     val usernameError: String? = null,
     val passwordError: String? = null,
-    val loginError: String? = null
+    val loginError: String? = null,
+    val loginSuccessMessage: String? = null
 )
 
 sealed interface LoginEvent {

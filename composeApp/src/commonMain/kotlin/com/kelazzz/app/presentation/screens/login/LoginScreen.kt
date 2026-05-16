@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -265,6 +266,40 @@ fun LoginScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(12.dp)
                             )
+                        }
+                    }
+
+                    // ========== SUCCESS MESSAGE ==========
+                    AnimatedVisibility(
+                        visible = uiState.loginSuccessMessage != null,
+                        enter = fadeIn() + slideInVertically(),
+                        exit = fadeOut()
+                    ) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.CheckCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = uiState.loginSuccessMessage ?: "",
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
 

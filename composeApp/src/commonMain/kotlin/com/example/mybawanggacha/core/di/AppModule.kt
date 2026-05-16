@@ -10,9 +10,11 @@ import com.example.mybawanggacha.data.remote.api.GeminiService
 import com.example.mybawanggacha.data.remote.api.JikanService
 import com.example.mybawanggacha.data.repository.AIRepositoryImpl
 import com.example.mybawanggacha.data.repository.AnimeRepositoryImpl
+import com.example.mybawanggacha.data.repository.LibraryRepositoryImpl
 import com.example.mybawanggacha.data.repository.NoteRepositoryImpl
 import com.example.mybawanggacha.domain.repository.AIRepository
 import com.example.mybawanggacha.domain.repository.AnimeRepository
+import com.example.mybawanggacha.domain.repository.LibraryRepository
 import com.example.mybawanggacha.domain.repository.NoteRepository
 import com.example.mybawanggacha.domain.usecase.DeleteNoteUseCase
 import com.example.mybawanggacha.domain.usecase.GenerateIdeasUseCase
@@ -27,6 +29,8 @@ import com.example.mybawanggacha.presentation.screens.anime.AnimeDetailViewModel
 import com.example.mybawanggacha.presentation.screens.anime.AnimeHomeViewModel
 import com.example.mybawanggacha.presentation.screens.detail.NoteDetailViewModel
 import com.example.mybawanggacha.presentation.screens.home.HomeViewModel
+import com.example.mybawanggacha.presentation.screens.library.LibraryEntryEditorViewModel
+import com.example.mybawanggacha.presentation.screens.library.LibraryViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -65,6 +69,7 @@ val repositoryModule = module {
     singleOf(::NoteRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
     singleOf(::AnimeRepositoryImpl) bind AnimeRepository::class
+    singleOf(::LibraryRepositoryImpl) bind LibraryRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -88,6 +93,8 @@ val viewModelModule = module {
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::AnimeDetailViewModel)
     viewModelOf(::AnimeHomeViewModel)
+    viewModelOf(::LibraryViewModel)
+    viewModelOf(::LibraryEntryEditorViewModel)
 }
 
 // ==================== SHARED MODULES ====================

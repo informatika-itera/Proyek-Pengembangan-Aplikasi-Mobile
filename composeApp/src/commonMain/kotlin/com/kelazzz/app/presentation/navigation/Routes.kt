@@ -36,6 +36,9 @@ sealed interface Route {
     
     @Serializable
     data object Notifikasi : Route
+    
+    @Serializable
+    data object Profile : Route
 }
 
 /**
@@ -49,5 +52,6 @@ interface NavigationActions {
     fun navigateToKalender()
     fun navigateToAIAsisten()
     fun navigateToNotifikasi()
+    fun navigateToProfile()
     fun navigateBack()
 }

@@ -2,7 +2,7 @@ package com.example.pocketguard.core.util
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.example.pocketguard.data.local.NoteDatabase
+import com.example.pocketguard.data.local.PocketGuardDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory
@@ -13,8 +13,8 @@ import com.example.pocketguard.data.local.NoteDatabase
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
-            schema = NoteDatabase.Schema,
-            name = "noteai.db"
+            schema = PocketGuardDatabase.Schema,
+            name = "PocketGuard.db"
         )
     }
 }

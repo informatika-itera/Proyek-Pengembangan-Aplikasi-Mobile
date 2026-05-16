@@ -11,7 +11,10 @@ import com.example.pocketguard.data.repository.AIRepositoryImpl
 import com.example.pocketguard.data.repository.TransactionRepositoryImpl
 import com.example.pocketguard.domain.repository.AIRepository
 import com.example.pocketguard.domain.repository.TransactionRepository
+import com.example.pocketguard.domain.usecase.* // Import Use Cases
+import com.example.pocketguard.presentation.screens.add_transaction.AddTransactionViewModel
 import com.example.pocketguard.presentation.screens.ai.AIAssistantViewModel
+import com.example.pocketguard.presentation.screens.detail.TransactionDetailViewModel
 import com.example.pocketguard.presentation.screens.home.HomeViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -21,6 +24,7 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
+// ==================== NETWORK & DB MODULE ====================
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
@@ -38,18 +42,26 @@ val preferencesModule = module {
     single { UserPreferences(get()) }
 }
 
+// ==================== REPOSITORY MODULE ====================
 val repositoryModule = module {
     singleOf(::TransactionRepositoryImpl) bind TransactionRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
-// Untuk Sprint 1, biarkan Use Case kosong dulu atau hapus jika filenya belum ada
-val useCaseModule = module { }
+// ==================== USE CASE MODULE (Daftarkan di Sini) ====================
+val useCaseModule = module {
+    singleOf(::GetAllTransactionsUseCase)
+    singleOf(::SaveTransactionUseCase)
+    singleOf(::DeleteTransactionUseCase)
+    singleOf(::AnalyzeFinanceUseCase)
+}
 
+// ==================== VIEWMODEL MODULE ====================
 val viewModelModule = module {
-    // Pastikan ViewModel ini sudah Anda sesuaikan isinya nanti
     viewModelOf(::HomeViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::AddTransactionViewModel)    // Tambahkan ini
+    viewModelOf(::TransactionDetailViewModel) // Tambahkan ini
 }
 
 val sharedModules = listOf(

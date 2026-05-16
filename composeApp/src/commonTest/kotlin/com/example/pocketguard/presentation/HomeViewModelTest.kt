@@ -1,13 +1,13 @@
 package com.example.pocketguard.presentation
 
 import app.cash.turbine.test
-import com.example.pocketguard.data.repository.FakeNoteRepository
-import com.example.pocketguard.domain.model.Note
-import com.example.pocketguard.domain.model.NoteCategory
-import com.example.pocketguard.domain.model.NoteColor
-import com.example.pocketguard.domain.usecase.DeleteNoteUseCase
-import com.example.pocketguard.domain.usecase.GetAllNotesUseCase
-import com.example.pocketguard.domain.usecase.SearchNotesUseCase
+import com.example.pocketguard.data.repository.FakeTransactionRepository
+import com.example.pocketguard.domain.model.Transaction
+import com.example.pocketguard.domain.model.TransactionCategory
+import com.example.pocketguard.domain.model.TransactionType
+import com.example.pocketguard.domain.usecase.DeleteTransactionUseCase
+import com.example.pocketguard.domain.usecase.GetAllTransactionsUseCase
+import com.example.pocketguard.domain.usecase.TransactionSortBy
 import com.example.pocketguard.presentation.screens.home.HomeUiState
 import com.example.pocketguard.presentation.screens.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,232 +25,159 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Unit Tests untuk HomeViewModel
- * 
- * Testing Guidelines:
- * 1. Setup test dispatcher untuk control coroutines
- * 2. Gunakan Turbine untuk test StateFlow
- * 3. Test UI state transformations
- * 4. Test user actions
+ * Unit Tests untuk HomeViewModel (PocketGuard)
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    
+
     private val testDispatcher = StandardTestDispatcher()
-    
-    private lateinit var repository: FakeNoteRepository
-    private lateinit var getAllNotesUseCase: GetAllNotesUseCase
-    private lateinit var searchNotesUseCase: SearchNotesUseCase
-    private lateinit var deleteNoteUseCase: DeleteNoteUseCase
+
+    private lateinit var repository: FakeTransactionRepository
+    private lateinit var getAllTransactionsUseCase: GetAllTransactionsUseCase
+    private lateinit var deleteTransactionUseCase: DeleteTransactionUseCase
     private lateinit var viewModel: HomeViewModel
-    
+
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        
-        repository = FakeNoteRepository()
-        getAllNotesUseCase = GetAllNotesUseCase(repository)
-        searchNotesUseCase = SearchNotesUseCase(repository)
-        deleteNoteUseCase = DeleteNoteUseCase(repository)
-        
+
+        repository = FakeTransactionRepository()
+        getAllTransactionsUseCase = GetAllTransactionsUseCase(repository)
+        deleteTransactionUseCase = DeleteTransactionUseCase(repository)
+
         viewModel = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
+            getAllTransactionsUseCase = getAllTransactionsUseCase,
+            deleteTransactionUseCase = deleteTransactionUseCase
         )
     }
-    
+
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
     }
-    
+
     // ==================== UI STATE TESTS ====================
-    
+
     @Test
     fun `initial state should be Loading then Empty`() = runTest {
         viewModel.uiState.test {
-            // Initial loading state
+            // State awal: Loading
             val loading = awaitItem()
             assertTrue(loading is HomeUiState.Loading)
-            
-            // After loading, should be empty (no notes)
+
+            // Setelah database kosong dimuat: Empty
             advanceUntilIdle()
             val empty = awaitItem()
             assertTrue(empty is HomeUiState.Empty)
-            
+
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
-    fun `state should be Success when notes exist`() = runTest {
+    fun `state should be Success when transactions exist`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote("Note 1"))
-        repository.insertNote(createTestNote("Note 2"))
-        
-        // Create new viewmodel after inserting notes
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
+        repository.insertTransaction(createTestTransaction("Makan Siang"))
+        repository.insertTransaction(createTestTransaction("Beli Bensin"))
+
         // Act & Assert
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
-            
-            val state = awaitItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(2, (state as HomeUiState.Success).notes.size)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== SEARCH TESTS ====================
-    
-    @Test
-    fun `search should filter notes by query`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Kotlin Guide"))
-        repository.insertNote(createTestNote("Java Tutorial"))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
-            skipItems(1) // Skip initial success
-            
-            // Act
-            vm.onSearchQueryChange("Kotlin")
-            advanceUntilIdle()
-            
-            // Assert - wait for debounce
-            testScheduler.advanceTimeBy(400)
-            advanceUntilIdle()
-            
-            val state = expectMostRecentItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals("Kotlin Guide", state.notes.first().title)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    @Test
-    fun `clearSearch should reset query`() = runTest {
-        // Act
-        viewModel.onSearchQueryChange("test query")
-        viewModel.clearSearch()
-        
-        // Assert
         viewModel.uiState.test {
+            skipItems(1) // Lewati Loading
+            advanceUntilIdle()
+
             val state = awaitItem()
-            when (state) {
-                is HomeUiState.Success -> assertEquals("", state.query)
-                is HomeUiState.Empty -> assertEquals("", state.query)
-                else -> {} // OK
-            }
+            assertTrue(state is HomeUiState.Success)
+            assertEquals(2, (state as HomeUiState.Success).transactions.size)
+
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== CATEGORY FILTER TESTS ====================
-    
+
+    // ==================== SEARCH & FILTER TESTS ====================
+
     @Test
-    fun `category filter should filter notes`() = runTest {
+    fun `search should filter transactions by description`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
-        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
+        repository.insertTransaction(createTestTransaction("Nasi Goreng"))
+        repository.insertTransaction(createTestTransaction("Ojek Online"))
+
+        viewModel.uiState.test {
             skipItems(1) // Loading
             advanceUntilIdle()
-            skipItems(1) // Initial success
-            
-            // Act
-            vm.onCategorySelected(NoteCategory.WORK)
+            skipItems(1) // Success awal (semua item)
+
+            // Act: Cari "Nasi"
+            viewModel.onSearchQueryChange("Nasi")
             advanceUntilIdle()
-            
+
             // Assert
-            val state = expectMostRecentItem()
+            val state = awaitItem()
             assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals(NoteCategory.WORK, state.notes.first().category)
-            
+            assertEquals(1, state.transactions.size)
+            assertEquals("Nasi Goreng", state.transactions.first().description)
+
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
+    @Test
+    fun `category filter should filter transactions`() = runTest {
+        // Arrange
+        repository.insertTransaction(createTestTransaction("Bakso", category = TransactionCategory.FOOD))
+        repository.insertTransaction(createTestTransaction("Tiket Kereta", category = TransactionCategory.TRANSPORT))
+
+        viewModel.uiState.test {
+            skipItems(1) // Loading
+            advanceUntilIdle()
+            skipItems(1) // Success awal
+
+            // Act: Filter kategori "Makanan" (FOOD)
+            viewModel.onCategorySelected(TransactionCategory.FOOD)
+            advanceUntilIdle()
+
+            // Assert
+            val state = awaitItem()
+            assertTrue(state is HomeUiState.Success)
+            assertEquals(1, state.transactions.size)
+            assertEquals(TransactionCategory.FOOD, state.transactions.first().category)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     // ==================== ACTION TESTS ====================
-    
+
     @Test
-    fun `togglePin should toggle note pin status`() = runTest {
+    fun `deleteTransaction should remove record`() = runTest {
         // Arrange
-        val noteId = repository.insertNote(createTestNote("Pin Me"))
-        
+        val id = repository.insertTransaction(createTestTransaction("Hapus Saya"))
+
         // Act
-        viewModel.togglePin(noteId)
+        viewModel.deleteTransaction(id)
         advanceUntilIdle()
-        
+
         // Assert
-        repository.getNoteById(noteId).test {
-            val note = awaitItem()
-            assertTrue(note?.isPinned == true)
+        repository.getAllTransactions().test {
+            val transactions = awaitItem()
+            assertTrue(transactions.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    @Test
-    fun `deleteNote should remove note`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Delete Me"))
-        
-        // Act
-        viewModel.deleteNote(noteId)
-        advanceUntilIdle()
-        
-        // Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertTrue(notes.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
+
     // ==================== HELPER FUNCTIONS ====================
-    
-    private fun createTestNote(
-        title: String,
-        category: NoteCategory = NoteCategory.GENERAL
-    ): Note {
-        return Note(
+
+    private fun createTestTransaction(
+        description: String,
+        category: TransactionCategory = TransactionCategory.OTHER,
+        amount: Double = 20000.0
+    ): Transaction {
+        return Transaction(
             id = 0,
-            title = title,
-            content = "Test content",
+            amount = amount,
+            description = description,
             category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = false,
-            createdAt = Clock.System.now(),
-            updatedAt = Clock.System.now()
+            type = TransactionType.EXPENSE,
+            createdAt = Clock.System.now().toEpochMilliseconds()
         )
     }
 }

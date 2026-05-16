@@ -1,4 +1,4 @@
-rootProject.name = "NoteAI"
+rootProject.name = "News MBG"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -28,4 +28,5 @@ dependencyResolutionManagement {
     }
 }
 
+include(":app")
 include(":composeApp")

@@ -29,7 +29,7 @@ Thumbs.db
 *.log
 
 # iOS / Xcode
-xcuserdata/
+userdata/
 *.xcuserstate
 Pods/
 *.hmap

@@ -1,5 +1,6 @@
 package com.example.Roomie.presentation.facility
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,10 +15,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,6 +32,11 @@ fun BookingScreen(
 ) {
     val state by viewModel.state.collectAsState()
     
+    // UI states for pickers
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showStartTimePicker by remember { mutableStateOf(false) }
+    var showEndTimePicker by remember { mutableStateOf(false) }
+
     LaunchedEffect(roomId) {
         viewModel.loadRoomDetail(roomId)
     }
@@ -84,34 +92,51 @@ fun BookingScreen(
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Detail Peminjaman", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 
-                OutlinedTextField(
-                    value = state.date,
-                    onValueChange = viewModel::onDateChange,
-                    label = { Text("Pilih Tanggal") },
-                    placeholder = { Text("Contoh: 15 Mei 2026") },
-                    leadingIcon = { Icon(Icons.Default.CalendarMonth, null, tint = MaterialTheme.colorScheme.primary) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                )
+                // Date Picker Trigger
+                Box {
+                    OutlinedTextField(
+                        value = state.date,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Pilih Tanggal") },
+                        placeholder = { Text("Klik untuk pilih tanggal") },
+                        leadingIcon = { Icon(Icons.Default.CalendarMonth, null, tint = MaterialTheme.colorScheme.primary) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Box(modifier = Modifier.matchParentSize().clickable { showDatePicker = true })
+                }
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = state.startTime,
-                        onValueChange = viewModel::onStartTimeChange,
-                        label = { Text("Jam Mulai") },
-                        placeholder = { Text("08:00") },
-                        leadingIcon = { Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.primary) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    OutlinedTextField(
-                        value = state.endTime,
-                        onValueChange = viewModel::onEndTimeChange,
-                        label = { Text("Jam Selesai") },
-                        placeholder = { Text("10:00") },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    // Start Time Trigger
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = state.startTime,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Mulai") },
+                            placeholder = { Text("00:00") },
+                            leadingIcon = { Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.primary) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        Box(modifier = Modifier.matchParentSize().clickable { showStartTimePicker = true })
+                    }
+
+                    // End Time Trigger
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = state.endTime,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Selesai") },
+                            placeholder = { Text("00:00") },
+                            leadingIcon = { Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.primary) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        Box(modifier = Modifier.matchParentSize().clickable { showEndTimePicker = true })
+                    }
                 }
 
                 OutlinedTextField(
@@ -151,6 +176,55 @@ fun BookingScreen(
                 }
             }
         }
+    }
+
+    // --- DATE PICKER DIALOG ---
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        val instant = Instant.fromEpochMilliseconds(it)
+                        val date = instant.toLocalDateTime(TimeZone.UTC)
+                        viewModel.onDateChange("${date.dayOfMonth}/${date.monthNumber}/${date.year}")
+                    }
+                    showDatePicker = false
+                }) { Text("PILIH") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("BATAL") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // --- TIME PICKER DIALOG ---
+    if (showStartTimePicker || showEndTimePicker) {
+        val timePickerState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { showStartTimePicker = false; showEndTimePicker = false },
+            title = { Text("Pilih Jam") },
+            text = {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                    TimePicker(state = timePickerState)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val timeStr = "${timePickerState.hour.toString().padStart(2, '0')}:${timePickerState.minute.toString().padStart(2, '0')}"
+                    if (showStartTimePicker) viewModel.onStartTimeChange(timeStr)
+                    else viewModel.onEndTimeChange(timeStr)
+                    showStartTimePicker = false
+                    showEndTimePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartTimePicker = false; showEndTimePicker = false }) { Text("BATAL") }
+            }
+        )
     }
 
     if (state.isSuccess) {

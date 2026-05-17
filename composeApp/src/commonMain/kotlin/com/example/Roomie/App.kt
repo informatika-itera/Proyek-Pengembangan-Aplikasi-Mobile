@@ -1,6 +1,7 @@
 package com.example.Roomie
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
@@ -13,6 +14,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -24,6 +27,8 @@ import androidx.navigation.navArgument
 import com.example.Roomie.domain.model.UserRole
 import com.example.Roomie.presentation.AppViewModel
 import com.example.Roomie.presentation.auth.LoginScreen
+import com.example.Roomie.presentation.auth.OnboardingScreen
+import com.example.Roomie.presentation.auth.SplashScreen
 import com.example.Roomie.presentation.home.HomeScreen
 import com.example.Roomie.presentation.facility.BuildingListScreen
 import com.example.Roomie.presentation.facility.FacilityGridScreen
@@ -39,9 +44,12 @@ import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
 import com.example.Roomie.presentation.util.AppStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
+    data object Splash : Screen("splash", "Splash")
+    data object Onboarding : Screen("onboarding", "Onboarding")
     data object Login : Screen("login", "Masuk", Icons.AutoMirrored.Filled.Login)
     data object Home : Screen("home", AppStrings.NAV_HOME, Icons.Default.Home)
     data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
@@ -68,7 +76,11 @@ fun App(
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
+    val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
     val navController = rememberNavController()
+
+    val networkMonitor: com.example.Roomie.core.network.NetworkMonitor = koinInject()
+    val isOnline by networkMonitor.isOnline.collectAsState()
 
     val darkTheme = when (themeMode) {
         1 -> false // Light
@@ -96,6 +108,23 @@ fun App(
         }
 
         Scaffold(
+            topBar = {
+                // Global Network Banner
+                if (!isOnline) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Mode Offline: Anda tidak bisa mengirim laporan",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            },
             bottomBar = {
                 if (currentUser != null) {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -129,19 +158,33 @@ fun App(
                 }
             }
         ) { innerPadding ->
-            val startRoute = remember(currentUser) {
-                when {
-                    currentUser == null -> Screen.Login.route
-                    currentUser?.role == UserRole.ADMIN -> Screen.AdminDashboard.route
-                    else -> Screen.Home.route
-                }
-            }
-
             NavHost(
                 navController = navController,
-                startDestination = startRoute,
+                startDestination = Screen.Splash.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable(Screen.Splash.route) {
+                    SplashScreen(onFinished = {
+                        val destination = when {
+                            !isOnboardingCompleted -> Screen.Onboarding.route
+                            currentUser == null -> Screen.Login.route
+                            currentUser?.role == UserRole.ADMIN -> Screen.AdminDashboard.route
+                            else -> Screen.Home.route
+                        }
+                        navController.navigate(destination) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    })
+                }
+
+                composable(Screen.Onboarding.route) {
+                    OnboardingScreen(onFinished = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
+                    })
+                }
+
                 composable(Screen.Login.route) {
                     LoginScreen(onLoginSuccess = {})
                 }

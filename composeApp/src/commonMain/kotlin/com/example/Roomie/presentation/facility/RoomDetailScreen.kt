@@ -192,11 +192,20 @@ fun RoomDetailScreen(
                         Column(Modifier.padding(16.dp)) {
                             repeat(4) { index ->
                                 val time = "${8 + index * 2}:00 - ${10 + index * 2}:00"
-                                val isCurrentBooking = r.status == RoomStatus.BOOKED && index == 1
+                                
+                                // Logic baru: Jika status ruangan bukan AVAILABLE, 
+                                // maka seluru slot di timeline menunjukkan status tersebut
+                                val isOccupied = r.status != RoomStatus.AVAILABLE
+                                val eventName = when(r.status) {
+                                    RoomStatus.BOOKED -> r.borrowerName ?: "Terisi"
+                                    RoomStatus.MAINTENANCE -> r.maintenanceDescription ?: "Perbaikan"
+                                    else -> "Tersedia"
+                                }
+                                
                                 ModernTimelineItem(
                                     time = time,
-                                    event = if (isCurrentBooking) r.borrowerName ?: "Terisi" else "Tersedia",
-                                    isAvailable = !isCurrentBooking && r.status != RoomStatus.MAINTENANCE,
+                                    event = eventName,
+                                    isAvailable = !isOccupied,
                                     isLast = index == 3
                                 )
                             }

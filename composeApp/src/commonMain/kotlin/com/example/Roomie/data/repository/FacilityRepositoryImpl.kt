@@ -114,7 +114,37 @@ class FacilityRepositoryImpl(
                 queries.insertBuilding("GEDUNG-E", "Gedung E", "Laboratorium dan kantor jurusan", 0L)
                 queries.insertBuilding("GEDUNG-F", "Gedung F", "Ruang kelas dan pusat penelitian", 0L)
 
-                // Seed GKU2 Rooms
+                // Seed GKU1 Rooms (Coming Soon Preview)
+                queries.insertRoom(
+                    id = "GKU1-101",
+                    buildingId = "GKU1",
+                    name = "101",
+                    floor = 1L,
+                    status = RoomStatus.AVAILABLE.name,
+                    type = RoomType.REGULAR.name,
+                    capacity = 40L,
+                    hasAc = 1L,
+                    hasProjector = 1L,
+                    borrowerName = null,
+                    maintenanceDescription = null
+                )
+
+                // Seed GEDUNG-E Rooms
+                queries.insertRoom(
+                    id = "GEDUNG-E-LAB01",
+                    buildingId = "GEDUNG-E",
+                    name = "LAB 01",
+                    floor = 1L,
+                    status = RoomStatus.MAINTENANCE.name,
+                    type = RoomType.REGULAR.name,
+                    capacity = 30L,
+                    hasAc = 1L,
+                    hasProjector = 0L,
+                    borrowerName = null,
+                    maintenanceDescription = "Upgrade Komputer"
+                )
+
+                // Seed GKU2 Rooms (Existing logic)
                 for (f in 1..3) {
                     for (i in 1..25) {
                         val roomNum = f * 100 + i

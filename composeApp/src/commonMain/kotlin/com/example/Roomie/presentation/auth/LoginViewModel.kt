@@ -36,6 +36,17 @@ class LoginViewModel(
             return
         }
 
+        // Smart Validation using Regex
+        // NIM Mahasiswa ITERA: diawali 12, total 9 digit
+        // NIP Admin: total 3-5 digit (asumsi)
+        val nimRegex = Regex("^12[0-9]{7}$")
+        val nipRegex = Regex("^[0-9]{3,5}$")
+
+        if (!nimRegex.matches(currentId) && !nipRegex.matches(currentId)) {
+            _state.update { it.copy(error = "Format NIM (9 digit) atau NIP tidak valid") }
+            return
+        }
+
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             val result = loginUseCase(currentId)

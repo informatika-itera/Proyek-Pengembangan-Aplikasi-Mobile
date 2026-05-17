@@ -31,9 +31,22 @@ class AppViewModel(
             initialValue = 0
         )
 
+    val isOnboardingCompleted: StateFlow<Boolean> = userPreferences.isOnboardingCompleted
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     fun setThemeMode(mode: Int) {
         viewModelScope.launch {
             userPreferences.setThemeMode(mode)
+        }
+    }
+
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            userPreferences.setOnboardingCompleted()
         }
     }
 

@@ -17,10 +17,21 @@ class UserPreferences(
 ) {
     private object Keys {
         val THEME_MODE = intPreferencesKey("theme_mode") // 0: System, 1: Light, 2: Dark
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val USER_ID = stringPreferencesKey("user_id")
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_NIM = stringPreferencesKey("user_nim")
         val USER_ROLE = stringPreferencesKey("user_role")
+    }
+    
+    val isOnboardingCompleted: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.ONBOARDING_COMPLETED] ?: false
+    }
+
+    suspend fun setOnboardingCompleted() {
+        dataStore.edit { prefs ->
+            prefs[Keys.ONBOARDING_COMPLETED] = true
+        }
     }
     
     /**

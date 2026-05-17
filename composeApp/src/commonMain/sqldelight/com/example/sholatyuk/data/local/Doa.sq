@@ -1,0 +1,49 @@
+-- Doa.sq
+-- Schema untuk menyimpan kumpulan doa
+
+CREATE TABLE DoaEntity (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    title       TEXT    NOT NULL,
+    arabic      TEXT    NOT NULL,
+    latin       TEXT    NOT NULL,
+    translation TEXT    NOT NULL,
+    category    TEXT    NOT NULL,
+    is_favorite INTEGER NOT NULL DEFAULT 0
+);
+
+-- Ambil semua doa
+getAllDoa:
+SELECT * FROM DoaEntity
+ORDER BY category, id;
+
+-- Ambil doa berdasarkan kategori
+getDoaByCategory:
+SELECT * FROM DoaEntity
+WHERE category = ?
+ORDER BY id;
+
+-- Ambil doa favorit
+getFavoriteDoa:
+SELECT * FROM DoaEntity
+WHERE is_favorite = 1
+ORDER BY id;
+
+-- Ambil doa berdasarkan id
+getDoaById:
+SELECT * FROM DoaEntity
+WHERE id = ?;
+
+-- Toggle favorit
+toggleFavorite:
+UPDATE DoaEntity
+SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END
+WHERE id = ?;
+
+-- Insert doa (untuk seed data)
+insertDoa:
+INSERT OR IGNORE INTO DoaEntity (id, title, arabic, latin, translation, category, is_favorite)
+VALUES (?, ?, ?, ?, ?, ?, 0);
+
+-- Hitung jumlah doa (untuk cek apakah seed sudah dilakukan)
+countDoa:
+SELECT COUNT(*) FROM DoaEntity;

@@ -1,247 +1,219 @@
-# 📱 NoteAI - KMP Project Template
+# MoveIn
 
-Template project **Kotlin Multiplatform** untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
+![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-purple)
+![Compose](https://img.shields.io/badge/Compose-Multiplatform-blue)
+![Platform](https://img.shields.io/badge/Platform-Android-green)
+![Architecture](https://img.shields.io/badge/Architecture-MVVM-orange)
 
-Aplikasi Notes dengan fitur AI untuk membantu mahasiswa memahami arsitektur dan pattern yang digunakan dalam pengembangan aplikasi mobile modern.
+## About MoveIn
 
-> **📚 Dokumentasi Lengkap**
-> 
-> | Dokumen | Deskripsi |
-> |---------|-----------|
-> | [🚀 Cara Menjalankan](./docs/CARA_MENJALANKAN.md) | **BACA INI DULU!** Panduan setup dan running aplikasi |
-> | [📋 Panduan Project](./docs/PANDUAN_PROJECT.md) | Informasi lengkap tentang project, timeline, dan penilaian |
-> | [🌿 Git Workflow](./docs/GIT_WORKFLOW.md) | Cara menggunakan Git dan branching strategy |
-> | [📜 Aturan Modifikasi](./docs/ATURAN_MODIFIKASI.md) | Apa yang boleh dan tidak boleh dimodifikasi |
-> | [🏗️ Struktur Kode](./docs/STRUKTUR_KODE.md) | Penjelasan arsitektur dan struktur folder |
-> | [🔧 Troubleshooting](./docs/TROUBLESHOOTING.md) | Solusi untuk masalah umum |
+**MoveIn** merupakan aplikasi mobile yang membantu pengguna menemukan berbagai rekomendasi aktivitas menarik saat merasa bosan, jenuh, stres, atau kurang produktif.
+Pengguna dapat memilih mood yang sedang dirasakan, lalu aplikasi akan memberikan rekomendasi aktivitas yang sesuai secara interaktif dan menyenangkan.
 
-## ✨ Fitur Aplikasi
-
-- 📝 **CRUD Notes** - Tambah, edit, hapus, dan lihat catatan
-- 🔍 **Search & Filter** - Cari dan filter notes berdasarkan kategori
-- 🤖 **AI Assistant** - Summarize, generate ideas, improve writing
-- 🌙 **Dark Mode** - Tema gelap/terang
-- 📱 **Cross-Platform** - Android & iOS dari satu codebase
-
-## 🏗️ Arsitektur & Teknologi
-
-### Clean Architecture + MVVM
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │  SQLDelight│        │   Ktor   │       │ DataStore││
-│        │  (Local)  │        │ (Remote) │       │  (Prefs) ││
-│        └───────────┘        └──────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **DI** | Koin |
-| **AI** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/noteai/
-│   ├── core/                      # Core utilities
-│   │   ├── di/                    # Koin modules
-│   │   ├── network/               # Network config, error handling
-│   │   └── util/                  # Extensions, helpers
-│   │
-│   ├── data/                      # Data layer
-│   │   ├── local/
-│   │   │   ├── dao/               # SQLDelight DAOs
-│   │   │   ├── entity/            # Database entities
-│   │   │   └── datastore/         # DataStore preferences
-│   │   ├── remote/
-│   │   │   ├── api/               # API services (Ktor)
-│   │   │   └── dto/               # Data Transfer Objects
-│   │   └── repository/            # Repository implementations
-│   │
-│   ├── domain/                    # Domain layer (pure Kotlin)
-│   │   ├── model/                 # Domain models
-│   │   ├── repository/            # Repository interfaces
-│   │   └── usecase/               # Business logic
-│   │
-│   └── presentation/              # Presentation layer
-│       ├── navigation/            # Navigation setup
-│       ├── screens/               # Screen composables + ViewModels
-│       │   ├── home/
-│       │   ├── addnote/
-│       │   ├── detail/
-│       │   └── ai/
-│       ├── components/            # Reusable UI components
-│       └── theme/                 # Material theme
-│
-├── commonMain/sqldelight/         # SQLDelight schema
-│
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (expect/actual)
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- Xcode 15+ (untuk iOS)
-- JDK 17+
-
-### 👥 Ketentuan Kelompok
-
-| Ketentuan | Detail |
-|-----------|--------|
-| Jumlah Anggota | **1 - 3 mahasiswa** per kelompok |
-| Format Branch | `project/[NIM-NIM-...]-[NamaAplikasi]` |
-
-**Contoh Branch:**
-- Individu: `project/121140001-TodoMaster`
-- 2 orang: `project/121140003-121140004-FitnessApp`
-- 3 orang: `project/121140007-121140008-121140009-StudyPlanner`
-
-### Setup
-
-1. **Fork & Clone repository**
-   ```bash
-   # 1 orang fork, lalu invite anggota lain sebagai collaborator
-   # Semua anggota clone dari repo yang di-fork
-   git clone https://github.com/USERNAME_FORK/Pryk-PAM.git
-   cd Pryk-PAM
-
-   # Buat branch project kelompok
-   git checkout -b project/121140003-121140004-FitnessApp
-   ```
-
-2. **Setup `local.properties`**
-
-   Salin template, lalu isi API key:
-   ```bash
-   cp local.properties.example local.properties
-   # edit local.properties dan isi GEMINI_API_KEY=...
-   ```
-
-   Dapatkan API key gratis di: https://aistudio.google.com/
-
-3. **Sync & Build**
-   ```bash
-   ./gradlew build              # build semua target
-   ./gradlew :composeApp:assembleDebug   # build APK debug saja (lebih cepat)
-   ```
-
-4. **Run**
-   - **Android**: pilih run configuration `composeApp` di Android Studio, atau
-     `./gradlew :composeApp:installDebug` ke emulator/device aktif.
-   - **iOS** (opsional): folder `iosApp/` belum disertakan di template ini —
-     lihat panduan di [`docs/CARA_MENJALANKAN.md`](./docs/CARA_MENJALANKAN.md#8-menjalankan-ios-lanjutan-opsional).
-
-## 📚 Materi yang Dicakup
-
-| Pertemuan | Topik | File/Folder Reference |
-|-----------|-------|----------------------|
-| 1 | Setup Environment | Root project setup |
-| 2 | Kotlin Lanjutan | `core/util/`, coroutines, Flow |
-| 3 | Compose Basics | `presentation/components/` |
-| 4 | MVVM & State | `presentation/screens/*/ViewModel.kt` |
-| 5 | Navigation | `presentation/navigation/` |
-| 6 | Networking | `data/remote/`, Ktor setup |
-| 7 | Local Storage | `data/local/`, SQLDelight |
-| 8 | Platform Code | `androidMain/`, `iosMain/`, expect/actual |
-| 9 | AI Integration | `data/remote/api/GeminiService.kt` |
-| 10 | Testing | `commonTest/` |
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./gradlew allTests
-
-# Run common tests only
-./gradlew :composeApp:testDebugUnitTest
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [ ] Clone dan setup project
-- [ ] Pahami struktur folder
-- [ ] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [ ] Tambahkan field baru di Note (misal: priority, dueDate)
-- [ ] Implementasi fitur kategori/tags
-- [ ] Tambahkan validasi input
-
-### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
-
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - silakan gunakan untuk pembelajaran.
-
-## 👨‍🏫 Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
-
-**Program Studi Teknik Informatika**  
-Institut Teknologi Sumatera (ITERA)
+Aplikasi ini dirancang untuk membantu pengguna tetap aktif, produktif, dan memiliki kegiatan positif setiap hari.
 
 ---
 
-*Template ini dibuat untuk mendukung pembelajaran Pengembangan Aplikasi Mobile dengan Kotlin Multiplatform.*
+# Team Members
+
+| Nama                | NIM       | GitHub                   |
+| ------------------- | --------- | ------------------------ |
+| Muhamad Arif Ardani | 123140186 | @Kaizenix                |
+| Raisya Syifa Saleh  | 123140169 | @14-169-RaisyaSyifaSaleh |
+
+---
+
+# Target Users
+
+* Mahasiswa
+* Pelajar
+* Remaja
+* Pengguna yang sering merasa bosan atau kurang produktif
+
+---
+
+# Main Features
+
+## Authentication
+
+* Login akun
+* Register akun baru
+* Logout akun
+
+## Mood Selection
+
+Pengguna dapat memilih mood yang sedang dirasakan:
+
+* Bosan
+* Sedih
+* Capek
+* Semangat
+* Gabut
+* Stress
+
+## Random Activity Generator
+
+Aplikasi memberikan rekomendasi aktivitas secara acak seperti:
+
+* Mendengarkan podcast
+* Jalan santai 10 menit
+* Menonton film
+* Merapikan meja belajar
+* Membaca artikel menarik
+* Mencoba resep sederhana
+
+Fitur tambahan:
+
+* Tombol **“Acak Lagi”** untuk mendapatkan rekomendasi baru
+
+## Activity Categories
+
+Aktivitas dibagi menjadi beberapa kategori:
+
+* Produktif
+* Hiburan
+* Self-improvement
+* Kesehatan
+* Sosial
+* Santai
+
+## Daily Challenge
+
+Contoh challenge harian:
+
+* Minum air 2 liter
+* Tidak rebahan selama 1 jam
+* Membaca 5 halaman buku
+
+Reward:
+
+* Badge
+* Poin
+
+## ❤avorite Activity
+
+* Menyimpan aktivitas favorit
+* Melihat kembali aktivitas yang disukai
+
+## Activity History
+
+* Menyimpan riwayat aktivitas pengguna
+* Melihat progress aktivitas harian
+
+## Quotes & Motivation
+
+* Menampilkan quotes motivasi harian
+* Membantu meningkatkan semangat pengguna
+
+## Statistics Page
+
+Menampilkan:
+
+* Jumlah challenge selesai
+* Mood paling sering dipilih
+* Aktivitas favorit pengguna
+
+---
+
+# Project Architecture
+
+Project menggunakan:
+
+* MVVM Architecture
+* Clean Architecture
+* Repository Pattern
+
+## Folder Structure
+
+```bash
+composeApp/
+└── src/commonMain/kotlin/com/movein/
+    ├── data/
+    ├── domain/
+    ├── presentation/
+    ├── navigation/
+    ├── di/
+    └── components/
+```
+
+---
+
+# Tech Stack
+
+| Technology            | Description                |
+| --------------------- | -------------------------- |
+| Kotlin Multiplatform  | Cross-platform development |
+| Compose Multiplatform | Modern UI Toolkit          |
+| Ktor Client           | Networking                 |
+| SQLDelight            | Local Database             |
+| DataStore             | Preferences Storage        |
+| Koin                  | Dependency Injection       |
+| Coroutines & Flow     | Async Programming          |
+
+---
+
+# Sprint Planning
+
+## print 1 — Planning & Setup
+
+* Project idea & requirements
+* Setup GitHub repository
+* Setup KMP project
+* Setup Clean Architecture
+* Setup CI/CD
+* Create README documentation
+
+## Sprint 2 — Core Features
+
+* Implement login & register
+* Mood selection page
+* Random activity generator
+* Navigation setup
+
+## Sprint 3 — Advanced Features
+
+* Favorite activity
+* Activity history
+* Daily challenge
+* Quotes feature
+
+## Sprint 4 — Polish & Testing
+
+* UI improvement
+* Responsive design
+* Unit testing
+* Bug fixing
+
+## Sprint 5 — Final Preparation
+
+* Final testing
+* Presentation preparation
+* Final documentation
+
+---
+
+# Setup Project
+
+## Clone Repository
+
+```bash
+git clone https://github.com/Kaizenix/123140169-123140186-MoveIn.git
+```
+
+## Open Project
+
+* Open project menggunakan Android Studio
+* Sync Gradle
+* Run pada emulator atau device Android
+
+---
+
+# Status Project
+
+🚧 Currently in Development — Sprint 1 Planning & Setup
+
+---
+
+# License
+
+This project is developed for academic purposes at Institut Teknologi Sumatera (ITERA).

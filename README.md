@@ -17,21 +17,6 @@ Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
 
 **Rewind** aadalah aplikasi mobile personal tracker untuk film dan series berbasis Kotlin Multiplatform. Pengguna bisa mencari film atau series, menambahkannya ke koleksi pribadi, mencatat status tontonan, memberi rating, dan menulis kesan singkat. Data film diambil secara real-time dari *TMDB API, koleksi disimpan lokal menggunakan **SQLDelight, dan dilengkapi asisten **AI berbasis Google Gemini* yang membantu menulis review dan merekomendasikan tontonan berikutnya.
 
-# 🎬 Rewind — Film & Series Personal Tracker
-
-![CI](https://github.com/choirunnisasy/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
-
-Proyek mata kuliah **Pengembangan Aplikasi Mobile (IF25-22017)** Kelas RB   
-Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
-
-## 👥 Team
-* **Refi Ikhsanti** (NIM: 123140126) - Lead & Domain Developer - [@refiikhsanti](https://github.com/refiikhsanti)
-* **Choirunnisa Syawaldina** (NIM: 123140136) - Data & Database Developer - [@choirunnisasy](https://github.com/choirunnisasy)
-* **Keira Lakeisha Fachra Fuady** (NIM: 123140142) - UI/UX & Presentation Developer - [@keiralakeisha](https://github.com/keiralakeisha)
-
-## 📝 Description
-**Rewind** adalah aplikasi mobile personal tracker untuk film dan series berbasis Kotlin Multiplatform. Pengguna bisa mencari film atau series, menambahkannya ke koleksi pribadi, mencatat status tontonan, memberi rating, dan menulis kesan singkat. Data film diambil secara real-time dari TMDB API, koleksi disimpan lokal menggunakan SQLDelight, dan dilengkapi asisten AI berbasis Google Gemini yang membantu menulis review dan merekomendasikan tontonan berikutnya.
-
 ## 🌟 Features
 
 ### 📦 Minimum Requirements

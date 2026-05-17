@@ -1,0 +1,52 @@
+-- Bookmark table schema for Hujjah Sprint 2
+
+CREATE TABLE BookmarkEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reference_id TEXT NOT NULL UNIQUE,
+    source_type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    arabic_text TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    explanation TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    topic_title TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    saved_at INTEGER NOT NULL
+);
+
+getAllBookmarks:
+SELECT * FROM BookmarkEntity
+ORDER BY saved_at DESC;
+
+getBookmarkByReferenceId:
+SELECT * FROM BookmarkEntity
+WHERE reference_id = ?;
+
+insertBookmark:
+INSERT OR REPLACE INTO BookmarkEntity (
+    reference_id,
+    source_type,
+    title,
+    source_name,
+    arabic_text,
+    translation,
+    explanation,
+    topic_id,
+    topic_title,
+    note,
+    saved_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateBookmarkNote:
+UPDATE BookmarkEntity
+SET note = ?
+WHERE reference_id = ?;
+
+deleteBookmarkByReferenceId:
+DELETE FROM BookmarkEntity
+WHERE reference_id = ?;
+
+countBookmarks:
+SELECT COUNT(*) FROM BookmarkEntity;

@@ -14,6 +14,23 @@
 
 ---
 
+## 🎥 Demo Aplikasi 
+**▶️ [Tonton Video Demo TodoMaster Di Sini](https://drive.google.com/drive/folders/13HpJ73oDPwP2MWyWCWsQUYUqPCrJBIlK?usp=sharing)**
+
+### 📸 Antarmuka Pengguna
+
+| Dashboard Eisenhower (Home) | Detail Kuadran (Tabbed List) |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/b5ce6b08-ff53-4523-84a4-018d46e01cb2" width="250" alt="Screenshot Home" /> | <img src="https://github.com/user-attachments/assets/31a4df1f-da6b-4d93-853c-b42d4d5e5d64" width="250" alt="Screenshot Tabbed List" /> |
+| **Batas kognitif harian & Ringkasan tugas.** | **Manajemen tugas interaktif per kuadran.** |
+
+| Form Tambah/Edit Tugas | Detail Tugas (CRUD) |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/73e93f3e-577e-465a-b0d0-245bb872399b" width="250" alt="Screenshot Add Task" /> | <img src="https://github.com/user-attachments/assets/243f2317-6448-4020-9389-1c1a7aef9f75" width="250" alt="Screenshot Task Detail" /> |
+| **Input tugas dengan validasi kuota *Do First*.** | **Melihat detail, mengedit, atau menghapus.** |
+
+---
+
 ## ✨ Fitur Utama Aplikasi
 Aplikasi TodoMaster dirancang dengan beberapa fitur utama berikut:
 

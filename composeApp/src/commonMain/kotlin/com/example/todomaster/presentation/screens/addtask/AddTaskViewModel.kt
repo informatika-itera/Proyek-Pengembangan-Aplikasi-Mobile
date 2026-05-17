@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todomaster.domain.model.Quadrant
 import com.example.todomaster.domain.model.Task
+import com.example.todomaster.domain.repository.TaskRepository
 import com.example.todomaster.domain.usecase.AddTaskUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
 class AddTaskViewModel(
-    private val addTaskUseCase: AddTaskUseCase
+    private val addTaskUseCase: AddTaskUseCase,
+    private val repository: TaskRepository
 ) : ViewModel() {
 
     var title by mutableStateOf("")
@@ -22,8 +24,21 @@ class AddTaskViewModel(
     var priority by mutableStateOf(Quadrant.SCHEDULE)
     var error by mutableStateOf<String?>(null)
 
+    private var editingTaskId by mutableStateOf<Long?>(null)
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
+
+    fun loadTaskForEdit(taskId: Long) {
+        viewModelScope.launch {
+            editingTaskId = taskId
+            val task = repository.getTaskById(taskId)
+            task?.let {
+                title = it.title
+                description = it.description ?: ""
+                priority = it.priority
+            }
+        }
+    }
 
     fun onSaveTask() {
         if (title.isBlank()) {
@@ -33,7 +48,7 @@ class AddTaskViewModel(
 
         viewModelScope.launch {
             val newTask = Task(
-                id = 0,
+                id = editingTaskId ?: 0,
                 title = title,
                 description = description,
                 priority = priority,
@@ -44,10 +59,15 @@ class AddTaskViewModel(
                 createdAt = Clock.System.now().toEpochMilliseconds()
             )
 
-            addTaskUseCase(newTask).onSuccess {
+            if (editingTaskId != null) {
+                repository.updateTask(newTask)
                 _uiEvent.emit(UiEvent.SaveSuccess)
-            }.onFailure { e ->
-                error = e.message
+            } else {
+                addTaskUseCase(newTask).onSuccess {
+                    _uiEvent.emit(UiEvent.SaveSuccess)
+                }.onFailure { e ->
+                    error = e.message
+                }
             }
         }
     }

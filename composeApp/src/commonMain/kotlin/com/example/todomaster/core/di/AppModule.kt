@@ -21,6 +21,8 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import com.example.todomaster.presentation.screens.detail.TaskDetailViewModel
+import com.example.todomaster.presentation.screens.quadrantdetail.QuadrantDetailViewModel
 
 // ==================== NETWORK MODULE ====================
 
@@ -63,6 +65,8 @@ val useCaseModule = module {
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddTaskViewModel)
+    viewModelOf(::TaskDetailViewModel)
+    viewModelOf(::QuadrantDetailViewModel)
 }
 
 // ==================== SHARED MODULES ====================

@@ -14,6 +14,9 @@ sealed interface Route {
     data class TaskDetail(val taskId: Long) : Route
 
     @Serializable
+    data class QuadrantDetail(val quadrantId: Long) : Route
+
+    @Serializable
     data object Calendar : Route
 
     @Serializable
@@ -30,6 +33,7 @@ interface NavigationActions {
     fun navigateToTaskList()
     fun navigateToAddTask(taskId: Long? = null)
     fun navigateToTaskDetail(taskId: Long)
+    fun navigateToQuadrantDetail(quadrantId: Long)
     fun navigateToCalendar()
     fun navigateToStatistics()
     fun navigateToAIAssistant(taskId: Long? = null, initialText: String? = null)

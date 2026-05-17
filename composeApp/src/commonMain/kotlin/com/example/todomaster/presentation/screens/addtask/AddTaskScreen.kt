@@ -13,6 +13,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
+    taskId: Long? = null,
     onNavigateBack: () -> Unit,
     viewModel: AddTaskViewModel = koinViewModel()
 ) {
@@ -22,10 +23,16 @@ fun AddTaskScreen(
         }
     }
 
+    LaunchedEffect(taskId) {
+        if (taskId != null) {
+            viewModel.loadTaskForEdit(taskId)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambah Tugas") },
+                title = { Text(if (taskId == null) "Tambah Tugas" else "Edit Tugas") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -72,7 +79,7 @@ fun AddTaskScreen(
                 onClick = { viewModel.onSaveTask() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Simpan Tugas")
+                Text(if (taskId == null) "Simpan Tugas" else "Perbarui Tugas")
             }
         }
     }

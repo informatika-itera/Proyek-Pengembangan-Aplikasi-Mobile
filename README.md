@@ -6,9 +6,9 @@ PocketGuard adalah aplikasi mobile multiplatform (Android & iOS) yang dirancang 
 ---
 
 ## 👥 Tim Pengembang
-* **Anggota 1 (Lead & Developer)**: Jefri Wahyu Fernando Sembiring (NIM: [Isi NIM Kamu]) - [@github_username]
-* **Anggota 2 (Developer)**: [Nama Anggota 2] (NIM: [Isi NIM 2]) - [@github_username]
-* **Anggota 3 (QA & Tester)**: [Nama Anggota 3] (NIM: [Isi NIM 3]) - [@github_username]
+* **Anggota 1 (Lead & Developer)**: Jefri Wahyu Fernando Sembiring (NIM: 123140026) - @3-206-jefri
+* **Anggota 2 (Developer)**: Arta Eka Yuly Rajagukguk  (NIM: 123140209) - @artaeka
+
 
 ---
 

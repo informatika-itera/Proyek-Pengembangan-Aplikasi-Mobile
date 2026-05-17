@@ -5,6 +5,7 @@ import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
 import kotlinx.datetime.Instant
 
+// udh di fixkan
 fun NoteEntity.toDomain(): Note {
     return Note(
         id = id,

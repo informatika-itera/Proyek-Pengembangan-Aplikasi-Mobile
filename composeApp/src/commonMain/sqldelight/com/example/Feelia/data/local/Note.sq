@@ -1,5 +1,5 @@
 -- Feelia Journal Schema
-
+-- udh disesuain juga lupa commit
 CREATE TABLE NoteEntity (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     content     TEXT    NOT NULL,

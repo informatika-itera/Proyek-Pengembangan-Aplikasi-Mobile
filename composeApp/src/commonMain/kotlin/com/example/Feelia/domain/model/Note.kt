@@ -17,7 +17,7 @@ data class Note(
     val isEmpty: Boolean
         get() = content.isBlank()
 }
-
+// bagian yang udh disesuain Core architecture
 enum class Emotion(
     val displayName: String,
     val emoji: String,

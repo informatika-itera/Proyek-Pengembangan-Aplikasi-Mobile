@@ -203,11 +203,15 @@ fun ReportScreen(
 
             if (state.isSubmitted) {
                 AlertDialog(
-                    onDismissRequest = { /* Reset */ },
+                    onDismissRequest = { 
+                        viewModel.resetState()
+                    },
                     title = { Text(AppStrings.REPORT_SUCCESS_TITLE, fontWeight = FontWeight.Bold) },
                     text = { Text(AppStrings.REPORT_SUCCESS_MSG) },
                     confirmButton = {
-                        TextButton(onClick = { /* Reset state */ }) {
+                        TextButton(onClick = { 
+                            viewModel.resetState()
+                        }) {
                             Text("OK", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
                     },

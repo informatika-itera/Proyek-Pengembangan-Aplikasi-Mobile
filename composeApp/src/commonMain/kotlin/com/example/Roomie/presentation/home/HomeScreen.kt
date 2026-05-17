@@ -35,6 +35,7 @@ fun HomeScreen(
     onNavigateToSchedule: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToReport: () -> Unit,
+    onNavigateToAllReports: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -74,7 +75,8 @@ fun HomeScreen(
                         onNavigateToSearch = onNavigateToSearch,
                         onNavigateToSchedule = onNavigateToSchedule,
                         onNavigateToHelp = onNavigateToHelp,
-                        onNavigateToReport = onNavigateToReport
+                        onNavigateToReport = onNavigateToReport,
+                        onNavigateToAllReports = onNavigateToAllReports
                     )
                 }
                 is HomeUiState.Error -> {
@@ -95,7 +97,8 @@ fun HomeContent(
     onNavigateToSearch: () -> Unit,
     onNavigateToSchedule: () -> Unit,
     onNavigateToHelp: () -> Unit,
-    onNavigateToReport: () -> Unit
+    onNavigateToReport: () -> Unit,
+    onNavigateToAllReports: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -276,7 +279,7 @@ fun HomeContent(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                TextButton(onClick = {}) {
+                TextButton(onClick = onNavigateToAllReports) {
                     Text("Lihat Semua", color = MaterialTheme.colorScheme.primary)
                 }
             }

@@ -31,6 +31,7 @@ import com.example.Roomie.domain.repository.FacilityRepository
 fun RoomDetailScreen(
     roomId: String?,
     onBack: () -> Unit,
+    onNavigateToBooking: (String) -> Unit,
     facilityRepository: FacilityRepository = org.koin.compose.koinInject()
 ) {
     val room by facilityRepository.getRoomById(roomId ?: "").collectAsState(null)
@@ -56,7 +57,9 @@ fun RoomDetailScreen(
                     tonalElevation = 8.dp
                 ) {
                     Button(
-                        onClick = { /* Implementasi Pinjam */ },
+                        onClick = { 
+                            room?.id?.let { onNavigateToBooking(it) }
+                        },
                         modifier = Modifier.fillMaxWidth().padding(20.dp).height(56.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)

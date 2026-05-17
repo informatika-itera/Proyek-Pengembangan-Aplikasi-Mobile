@@ -9,6 +9,7 @@ import com.example.Roomie.presentation.facility.FacilityViewModel
 import com.example.Roomie.presentation.facility.FacilityDetailViewModel
 import com.example.Roomie.presentation.facility.SearchRoomViewModel
 import com.example.Roomie.presentation.facility.ScheduleViewModel
+import com.example.Roomie.presentation.facility.BookingViewModel
 import com.example.Roomie.presentation.help.HelpViewModel
 import com.example.Roomie.presentation.report.ReportViewModel
 import com.example.Roomie.presentation.profile.ProfileViewModel
@@ -25,6 +26,7 @@ val viewModelModule = module {
     viewModelOf(::FacilityDetailViewModel)
     viewModelOf(::SearchRoomViewModel)
     viewModelOf(::ScheduleViewModel)
+    viewModelOf(::BookingViewModel)
     viewModelOf(::HelpViewModel)
     viewModelOf(::ReportViewModel)
     viewModelOf(::ProfileViewModel)

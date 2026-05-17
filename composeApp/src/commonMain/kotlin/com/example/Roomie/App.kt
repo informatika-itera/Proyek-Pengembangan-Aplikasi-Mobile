@@ -28,10 +28,12 @@ import com.example.Roomie.presentation.home.HomeScreen
 import com.example.Roomie.presentation.facility.BuildingListScreen
 import com.example.Roomie.presentation.facility.FacilityGridScreen
 import com.example.Roomie.presentation.facility.RoomDetailScreen
+import com.example.Roomie.presentation.facility.BookingScreen
 import com.example.Roomie.presentation.facility.SearchRoomScreen
 import com.example.Roomie.presentation.facility.ScheduleScreen
 import com.example.Roomie.presentation.help.HelpScreen
 import com.example.Roomie.presentation.report.ReportScreen
+import com.example.Roomie.presentation.report.AllReportsScreen
 import com.example.Roomie.presentation.profile.ProfileScreen
 import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
@@ -45,6 +47,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
     data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
     data object SearchRoom : Screen("search_room", "Cari Ruangan")
+    data object AllReports : Screen("all_reports", "Semua Laporan")
+    data object Booking : Screen("booking/{roomId}", "Pinjam Ruangan") {
+        fun createRoute(roomId: String) = "booking/$roomId"
+    }
     data object Schedule : Screen("schedule", AppStrings.HOME_SCHEDULE)
     data object Help : Screen("help", AppStrings.HOME_HELP)
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
@@ -145,8 +151,13 @@ fun App(
                         onNavigateToSearch = { navController.navigate(Screen.SearchRoom.route) },
                         onNavigateToSchedule = { navController.navigate(Screen.Schedule.route) },
                         onNavigateToHelp = { navController.navigate(Screen.Help.route) },
-                        onNavigateToReport = { navController.navigate(Screen.Report.route) }
+                        onNavigateToReport = { navController.navigate(Screen.Report.route) },
+                        onNavigateToAllReports = { navController.navigate(Screen.AllReports.route) }
                     )
+                }
+
+                composable(Screen.AllReports.route) {
+                    AllReportsScreen(onBack = { navController.popBackStack() })
                 }
                 
                 composable(Screen.SearchRoom.route) {
@@ -157,7 +168,18 @@ fun App(
                         }
                     )
                 }
-                
+
+                composable(
+                    route = Screen.Booking.route,
+                    arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
+                    BookingScreen(
+                        roomId = roomId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
                 composable(Screen.Schedule.route) {
                     ScheduleScreen(onBack = { navController.popBackStack() })
                 }
@@ -191,7 +213,10 @@ fun App(
                     val roomId = backStackEntry.arguments?.getString("roomId")
                     RoomDetailScreen(
                         roomId = roomId,
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onNavigateToBooking = { id ->
+                            navController.navigate(Screen.Booking.createRoute(id))
+                        }
                     )
                 }
                 

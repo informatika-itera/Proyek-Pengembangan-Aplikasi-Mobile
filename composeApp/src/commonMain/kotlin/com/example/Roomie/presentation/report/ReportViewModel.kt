@@ -49,6 +49,10 @@ class ReportViewModel(
         _state.update { it.copy(urgency = urgency) }
     }
 
+    fun resetState() {
+        _state.value = ReportFormState()
+    }
+
     fun submitReport() {
         if (!_state.value.isSubmitEnabled) return
         

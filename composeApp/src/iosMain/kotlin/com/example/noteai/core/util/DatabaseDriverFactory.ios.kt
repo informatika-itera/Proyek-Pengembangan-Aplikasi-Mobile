@@ -6,15 +6,12 @@ import com.example.noteai.data.local.NoteDatabase
 
 /**
  * iOS implementation of DatabaseDriverFactory
- * 
- * Menggunakan NativeSqliteDriver yang membungkus SQLite native iOS.
- * Database disimpan di Documents directory aplikasi.
  */
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
             schema = NoteDatabase.Schema,
-            name = "noteai.db"
+            name = "noteai_v6.db" // Updated name to force schema reset
         )
     }
 }

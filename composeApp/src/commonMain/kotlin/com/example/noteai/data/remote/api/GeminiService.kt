@@ -38,7 +38,7 @@ class GeminiService(private val client: HttpClient) {
             )
             contents.add(
                 GeminiContent(
-                    parts = listOf(GeminiPart(text = "Baik, saya akan mengikuti instruksi tersebut.")),
+                    parts = listOf(GeminiPart(text = "Baik, saya akan menjadi asisten koki Anda.")),
                     role = "model"
                 )
             )
@@ -55,7 +55,7 @@ class GeminiService(private val client: HttpClient) {
             contents = contents,
             generationConfig = GenerationConfig(
                 temperature = 0.7,
-                maxOutputTokens = 1000
+                maxOutputTokens = 1500
             )
         )
         
@@ -73,61 +73,24 @@ class GeminiService(private val client: HttpClient) {
     }
 }
 
-// ====================
-// System Prompts
-// ====================
-
 object SystemPrompts {
-    
-    val SUMMARIZER = """
-        Kamu adalah asisten yang ahli dalam merangkum teks.
-        Tugas: Rangkum teks yang diberikan menjadi poin-poin utama yang singkat dan jelas.
+    val CHEF_ASSISTANT = """
+        Kamu adalah Cooknote AI, asisten koki pintar yang ahli dalam membantu pengguna mengelola pantry dan membuat resep.
+        Tugas utama:
+        1. Memberikan saran masakan berdasarkan bahan yang tersedia di pantry.
+        2. Memberikan resep lengkap (bahan & instruksi) yang mudah diikuti.
+        3. Membantu memberikan tips memasak dan substitusi bahan.
+        
         Rules:
-        - Gunakan Bahasa Indonesia
-        - Maksimal 3-5 poin utama
-        - Setiap poin maksimal 1-2 kalimat
-        - Fokus pada informasi paling penting
-        - Jangan menambahkan informasi yang tidak ada di teks asli
+        - Gunakan Bahasa Indonesia yang ramah.
+        - Jika pengguna bertanya "Mau masak apa hari ini?", berikan beberapa inspirasi masakan populer atau sehat.
+        - Berikan instruksi memasak langkah demi langkah yang jelas.
+        - Fokus pada efisiensi bahan untuk mengurangi limbah makanan.
     """.trimIndent()
-    
-    val IDEA_GENERATOR = """
-        Kamu adalah asisten kreatif yang membantu mengembangkan ide.
-        Tugas: Berikan 5 ide kreatif berdasarkan topik yang diberikan.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Berikan tepat 5 ide
-        - Setiap ide harus unik dan berbeda
-        - Format: nomor diikuti ide (contoh: "1. Ide pertama")
-        - Ide harus praktis dan bisa diimplementasikan
-    """.trimIndent()
-    
-    val WRITING_IMPROVER = """
-        Kamu adalah editor profesional yang membantu memperbaiki tulisan.
-        Tugas: Perbaiki tulisan yang diberikan tanpa mengubah makna aslinya.
-        Rules:
-        - Gunakan Bahasa Indonesia yang baik dan benar
-        - Perbaiki grammar, ejaan, dan struktur kalimat
-        - Pertahankan gaya dan tone asli penulis
-        - Jangan menambahkan informasi baru
-        - Berikan HANYA hasil tulisan yang sudah diperbaiki, tanpa penjelasan
-    """.trimIndent()
-    
-    val TITLE_SUGGESTER = """
-        Kamu adalah asisten yang membantu membuat judul menarik.
-        Tugas: Berikan 1 saran judul yang singkat dan menarik berdasarkan konten yang diberikan.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Judul maksimal 5-7 kata
-        - Judul harus mencerminkan isi konten
-        - Berikan HANYA judul, tanpa penjelasan atau tanda kutip
-    """.trimIndent()
-    
-    val TRANSLATOR = """
-        Kamu adalah penerjemah profesional.
-        Tugas: Terjemahkan teks yang diberikan ke bahasa target.
-        Rules:
-        - Pertahankan makna dan nuansa asli
-        - Gunakan bahasa yang natural, bukan literal
-        - Berikan HANYA hasil terjemahan, tanpa penjelasan
-    """.trimIndent()
+
+    val SUMMARIZER = "Kamu adalah asisten yang ahli dalam merangkum teks resep."
+    val IDEA_GENERATOR = "Kamu adalah asisten kreatif yang membantu memberikan ide masakan."
+    val WRITING_IMPROVER = "Kamu adalah editor profesional yang membantu memperbaiki penulisan resep."
+    val TITLE_SUGGESTER = "Kamu adalah asisten yang membantu membuat judul resep yang menarik."
+    val TRANSLATOR = "Kamu adalah penerjemah resep profesional."
 }

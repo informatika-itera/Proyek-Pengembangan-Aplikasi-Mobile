@@ -7,9 +7,6 @@ import com.example.noteai.data.local.NoteDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory
- * 
- * Menggunakan AndroidSqliteDriver yang membungkus SQLite bawaan Android.
- * Database disimpan di internal storage aplikasi.
  */
 actual class DatabaseDriverFactory(
     private val context: Context
@@ -18,7 +15,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = NoteDatabase.Schema,
             context = context,
-            name = "noteai.db"
+            name = "cooknote_final_v7.db" // Gunakan nama baru untuk reset total
         )
     }
 }

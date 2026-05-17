@@ -1,5 +1,6 @@
 package com.example.raillog.presentation.screens.detail
 
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -297,7 +298,7 @@ private fun StatusDropdown(currentStatus: SupplyStatus, onStatusChange: (SupplyS
                 Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(if (currentStatus.name == "PENDING") MaterialTheme.colorScheme.error else SuccessEmerald))
             },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             textStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
         )

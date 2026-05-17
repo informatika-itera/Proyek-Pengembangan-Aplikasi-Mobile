@@ -22,10 +22,10 @@ Aplikasi kemudian akan memetakan input pengguna ke topik Islami yang relevan, me
 
 ## 👥 Team
 
-| Nama | NIM | GitHub Username | Role |
-|---|---|---|---|
-| AWI SEPTIAN PRASETYO | 123140201 | @awesome1209 | Lead / Mobile Developer |
-| MUHAMMAD BIMASTIAR | 123140211 | @211-Bimas | API & Data Developer |
+| Nama | NIM | GitHub Username                               | Role |
+|---|---|-----------------------------------------------|---|
+| AWI SEPTIAN PRASETYO | 123140201 | [@awesome1209](https://github.com/Awesome1209) | Lead / Mobile Developer |
+| MUHAMMAD BIMASTIAR | 123140211 | [@211-Bimas](https://github.com/211-Bimas)    | API & Data Developer |
 
 ---
 
@@ -672,6 +672,12 @@ Hujjah membantu pengguna menemukan referensi Al-Qur’an dan hadis untuk pembela
 Untuk persoalan hukum agama yang kompleks, pengguna dianjurkan bertanya kepada ustadz, ulama, atau pihak yang berkompeten.
 
 ---
+
+## Vidio Sprint 
+
+### Sprint 2
+
+
 
 ## 📄 License
 

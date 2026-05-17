@@ -1,18 +1,15 @@
 package com.example.Feelia.data.local.entity
 
 import com.example.Feelia.data.local.NoteEntity
+import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
-import com.example.Feelia.domain.model.NoteCategory
-import com.example.Feelia.domain.model.NoteColor
 import kotlinx.datetime.Instant
 
 fun NoteEntity.toDomain(): Note {
     return Note(
         id = id,
-        title = title,
         content = content,
-        category = NoteCategory.fromString(category),
-        color = NoteColor.fromString(color),
+        emotion = Emotion.fromString(emotion),
         isPinned = is_pinned == 1L,
         createdAt = Instant.fromEpochMilliseconds(created_at),
         updatedAt = Instant.fromEpochMilliseconds(updated_at)
@@ -20,10 +17,8 @@ fun NoteEntity.toDomain(): Note {
 }
 
 data class NoteEntityValues(
-    val title: String,
     val content: String,
-    val category: String,
-    val color: String,
+    val emotion: String,
     val isPinned: Long,
     val createdAt: Long,
     val updatedAt: Long
@@ -31,10 +26,8 @@ data class NoteEntityValues(
 
 fun Note.toEntityValues(): NoteEntityValues {
     return NoteEntityValues(
-        title = title,
         content = content,
-        category = category.name,
-        color = color.name,
+        emotion = emotion.name,
         isPinned = if (isPinned) 1L else 0L,
         createdAt = createdAt.toEpochMilliseconds(),
         updatedAt = updatedAt.toEpochMilliseconds()

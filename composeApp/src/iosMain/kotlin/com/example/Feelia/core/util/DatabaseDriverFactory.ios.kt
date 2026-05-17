@@ -14,7 +14,7 @@ actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
             schema = NoteDatabase.Schema,
-            name = "noteai.db"
+            name = "Feelia.db"
         )
     }
 }

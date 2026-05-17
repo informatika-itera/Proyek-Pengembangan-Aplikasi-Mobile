@@ -1,4 +1,4 @@
-package com.studyhub.core.network
+package core.network
 
 expect object ApiConfig {
     val groqApiKey: String

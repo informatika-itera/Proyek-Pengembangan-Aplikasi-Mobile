@@ -1,7 +1,8 @@
 # Gradle
 .gradle/
 build/
-!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # IntelliJ IDEA / Android Studio
 .idea/
@@ -12,9 +13,6 @@ out/
 
 # Kotlin
 .kotlin/
-
-# Local configuration (secrets, machine-specific paths)
-local.properties
 
 # Android
 captures/
@@ -39,7 +37,6 @@ DerivedData/
 # Misc
 *.class
 *.jar
-!gradle/wrapper/gradle-wrapper.jar
 
 .tmp/
 caches/

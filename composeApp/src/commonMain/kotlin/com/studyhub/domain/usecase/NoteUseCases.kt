@@ -2,9 +2,7 @@ package com.studyhub.domain.usecase
 
 import com.studyhub.domain.model.Note
 import com.studyhub.domain.model.NoteCategory
-import com.studyhub.domain.repository.AIRepository
 import com.studyhub.domain.repository.NoteRepository
-import com.studyhub.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -94,39 +92,6 @@ class DeleteNoteUseCase(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-}
-
-class SummarizeNoteUseCase(
-    private val aiRepository: AIRepository
-) {
-    suspend operator fun invoke(content: String): Result<String> {
-        if (content.length < 50) {
-            return Result.failure(IllegalArgumentException("Konten terlalu pendek untuk diringkas"))
-        }
-        return aiRepository.summarize(content)
-    }
-}
-
-class ImproveWritingUseCase(
-    private val aiRepository: AIRepository
-) {
-    suspend operator fun invoke(content: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String> {
-        if (content.isBlank()) {
-            return Result.failure(IllegalArgumentException("Konten tidak boleh kosong"))
-        }
-        return aiRepository.improveWriting(content, style)
-    }
-}
-
-class GenerateIdeasUseCase(
-    private val aiRepository: AIRepository
-) {
-    suspend operator fun invoke(topic: String): Result<List<String>> {
-        if (topic.isBlank()) {
-            return Result.failure(IllegalArgumentException("Topik tidak boleh kosong"))
-        }
-        return aiRepository.generateIdeas(topic)
     }
 }
 

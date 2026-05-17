@@ -33,7 +33,7 @@ jobs:
           gradle-version: 8.7
 
       - name: Create Mock local.properties for Gemini API Key
-        run: echo 'GEMINI_API_KEY="mock_key_for_ci_build"' > local.properties
+        run: echo "GEMINI_API_KEY=mock_key_for_ci_build" > local.properties
 
       - name: Compile Assemble Debug (Bypass Wrapper)
         run: gradle assembleDebug

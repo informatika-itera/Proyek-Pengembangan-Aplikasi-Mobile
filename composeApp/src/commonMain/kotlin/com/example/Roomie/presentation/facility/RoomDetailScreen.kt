@@ -24,7 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.Roomie.domain.model.RoomStatus
-import com.example.Roomie.domain.repository.FacilityRepository
+import com.example.Roomie.domain.model.UserRole
+import com.example.Roomie.presentation.AppViewModel
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,9 +35,15 @@ fun RoomDetailScreen(
     roomId: String?,
     onBack: () -> Unit,
     onNavigateToBooking: (String) -> Unit,
-    facilityRepository: FacilityRepository = org.koin.compose.koinInject()
+    viewModel: FacilityDetailViewModel = koinViewModel(),
+    appViewModel: AppViewModel = koinViewModel()
 ) {
-    val room by facilityRepository.getRoomById(roomId ?: "").collectAsState(null)
+    val room by viewModel.getRoom(roomId ?: "").collectAsState(null)
+    val currentUser by appViewModel.currentUser.collectAsState()
+    val isAdmin = currentUser?.role == UserRole.ADMIN
+
+    var showStatusDialog by remember { mutableStateOf<RoomStatus?>(null) }
+    var statusNote by remember { mutableStateOf("") }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -50,21 +59,49 @@ fun RoomDetailScreen(
             )
         },
         bottomBar = {
-            if (room?.status == RoomStatus.AVAILABLE) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.background,
-                    tonalElevation = 8.dp
-                ) {
-                    Button(
-                        onClick = { 
-                            room?.id?.let { onNavigateToBooking(it) }
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(20.dp).height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.background,
+                tonalElevation = 8.dp
+            ) {
+                if (!isAdmin) {
+                    // Student View: Pinjam Button
+                    if (room?.status == RoomStatus.AVAILABLE) {
+                        Button(
+                            onClick = { room?.id?.let { onNavigateToBooking(it) } },
+                            modifier = Modifier.fillMaxWidth().padding(20.dp).height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("PINJAM SEKARANG", fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                        }
+                    }
+                } else {
+                    // Admin View: Status Controls
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("PINJAM SEKARANG", fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                        Button(
+                            onClick = { viewModel.updateStatus(roomId ?: "", RoomStatus.AVAILABLE, null) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) { Text("SET OK", fontWeight = FontWeight.Bold) }
+                        
+                        Button(
+                            onClick = { showStatusDialog = RoomStatus.BOOKED },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                            shape = RoundedCornerShape(12.dp)
+                        ) { Text("SET FULL", fontWeight = FontWeight.Bold) }
+                        
+                        Button(
+                            onClick = { showStatusDialog = RoomStatus.MAINTENANCE },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            shape = RoundedCornerShape(12.dp)
+                        ) { Text("REPAIR", fontWeight = FontWeight.Bold) }
                     }
                 }
             }
@@ -170,6 +207,37 @@ fun RoomDetailScreen(
         } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
+    }
+
+    // Admin Status Input Dialog
+    showStatusDialog?.let { targetStatus ->
+        AlertDialog(
+            onDismissRequest = { showStatusDialog = null; statusNote = "" },
+            title = { Text("Update Status Ruangan") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Berikan catatan untuk status ${targetStatus.name}:")
+                    OutlinedTextField(
+                        value = statusNote,
+                        onValueChange = { statusNote = it },
+                        placeholder = { Text(if (targetStatus == RoomStatus.BOOKED) "Nama Peminjam..." else "Detail Kerusakan...") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.updateStatus(roomId ?: "", targetStatus, statusNote)
+                        showStatusDialog = null
+                        statusNote = ""
+                    }
+                ) { Text("UPDATE", fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStatusDialog = null; statusNote = "" }) { Text("BATAL") }
+            }
+        )
     }
 }
 

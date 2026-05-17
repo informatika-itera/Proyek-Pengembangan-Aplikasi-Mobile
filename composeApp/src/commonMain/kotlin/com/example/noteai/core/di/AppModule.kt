@@ -8,20 +8,15 @@ import com.example.noteai.data.local.datastore.UserPreferences
 import com.example.noteai.data.local.datastore.create
 import com.example.noteai.data.remote.api.GeminiService
 import com.example.noteai.data.repository.AIRepositoryImpl
-import com.example.noteai.data.repository.NoteRepositoryImpl
+import com.example.noteai.data.repository.PantryRepositoryImpl
+import com.example.noteai.data.repository.RecipeRepositoryImpl
 import com.example.noteai.domain.repository.AIRepository
-import com.example.noteai.domain.repository.NoteRepository
-import com.example.noteai.domain.usecase.DeleteNoteUseCase
-import com.example.noteai.domain.usecase.GenerateIdeasUseCase
-import com.example.noteai.domain.usecase.GetAllNotesUseCase
-import com.example.noteai.domain.usecase.ImproveWritingUseCase
-import com.example.noteai.domain.usecase.SaveNoteUseCase
-import com.example.noteai.domain.usecase.SearchNotesUseCase
-import com.example.noteai.domain.usecase.SummarizeNoteUseCase
-import com.example.noteai.presentation.screens.addnote.AddNoteViewModel
-import com.example.noteai.presentation.screens.ai.AIAssistantViewModel
-import com.example.noteai.presentation.screens.detail.NoteDetailViewModel
-import com.example.noteai.presentation.screens.home.HomeViewModel
+import com.example.noteai.domain.repository.PantryRepository
+import com.example.noteai.domain.repository.RecipeRepository
+import com.example.noteai.domain.usecase.*
+import com.example.noteai.presentation.screens.chat.ChatViewModel
+import com.example.noteai.presentation.screens.pantry.PantryViewModel
+import com.example.noteai.presentation.screens.recipe.RecipeViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -46,7 +41,7 @@ val databaseModule = module {
     }
 }
 
-// ==================== PREFERENCES MODULE ====================
+// ==================== PREFERENCES MODULE = : Preferences MODULE ====================
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
@@ -56,29 +51,37 @@ val preferencesModule = module {
 // ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
+    singleOf(::PantryRepositoryImpl) bind PantryRepository::class
+    singleOf(::RecipeRepositoryImpl) bind RecipeRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
-    singleOf(::GetAllNotesUseCase)
-    singleOf(::SearchNotesUseCase)
-    singleOf(::SaveNoteUseCase)
-    singleOf(::DeleteNoteUseCase)
-    singleOf(::SummarizeNoteUseCase)
-    singleOf(::ImproveWritingUseCase)
-    singleOf(::GenerateIdeasUseCase)
+    // Pantry
+    singleOf(::GetPantryItems)
+    singleOf(::AddPantryItem)
+    singleOf(::UpdatePantryItem)
+    singleOf(::DeletePantryItem)
+    singleOf(::UpdateStockAmount)
+    
+    // Recipe
+    singleOf(::GetRecipes)
+    singleOf(::GetFavoriteRecipes)
+    singleOf(::GetRecipeById)
+    singleOf(::AddRecipe)
+    singleOf(::UpdateRecipe)
+    singleOf(::DeleteRecipe)
+    singleOf(::ToggleFavoriteRecipe)
 }
 
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
-    viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::ChatViewModel)
+    viewModelOf(::PantryViewModel)
+    viewModelOf(::RecipeViewModel)
 }
 
 // ==================== SHARED MODULES ====================

@@ -1,6 +1,31 @@
--- Note table schema for SQLDelight
--- File: Note.sq
+-- ==========================================
+-- COOKNOTE INTEGRATED SCHEMA
+-- ==========================================
 
+-- Pantry Table (Inventory Style)
+CREATE TABLE PantryEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    unit TEXT NOT NULL,
+    category TEXT NOT NULL,
+    min_stock REAL NOT NULL DEFAULT 0.0,
+    updated_at INTEGER NOT NULL
+);
+
+-- Recipe Table
+CREATE TABLE RecipeEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    ingredients TEXT NOT NULL,
+    instructions TEXT NOT NULL,
+    is_favorite INTEGER NOT NULL DEFAULT 0,
+    is_ai_generated INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Note Table
 CREATE TABLE NoteEntity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -12,71 +37,90 @@ CREATE TABLE NoteEntity (
     updated_at INTEGER NOT NULL
 );
 
--- Get all notes ordered by updated_at descending
-getAllNotes:
-SELECT * FROM NoteEntity
-ORDER BY is_pinned DESC, updated_at DESC;
+-- ==========================================
+-- PANTRY QUERIES
+-- ==========================================
 
--- Get pinned notes
-getPinnedNotes:
-SELECT * FROM NoteEntity
-WHERE is_pinned = 1
-ORDER BY updated_at DESC;
+getAllPantryItems:
+SELECT * FROM PantryEntity ORDER BY category ASC, name ASC;
 
--- Get notes by category
-getNotesByCategory:
-SELECT * FROM NoteEntity
-WHERE category = ?
-ORDER BY is_pinned DESC, updated_at DESC;
+insertPantryItem:
+INSERT INTO PantryEntity (name, amount, unit, category, min_stock, updated_at)
+VALUES (?, ?, ?, ?, ?, ?);
 
--- Search notes by title or content
-searchNotes:
-SELECT * FROM NoteEntity
-WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%'
-ORDER BY is_pinned DESC, updated_at DESC;
-
--- Get single note by ID
-getNoteById:
-SELECT * FROM NoteEntity
+updatePantryItem:
+UPDATE PantryEntity
+SET name = ?, amount = ?, unit = ?, category = ?, min_stock = ?, updated_at = ?
 WHERE id = ?;
 
--- Insert new note
+deletePantryItem:
+DELETE FROM PantryEntity WHERE id = ?;
+
+updateStockAmount:
+UPDATE PantryEntity SET amount = ?, updated_at = ? WHERE id = ?;
+
+-- ==========================================
+-- RECIPE QUERIES
+-- ==========================================
+
+getAllRecipes:
+SELECT * FROM RecipeEntity ORDER BY updated_at DESC;
+
+getFavoriteRecipes:
+SELECT * FROM RecipeEntity WHERE is_favorite = 1 ORDER BY updated_at DESC;
+
+getRecipeById:
+SELECT * FROM RecipeEntity WHERE id = ?;
+
+insertRecipe:
+INSERT INTO RecipeEntity (title, ingredients, instructions, is_favorite, is_ai_generated, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateRecipe:
+UPDATE RecipeEntity
+SET title = ?, ingredients = ?, instructions = ?, is_favorite = ?, updated_at = ?
+WHERE id = ?;
+
+deleteRecipe:
+DELETE FROM RecipeEntity WHERE id = ?;
+
+toggleFavorite:
+UPDATE RecipeEntity SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END WHERE id = ?;
+
+-- ==========================================
+-- NOTE QUERIES
+-- ==========================================
+
+getAllNotes:
+SELECT * FROM NoteEntity ORDER BY is_pinned DESC, updated_at DESC;
+
+getPinnedNotes:
+SELECT * FROM NoteEntity WHERE is_pinned = 1 ORDER BY updated_at DESC;
+
+getNotesByCategory:
+SELECT * FROM NoteEntity WHERE category = ? ORDER BY is_pinned DESC, updated_at DESC;
+
+searchNotes:
+SELECT * FROM NoteEntity WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%' ORDER BY is_pinned DESC, updated_at DESC;
+
+getNoteById:
+SELECT * FROM NoteEntity WHERE id = ?;
+
 insertNote:
 INSERT INTO NoteEntity (title, content, category, color, is_pinned, created_at, updated_at)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
--- Get last inserted ID
 lastInsertId:
 SELECT last_insert_rowid();
 
--- Update existing note
 updateNote:
-UPDATE NoteEntity
-SET title = ?, content = ?, category = ?, color = ?, is_pinned = ?, updated_at = ?
-WHERE id = ?;
+UPDATE NoteEntity SET title = ?, content = ?, category = ?, color = ?, is_pinned = ?, updated_at = ? WHERE id = ?;
 
--- Delete note by ID
 deleteNoteById:
-DELETE FROM NoteEntity
-WHERE id = ?;
+DELETE FROM NoteEntity WHERE id = ?;
 
--- Toggle pin status
 togglePin:
-UPDATE NoteEntity
-SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END, updated_at = ?
-WHERE id = ?;
+UPDATE NoteEntity SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END, updated_at = ? WHERE id = ?;
 
--- Delete multiple notes
 deleteNotesByIds:
-DELETE FROM NoteEntity
-WHERE id IN ?;
-
--- Count all notes
-countNotes:
-SELECT COUNT(*) FROM NoteEntity;
-
--- Count notes by category
-countNotesByCategory:
-SELECT category, COUNT(*) AS total
-FROM NoteEntity
-GROUP BY category;
+DELETE FROM NoteEntity WHERE id IN ?;

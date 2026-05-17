@@ -7,10 +7,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.noteai.presentation.screens.addnote.AddNoteScreen
-import com.example.noteai.presentation.screens.ai.AIAssistantScreen
-import com.example.noteai.presentation.screens.detail.NoteDetailScreen
-import com.example.noteai.presentation.screens.home.HomeScreen
+import com.example.noteai.presentation.screens.MainScreen
+import com.example.noteai.presentation.screens.recipe.AddEditRecipeScreen
+import com.example.noteai.presentation.screens.recipe.RecipeDetailScreen
 
 @Composable
 fun AppNavHost(
@@ -21,48 +20,30 @@ fun AppNavHost(
     
     NavHost(
         navController = navController,
-        startDestination = Route.Home,
+        startDestination = Route.Chat,
         modifier = modifier
     ) {
-        composable<Route.Home> {
-            HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+        composable<Route.Chat> {
+            MainScreen(
+                onRecipeClick = { id -> navigationActions.navigateToRecipeDetail(id) },
+                onAddRecipeClick = { navigationActions.navigateToAddEditRecipe() }
             )
         }
-        
-        composable<Route.AddNote> { backStackEntry ->
-            val route: Route.AddNote = backStackEntry.toRoute()
-            AddNoteScreen(
-                noteId = route.noteId,
+
+        composable<Route.RecipeDetail> { backStackEntry ->
+            val route: Route.RecipeDetail = backStackEntry.toRoute()
+            RecipeDetailScreen(
+                recipeId = route.recipeId,
                 onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToAI = { text ->
-                    navigationActions.navigateToAIAssistant(
-                        noteId = route.noteId,
-                        initialText = text
-                    )
-                }
+                onNavigateToEdit = { id -> navigationActions.navigateToAddEditRecipe(id) }
             )
         }
-        
-        composable<Route.NoteDetail> { backStackEntry ->
-            val route: Route.NoteDetail = backStackEntry.toRoute()
-            NoteDetailScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { navigationActions.navigateToAddNote(route.noteId) },
-                onShare = { _ -> }
-            )
-        }
-        
-        composable<Route.AIAssistant> { backStackEntry ->
-            val route: Route.AIAssistant = backStackEntry.toRoute()
-            AIAssistantScreen(
-                noteId = route.noteId,
-                initialText = route.initialText,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onApplyResult = null
+
+        composable<Route.AddEditRecipe> { backStackEntry ->
+            val route: Route.AddEditRecipe = backStackEntry.toRoute()
+            AddEditRecipeScreen(
+                recipeId = route.recipeId,
+                onNavigateBack = { navigationActions.navigateBack() }
             )
         }
     }
@@ -70,22 +51,26 @@ fun AppNavHost(
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
-        override fun navigateToHome() {
-            navController.navigate(Route.Home) {
-                popUpTo(Route.Home) { inclusive = true }
+        override fun navigateToChat() {
+            navController.navigate(Route.Chat) {
+                popUpTo(Route.Chat) { inclusive = true }
             }
         }
         
-        override fun navigateToAddNote(noteId: Long?) {
-            navController.navigate(Route.AddNote(noteId))
+        override fun navigateToPantry() {
+            navController.navigate(Route.Pantry)
         }
         
-        override fun navigateToNoteDetail(noteId: Long) {
-            navController.navigate(Route.NoteDetail(noteId))
+        override fun navigateToRecipes() {
+            navController.navigate(Route.Recipes)
         }
         
-        override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
-            navController.navigate(Route.AIAssistant(noteId, initialText))
+        override fun navigateToRecipeDetail(recipeId: Long) {
+            navController.navigate(Route.RecipeDetail(recipeId))
+        }
+        
+        override fun navigateToAddEditRecipe(recipeId: Long?) {
+            navController.navigate(Route.AddEditRecipe(recipeId))
         }
 
         override fun navigateBack() {

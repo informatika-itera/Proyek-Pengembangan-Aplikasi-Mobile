@@ -16,6 +16,7 @@ import com.example.pocketguard.presentation.screens.add_transaction.AddTransacti
 import com.example.pocketguard.presentation.screens.ai.AIAssistantViewModel
 import com.example.pocketguard.presentation.screens.detail.TransactionDetailViewModel
 import com.example.pocketguard.presentation.screens.home.HomeViewModel
+import com.example.pocketguard.presentation.screens.settings.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -62,6 +63,7 @@ val viewModelModule = module {
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::AddTransactionViewModel)    // Tambahkan ini
     viewModelOf(::TransactionDetailViewModel) // Tambahkan ini
+    viewModelOf(::SettingsViewModel)
 }
 
 val sharedModules = listOf(

@@ -15,6 +15,9 @@ sealed interface Route {
 
     @Serializable
     data class AIAssistant(val initialText: String? = null) : Route
+
+    @Serializable
+    data object Settings : Route
 }
 
 interface NavigationActions {
@@ -23,4 +26,6 @@ interface NavigationActions {
     fun navigateToTransactionDetail(transactionId: Long)
     fun navigateToAIAssistant(initialText: String? = null)
     fun navigateBack()
+
+    fun navigateToSettings()
 }

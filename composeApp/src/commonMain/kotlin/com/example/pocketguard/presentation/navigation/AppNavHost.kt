@@ -11,6 +11,7 @@ import com.example.pocketguard.presentation.screens.add_transaction.AddTransacti
 import com.example.pocketguard.presentation.screens.ai.AIAssistantScreen
 import com.example.pocketguard.presentation.screens.detail.TransactionDetailScreen
 import com.example.pocketguard.presentation.screens.home.HomeScreen
+import com.example.pocketguard.presentation.screens.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -28,7 +29,8 @@ fun AppNavHost(
             HomeScreen(
                 onNavigateToAdd = { navigationActions.navigateToAddTransaction() },
                 onNavigateToDetail = { id -> navigationActions.navigateToTransactionDetail(id) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                onNavigateToAI = { navigationActions.navigateToAIAssistant() },
+                onNavigateToSettings = { navigationActions.navigateToSettings() }
             )
         }
 
@@ -53,6 +55,11 @@ fun AppNavHost(
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
                 initialText = route.initialText,
+                onNavigateBack = { navigationActions.navigateBack() }
+            )
+        }
+        composable<Route.Settings> {
+            SettingsScreen(
                 onNavigateBack = { navigationActions.navigateBack() }
             )
         }
@@ -83,5 +90,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
         override fun navigateBack() {
             navController.popBackStack()
         }
+
+        override fun navigateToSettings() {
+            navController.navigate(Route.Settings)
+        }
+        }
+
     }
-}

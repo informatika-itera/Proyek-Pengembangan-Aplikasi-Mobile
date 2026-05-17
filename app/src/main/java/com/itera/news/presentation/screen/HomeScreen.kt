@@ -74,8 +74,9 @@ fun HomeScreen(
                         .padding(horizontal = 24.dp)
                         .neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 16.dp)
                         .clip(RoundedCornerShape(16.dp)),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedBorderColor = Color.Transparent,
                         focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                     ),

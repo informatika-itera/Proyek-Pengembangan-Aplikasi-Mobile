@@ -1,4 +1,4 @@
-rootProject.name = "News MBG"
+rootProject.name = "NewsMbg"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

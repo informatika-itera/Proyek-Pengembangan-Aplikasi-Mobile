@@ -1,2 +1,3 @@
 package com.soundletter.app.presentation.screens.detail
-// Deprecated: Digantikan oleh DetailMessageScreenViewModel.kt
+
+// File ini dikosongkan untuk menghindari konflik Redeclaration dengan DetailMessageScreenViewModel.kt

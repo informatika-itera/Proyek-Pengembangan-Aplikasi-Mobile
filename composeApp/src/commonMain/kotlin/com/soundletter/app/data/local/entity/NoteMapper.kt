@@ -26,7 +26,7 @@ fun NoteEntity.toDomain(): Note {
 }
 
 /**
- * Mapper untuk mengubah model domain (Note) menjadi format NoteEntity SQLDelight
+ * Mapper untuk mengubah model domain (Note) menjadi entitas database (NoteEntity)
  */
 fun Note.toEntityValues(): NoteEntity {
     return NoteEntity(
@@ -36,8 +36,8 @@ fun Note.toEntityValues(): NoteEntity {
         content = this.content,
         song_title = this.songTitle,
         song_artist = this.songArtist,
-        category = this.category.name, // Enum to String
-        color = this.color.name,       // Enum to String
+        category = this.category.name,
+        color = this.color.name,
         is_pinned = if (this.isPinned) 1L else 0L,
         created_at = this.createdAt.toEpochMilliseconds(),
         updated_at = this.updatedAt.toEpochMilliseconds()

@@ -15,15 +15,13 @@ data class Note(
     val isPinned: Boolean = false,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
-)
+) {
+    val preview: String
+        get() = if (content.length > 100) content.take(100) + "..." else content
+}
 
-enum class NoteCategory(val displayName: String) {
-    GENERAL("Umum"),
-    WORK("Pekerjaan"),
-    PERSONAL("Pribadi"),
-    IDEAS("Ide"),
-    TODO("Tugas"),
-    STUDY("Belajar");
+enum class NoteCategory {
+    GENERAL, WORK, PERSONAL, IDEAS, TODO, STUDY;
 
     companion object {
         fun fromString(value: String): NoteCategory {
@@ -32,15 +30,8 @@ enum class NoteCategory(val displayName: String) {
     }
 }
 
-enum class NoteColor(val hexValue: Long) {
-    DEFAULT(0xFFFFFFFF),
-    RED(0xFFFFCDD2),
-    ORANGE(0xFFFFE0B2),
-    YELLOW(0xFFFFF9C4),
-    GREEN(0xFFC8E6C9),
-    BLUE(0xFFBBDEFB),
-    PURPLE(0xFFE1BEE7),
-    PINK(0xFFF8BBD9);
+enum class NoteColor {
+    DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK;
 
     companion object {
         fun fromString(value: String): NoteColor {

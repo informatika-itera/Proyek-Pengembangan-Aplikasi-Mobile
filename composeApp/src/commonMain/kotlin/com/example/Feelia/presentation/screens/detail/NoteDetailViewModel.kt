@@ -17,13 +17,13 @@ class NoteDetailViewModel(
     private val repository: NoteRepository,
     private val deleteNoteUseCase: DeleteNoteUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
     val uiState: StateFlow<NoteDetailUiState> = _uiState.asStateFlow()
-    
+
     private val _events = MutableSharedFlow<NoteDetailEvent>()
     val events: SharedFlow<NoteDetailEvent> = _events.asSharedFlow()
-    
+
     fun loadNote(noteId: Long) {
         viewModelScope.launch {
             repository.getNoteById(noteId).collect { note ->
@@ -35,7 +35,7 @@ class NoteDetailViewModel(
             }
         }
     }
-    
+
     fun togglePin() {
         val currentState = _uiState.value
         if (currentState is NoteDetailUiState.Success) {
@@ -44,7 +44,7 @@ class NoteDetailViewModel(
             }
         }
     }
-    
+
     fun deleteNote() {
         val currentState = _uiState.value
         if (currentState is NoteDetailUiState.Success) {
@@ -59,18 +59,12 @@ class NoteDetailViewModel(
             }
         }
     }
-    
+
+    // DIPERBAIKI: Note tidak punya field 'title', share langsung pakai content
     fun getShareContent(): String? {
         val currentState = _uiState.value
         return if (currentState is NoteDetailUiState.Success) {
-            val note = currentState.note
-            buildString {
-                if (note.title.isNotBlank()) {
-                    appendLine(note.title)
-                    appendLine()
-                }
-                append(note.content)
-            }
+            currentState.note.content
         } else null
     }
 }

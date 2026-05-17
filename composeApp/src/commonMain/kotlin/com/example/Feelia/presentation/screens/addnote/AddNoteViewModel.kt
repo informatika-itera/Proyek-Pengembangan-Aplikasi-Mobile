@@ -2,9 +2,8 @@ package com.example.Feelia.presentation.screens.addnote
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
-import com.example.Feelia.domain.model.NoteCategory
-import com.example.Feelia.domain.model.NoteColor
 import com.example.Feelia.domain.repository.NoteRepository
 import com.example.Feelia.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,28 +21,25 @@ class AddNoteViewModel(
     private val repository: NoteRepository,
     private val saveNoteUseCase: SaveNoteUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(AddNoteUiState())
     val uiState: StateFlow<AddNoteUiState> = _uiState.asStateFlow()
-    
+
     private val _events = MutableSharedFlow<AddNoteEvent>()
     val events: SharedFlow<AddNoteEvent> = _events.asSharedFlow()
-    
+
     private var currentNoteId: Long? = null
-    
+
     fun loadNote(noteId: Long) {
         currentNoteId = noteId
         _uiState.update { it.copy(isLoading = true) }
-        
         viewModelScope.launch {
             repository.getNoteById(noteId).collect { note ->
                 note?.let {
                     _uiState.update { state ->
                         state.copy(
-                            title = note.title,
                             content = note.content,
-                            category = note.category,
-                            color = note.color,
+                            emotion = note.emotion,
                             isLoading = false,
                             isEditMode = true,
                             createdAt = note.createdAt
@@ -53,82 +49,59 @@ class AddNoteViewModel(
             }
         }
     }
-    
-    // ==================== USER ACTIONS ====================
-    
-    fun onTitleChange(title: String) {
-        _uiState.update { it.copy(title = title, titleError = null) }
-    }
-    
+
     fun onContentChange(content: String) {
-        _uiState.update { it.copy(content = content) }
+        _uiState.update { it.copy(content = content, contentError = null) }
     }
-    
-    fun onCategoryChange(category: NoteCategory) {
-        _uiState.update { it.copy(category = category) }
+
+    fun onEmotionChange(emotion: Emotion) {
+        _uiState.update { it.copy(emotion = emotion) }
     }
-    
-    fun onColorChange(color: NoteColor) {
-        _uiState.update { it.copy(color = color) }
-    }
-    
+
     fun saveNote() {
         val state = _uiState.value
-        
-        if (state.title.isBlank() && state.content.isBlank()) {
-            _uiState.update { it.copy(titleError = "Judul atau konten harus diisi") }
+        if (state.content.isBlank()) {
+            _uiState.update { it.copy(contentError = "Ceritakan harimu dulu ya 😊") }
             return
         }
-        
+        if (state.content.trim().length < 10) {
+            _uiState.update { it.copy(contentError = "Ceritakan lebih banyak (min. 10 karakter)") }
+            return
+        }
         _uiState.update { it.copy(isSaving = true) }
-        
         viewModelScope.launch {
             val note = Note(
                 id = currentNoteId ?: 0,
-                title = state.title.trim(),
                 content = state.content.trim(),
-                category = state.category,
-                color = state.color,
+                emotion = state.emotion,
                 createdAt = if (currentNoteId == null) Clock.System.now() else state.createdAt,
                 updatedAt = Clock.System.now()
             )
-            
             saveNoteUseCase(note)
-                .onSuccess {
-                    _events.emit(AddNoteEvent.NoteSaved)
-                }
+                .onSuccess { _events.emit(AddNoteEvent.NoteSaved) }
                 .onFailure { error ->
                     _uiState.update { it.copy(isSaving = false) }
                     _events.emit(AddNoteEvent.Error(error.message ?: "Gagal menyimpan"))
                 }
         }
     }
-    
+
     fun applyAISuggestion(newContent: String) {
         _uiState.update { it.copy(content = newContent) }
-    }
-    
-    fun applyAITitle(newTitle: String) {
-        _uiState.update { it.copy(title = newTitle) }
     }
 }
 
 data class AddNoteUiState(
-    val title: String = "",
     val content: String = "",
-    val category: NoteCategory = NoteCategory.GENERAL,
-    val color: NoteColor = NoteColor.DEFAULT,
+    val emotion: Emotion = Emotion.NEUTRAL,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,
-    val titleError: String? = null,
+    val contentError: String? = null,
     val createdAt: Instant = Clock.System.now()
 ) {
-    val isValid: Boolean
-        get() = title.isNotBlank() || content.isNotBlank()
-    
-    val canSave: Boolean
-        get() = isValid && !isSaving
+    val canSave: Boolean get() = content.isNotBlank() && !isSaving
+    val charCount: Int get() = content.length
 }
 
 sealed interface AddNoteEvent {

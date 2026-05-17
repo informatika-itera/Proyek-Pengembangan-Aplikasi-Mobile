@@ -44,9 +44,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
-import com.example.Feelia.domain.model.NoteCategory
 import com.example.Feelia.domain.usecase.NoteSortBy
+import com.example.Feelia.presentation.components.EmotionBadge
 import com.example.Feelia.presentation.components.EmptyState
 import com.example.Feelia.presentation.components.ErrorState
 import com.example.Feelia.presentation.components.LoadingIndicator
@@ -65,11 +66,11 @@ fun HomeScreen(
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     var showSearch by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     if (showSearch) {
                         SearchField(
                             query = when (val state = uiState) {
@@ -92,22 +93,22 @@ fun HomeScreen(
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, contentDescription = "Cari")
                         }
-                        
+
                         IconButton(onClick = { showSortMenu = true }) {
                             Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
                         }
-                        
+
                         SortDropdownMenu(
                             expanded = showSortMenu,
                             currentSortBy = currentSortBy,
-                            onSortSelected = { 
+                            onSortSelected = {
                                 viewModel.onSortByChanged(it)
                                 showSortMenu = false
                             },
                             onDismiss = { showSortMenu = false }
                         )
                     }
-                    
+
                     IconButton(onClick = onNavigateToAI) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
                     }
@@ -116,7 +117,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToAddNote) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+                Icon(Icons.Default.Add, contentDescription = "Tambah Jurnal")
             }
         }
     ) { paddingValues ->
@@ -125,20 +126,21 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
+            // DIPERBAIKI: pakai emotion dari HomeUiState yang sudah diupdate
+            EmotionFilterRow(
+                selectedEmotion = when (val state = uiState) {
+                    is HomeUiState.Success -> state.emotion
+                    is HomeUiState.Empty -> state.emotion
                     else -> null
                 },
-                onCategorySelected = viewModel::onCategorySelected
+                onEmotionSelected = viewModel::onEmotionSelected
             )
-            
+
             when (val state = uiState) {
                 is HomeUiState.Loading -> {
                     LoadingIndicator()
                 }
-                
+
                 is HomeUiState.Success -> {
                     NotesList(
                         notes = state.notes,
@@ -147,18 +149,18 @@ fun HomeScreen(
                         onDeleteClick = viewModel::deleteNote
                     )
                 }
-                
+
                 is HomeUiState.Empty -> {
                     EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
+                        title = if (state.query.isNotBlank() || state.emotion != null) {
                             "Tidak Ditemukan"
                         } else {
-                            "Belum Ada Catatan"
+                            "Belum Ada Jurnal"
                         },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
+                        message = if (state.query.isNotBlank() || state.emotion != null) {
+                            "Coba ubah kata kunci atau filter emosi"
                         } else {
-                            "Tap + untuk membuat catatan baru"
+                            "Tap + untuk menulis jurnal pertamamu 🌸"
                         },
                         icon = {
                             Icon(
@@ -170,7 +172,7 @@ fun HomeScreen(
                         }
                     )
                 }
-                
+
                 is HomeUiState.Error -> {
                     ErrorState(
                         message = state.message,
@@ -191,7 +193,7 @@ private fun SearchField(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Cari catatan...") },
+        placeholder = { Text("Cari jurnal...") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         trailingIcon = {
@@ -221,10 +223,8 @@ private fun SortDropdownMenu(
     ) {
         NoteSortBy.entries.forEach { sortBy ->
             DropdownMenuItem(
-                text = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(sortBy.displayName)
                         if (sortBy == currentSortBy) {
                             Spacer(modifier = Modifier.width(8.dp))
@@ -238,10 +238,11 @@ private fun SortDropdownMenu(
     }
 }
 
+// DIPERBAIKI: CategoryFilterRow → EmotionFilterRow, pakai Emotion enum bukan NoteCategory
 @Composable
-private fun CategoryFilterRow(
-    selectedCategory: NoteCategory?,
-    onCategorySelected: (NoteCategory?) -> Unit
+private fun EmotionFilterRow(
+    selectedEmotion: Emotion?,
+    onEmotionSelected: (Emotion?) -> Unit
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -249,21 +250,18 @@ private fun CategoryFilterRow(
     ) {
         item {
             FilterChip(
-                selected = selectedCategory == null,
-                onClick = { onCategorySelected(null) },
+                selected = selectedEmotion == null,
+                onClick = { onEmotionSelected(null) },
                 label = { Text("Semua") }
             )
         }
-        
-        items(NoteCategory.entries) { category ->
+        items(Emotion.entries) { emotion ->
             FilterChip(
-                selected = selectedCategory == category,
-                onClick = { 
-                    onCategorySelected(
-                        if (selectedCategory == category) null else category
-                    )
+                selected = selectedEmotion == emotion,
+                onClick = {
+                    onEmotionSelected(if (selectedEmotion == emotion) null else emotion)
                 },
-                label = { Text(category.displayName) }
+                label = { Text("${emotion.emoji} ${emotion.displayName}") }
             )
         }
     }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -32,15 +31,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.Feelia.domain.model.Note
-import com.example.Feelia.domain.model.NoteColor
 
+// =====================================================================
+// NoteCard
+// Menggunakan emotion.colorHex untuk warna background card,
+// menggantikan NoteColor yang tidak ada di domain model Feelia.
+// =====================================================================
 @Composable
 fun NoteCard(
     note: Note,
@@ -49,11 +50,12 @@ fun NoteCard(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Warna card diambil dari emotion, sesuai domain model Note.kt
     val backgroundColor by animateColorAsState(
-        targetValue = Color(note.color.hexValue),
+        targetValue = Color(note.emotion.colorHex),
         label = "card_bg"
     )
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -68,15 +70,16 @@ fun NoteCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Feelia tidak punya title — tampilkan preview sebagai header
                 Text(
-                    text = note.title.ifBlank { "Tanpa Judul" },
+                    text = note.preview,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 Row {
                     IconButton(
                         onClick = onPinClick,
@@ -85,11 +88,12 @@ fun NoteCard(
                         Icon(
                             imageVector = if (note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
                             contentDescription = if (note.isPinned) "Lepas Pin" else "Pin",
-                            tint = if (note.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (note.isPinned) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
-                    
+
                     IconButton(
                         onClick = onDeleteClick,
                         modifier = Modifier.size(32.dp)
@@ -103,24 +107,62 @@ fun NoteCard(
                     }
                 }
             }
-            
-            if (note.content.isNotBlank()) {
+
+            // Tampilkan isi konten jika ada (preview sudah di atas, ini full content preview)
+            if (note.content.length > 40) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = note.preview,
+                    text = note.content,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            CategoryBadge(category = note.category.displayName)
+
+            // Badge emosi — pakai emoji + displayName dari Emotion enum
+            EmotionBadge(
+                emoji = note.emotion.emoji,
+                displayName = note.emotion.displayName
+            )
         }
     }
 }
 
+// =====================================================================
+// EmotionBadge
+// Menggantikan CategoryBadge yang lama — disesuaikan untuk Feelia
+// yang menggunakan Emotion bukan NoteCategory.
+// =====================================================================
+@Composable
+fun EmotionBadge(
+    emoji: String,
+    displayName: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(4.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = "$emoji $displayName",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}
+
+// =====================================================================
+// CategoryBadge
+// Dipertahankan untuk kompatibilitas dengan NoteDetailScreen
+// yang masih memanggilnya dengan string langsung.
+// =====================================================================
 @Composable
 fun CategoryBadge(
     category: String,
@@ -128,8 +170,10 @@ fun CategoryBadge(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(4.dp)
+            )
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(
@@ -140,6 +184,9 @@ fun CategoryBadge(
     }
 }
 
+// =====================================================================
+// LoadingIndicator
+// =====================================================================
 @Composable
 fun LoadingIndicator(modifier: Modifier = Modifier) {
     Box(
@@ -150,6 +197,9 @@ fun LoadingIndicator(modifier: Modifier = Modifier) {
     }
 }
 
+// =====================================================================
+// EmptyState
+// =====================================================================
 @Composable
 fun EmptyState(
     title: String,
@@ -165,17 +215,17 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         icon?.invoke()
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
@@ -184,6 +234,9 @@ fun EmptyState(
     }
 }
 
+// =====================================================================
+// ErrorState
+// =====================================================================
 @Composable
 fun ErrorState(
     message: String,
@@ -202,57 +255,20 @@ fun ErrorState(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         if (onRetry != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onRetry) {
                 Text("Coba Lagi")
             }
-        }
-    }
-}
-
-@Composable
-fun ColorPickerRow(
-    selectedColor: NoteColor,
-    onColorSelected: (NoteColor) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        NoteColor.entries.forEach { color ->
-            val isSelected = color == selectedColor
-            val alpha by animateFloatAsState(
-                targetValue = if (isSelected) 1f else 0.6f,
-                label = "color_alpha"
-            )
-            
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .alpha(alpha)
-                    .clip(CircleShape)
-                    .background(Color(color.hexValue))
-                    .clickable { onColorSelected(color) }
-                    .then(
-                        if (isSelected) {
-                            Modifier.background(
-                                Color.Black.copy(alpha = 0.1f),
-                                CircleShape
-                            )
-                        } else Modifier
-                    )
-            )
         }
     }
 }

@@ -1,4 +1,4 @@
-# ProGuard Rules for NoteAI
+# ProGuard Rules for Rosea
 # ===========================
 
 # Keep Kotlin Serialization
@@ -13,11 +13,11 @@
 }
 
 # Keep serializable classes
--keep,includedescriptorclasses class com.example.noteai.**$$serializer { *; }
--keepclassmembers class com.example.noteai.** {
+-keep,includedescriptorclasses class com.example.rosea.**$$serializer { *; }
+-keepclassmembers class com.example.rosea.** {
     *** Companion;
 }
--keepclasseswithmembers class com.example.noteai.** {
+-keepclasseswithmembers class com.example.rosea.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -35,7 +35,7 @@
 -dontwarn java.lang.management.**
 
 # Keep SQLDelight generated classes
--keep class com.example.noteai.data.local.** { *; }
+-keep class com.example.rosea.data.local.** { *; }
 
 # Keep Koin DI metadata + ViewModel constructors agar reflection-based
 # resolution tidak ke-strip oleh R8.

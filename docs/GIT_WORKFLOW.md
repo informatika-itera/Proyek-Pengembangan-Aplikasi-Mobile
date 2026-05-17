@@ -102,31 +102,31 @@ project/[Kelompok]-[NamaAplikasi]
 
 ```bash
 # Clone ke komputer lokal
-git clone https://github.com/USERNAME_ANDA/NoteAI-KMP.git
+git clone https://github.com/USERNAME_ANDA/Rosea-KMP.git
 
 # Masuk ke folder
-cd NoteAI-KMP
+cd Rosea-KMP
 
 # Cek remote
 git remote -v
 # Output:
-# origin  https://github.com/USERNAME_ANDA/NoteAI-KMP.git (fetch)
-# origin  https://github.com/USERNAME_ANDA/NoteAI-KMP.git (push)
+# origin  https://github.com/USERNAME_ANDA/Rosea-KMP.git (fetch)
+# origin  https://github.com/USERNAME_ANDA/Rosea-KMP.git (push)
 ```
 
 ### 3. Tambahkan Upstream Remote
 
 ```bash
 # Tambahkan remote ke repository template (untuk sync update)
-git remote add upstream https://github.com/DOSEN/NoteAI-KMP-Template.git
+git remote add upstream https://github.com/DOSEN/Rosea-KMP-Template.git
 
 # Verifikasi
 git remote -v
 # Output:
-# origin    https://github.com/USERNAME_ANDA/NoteAI-KMP.git (fetch)
-# origin    https://github.com/USERNAME_ANDA/NoteAI-KMP.git (push)
-# upstream  https://github.com/DOSEN/NoteAI-KMP-Template.git (fetch)
-# upstream  https://github.com/DOSEN/NoteAI-KMP-Template.git (push)
+# origin    https://github.com/USERNAME_ANDA/Rosea-KMP.git (fetch)
+# origin    https://github.com/USERNAME_ANDA/Rosea-KMP.git (push)
+# upstream  https://github.com/DOSEN/Rosea-KMP-Template.git (fetch)
+# upstream  https://github.com/DOSEN/Rosea-KMP-Template.git (push)
 ```
 
 ### 4. Buat Branch Project

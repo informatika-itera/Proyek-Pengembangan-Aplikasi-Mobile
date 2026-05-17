@@ -1,49 +1,20 @@
-# Gradle
-.gradle/
-build/
-!gradle-wrapper.jar
-
-# IntelliJ IDEA / Android Studio
-.idea/
 *.iml
-*.ipr
-*.iws
-out/
-
-# Kotlin
-.kotlin/
-
-# Local configuration (secrets, machine-specific paths)
+.kotlin
+.gradle
+**/build/
+xcuserdata
+!src/**/build/
 local.properties
-
-# Android
-captures/
-.externalNativeBuild/
-.cxx/
-
-# OS
+.idea
 .DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# iOS / Xcode
-xcuserdata/
-*.xcuserstate
-Pods/
-*.hmap
-*.xcframework
-DerivedData/
-
-# Misc
-*.class
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
-
-.tmp/
-caches/
-daemon/
-kotlin-profile/
-native/
-wrapper/
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+node_modules/
+123140082-123140069-MyWallet-project-123140082-123140069-MyWallet/

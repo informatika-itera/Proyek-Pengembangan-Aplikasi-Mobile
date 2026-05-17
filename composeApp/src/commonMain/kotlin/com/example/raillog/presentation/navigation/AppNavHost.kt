@@ -35,6 +35,7 @@ fun AppNavHost(
         composable<Route.AddSupply> { backStackEntry ->
             val route: Route.AddSupply = backStackEntry.toRoute()
             AddSupplyScreen(
+                itemId = route.itemId,
                 onNavigateBack = { navigationActions.navigateBack() }
             )
         }

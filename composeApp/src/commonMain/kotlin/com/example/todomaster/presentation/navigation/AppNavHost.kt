@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.todomaster.presentation.screens.home.HomeScreen
 import com.example.todomaster.presentation.screens.addtask.AddTaskScreen
+import com.example.todomaster.presentation.screens.detail.TaskDetailScreen
 
 @Composable
 fun AppNavHost(
@@ -29,22 +30,37 @@ fun AppNavHost(
         composable<Route.TaskList> {
             HomeScreen(
                 onNavigateToAddTask = { navigationActions.navigateToAddTask() },
-                onNavigateToTaskDetail = { taskId -> navigationActions.navigateToTaskDetail(taskId) }
+                onNavigateToTaskDetail = { taskId -> navigationActions.navigateToTaskDetail(taskId) },
+                onNavigateToQuadrantDetail = { quadrantId -> navigationActions.navigateToQuadrantDetail(quadrantId) }
+            )
+        }
+
+        composable<Route.QuadrantDetail> { backStackEntry ->
+            val route: Route.QuadrantDetail = backStackEntry.toRoute()
+            com.example.todomaster.presentation.screens.quadrantdetail.QuadrantDetailScreen(
+                initialQuadrantId = route.quadrantId,
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateToTaskDetail = { taskId -> navigationActions.navigateToTaskDetail(taskId) },
+                onNavigateToAddTask = { navigationActions.navigateToAddTask() }
             )
         }
 
         composable<Route.AddTask> { backStackEntry ->
             val route: Route.AddTask = backStackEntry.toRoute()
             AddTaskScreen(
+                taskId = route.taskId,
                 onNavigateBack = { navigationActions.navigateBack() }
             )
         }
 
         composable<Route.TaskDetail> { backStackEntry ->
             val route: Route.TaskDetail = backStackEntry.toRoute()
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Task Detail Screen (ID: ${route.taskId})")
-            }
+            TaskDetailScreen(
+                taskId = route.taskId,
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateToEdit = { navigationActions.navigateToAddTask(route.taskId) },
+                onShare = { _ -> }
+            )
         }
 
         composable<Route.Calendar> {
@@ -74,6 +90,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             navController.navigate(Route.TaskList) {
                 popUpTo(Route.TaskList) { inclusive = true }
             }
+        }
+
+        override fun navigateToQuadrantDetail(quadrantId: Long) {
+            navController.navigate(Route.QuadrantDetail(quadrantId))
         }
 
         override fun navigateToAddTask(taskId: Long?) {

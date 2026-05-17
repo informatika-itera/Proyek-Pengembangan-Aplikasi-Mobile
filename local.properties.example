@@ -1,0 +1,21 @@
+# local.properties.example
+# ================================================
+# COPY file ini menjadi `local.properties` di root project,
+# kemudian isi nilai-nilai sesuai dengan environment Anda.
+#
+# JANGAN commit `local.properties` ke repository
+# (sudah di-ignore lewat .gitignore).
+# ================================================
+
+# Android SDK location
+# Android Studio akan mengisi ini secara otomatis saat sync pertama.
+# Atau set manual sesuai lokasi SDK Anda:
+#   - macOS  : sdk.dir=/Users/<USERNAME>/Library/Android/sdk
+#   - Linux  : sdk.dir=/home/<USERNAME>/Android/Sdk
+#   - Windows: sdk.dir=C\:\\Users\\<USERNAME>\\AppData\\Local\\Android\\Sdk
+#sdk.dir=
+
+# Google Gemini API Key
+# Dapatkan API key gratis di: https://aistudio.google.com/
+# Tanpa key ini, fitur AI tidak akan berjalan (app tetap bisa dibuka).
+GEMINI_API_KEY=your_api_key_here

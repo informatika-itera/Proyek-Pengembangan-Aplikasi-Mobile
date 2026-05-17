@@ -10,7 +10,25 @@ class LetterRepositoryImpl(
     private val database: SoundLetterDatabase
 ) : LetterRepository {
     override fun getLetters(): Flow<List<Note>> {
-        return flowOf(emptyList())
+        return flowOf(
+            listOf(            Note(
+                id = 1,
+                recipient = "Dzaky",
+                sender = "Anonim",
+                content = "Good Luck!",
+                songTitle = "Hati-Hati di Jalan",
+                songArtist = "Tulus"
+            ),
+                Note(
+                    id = 2,
+                    recipient = "Gian",
+                    sender = "Anonim",
+                    content = "Selamat ulang tahun! Semoga harimu menyenangkan.",
+                    songTitle = "Happy Birthday",
+                    songArtist = "Traditional"
+                )
+            )
+        )
     }
 
     override suspend fun getLetterById(id: Long): Note? {

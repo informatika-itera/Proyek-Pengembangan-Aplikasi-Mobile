@@ -37,8 +37,9 @@ fun DetailMessageScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    // Di dalam DetailMessageScreen.kt
     LaunchedEffect(messageId) {
-        viewModel.loadMessage(messageId)
+        viewModel.loadMessage(messageId) // Memicu pencarian data di Repository berdasarkan ID
     }
 
     Scaffold(

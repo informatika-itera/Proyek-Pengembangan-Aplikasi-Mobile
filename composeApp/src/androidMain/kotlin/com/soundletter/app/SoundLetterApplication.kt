@@ -1,19 +1,20 @@
 package com.soundletter.app
 
 import android.app.Application
-import com.soundletter.app.di.appModule
+import com.soundletter.app.di.initKoin
 import com.soundletter.app.di.platformModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 
 class SoundLetterApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        startKoin {
-            androidLogger()
+
+        initKoin {
+            androidLogger(Level.INFO)
             androidContext(this@SoundLetterApplication)
-            modules(appModule + platformModule)
+            modules(platformModule)
         }
     }
 }

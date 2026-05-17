@@ -97,7 +97,10 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(state.letters) { letter ->
-                        MessageCard(message = letter, onClick = { onNavigateToDetail(letter.id.toString()) })
+                        MessageCard(
+                            message = letter,
+                            onClick = { onNavigateToDetail(letter.id.toString()) } // Mengirim ID spesifik
+                        )
                     }
                 }
             }
@@ -110,7 +113,7 @@ fun MessageCard(message: Note, onClick: () -> Unit) {
     GlassCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable { onClick() } // Trigger navigasi saat kartu diklik
     ) {
         Column {
             Row(

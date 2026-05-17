@@ -1,3 +1,11 @@
 package com.soundletter.app.di
 
-// This file is empty to avoid conflicts with AppModule.kt
+import org.koin.core.context.startKoin
+import org.koin.dsl.KoinAppDeclaration
+
+fun initKoin(config: KoinAppDeclaration? = null) {
+    startKoin {
+        config?.invoke(this)
+        modules(appModule)
+    }
+}

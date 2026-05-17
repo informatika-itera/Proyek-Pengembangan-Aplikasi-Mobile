@@ -7,7 +7,7 @@ import org.koin.compose.KoinContext
 
 @Composable
 fun App() {
-    KoinContext {
+    KoinContext { // Ini memastikan ViewModel bisa di-inject di Compose
         SoundLetterTheme {
             AppNavHost()
         }

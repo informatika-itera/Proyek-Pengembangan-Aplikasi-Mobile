@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "Project/123140169-123140186-MoveIn"
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "Project/123140169-123140186-MoveIn"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle (Sesuaikan ke 8.7)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Create Mock local.properties for Gemini API Key
+        run: echo "GEMINI_API_KEY=mock_key_for_ci_build" > local.properties
+
+      - name: Compile Assemble Debug (Bypass Wrapper)
+        run: gradle assembleDebug

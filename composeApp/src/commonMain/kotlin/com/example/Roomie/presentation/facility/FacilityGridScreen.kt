@@ -7,10 +7,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,41 +31,61 @@ fun FacilityGridScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(title = { Text("GKU 2 - ITERA") })
+            CenterAlignedTopAppBar(
+                title = { Text("GKU 2 - Ruangan", fontWeight = FontWeight.ExtraBold) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (val state = uiState) {
                 is FacilityUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
                 }
                 is FacilityUiState.Success -> {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        // Pemilihan Lantai (TabRow)
+                        // Custom Tab Row
                         ScrollableTabRow(
                             selectedTabIndex = state.selectedFloor - 1,
-                            edgePadding = 16.dp,
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            divider = {}
+                            edgePadding = 20.dp,
+                            containerColor = MaterialTheme.colorScheme.background,
+                            contentColor = MaterialTheme.colorScheme.primary,
+                            divider = {},
+                            indicator = { tabPositions ->
+                                TabRowDefaults.SecondaryIndicator(
+                                    modifier = Modifier.tabIndicatorOffset(tabPositions[state.selectedFloor - 1]),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         ) {
                             (1..4).forEach { floor ->
                                 Tab(
                                     selected = state.selectedFloor == floor,
                                     onClick = { viewModel.selectFloor(floor) },
-                                    text = { Text("Lantai $floor") }
+                                    text = { 
+                                        Text(
+                                            "Lantai $floor", 
+                                            fontWeight = if (state.selectedFloor == floor) FontWeight.Bold else FontWeight.Normal
+                                        ) 
+                                    },
+                                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
                             }
                         }
 
-                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
                             RoomLegend()
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
                             
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(5),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 items(
@@ -73,12 +96,9 @@ fun FacilityGridScreen(
                                         else GridItemSpan(1)
                                     }
                                 ) { room ->
-                                    RoomItem(
+                                    RoomGridItem(
                                         room = room,
-                                        onClick = {
-                                            // Sekarang semua status bisa diklik untuk melihat detail
-                                            onNavigateToDetail(room.id)
-                                        }
+                                        onClick = { onNavigateToDetail(room.id) }
                                     )
                                 }
                             }
@@ -86,11 +106,7 @@ fun FacilityGridScreen(
                     }
                 }
                 is FacilityUiState.Error -> {
-                    Text(
-                        text = state.message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    Text(text = state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
                 }
             }
         }
@@ -98,35 +114,41 @@ fun FacilityGridScreen(
 }
 
 @Composable
-fun RoomItem(
+fun RoomGridItem(
     room: Room,
     onClick: () -> Unit
 ) {
-    val backgroundColor = when (room.status) {
+    val statusColor = when (room.status) {
         RoomStatus.AVAILABLE -> Color(0xFF4CAF50)
-        RoomStatus.BOOKED -> Color(0xFFF44336)
-        RoomStatus.MAINTENANCE -> Color(0xFFFFEB3B)
+        RoomStatus.BOOKED -> MaterialTheme.colorScheme.error
+        RoomStatus.MAINTENANCE -> MaterialTheme.colorScheme.primary
     }
 
-    val contentColor = if (room.status == RoomStatus.MAINTENANCE) Color.Black else Color.White
-
-    Card(
+    Surface(
         modifier = Modifier
             .then(
-                if (room.type == RoomType.AULA) Modifier.fillMaxWidth().height(80.dp)
+                if (room.type == RoomType.AULA) Modifier.fillMaxWidth().height(90.dp)
                 else Modifier.aspectRatio(1f)
             )
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        shape = RoundedCornerShape(16.dp),
+        color = statusColor.copy(alpha = 0.15f),
+        border = androidx.compose.foundation.BorderStroke(2.dp, statusColor.copy(alpha = 0.5f))
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(
-                text = room.name,
-                color = contentColor,
-                fontWeight = FontWeight.Bold,
-                style = if (room.type == RoomType.AULA) MaterialTheme.typography.titleLarge 
-                        else MaterialTheme.typography.bodyMedium
-            )
+        Box(contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = room.name,
+                    color = statusColor,
+                    fontWeight = FontWeight.ExtraBold,
+                    style = if (room.type == RoomType.AULA) MaterialTheme.typography.headlineSmall 
+                            else MaterialTheme.typography.titleMedium
+                )
+                if (room.type == RoomType.AULA) {
+                    Text("Kapasitas Besar", style = MaterialTheme.typography.labelSmall, color = statusColor.copy(alpha = 0.7f))
+                }
+            }
         }
     }
 }
@@ -135,19 +157,19 @@ fun RoomItem(
 fun RoomLegend() {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         LegendItem("Tersedia", Color(0xFF4CAF50))
-        LegendItem("Penuh", Color(0xFFF44336))
-        LegendItem("Perbaikan", Color(0xFFFFEB3B))
+        LegendItem("Penuh", MaterialTheme.colorScheme.error)
+        LegendItem("Perbaikan", MaterialTheme.colorScheme.primary)
     }
 }
 
 @Composable
 fun LegendItem(label: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(12.dp).background(color, MaterialTheme.shapes.extraSmall))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(text = label, style = MaterialTheme.typography.labelSmall)
+        Box(modifier = Modifier.size(10.dp).background(color, RoundedCornerShape(2.dp)))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(text = label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
     }
 }

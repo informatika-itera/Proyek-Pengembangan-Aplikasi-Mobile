@@ -1,7 +1,7 @@
 # Gradle
 .gradle/
 build/
-!gradle-wrapper.jar
+gradle-wrapper.jar
 
 # IntelliJ IDEA / Android Studio
 .idea/

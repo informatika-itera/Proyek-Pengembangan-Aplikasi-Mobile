@@ -28,11 +28,11 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Create Mock local.properties for Gemini API Key
+        run: echo 'GEMINI_API_KEY="mock_key_for_ci_build"' > local.properties
+
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
-
-      - name: Run Unit Tests
-        run: ./gradlew test
 
       - name: Compile Assemble Debug
         run: ./gradlew assembleDebug

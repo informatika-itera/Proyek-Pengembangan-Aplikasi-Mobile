@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew :composeApp:assembleAndroidMain
 
   common:
-    name: Code Quality
+    name: Code Quality (Testing)
     runs-on: ubuntu-latest
 
     steps:
@@ -58,6 +58,9 @@ jobs:
 
       - name: Assemble unit tests
         run: ./gradlew :composeApp:assembleUnitTest
+
+      - name: Run unit tests
+        run: ./gradlew :composeApp:allTests
 
   ios:
     name: Build only (iOS)

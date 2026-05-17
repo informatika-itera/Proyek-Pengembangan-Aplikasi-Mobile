@@ -1,0 +1,30 @@
+-- ChatHistory.sq
+-- Schema untuk menyimpan riwayat chat IslamAI
+
+CREATE TABLE ChatHistoryEntity (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    content     TEXT    NOT NULL,
+    role        TEXT    NOT NULL,   -- 'USER' atau 'ASSISTANT'
+    timestamp   INTEGER NOT NULL,   -- epoch milliseconds
+    is_error    INTEGER NOT NULL DEFAULT 0
+);
+
+-- Ambil semua riwayat chat (terbaru di bawah)
+getChatHistory:
+SELECT * FROM ChatHistoryEntity
+ORDER BY timestamp ASC;
+
+-- Simpan pesan baru
+insertMessage:
+INSERT INTO ChatHistoryEntity (content, role, timestamp, is_error)
+VALUES (?, ?, ?, ?);
+
+-- Hapus semua riwayat chat
+clearHistory:
+DELETE FROM ChatHistoryEntity;
+
+-- Ambil 50 pesan terakhir saja (untuk performa)
+getRecentHistory:
+SELECT * FROM ChatHistoryEntity
+ORDER BY timestamp DESC
+LIMIT 50;

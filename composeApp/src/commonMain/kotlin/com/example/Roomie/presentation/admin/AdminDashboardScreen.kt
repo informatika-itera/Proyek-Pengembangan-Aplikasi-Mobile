@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.Roomie.domain.model.*
-import com.example.Roomie.presentation.util.AppStrings
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -102,53 +101,65 @@ fun AdminDashboardScreen(
 
 @Composable
 fun ApprovalTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
-    val pendingBookings = state.allBookings.filter { it.status == BookingStatus.PENDING }
+    val pendingBookings = state.filteredBookings.filter { it.status == BookingStatus.PENDING }
     
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        if (pendingBookings.isEmpty()) {
-            item {
-                Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Tidak ada pengajuan pinjam", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(modifier = Modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = state.filter.bookingQuery,
+            onValueChange = viewModel::onBookingSearch,
+            placeholder = { Text("Cari ruangan atau tujuan...") },
+            leadingIcon = { Icon(Icons.Default.Search, null) },
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (pendingBookings.isEmpty()) {
+                item {
+                    Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Tidak ada pengajuan pinjam", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
-            }
-        } else {
-            items(pendingBookings) { booking ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                ) {
-                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Pengajuan Ruangan", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                            Text(booking.id, style = MaterialTheme.typography.labelSmall)
-                        }
-                        Text("${booking.buildingName} - Ruang ${booking.roomName}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("Tujuan: ${booking.subject}", style = MaterialTheme.typography.bodyMedium)
-                        
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                            Button(
-                                onClick = { 
-                                    viewModel.approveBooking(booking)
-                                    onActionSuccess("Peminjaman disetujui & Status Ruang diupdate")
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                                shape = RoundedCornerShape(12.dp)
-                            ) { Text("SETUJUI") }
+            } else {
+                items(pendingBookings) { booking ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    ) {
+                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Pengajuan Ruangan", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                Text(booking.id, style = MaterialTheme.typography.labelSmall)
+                            }
+                            Text("${booking.buildingName} - Ruang ${booking.roomName}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("Tujuan: ${booking.subject}", style = MaterialTheme.typography.bodyMedium)
                             
-                            OutlinedButton(
-                                onClick = { 
-                                    viewModel.rejectBooking(booking)
-                                    onActionSuccess("Peminjaman ditolak")
-                                },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp)
-                            ) { Text("TOLAK") }
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                                Button(
+                                    onClick = { 
+                                        viewModel.approveBooking(booking)
+                                        onActionSuccess("Peminjaman disetujui & Status Ruang diupdate")
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) { Text("SETUJUI") }
+                                
+                                OutlinedButton(
+                                    onClick = { 
+                                        viewModel.rejectBooking(booking)
+                                        onActionSuccess("Peminjaman ditolak")
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) { Text("TOLAK") }
+                            }
                         }
                     }
                 }
@@ -159,22 +170,57 @@ fun ApprovalTab(state: AdminUiState.Success, viewModel: AdminViewModel, onAction
 
 @Composable
 fun ReportManagementTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AdminStatCard("PENDING", state.pendingCount.toString(), MaterialTheme.colorScheme.primary, Modifier.weight(1f))
-                AdminStatCard("URGENT", state.highUrgencyCount.toString(), MaterialTheme.colorScheme.error, Modifier.weight(1f))
+    Column(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 2.dp,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = state.filter.reportQuery,
+                    onValueChange = viewModel::onReportSearch,
+                    placeholder = { Text("Cari deskripsi atau lokasi...") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
+                )
+                
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = state.filter.reportStatusFilter == null,
+                        onClick = { viewModel.onReportStatusFilter(null) },
+                        label = { Text("Semua") }
+                    )
+                    FilterChip(
+                        selected = state.filter.reportStatusFilter == ReportStatus.PENDING,
+                        onClick = { viewModel.onReportStatusFilter(ReportStatus.PENDING) },
+                        label = { Text("Pending") }
+                    )
+                    FilterChip(
+                        selected = state.filter.reportStatusFilter == ReportStatus.IN_PROGRESS,
+                        onClick = { viewModel.onReportStatusFilter(ReportStatus.IN_PROGRESS) },
+                        label = { Text("Proses") }
+                    )
+                }
             }
         }
-        item {
-            Text("Antrean Laporan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        }
-        items(state.allReports) { report ->
-            ReportAdminCard(report, viewModel, onActionSuccess)
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AdminStatCard("PENDING", state.pendingCount.toString(), MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+                    AdminStatCard("URGENT", state.highUrgencyCount.toString(), MaterialTheme.colorScheme.error, Modifier.weight(1f))
+                }
+            }
+            items(state.filteredReports) { report ->
+                ReportAdminCard(report, viewModel, onActionSuccess)
+            }
         }
     }
 }

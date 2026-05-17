@@ -10,15 +10,25 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
+data class AdminFilterState(
+    val reportQuery: String = "",
+    val reportStatusFilter: ReportStatus? = null,
+    val bookingQuery: String = "",
+    val bookingStatusFilter: BookingStatus? = null
+)
+
 sealed interface AdminUiState {
     data object Loading : AdminUiState
     data class Success(
         val allReports: List<Report>,
+        val filteredReports: List<Report>,
         val allBookings: List<Booking>,
+        val filteredBookings: List<Booking>,
         val buildings: List<Building>,
         val rooms: List<Room>,
         val pendingCount: Int,
-        val highUrgencyCount: Int
+        val highUrgencyCount: Int,
+        val filter: AdminFilterState = AdminFilterState()
     ) : AdminUiState
     data class Error(val message: String) : AdminUiState
 }
@@ -35,6 +45,7 @@ class AdminViewModel(
     private val notificationRepository: NotificationRepository
 ) : ViewModel() {
     
+    private val _filterState = MutableStateFlow(AdminFilterState())
     private val _uiState = MutableStateFlow<AdminUiState>(AdminUiState.Loading)
     val uiState: StateFlow<AdminUiState> = _uiState.asStateFlow()
 
@@ -50,15 +61,30 @@ class AdminViewModel(
                 getAllReportsUseCase(),
                 getBuildingsUseCase(),
                 getRoomsByBuildingUseCase("GKU2"),
-                getAllBookingsUseCase()
-            ) { reports, buildings, rooms, bookings ->
+                getAllBookingsUseCase(),
+                _filterState
+            ) { reports, buildings, rooms, bookings, filter ->
+                
+                val filteredReports = reports.filter { 
+                    (filter.reportStatusFilter == null || it.status == filter.reportStatusFilter) &&
+                    (filter.reportQuery.isEmpty() || it.description.contains(filter.reportQuery, ignoreCase = true) || it.location.contains(filter.reportQuery, ignoreCase = true))
+                }.reversed()
+
+                val filteredBookings = bookings.filter {
+                    (filter.bookingStatusFilter == null || it.status == filter.bookingStatusFilter) &&
+                    (filter.bookingQuery.isEmpty() || it.roomName.contains(filter.bookingQuery, ignoreCase = true) || it.subject?.contains(filter.bookingQuery, ignoreCase = true) == true)
+                }.reversed()
+
                 AdminUiState.Success(
-                    allReports = reports.reversed(),
-                    allBookings = bookings.reversed(),
+                    allReports = reports,
+                    filteredReports = filteredReports,
+                    allBookings = bookings,
+                    filteredBookings = filteredBookings,
                     buildings = buildings,
                     rooms = rooms,
                     pendingCount = reports.count { it.status == ReportStatus.PENDING },
-                    highUrgencyCount = reports.count { it.urgency == UrgencyLevel.HIGH }
+                    highUrgencyCount = reports.count { it.urgency == UrgencyLevel.HIGH },
+                    filter = filter
                 )
             }.catch { e ->
                 _uiState.value = AdminUiState.Error(e.message ?: "Gagal memuat data admin")
@@ -66,6 +92,18 @@ class AdminViewModel(
                 _uiState.value = state
             }
         }
+    }
+
+    fun onReportSearch(query: String) {
+        _filterState.update { it.copy(reportQuery = query) }
+    }
+
+    fun onReportStatusFilter(status: ReportStatus?) {
+        _filterState.update { it.copy(reportStatusFilter = status) }
+    }
+
+    fun onBookingSearch(query: String) {
+        _filterState.update { it.copy(bookingQuery = query) }
     }
 
     fun updateReportStatus(reportId: String, newStatus: ReportStatus) {
@@ -76,17 +114,12 @@ class AdminViewModel(
 
     fun approveBooking(booking: Booking) {
         viewModelScope.launch {
-            // 1. Update Booking Status
             bookingRepository.updateBookingStatus(booking.id, BookingStatus.APPROVED)
-            
-            // 2. Update Room Status to BOOKED
             updateRoomStatusUseCase(
                 roomId = booking.roomId,
                 status = RoomStatus.BOOKED,
                 borrowerName = booking.subject ?: "Peminjaman Mahasiswa"
             )
-            
-            // 3. Send Notification to Student
             notificationRepository.addNotification(
                 Notification(
                     id = Clock.System.now().toEpochMilliseconds().toString(),
@@ -101,7 +134,6 @@ class AdminViewModel(
     fun rejectBooking(booking: Booking) {
         viewModelScope.launch {
             bookingRepository.updateBookingStatus(booking.id, BookingStatus.REJECTED)
-            
             notificationRepository.addNotification(
                 Notification(
                     id = Clock.System.now().toEpochMilliseconds().toString(),

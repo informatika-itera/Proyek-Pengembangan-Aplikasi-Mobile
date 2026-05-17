@@ -24,6 +24,8 @@ val domainModule = module {
 
     // Booking UseCases
     factoryOf(::GetAllBookingsUseCase)
+    factoryOf(::CancelBookingUseCase)
+    factoryOf(::CheckBookingConflictUseCase)
 
     // Announcement UseCases
     factoryOf(::GetAllAnnouncementsUseCase)

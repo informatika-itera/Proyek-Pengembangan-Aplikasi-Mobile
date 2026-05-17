@@ -88,6 +88,17 @@ fun BookingScreen(
                 }
             }
 
+            // Error Display
+            state.error?.let {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(it, modifier = Modifier.padding(12.dp), color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+
             // Form Inputs
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Detail Peminjaman", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)

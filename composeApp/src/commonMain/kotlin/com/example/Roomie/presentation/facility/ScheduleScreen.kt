@@ -4,25 +4,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.Roomie.domain.model.Booking
-import com.example.Roomie.presentation.util.AppStrings
+import com.example.Roomie.domain.model.BookingStatus
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -34,13 +35,14 @@ fun ScheduleScreen(
     onBack: () -> Unit,
     viewModel: ScheduleViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
+    var selectedPermit by remember { mutableStateOf<Booking?>(null) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(AppStrings.HOME_SCHEDULE, fontWeight = FontWeight.Bold) },
+                title = { Text("Jadwal Pinjam", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.primary)
@@ -51,137 +53,188 @@ fun ScheduleScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (val state = uiState) {
-                is ScheduleUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
-                is ScheduleUiState.Success -> {
-                    if (state.bookings.isEmpty()) {
-                        EmptySchedule(Modifier.align(Alignment.Center))
-                    } else {
-                        BookingList(state.bookings)
+            if (state.isLoading) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
+            } else if (state.bookings.isEmpty()) {
+                Text("Belum ada peminjaman", modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(state.bookings) { booking ->
+                        BookingCard(
+                            booking = booking,
+                            onCancel = { viewModel.cancelBooking(booking.id) },
+                            onViewPermit = { selectedPermit = booking }
+                        )
                     }
                 }
-                is ScheduleUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
             }
         }
     }
-}
 
-@Composable
-fun BookingList(bookings: List<Booking>) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        item {
-            Text(
-                "Agenda Mendatang", 
-                style = MaterialTheme.typography.titleLarge, 
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        items(bookings) { booking ->
-            ModernBookingCard(booking)
-        }
+    selectedPermit?.let { booking ->
+        EPermitDialog(booking = booking, onDismiss = { selectedPermit = null })
     }
 }
 
 @Composable
-fun ModernBookingCard(booking: Booking) {
+fun BookingCard(
+    booking: Booking,
+    onCancel: () -> Unit,
+    onViewPermit: () -> Unit
+) {
+    val statusColor = when(booking.status) {
+        BookingStatus.APPROVED -> Color(0xFF4CAF50)
+        BookingStatus.PENDING -> Color(0xFFFFA500)
+        BookingStatus.REJECTED, BookingStatus.CANCELLED -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, statusColor.copy(alpha = 0.2f))
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = booking.buildingName,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    color = statusColor.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
                     Text(
-                        text = booking.subject ?: "Peminjaman Ruangan",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        lineHeight = 28.sp
+                        booking.status.displayName,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = statusColor,
+                        fontWeight = FontWeight.Bold
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                        Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = "Ruang ${booking.roomName}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                }
+                Text(formatDate(booking.startTime), style = MaterialTheme.typography.labelSmall)
+            }
+
+            Column {
+                Text(booking.roomName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                Text(booking.buildingName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+
+            Text(booking.subject ?: "Tanpa Judul", style = MaterialTheme.typography.bodyMedium)
+            
+            Text(
+                "${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (booking.status == BookingStatus.APPROVED) {
+                    Button(
+                        onClick = onViewPermit,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.QrCode, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("E-PERMIT", style = MaterialTheme.typography.labelMedium)
                     }
                 }
                 
-                Surface(
-                    modifier = Modifier.size(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    onClick = { /* Detail E-Permit */ }
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.QrCode, contentDescription = "E-Permit", tint = MaterialTheme.colorScheme.onPrimary)
+                if (booking.status == BookingStatus.PENDING) {
+                    OutlinedButton(
+                        onClick = onCancel,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Icon(Icons.Default.Cancel, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("BATAL", style = MaterialTheme.typography.labelMedium)
                     }
                 }
-            }
-            
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-            )
-            
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.CalendarMonth, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = formatBookingTime(booking.startTime, booking.endTime),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
 }
 
 @Composable
-fun EmptySchedule(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(Icons.Default.CalendarMonth, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
-        Spacer(Modifier.height(16.dp))
-        Text("Belum ada jadwal", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Text("Ruangan yang Anda pinjam bakal muncul di sini", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+fun EPermitDialog(booking: Booking, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("TUTUP") }
+        },
+        title = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text("E-PERMIT DIGITAL", fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                Text("Roomie ITERA", style = MaterialTheme.typography.labelSmall)
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Mock QR Code
+                Surface(
+                    modifier = Modifier.size(180.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.QrCode, null, modifier = Modifier.size(140.dp), tint = Color.Black)
+                    }
+                }
+                
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(booking.id, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    Text("STATUS: DISETUJUI", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                }
+
+                HorizontalDivider(modifier = Modifier.alpha(0.2f))
+
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    PermitInfoRow("Ruangan", booking.roomName)
+                    PermitInfoRow("Gedung", booking.buildingName)
+                    PermitInfoRow("Tanggal", formatDate(booking.startTime))
+                    PermitInfoRow("Waktu", "${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}")
+                    PermitInfoRow("Tujuan", booking.subject ?: "-")
+                }
+                
+                Surface(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Tunjukkan layar ini kepada petugas keamanan jika diperlukan.", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+        },
+        shape = RoundedCornerShape(28.dp)
+    )
+}
+
+@Composable
+fun PermitInfoRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
     }
 }
 
-fun formatBookingTime(start: Long, end: Long): String {
-    val startDt = Instant.fromEpochMilliseconds(start).toLocalDateTime(TimeZone.currentSystemDefault())
-    val endDt = Instant.fromEpochMilliseconds(end).toLocalDateTime(TimeZone.currentSystemDefault())
-    
-    val day = "${startDt.dayOfMonth}/${startDt.monthNumber}"
-    val startTime = "${startDt.hour.toString().padStart(2, '0')}:${startDt.minute.toString().padStart(2, '0')}"
-    val endTime = "${endDt.hour.toString().padStart(2, '0')}:${endDt.minute.toString().padStart(2, '0')}"
-    
-    return "$day | $startTime - $endTime"
+private fun formatDate(timestamp: Long): String {
+    val dt = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
+    return "${dt.dayOfMonth}/${dt.monthNumber}/${dt.year}"
+}
+
+private fun formatTime(timestamp: Long): String {
+    val dt = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
+    return "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
 }

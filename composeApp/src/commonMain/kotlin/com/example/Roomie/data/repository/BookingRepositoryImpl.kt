@@ -37,30 +37,59 @@ class BookingRepositoryImpl(
             }
     }
 
-    override suspend fun addBooking(booking: Booking) {
-        withContext(Dispatchers.IO) {
-            queries.insertBooking(
-                id = booking.id,
-                roomId = booking.roomId,
-                roomName = booking.roomName,
-                buildingName = booking.buildingName,
-                startTime = booking.startTime,
-                endTime = booking.endTime,
-                status = booking.status.name,
-                subject = booking.subject
-            )
+    override suspend fun addBooking(booking: Booking): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                if (checkConflict(booking.roomId, booking.startTime, booking.endTime)) {
+                    return@withContext Result.failure(Exception("Ruangan sudah dipesan pada waktu tersebut"))
+                }
+                queries.insertBooking(
+                    id = booking.id,
+                    roomId = booking.roomId,
+                    roomName = booking.roomName,
+                    buildingName = booking.buildingName,
+                    startTime = booking.startTime,
+                    endTime = booking.endTime,
+                    status = booking.status.name,
+                    subject = booking.subject
+                )
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
     }
 
-    override suspend fun updateBookingStatus(id: String, status: BookingStatus) {
-        withContext(Dispatchers.IO) {
-            queries.updateBookingStatus(status.name, id)
+    override suspend fun updateBookingStatus(id: String, status: BookingStatus): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                queries.updateBookingStatus(status.name, id)
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
     }
 
-    override suspend fun deleteBooking(id: String) {
-        withContext(Dispatchers.IO) {
-            queries.deleteBooking(id)
+    override suspend fun deleteBooking(id: String): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                queries.deleteBooking(id)
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    override suspend fun checkConflict(roomId: String, startTime: Long, endTime: Long): Boolean {
+        return withContext(Dispatchers.IO) {
+            val allBookings = queries.getAllBookings().executeAsList()
+            allBookings.any { 
+                it.roomId == roomId && 
+                it.status == BookingStatus.APPROVED.name &&
+                it.startTime < endTime && startTime < it.endTime
+            }
         }
     }
 

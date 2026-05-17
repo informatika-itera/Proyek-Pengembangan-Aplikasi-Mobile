@@ -10,6 +10,12 @@ import com.example.Roomie.domain.repository.FacilityRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 
 data class BookingFormState(
     val room: Room? = null,
@@ -54,22 +60,42 @@ class BookingViewModel(
         val room = currentState.room ?: return
         
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isLoading = true, error = null) }
             try {
+                // Convert Strings to Long Timestamps
+                // Assume date is DD/MM/YYYY and time is HH:MM
+                val dateParts = currentState.date.split("/")
+                val startParts = currentState.startTime.split(":")
+                val endParts = currentState.endTime.split(":")
+                
+                val tz = TimeZone.currentSystemDefault()
+                val localDate = LocalDate(dateParts[2].toInt(), dateParts[1].toInt(), dateParts[0].toInt())
+                
+                val startLt = LocalTime(startParts[0].toInt(), startParts[1].toInt())
+                val endLt = LocalTime(endParts[0].toInt(), endParts[1].toInt())
+                
+                val startInstant = LocalDateTime(localDate, startLt).toInstant(tz)
+                val endInstant = LocalDateTime(localDate, endLt).toInstant(tz)
+
                 val newBooking = Booking(
                     id = "BK-${Clock.System.now().toEpochMilliseconds()}",
                     roomId = room.id,
                     roomName = room.name,
-                    buildingName = "GKU 2", // Simplified for now
-                    startTime = Clock.System.now().toEpochMilliseconds(), // Simplified
-                    endTime = Clock.System.now().toEpochMilliseconds() + 7200000,
+                    buildingName = "GKU 2",
+                    startTime = startInstant.toEpochMilliseconds(),
+                    endTime = endInstant.toEpochMilliseconds(),
                     status = BookingStatus.PENDING,
                     subject = currentState.purpose
                 )
-                bookingRepository.addBooking(newBooking)
-                _state.update { it.copy(isLoading = false, isSuccess = true) }
+                
+                val result = bookingRepository.addBooking(newBooking)
+                if (result.isSuccess) {
+                    _state.update { it.copy(isLoading = false, isSuccess = true) }
+                } else {
+                    _state.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
+                }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = e.message) }
+                _state.update { it.copy(isLoading = false, error = "Format tanggal atau waktu tidak valid") }
             }
         }
     }

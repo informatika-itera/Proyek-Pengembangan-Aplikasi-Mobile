@@ -9,7 +9,7 @@ data class AnimeImages(
 
 @Serializable
 data class ImageUrls(
-    val image_url: String,
-    val small_image_url: String,
-    val large_image_url: String
+    val image_url: String? = null,
+    val small_image_url: String? = null,
+    val large_image_url: String? = null
 )

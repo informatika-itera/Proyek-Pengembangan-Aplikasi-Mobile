@@ -1,0 +1,32 @@
+CREATE TABLE NoteEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    rawContent TEXT NOT NULL,
+    refinedContent TEXT,
+    subject TEXT NOT NULL DEFAULT '',
+    isRefined INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+insertNote:
+INSERT INTO NoteEntity(title, rawContent, refinedContent, subject, isRefined, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectAllNotes:
+SELECT * FROM NoteEntity ORDER BY updatedAt DESC;
+
+selectNoteById:
+SELECT * FROM NoteEntity WHERE id = :id;
+
+selectNotesBySubject:
+SELECT * FROM NoteEntity WHERE subject = :subject ORDER BY updatedAt DESC;
+
+updateNote:
+UPDATE NoteEntity SET title = ?, refinedContent = ?, isRefined = ?, updatedAt = ? WHERE id = ?;
+
+deleteNote:
+DELETE FROM NoteEntity WHERE id = :id;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

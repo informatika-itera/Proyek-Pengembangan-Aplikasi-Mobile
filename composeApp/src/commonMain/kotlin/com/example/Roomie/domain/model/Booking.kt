@@ -1,10 +1,11 @@
 package com.example.Roomie.domain.model
 
-enum class BookingStatus {
-    UPCOMING,
-    ONGOING,
-    COMPLETED,
-    CANCELLED
+enum class BookingStatus(val displayName: String) {
+    PENDING("Menunggu Persetujuan"),
+    APPROVED("Disetujui"),
+    REJECTED("Ditolak"),
+    COMPLETED("Selesai"),
+    CANCELLED("Dibatalkan")
 }
 
 data class Booking(
@@ -15,5 +16,5 @@ data class Booking(
     val startTime: Long,
     val endTime: Long,
     val status: BookingStatus,
-    val subject: String? = null // For class schedule integration
+    val subject: String? = null
 )

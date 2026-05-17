@@ -18,10 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.Roomie.domain.model.Building
-import com.example.Roomie.domain.model.ReportStatus
-import com.example.Roomie.domain.model.Room
-import com.example.Roomie.domain.model.RoomStatus
+import com.example.Roomie.domain.model.*
 import com.example.Roomie.presentation.util.AppStrings
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -36,7 +33,7 @@ fun AdminDashboardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Laporan", "Kontrol Sistem")
+    val tabs = listOf("Laporan", "Approval", "Kontrol")
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -78,12 +75,14 @@ fun AdminDashboardScreen(
                 when (val state = uiState) {
                     is AdminUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
                     is AdminUiState.Success -> {
-                        if (selectedTab == 0) {
-                            ReportManagementTab(state, viewModel, onActionSuccess = { msg ->
+                        when (selectedTab) {
+                            0 -> ReportManagementTab(state, viewModel, onActionSuccess = { msg ->
                                 scope.launch { snackbarHostState.showSnackbar(msg) }
                             })
-                        } else {
-                            SystemControlTab(
+                            1 -> ApprovalTab(state, viewModel, onActionSuccess = { msg ->
+                                scope.launch { snackbarHostState.showSnackbar(msg) }
+                            })
+                            else -> SystemControlTab(
                                 state = state,
                                 viewModel = viewModel,
                                 onActionSuccess = { message ->
@@ -95,6 +94,63 @@ fun AdminDashboardScreen(
                         }
                     }
                     is AdminUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ApprovalTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
+    val pendingBookings = state.allBookings.filter { it.status == BookingStatus.PENDING }
+    
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (pendingBookings.isEmpty()) {
+            item {
+                Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Tidak ada pengajuan pinjam", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        } else {
+            items(pendingBookings) { booking ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Pengajuan Ruangan", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(booking.id, style = MaterialTheme.typography.labelSmall)
+                        }
+                        Text("${booking.buildingName} - Ruang ${booking.roomName}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("Tujuan: ${booking.subject}", style = MaterialTheme.typography.bodyMedium)
+                        
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                            Button(
+                                onClick = { 
+                                    viewModel.approveBooking(booking)
+                                    onActionSuccess("Peminjaman disetujui & Status Ruang diupdate")
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) { Text("SETUJUI") }
+                            
+                            OutlinedButton(
+                                onClick = { 
+                                    viewModel.rejectBooking(booking)
+                                    onActionSuccess("Peminjaman ditolak")
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
+                            ) { Text("TOLAK") }
+                        }
+                    }
                 }
             }
         }

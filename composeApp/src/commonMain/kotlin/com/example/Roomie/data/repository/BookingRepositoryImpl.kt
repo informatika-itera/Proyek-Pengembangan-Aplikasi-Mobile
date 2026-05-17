@@ -30,7 +30,7 @@ class BookingRepositoryImpl(
                         buildingName = entity.buildingName,
                         startTime = entity.startTime,
                         endTime = entity.endTime,
-                        status = try { BookingStatus.valueOf(entity.status) } catch (e: Exception) { BookingStatus.UPCOMING },
+                        status = try { BookingStatus.valueOf(entity.status) } catch (e: Exception) { BookingStatus.PENDING },
                         subject = entity.subject
                     )
                 }
@@ -49,6 +49,12 @@ class BookingRepositoryImpl(
                 status = booking.status.name,
                 subject = booking.subject
             )
+        }
+    }
+
+    override suspend fun updateBookingStatus(id: String, status: BookingStatus) {
+        withContext(Dispatchers.IO) {
+            queries.updateBookingStatus(status.name, id)
         }
     }
 
@@ -71,20 +77,8 @@ class BookingRepositoryImpl(
                         buildingName = "GKU 2",
                         startTime = now + 3600000,
                         endTime = now + 7200000,
-                        status = BookingStatus.UPCOMING,
+                        status = BookingStatus.PENDING,
                         subject = "Rapat Organisasi"
-                    )
-                )
-                addBooking(
-                    Booking(
-                        id = "B2",
-                        roomId = "GKU2-201",
-                        roomName = "201",
-                        buildingName = "GKU 2",
-                        startTime = now + 86400000,
-                        endTime = now + 86400000 + 3600000,
-                        status = BookingStatus.UPCOMING,
-                        subject = "PAM - Praktikum"
                     )
                 )
             }

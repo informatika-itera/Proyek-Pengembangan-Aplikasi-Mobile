@@ -16,5 +16,8 @@ insertBooking:
 INSERT OR REPLACE INTO BookingEntity(id, roomId, roomName, buildingName, startTime, endTime, status, subject)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
+updateBookingStatus:
+UPDATE BookingEntity SET status = ? WHERE id = ?;
+
 deleteBooking:
 DELETE FROM BookingEntity WHERE id = ?;

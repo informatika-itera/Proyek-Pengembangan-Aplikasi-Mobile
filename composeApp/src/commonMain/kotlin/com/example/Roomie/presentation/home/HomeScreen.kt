@@ -36,6 +36,7 @@ fun HomeScreen(
     onNavigateToHelp: () -> Unit,
     onNavigateToReport: () -> Unit,
     onNavigateToAllReports: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -51,7 +52,7 @@ fun HomeScreen(
                     ) 
                 },
                 actions = {
-                    IconButton(onClick = { /* Notifikasi */ }) {
+                    IconButton(onClick = onNavigateToNotifications) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifikasi", tint = MaterialTheme.colorScheme.primary)
                     }
                 },

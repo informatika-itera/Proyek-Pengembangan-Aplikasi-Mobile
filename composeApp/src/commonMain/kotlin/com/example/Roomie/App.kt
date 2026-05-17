@@ -40,6 +40,7 @@ import com.example.Roomie.presentation.help.HelpScreen
 import com.example.Roomie.presentation.report.ReportScreen
 import com.example.Roomie.presentation.report.AllReportsScreen
 import com.example.Roomie.presentation.profile.ProfileScreen
+import com.example.Roomie.presentation.profile.NotificationScreen
 import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
 import com.example.Roomie.presentation.util.AppStrings
@@ -64,6 +65,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object Report : Screen("report", AppStrings.NAV_REPORT, Icons.Default.AddCircle)
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
     data object AdminDashboard : Screen("admin_dashboard", "Admin", Icons.Default.Dashboard)
+    data object Notifications : Screen("notifications", "Notifikasi")
     data object RoomDetail : Screen("room_detail/{roomId}", "Detail Ruangan") {
         fun createRoute(roomId: String) = "room_detail/$roomId"
     }
@@ -195,8 +197,13 @@ fun App(
                         onNavigateToSchedule = { navController.navigate(Screen.Schedule.route) },
                         onNavigateToHelp = { navController.navigate(Screen.Help.route) },
                         onNavigateToReport = { navController.navigate(Screen.Report.route) },
-                        onNavigateToAllReports = { navController.navigate(Screen.AllReports.route) }
+                        onNavigateToAllReports = { navController.navigate(Screen.AllReports.route) },
+                        onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
                     )
+                }
+
+                composable(Screen.Notifications.route) {
+                    NotificationScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Screen.AllReports.route) {

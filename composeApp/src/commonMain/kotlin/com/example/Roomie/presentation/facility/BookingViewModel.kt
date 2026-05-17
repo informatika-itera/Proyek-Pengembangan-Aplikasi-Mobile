@@ -63,7 +63,7 @@ class BookingViewModel(
                     buildingName = "GKU 2", // Simplified for now
                     startTime = Clock.System.now().toEpochMilliseconds(), // Simplified
                     endTime = Clock.System.now().toEpochMilliseconds() + 7200000,
-                    status = BookingStatus.UPCOMING,
+                    status = BookingStatus.PENDING,
                     subject = currentState.purpose
                 )
                 bookingRepository.addBooking(newBooking)

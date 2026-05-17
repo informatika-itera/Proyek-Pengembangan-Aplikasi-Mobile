@@ -28,4 +28,8 @@ val domainModule = module {
     // Announcement UseCases
     factoryOf(::GetAllAnnouncementsUseCase)
     factoryOf(::PostAnnouncementUseCase)
+
+    // Notification UseCases
+    factoryOf(::GetAllNotificationsUseCase)
+    factoryOf(::MarkNotificationAsReadUseCase)
 }

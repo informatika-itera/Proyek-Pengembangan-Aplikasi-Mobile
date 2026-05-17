@@ -1,0 +1,107 @@
+package com.dailybliss.app.data.remote.dto
+
+import kotlinx.serialization.Serializable
+
+// ==================== REQUEST ====================
+
+@Serializable
+data class GeminiRequest(
+    val contents: List<GeminiContent>,
+    val generationConfig: GenerationConfig? = null,
+    val safetySettings: List<SafetySetting>? = null,
+    val system_instruction: GeminiSystemInstruction? = null
+)
+
+@Serializable
+data class GeminiSystemInstruction(
+    val parts: List<GeminiPart>
+)
+
+@Serializable
+data class GeminiContent(
+    val parts: List<GeminiPart>,
+    val role: String = "user"
+)
+
+@Serializable
+data class GeminiPart(
+    val text: String? = null,
+    val inline_data: GeminiInlineData? = null,
+    val thought: Boolean? = null
+)
+
+@Serializable
+data class GeminiInlineData(
+    val mime_type: String,
+    val data: String // Base64
+)
+
+@Serializable
+data class GenerationConfig(
+    val temperature: Double = 0.7,
+    val maxOutputTokens: Int = 2000,
+    val topP: Double = 0.95,
+    val topK: Int = 40
+)
+
+@Serializable
+data class SafetySetting(
+    val category: String,
+    val threshold: String
+)
+
+// ==================== RESPONSE ====================
+
+@Serializable
+data class GeminiResponse(
+    val candidates: List<GeminiCandidate>? = null,
+    val promptFeedback: PromptFeedback? = null,
+    val error: GeminiError? = null
+)
+
+@Serializable
+data class GeminiCandidate(
+    val content: GeminiContent,
+    val finishReason: String? = null,
+    val index: Int = 0,
+    val safetyRatings: List<SafetyRating>? = null
+)
+
+@Serializable
+data class SafetyRating(
+    val category: String,
+    val probability: String
+)
+
+@Serializable
+data class PromptFeedback(
+    val safetyRatings: List<SafetyRating>? = null,
+    val blockReason: String? = null
+)
+
+@Serializable
+data class GeminiError(
+    val code: Int,
+    val message: String,
+    val status: String
+)
+
+// ==================== HELPER EXTENSIONS ====================
+
+fun GeminiResponse.getTextContent(): String? {
+    return candidates?.firstOrNull()?.content?.parts?.firstOrNull { 
+        it.text != null && it.thought != true 
+    }?.text
+}
+
+fun GeminiResponse.isBlocked(): Boolean {
+    return promptFeedback?.blockReason != null
+}
+
+fun GeminiResponse.getErrorMessage(): String? {
+    return error?.message ?: if (isBlocked()) {
+        "Konten diblokir: ${promptFeedback?.blockReason}"
+    } else {
+        null
+    }
+}

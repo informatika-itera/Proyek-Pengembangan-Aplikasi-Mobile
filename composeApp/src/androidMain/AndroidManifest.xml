@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
     <application
-        android:name=".NoteAIApplication"
+        android:name="com.dailybliss.app.DailyBlissApplication"
         android:allowBackup="true"
-        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="DailyBliss"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NoteAI">
+        android:theme="@style/Theme.DailyBliss">
+        
+        <property android:name="android.app.16kb_page_size" android:value="true" />
         
         <activity
-            android:name=".MainActivity"
+            android:name="com.dailybliss.app.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.NoteAI">
+            android:theme="@style/Theme.DailyBliss"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

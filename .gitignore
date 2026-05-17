@@ -1,6 +1,7 @@
 # Gradle
 .gradle/
 build/
+**/build/
 !gradle-wrapper.jar
 
 # IntelliJ IDEA / Android Studio
@@ -12,6 +13,7 @@ out/
 
 # Kotlin
 .kotlin/
+kotlin-js-store/
 
 # Local configuration (secrets, machine-specific paths)
 local.properties
@@ -20,6 +22,7 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+output.json
 
 # OS
 .DS_Store

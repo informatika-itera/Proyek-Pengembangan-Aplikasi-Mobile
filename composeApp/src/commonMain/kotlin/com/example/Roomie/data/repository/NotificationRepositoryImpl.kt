@@ -27,7 +27,7 @@ class NotificationRepositoryImpl(
                         title = entity.title,
                         message = entity.message,
                         timestamp = entity.timestamp,
-                        isRead = entity.isRead == 1L
+                        isRead = entity.isRead != 0L
                     )
                 }
             }

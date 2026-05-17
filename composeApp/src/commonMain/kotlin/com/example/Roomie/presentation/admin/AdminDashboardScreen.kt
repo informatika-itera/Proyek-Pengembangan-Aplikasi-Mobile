@@ -399,7 +399,7 @@ fun SystemControlTab(
 
 @Composable
 fun ReportAdminCard(
-    report: com.example.Roomie.domain.model.Report, 
+    report: Report,
     viewModel: AdminViewModel,
     onActionSuccess: (String) -> Unit
 ) {

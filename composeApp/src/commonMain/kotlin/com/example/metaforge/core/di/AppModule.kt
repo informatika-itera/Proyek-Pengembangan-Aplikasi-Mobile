@@ -10,24 +10,11 @@ import com.example.metaforge.data.local.datastore.create
 import com.example.metaforge.data.remote.api.GeminiService
 import com.example.metaforge.data.repository.AIRepositoryImpl
 import com.example.metaforge.data.repository.DraftRepositoryImpl
-import com.example.metaforge.data.repository.NoteRepositoryImpl
 import com.example.metaforge.domain.repository.AIRepository
 import com.example.metaforge.domain.repository.DraftRepository
-import com.example.metaforge.domain.repository.NoteRepository
-import com.example.metaforge.domain.usecase.DeleteNoteUseCase
-import com.example.metaforge.domain.usecase.GenerateIdeasUseCase
-import com.example.metaforge.domain.usecase.GetAllNotesUseCase
-import com.example.metaforge.domain.usecase.ImproveWritingUseCase
-import com.example.metaforge.domain.usecase.SaveNoteUseCase
-import com.example.metaforge.domain.usecase.SearchNotesUseCase
-import com.example.metaforge.domain.usecase.SummarizeNoteUseCase
-import com.example.metaforge.presentation.screens.addnote.AddNoteViewModel
-import com.example.metaforge.presentation.screens.ai.AIAssistantViewModel
 import com.example.metaforge.presentation.screens.counterpick.CounterPickViewModel
-import com.example.metaforge.presentation.screens.detail.NoteDetailViewModel
 import com.example.metaforge.presentation.screens.draft.DraftViewModel
 import com.example.metaforge.presentation.screens.heroselect.HeroSelectViewModel
-import com.example.metaforge.presentation.screens.home.HomeViewModel
 import com.example.metaforge.presentation.screens.synergy.SynergyViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -38,14 +25,12 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 // ==================== NETWORK MODULE ====================
-
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
 }
 
 // ==================== DATABASE MODULE ====================
-
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
@@ -54,7 +39,6 @@ val databaseModule = module {
 }
 
 // ==================== PREFERENCES MODULE ====================
-
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
@@ -62,32 +46,13 @@ val preferencesModule = module {
 }
 
 // ==================== REPOSITORY MODULE ====================
-
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
     single<DraftRepository> { DraftRepositoryImpl(get()) }
 }
 
-// ==================== USE CASE MODULE ====================
-
-val useCaseModule = module {
-    singleOf(::GetAllNotesUseCase)
-    singleOf(::SearchNotesUseCase)
-    singleOf(::SaveNoteUseCase)
-    singleOf(::DeleteNoteUseCase)
-    singleOf(::SummarizeNoteUseCase)
-    singleOf(::ImproveWritingUseCase)
-    singleOf(::GenerateIdeasUseCase)
-}
-
 // ==================== VIEWMODEL MODULE ====================
-
 val viewModelModule = module {
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
-    viewModelOf(::AIAssistantViewModel)
     viewModelOf(::DraftViewModel)
     viewModelOf(::HeroSelectViewModel)
     viewModelOf(::SynergyViewModel)
@@ -95,18 +60,15 @@ val viewModelModule = module {
 }
 
 // ==================== SHARED MODULES ====================
-
 val sharedModules = listOf(
     networkModule,
     databaseModule,
     preferencesModule,
     repositoryModule,
-    useCaseModule,
     viewModelModule
 )
 
 // ==================== INIT FUNCTION ====================
-
 fun initKoin(
     platformModules: List<Module> = emptyList(),
     config: KoinAppDeclaration? = null

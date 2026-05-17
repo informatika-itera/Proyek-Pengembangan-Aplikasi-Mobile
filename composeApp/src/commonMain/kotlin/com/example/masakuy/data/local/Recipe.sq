@@ -1,0 +1,43 @@
+CREATE TABLE recipe (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    image TEXT NOT NULL,
+    estimatedCost INTEGER NOT NULL,
+    estimatedTime INTEGER NOT NULL,
+    difficulty TEXT NOT NULL,
+    ingredients TEXT NOT NULL,
+    instructions TEXT NOT NULL,
+    isFavorite INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL
+);
+
+CREATE TABLE favorite (
+    recipeId TEXT NOT NULL PRIMARY KEY,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY(recipeId) REFERENCES recipe(id)
+);
+
+getAllRecipes:
+SELECT * FROM recipe ORDER BY createdAt DESC;
+
+getRecipeById:
+SELECT * FROM recipe WHERE id = ?;
+
+searchRecipes:
+SELECT * FROM recipe WHERE name LIKE '%' || ? || '%' ORDER BY createdAt DESC;
+
+getRecipesByBudget:
+SELECT * FROM recipe WHERE estimatedCost <= ? ORDER BY estimatedCost ASC;
+
+getFavorites:
+SELECT * FROM recipe WHERE isFavorite = 1 ORDER BY createdAt DESC;
+
+insertRecipe:
+INSERT INTO recipe (id, name, image, estimatedCost, estimatedTime, difficulty, ingredients, instructions, isFavorite, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateFavorite:
+UPDATE recipe SET isFavorite = ? WHERE id = ?;
+
+deleteRecipe:
+DELETE FROM recipe WHERE id = ?;

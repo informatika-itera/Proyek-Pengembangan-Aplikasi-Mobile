@@ -1,10 +1,26 @@
-plugins {
-    // Plugins are applied in subprojects
-    alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.androidLibrary) apply false
-    alias(libs.plugins.composeMultiplatform) apply false
-    alias(libs.plugins.composeCompiler) apply false
-    alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.kotlinSerialization) apply false
-    alias(libs.plugins.sqldelight) apply false
+pluginManagement {
+    repositories {
+        google()
+        gradlePluginPortal()
+        mavenCentral()
+        maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
+}
+
+rootProject.name = "masakuy"
+include(":composeApp")
+
+buildCache {
+    local {
+        isEnabled = true
+    }
 }

@@ -76,6 +76,16 @@ Memfilter jurnal berdasarkan kategori emosi tertentu.
 Mendukung tampilan dark mode untuk meningkatkan kenyamanan pengguna.
 
 ---
+#🚀 Setup & Installation
+
+## 1. Clone Repository 
+```` git clone https://github.com/PrimaSembiring/NoteAI-Feelia.gitL ````
+
+## 2. Buka Android Studio
+ Open file di kiri atas, kemudian cari folder yang berhasil diclone
+
+## 3. Run Application
+Klik tombol Run (ikon segitiga hijau).
 
 ## 👨‍🏫 Dosen Pengampu
 ### Muhammad Habib Algifari, S.Kom., M.TI.

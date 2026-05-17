@@ -173,8 +173,8 @@ class HomeViewModelTest {
     @Test
     fun `category filter should filter notes`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
-        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
+        repository.insertNote(createTestNote("Work Note", category = NoteCategory.LUNCH))
+        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.DINNER))
         
         val vm = HomeViewModel(
             getAllNotesUseCase = getAllNotesUseCase,
@@ -189,14 +189,14 @@ class HomeViewModelTest {
             skipItems(1) // Initial success
             
             // Act
-            vm.onCategorySelected(NoteCategory.WORK)
+            vm.onCategorySelected(NoteCategory.LUNCH)
             advanceUntilIdle()
             
             // Assert
             val state = expectMostRecentItem()
             assertTrue(state is HomeUiState.Success)
             assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals(NoteCategory.WORK, state.notes.first().category)
+            assertEquals(NoteCategory.LUNCH, state.notes.first().category)
             
             cancelAndIgnoreRemainingEvents()
         }
@@ -242,7 +242,7 @@ class HomeViewModelTest {
     
     private fun createTestNote(
         title: String,
-        category: NoteCategory = NoteCategory.GENERAL
+        category: NoteCategory = NoteCategory.OTHER
     ): Note {
         return Note(
             id = 0,

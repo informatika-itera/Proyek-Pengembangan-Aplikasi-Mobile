@@ -1,0 +1,44 @@
+-- Music table schema for SQLDelight
+-- File: Music.sq
+
+CREATE TABLE MusicEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    artist TEXT NOT NULL,
+    genre TEXT,
+    mood TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Get all music entries
+getAllMusic:
+SELECT * FROM MusicEntity
+ORDER BY updated_at DESC;
+
+-- Search music by title or artist
+searchMusic:
+SELECT * FROM MusicEntity
+WHERE title LIKE '%' || ? || '%' OR artist LIKE '%' || ? || '%'
+ORDER BY updated_at DESC;
+
+-- Get single music entry by ID
+getMusicById:
+SELECT * FROM MusicEntity
+WHERE id = ?;
+
+-- Insert new music entry
+insertMusic:
+INSERT INTO MusicEntity (title, artist, genre, mood, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Update existing music entry
+updateMusic:
+UPDATE MusicEntity
+SET title = ?, artist = ?, genre = ?, mood = ?, updated_at = ?
+WHERE id = ?;
+
+-- Delete music by ID
+deleteMusicById:
+DELETE FROM MusicEntity
+WHERE id = ?;

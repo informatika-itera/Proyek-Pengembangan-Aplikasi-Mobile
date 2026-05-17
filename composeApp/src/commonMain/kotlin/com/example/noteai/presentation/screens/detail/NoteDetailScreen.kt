@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,11 +57,11 @@ fun NoteDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(noteId) {
         viewModel.loadNote(noteId)
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -69,7 +70,7 @@ fun NoteDetailScreen(
             }
         }
     }
-    
+
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
@@ -79,12 +80,12 @@ fun NoteDetailScreen(
             onDismiss = { showDeleteDialog = false }
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detail Catatan") },
+                title = { Text("Detail Catatan Makanan") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -95,24 +96,34 @@ fun NoteDetailScreen(
                     if (currentState is NoteDetailUiState.Success) {
                         IconButton(onClick = { viewModel.togglePin() }) {
                             Icon(
-                                imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
-                                contentDescription = if (currentState.note.isPinned) "Lepas Pin" else "Pin"
+                                imageVector = if (currentState.note.isPinned) {
+                                    Icons.Filled.PushPin
+                                } else {
+                                    Icons.Outlined.PushPin
+                                },
+                                contentDescription = if (currentState.note.isPinned) {
+                                    "Lepas Pin"
+                                } else {
+                                    "Pin"
+                                }
                             )
                         }
-                        
-                        IconButton(onClick = { 
-                            viewModel.getShareContent()?.let { onShare(it) }
-                        }) {
+
+                        IconButton(
+                            onClick = {
+                                viewModel.getShareContent()?.let { onShare(it) }
+                            }
+                        ) {
                             Icon(Icons.Default.Share, contentDescription = "Bagikan")
                         }
-                        
+
                         IconButton(onClick = { onNavigateToEdit(noteId) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
-                        
+
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
-                                Icons.Default.Delete, 
+                                Icons.Default.Delete,
                                 contentDescription = "Hapus",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -126,8 +137,10 @@ fun NoteDetailScreen(
             is NoteDetailUiState.Loading -> {
                 LoadingIndicator()
             }
-            
+
             is NoteDetailUiState.Success -> {
+                val mealContent = parseMealContent(state.note.content)
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -135,41 +148,76 @@ fun NoteDetailScreen(
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    if (state.note.title.isNotBlank()) {
-                        Text(
-                            text = state.note.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    
+                    Text(
+                        text = state.note.title.ifBlank { "Makanan tanpa nama" },
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CategoryBadge(category = state.note.category.displayName)
-                        
+
                         Text(
                             text = state.note.updatedAt.formatToDisplay(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = state.note.content,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Informasi Makanan",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            if (mealContent.price.isNotBlank()) {
+                                Text(
+                                    text = "Harga: Rp${mealContent.price}",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            } else {
+                                Text(
+                                    text = "Harga: belum diisi",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            if (mealContent.note.isNotBlank()) {
+                                Text(
+                                    text = mealContent.note,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            } else {
+                                Text(
+                                    text = "Tidak ada catatan tambahan.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                 }
             }
-            
+
             is NoteDetailUiState.NotFound -> {
                 EmptyState(
-                    title = "Catatan Tidak Ditemukan",
-                    message = "Catatan mungkin sudah dihapus"
+                    title = "Catatan Makanan Tidak Ditemukan",
+                    message = "Catatan makanan mungkin sudah dihapus"
                 )
             }
         }
@@ -183,8 +231,8 @@ private fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Hapus Catatan") },
-        text = { Text("Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.") },
+        title = { Text("Hapus Catatan Makanan") },
+        text = { Text("Apakah kamu yakin ingin menghapus catatan makanan ini? Tindakan ini tidak dapat dibatalkan.") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("Hapus", color = MaterialTheme.colorScheme.error)
@@ -197,3 +245,26 @@ private fun DeleteConfirmationDialog(
         }
     )
 }
+
+private fun parseMealContent(content: String): MealContent {
+    val lines = content.lines()
+    val firstLine = lines.firstOrNull().orEmpty()
+    val hasPrice = firstLine.startsWith("Harga: Rp")
+
+    return if (hasPrice) {
+        MealContent(
+            price = firstLine.removePrefix("Harga: Rp"),
+            note = lines.drop(1).joinToString("\n").trim()
+        )
+    } else {
+        MealContent(
+            price = "",
+            note = content.trim()
+        )
+    }
+}
+
+private data class MealContent(
+    val price: String,
+    val note: String
+)

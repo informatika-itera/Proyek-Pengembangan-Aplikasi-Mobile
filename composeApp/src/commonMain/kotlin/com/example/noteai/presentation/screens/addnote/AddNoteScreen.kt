@@ -1,60 +1,42 @@
 package com.example.noteai.presentation.screens.addnote
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.presentation.components.ColorPickerRow
-import com.example.noteai.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
-    noteId: Long?,
+    noteId: Long? = null,
     onNavigateBack: () -> Unit,
     onNavigateToAI: (String) -> Unit,
     viewModel: AddNoteViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(noteId) {
-        noteId?.let { viewModel.loadNote(it) }
+        if (noteId != null) {
+            viewModel.loadNote(noteId)
+        }
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -63,126 +45,96 @@ fun AddNoteScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { 
-                    Text(if (uiState.isEditMode) "Edit Catatan" else "Catatan Baru")
-                },
+                title = { Text(if (uiState.isEditMode) "Edit Catatan Makanan" else "Tambah Catatan Makanan") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { onNavigateToAI(uiState.content) },
-                        enabled = uiState.content.isNotBlank()
-                    ) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
-                    }
-                    
-                    IconButton(
-                        onClick = { viewModel.saveNote() },
-                        enabled = uiState.canSave
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = "Simpan")
+                    if (uiState.isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    } else {
+                        IconButton(
+                            onClick = { viewModel.saveNote() },
+                            enabled = uiState.canSave
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = "Simpan")
+                        }
                     }
                 }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { onNavigateToAI(uiState.content) },
+                icon = { Icon(Icons.Default.AutoAwesome, null) },
+                text = { Text("Bantuan AI") }
             )
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
-            LoadingIndicator()
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                CircularProgressIndicator()
+            }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedTextField(
                     value = uiState.title,
-                    onValueChange = viewModel::onTitleChange,
-                    label = { Text("Judul") },
-                    placeholder = { Text("Masukkan judul...") },
-                    singleLine = true,
+                    onValueChange = { viewModel.onTitleChange(it) },
+                    label = { Text("Nama Makanan/Judul") },
+                    modifier = Modifier.fillMaxWidth(),
                     isError = uiState.titleError != null,
                     supportingText = uiState.titleError?.let { { Text(it) } },
-                    modifier = Modifier.fillMaxWidth()
+                    singleLine = true
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
+
+                OutlinedTextField(
+                    value = uiState.price,
+                    onValueChange = { viewModel.onPriceChange(it) },
+                    label = { Text("Harga (Opsional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    prefix = { Text("Rp ") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+
+                Text("Kategori", style = MaterialTheme.typography.titleSmall)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    NoteCategory.entries.forEach { category ->
+                        FilterChip(
+                            selected = uiState.category == category,
+                            onClick = { viewModel.onCategoryChange(category) },
+                            label = { Text(category.name) }
+                        )
+                    }
+                }
+
                 OutlinedTextField(
                     value = uiState.content,
-                    onValueChange = viewModel::onContentChange,
-                    label = { Text("Konten") },
-                    placeholder = { Text("Tulis catatan di sini...") },
-                    minLines = 8,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                CategoryDropdown(
-                    selectedCategory = uiState.category,
-                    onCategorySelected = viewModel::onCategoryChange
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(
-                    text = "Warna",
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ColorPickerRow(
-                    selectedColor = uiState.color,
-                    onColorSelected = viewModel::onColorChange
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CategoryDropdown(
-    selectedCategory: NoteCategory,
-    onCategorySelected: (NoteCategory) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it }
-    ) {
-        OutlinedTextField(
-            value = selectedCategory.displayName,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Kategori") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-        )
-        
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            NoteCategory.entries.forEach { category ->
-                DropdownMenuItem(
-                    text = { Text(category.displayName) },
-                    onClick = {
-                        onCategorySelected(category)
-                        expanded = false
-                    }
+                    onValueChange = { viewModel.onContentChange(it) },
+                    label = { Text("Catatan Tambahan") },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 150.dp),
+                    placeholder = { Text("Contoh: Tanpa nasi, tambah sambal...") }
                 )
             }
         }

@@ -1,7 +1,6 @@
 # Gradle
 .gradle/
 build/
-!gradle-wrapper.jar
 
 # IntelliJ IDEA / Android Studio
 .idea/
@@ -39,11 +38,13 @@ DerivedData/
 # Misc
 *.class
 *.jar
+# Keep gradle wrapper files (required for CI/CD)
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 .tmp/
 caches/
 daemon/
 kotlin-profile/
 native/
-wrapper/
+# Note: do NOT ignore gradle/wrapper/ — those files are needed for CI

@@ -1,4 +1,4 @@
-package com.example.noteai.domain.model
+﻿package com.example.noteai.domain.model
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -9,6 +9,7 @@ data class Note(
     val content: String,
     val category: NoteCategory = NoteCategory.GENERAL,
     val color: NoteColor = NoteColor.DEFAULT,
+    val severity: VulnSeverity = VulnSeverity.NONE,
     val isPinned: Boolean = false,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
@@ -31,6 +32,21 @@ enum class NoteCategory(val displayName: String) {
     companion object {
         fun fromString(value: String): NoteCategory {
             return entries.find { it.name == value } ?: GENERAL
+        }
+    }
+}
+
+// Severity level untuk vulnerability tracking
+enum class VulnSeverity(val displayName: String, val colorHex: Long) {
+    NONE("None", 0xFF8B949E),
+    LOW("Low", 0xFF58A6FF),
+    MEDIUM("Medium", 0xFFFFD700),
+    HIGH("High", 0xFFFF8C00),
+    CRITICAL("Critical", 0xFFFF4444);
+
+    companion object {
+        fun fromString(value: String): VulnSeverity {
+            return entries.find { it.name == value } ?: NONE
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.noteai.data.repository
+﻿package com.example.noteai.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
@@ -62,6 +62,7 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             content = values.content,
             category = values.category,
             color = values.color,
+            severity = values.severity,
             is_pinned = values.isPinned,
             created_at = values.createdAt,
             updated_at = values.updatedAt
@@ -77,6 +78,7 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             content = values.content,
             category = values.category,
             color = values.color,
+            severity = values.severity,
             is_pinned = values.isPinned,
             updated_at = Clock.System.now().toEpochMilliseconds()
         )

@@ -18,4 +18,4 @@
 # Google Gemini API Key
 # Dapatkan API key gratis di: https://aistudio.google.com/
 # Tanpa key ini, fitur AI tidak akan berjalan (app tetap bisa dibuka).
-GEMINI_API_KEY=your_api_key_here
+GEMINI_API_KEY=AIzaSyCHxSXh_m3dEvEAsGlWBxvs8ZjXdVq42i0

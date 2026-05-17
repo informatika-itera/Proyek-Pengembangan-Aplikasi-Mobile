@@ -1,4 +1,4 @@
-rootProject.name = "NoteAI"
+rootProject.name = "RailLogNusantara"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

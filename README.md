@@ -1,4 +1,4 @@
-# 🚂 RailLog Nusantara
+# 🚂 RailLog Nusantara - Manajemen Logistik Kereta Api
 
 > **Aplikasi Logistik Manufaktur Kereta Api Berbasis Adaptive UI dengan Dukungan Kecerdasan Buatan untuk Efisiensi Rantai Pasok dan Verifikasi Dokumen Teknis**
 

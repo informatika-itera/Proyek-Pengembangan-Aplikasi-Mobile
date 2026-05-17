@@ -1,5 +1,6 @@
 package com.example.Roomie.presentation.facility
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,14 +8,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.HistoryEdu
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,19 +25,18 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingScreen(
-    roomId: String,
+    roomIds: List<String>, // Changed to support Multiple Rooms
     onBack: () -> Unit,
     viewModel: BookingViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     
-    // UI states for pickers
     var showDatePicker by remember { mutableStateOf(false) }
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
 
-    LaunchedEffect(roomId) {
-        viewModel.loadRoomDetail(roomId)
+    LaunchedEffect(roomIds) {
+        viewModel.loadRooms(roomIds)
     }
 
     Scaffold(
@@ -63,27 +61,38 @@ fun BookingScreen(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Room Info Brief
-            state.room?.let { r ->
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            // Selected Rooms Summary
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Ruangan Terpilih (${state.rooms.size})", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                state.rooms.forEach { room ->
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
+                    ) {
+                        Row(Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.MeetingRoom, null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(12.dp))
+                            Text("Ruang ${room.name} - Lt ${room.floor}", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            // Harmony-style Limit Banner
+            if (state.hasPendingBooking) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            modifier = Modifier.size(48.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(r.name, color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                        Spacer(Modifier.width(16.dp))
-                        Column {
-                            Text("Target Ruangan", style = MaterialTheme.typography.labelSmall)
-                            Text("Lantai ${r.floor} - GKU 2", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        }
+                        Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            "Anda masih memiliki pengajuan yang sedang diproses. Mohon tunggu sebelum mengajukan peminjaman baru.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
                     }
                 }
             }

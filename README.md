@@ -90,7 +90,7 @@ Kami menggunakan standar pesan commit:
 ## 👥 Pengembang
 
 Aplikasi ini dikembangkan oleh:
-1. **Mulya Delani** - 123140049
+1. **Mulya Delani** - 123140019
 2. **Nahli Saud Ramdani** - 123140049
 
 ---

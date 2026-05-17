@@ -37,6 +37,7 @@ fun HomeScreen(
     onNavigateToReport: () -> Unit,
     onNavigateToAllReports: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToGlobalCalendar: () -> Unit, // New
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -77,7 +78,8 @@ fun HomeScreen(
                         onNavigateToSchedule = onNavigateToSchedule,
                         onNavigateToHelp = onNavigateToHelp,
                         onNavigateToReport = onNavigateToReport,
-                        onNavigateToAllReports = onNavigateToAllReports
+                        onNavigateToAllReports = onNavigateToAllReports,
+                        onNavigateToGlobalCalendar = onNavigateToGlobalCalendar
                     )
                 }
                 is HomeUiState.Error -> {
@@ -99,7 +101,8 @@ fun HomeContent(
     onNavigateToSchedule: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToReport: () -> Unit,
-    onNavigateToAllReports: () -> Unit
+    onNavigateToAllReports: () -> Unit,
+    onNavigateToGlobalCalendar: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -226,9 +229,16 @@ fun HomeContent(
                         onClick = onNavigateToSchedule
                     )
                     QuickActionItem(
+                        icon = Icons.Default.CalendarMonth,
+                        label = "Kalender",
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToGlobalCalendar
+                    )
+                    QuickActionItem(
                         icon = Icons.AutoMirrored.Filled.HelpOutline,
                         label = AppStrings.HOME_HELP,
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateToHelp
                     )

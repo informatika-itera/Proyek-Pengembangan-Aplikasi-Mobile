@@ -1,113 +1,147 @@
 package com.example.Roomie.presentation.facility
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.model.RoomStatus
-import com.example.Roomie.domain.model.RoomType
+import com.example.Roomie.domain.model.UserRole
+import com.example.Roomie.presentation.AppViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FacilityGridScreen(
     onNavigateToDetail: (String) -> Unit,
-    viewModel: FacilityViewModel = koinViewModel()
+    onNavigateToMultiBooking: (List<String>) -> Unit,
+    onBack: () -> Unit,
+    viewModel: FacilityViewModel = koinViewModel(),
+    appViewModel: AppViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val currentUser by appViewModel.currentUser.collectAsState()
+    val isAdmin = currentUser?.role == UserRole.ADMIN
+
+    var selectedRooms by remember { mutableStateOf(setOf<String>()) }
+    var isSelectionMode by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("GKU 2 - Ruangan", fontWeight = FontWeight.ExtraBold) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("GKU 2", fontWeight = FontWeight.ExtraBold)
+                        if (isSelectionMode) {
+                            Text("${selectedRooms.size} Terpilih", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { 
+                        if (isSelectionMode) { 
+                            isSelectionMode = false
+                            selectedRooms = emptySet() 
+                        } else { 
+                            onBack() 
+                        } 
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                actions = {
+                    if (!isAdmin) {
+                        IconButton(onClick = { isSelectionMode = !isSelectionMode }) {
+                            Icon(
+                                imageVector = if (isSelectionMode) Icons.Default.CheckCircle else Icons.Default.GridView,
+                                contentDescription = null,
+                                tint = if (isSelectionMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
+        },
+        bottomBar = {
+            if (isSelectionMode && selectedRooms.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 8.dp
+                ) {
+                    Button(
+                        onClick = { onNavigateToMultiBooking(selectedRooms.toList()) },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp).height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("PINJAM ${selectedRooms.size} RUANGAN", fontWeight = FontWeight.ExtraBold)
+                    }
+                }
+            }
         }
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (val state = uiState) {
-                is FacilityUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
-                }
+                is FacilityUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is FacilityUiState.Success -> {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        // Custom Tab Row
-                        ScrollableTabRow(
-                            selectedTabIndex = state.selectedFloor - 1,
-                            edgePadding = 20.dp,
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                            divider = {},
-                            indicator = { tabPositions ->
-                                TabRowDefaults.SecondaryIndicator(
-                                    modifier = Modifier.tabIndicatorOffset(tabPositions[state.selectedFloor - 1]),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        ) {
-                            (1..4).forEach { floor ->
-                                Tab(
-                                    selected = state.selectedFloor == floor,
-                                    onClick = { viewModel.selectFloor(floor) },
-                                    text = { 
-                                        Text(
-                                            "Lantai $floor", 
-                                            fontWeight = if (state.selectedFloor == floor) FontWeight.Bold else FontWeight.Normal
-                                        ) 
-                                    },
-                                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                            }
+                    ScrollableTabRow(
+                        selectedTabIndex = state.selectedFloor - 1,
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        divider = {}
+                    ) {
+                        (1..3).forEach { floor ->
+                            Tab(
+                                selected = state.selectedFloor == floor,
+                                onClick = { viewModel.selectFloor(floor) },
+                                text = { Text("Lantai $floor", fontWeight = FontWeight.Bold) }
+                            )
                         }
+                    }
 
-                        Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-                            RoomLegend()
-                            Spacer(modifier = Modifier.height(24.dp))
-                            
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(5),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                items(
-                                    items = state.filteredRooms,
-                                    key = { it.id },
-                                    span = { room ->
-                                        if (room.type == RoomType.AULA) GridItemSpan(5) 
-                                        else GridItemSpan(1)
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.filteredRooms) { room ->
+                            val isSelected = selectedRooms.contains(room.id)
+                            RoomGridItem(
+                                room = room,
+                                isSelected = isSelected,
+                                isSelectionMode = isSelectionMode,
+                                onClick = {
+                                    if (isSelectionMode) {
+                                        if (room.status == RoomStatus.AVAILABLE) {
+                                            selectedRooms = if (isSelected) selectedRooms - room.id else selectedRooms + room.id
+                                        }
+                                    } else {
+                                        onNavigateToDetail(room.id)
                                     }
-                                ) { room ->
-                                    RoomGridItem(
-                                        room = room,
-                                        onClick = { onNavigateToDetail(room.id) }
-                                    )
                                 }
-                            }
+                            )
                         }
                     }
                 }
-                is FacilityUiState.Error -> {
-                    Text(text = state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
-                }
+                is FacilityUiState.Error -> Text(state.message)
             }
         }
     }
@@ -116,6 +150,8 @@ fun FacilityGridScreen(
 @Composable
 fun RoomGridItem(
     room: Room,
+    isSelected: Boolean,
+    isSelectionMode: Boolean,
     onClick: () -> Unit
 ) {
     val statusColor = when (room.status) {
@@ -124,52 +160,45 @@ fun RoomGridItem(
         RoomStatus.MAINTENANCE -> MaterialTheme.colorScheme.primary
     }
 
-    Surface(
+    Card(
         modifier = Modifier
-            .then(
-                if (room.type == RoomType.AULA) Modifier.fillMaxWidth().height(90.dp)
-                else Modifier.aspectRatio(1f)
-            )
-            .clip(RoundedCornerShape(16.dp))
+            .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = statusColor.copy(alpha = 0.15f),
-        border = androidx.compose.foundation.BorderStroke(2.dp, statusColor.copy(alpha = 0.5f))
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) statusColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isSelected) 3.dp else 1.dp,
+            color = if (isSelected) statusColor else statusColor.copy(alpha = 0.3f)
+        )
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = room.name,
-                    color = statusColor,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    style = if (room.type == RoomType.AULA) MaterialTheme.typography.headlineSmall 
-                            else MaterialTheme.typography.titleMedium
+                    color = if (isSelected) statusColor else MaterialTheme.colorScheme.onSurface
                 )
-                if (room.type == RoomType.AULA) {
-                    Text("Kapasitas Besar", style = MaterialTheme.typography.labelSmall, color = statusColor.copy(alpha = 0.7f))
+                if (!isSelectionMode) {
+                    Text(
+                        text = room.status.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = statusColor.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
+            
+            if (isSelected) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).size(20.dp)
+                )
+            }
         }
-    }
-}
-
-@Composable
-fun RoomLegend() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        LegendItem("Tersedia", Color(0xFF4CAF50))
-        LegendItem("Penuh", MaterialTheme.colorScheme.error)
-        LegendItem("Perbaikan", MaterialTheme.colorScheme.primary)
-    }
-}
-
-@Composable
-fun LegendItem(label: String, color: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(10.dp).background(color, RoundedCornerShape(2.dp)))
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(text = label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
     }
 }

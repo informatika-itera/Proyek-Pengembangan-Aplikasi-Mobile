@@ -36,6 +36,7 @@ import com.example.Roomie.presentation.facility.RoomDetailScreen
 import com.example.Roomie.presentation.facility.BookingScreen
 import com.example.Roomie.presentation.facility.SearchRoomScreen
 import com.example.Roomie.presentation.facility.ScheduleScreen
+import com.example.Roomie.presentation.facility.GlobalCalendarScreen
 import com.example.Roomie.presentation.help.HelpScreen
 import com.example.Roomie.presentation.report.ReportScreen
 import com.example.Roomie.presentation.report.AllReportsScreen
@@ -56,9 +57,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object Facility : Screen("facility", AppStrings.NAV_FACILITY, Icons.Outlined.Business)
     data object RoomSelection : Screen("room_selection", "Pilih Ruangan")
     data object SearchRoom : Screen("search_room", "Cari Ruangan")
+    data object GlobalCalendar : Screen("global_calendar", "Jadwal Keseluruhan")
     data object AllReports : Screen("all_reports", "Semua Laporan")
-    data object Booking : Screen("booking/{roomId}", "Pinjam Ruangan") {
-        fun createRoute(roomId: String) = "booking/$roomId"
+    data object Booking : Screen("booking/{roomIds}", "Pinjam Ruangan") {
+        fun createRoute(roomIds: String) = "booking/$roomIds"
     }
     data object Schedule : Screen("schedule", AppStrings.HOME_SCHEDULE)
     data object Help : Screen("help", AppStrings.HOME_HELP)
@@ -198,7 +200,8 @@ fun App(
                         onNavigateToHelp = { navController.navigate(Screen.Help.route) },
                         onNavigateToReport = { navController.navigate(Screen.Report.route) },
                         onNavigateToAllReports = { navController.navigate(Screen.AllReports.route) },
-                        onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                        onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                        onNavigateToGlobalCalendar = { navController.navigate(Screen.GlobalCalendar.route) }
                     )
                 }
 
@@ -219,15 +222,8 @@ fun App(
                     )
                 }
 
-                composable(
-                    route = Screen.Booking.route,
-                    arguments = listOf(navArgument("roomId") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
-                    BookingScreen(
-                        roomId = roomId,
-                        onBack = { navController.popBackStack() }
-                    )
+                composable(Screen.GlobalCalendar.route) {
+                    GlobalCalendarScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Screen.Schedule.route) {
@@ -252,7 +248,12 @@ fun App(
                     FacilityGridScreen(
                         onNavigateToDetail = { roomId ->
                             navController.navigate(Screen.RoomDetail.createRoute(roomId))
-                        }
+                        },
+                        onNavigateToMultiBooking = { ids ->
+                            val idsParam = ids.joinToString(",")
+                            navController.navigate(Screen.Booking.createRoute(idsParam))
+                        },
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 
@@ -269,7 +270,19 @@ fun App(
                         }
                     )
                 }
-                
+
+                composable(
+                    route = Screen.Booking.route,
+                    arguments = listOf(navArgument("roomIds") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val idsParam = backStackEntry.arguments?.getString("roomIds") ?: ""
+                    val roomIds = idsParam.split(",")
+                    BookingScreen(
+                        roomIds = roomIds,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
                 composable(Screen.Report.route) {
                     ReportScreen()
                 }

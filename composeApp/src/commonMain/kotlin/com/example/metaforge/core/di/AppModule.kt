@@ -4,12 +4,15 @@ import com.example.metaforge.core.network.HttpClientFactory
 import com.example.metaforge.core.util.DatabaseDriverFactory
 import com.example.metaforge.data.local.MetaForgeDatabase
 import com.example.metaforge.data.local.datastore.DataStoreFactory
+import com.example.metaforge.data.local.datastore.DraftPreferences
 import com.example.metaforge.data.local.datastore.UserPreferences
 import com.example.metaforge.data.local.datastore.create
 import com.example.metaforge.data.remote.api.GeminiService
 import com.example.metaforge.data.repository.AIRepositoryImpl
+import com.example.metaforge.data.repository.DraftRepositoryImpl
 import com.example.metaforge.data.repository.NoteRepositoryImpl
 import com.example.metaforge.domain.repository.AIRepository
+import com.example.metaforge.domain.repository.DraftRepository
 import com.example.metaforge.domain.repository.NoteRepository
 import com.example.metaforge.domain.usecase.DeleteNoteUseCase
 import com.example.metaforge.domain.usecase.GenerateIdeasUseCase
@@ -20,8 +23,12 @@ import com.example.metaforge.domain.usecase.SearchNotesUseCase
 import com.example.metaforge.domain.usecase.SummarizeNoteUseCase
 import com.example.metaforge.presentation.screens.addnote.AddNoteViewModel
 import com.example.metaforge.presentation.screens.ai.AIAssistantViewModel
+import com.example.metaforge.presentation.screens.counterpick.CounterPickViewModel
 import com.example.metaforge.presentation.screens.detail.NoteDetailViewModel
+import com.example.metaforge.presentation.screens.draft.DraftViewModel
+import com.example.metaforge.presentation.screens.heroselect.HeroSelectViewModel
 import com.example.metaforge.presentation.screens.home.HomeViewModel
+import com.example.metaforge.presentation.screens.synergy.SynergyViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -51,6 +58,7 @@ val databaseModule = module {
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
+    single { DraftPreferences(get()) }
 }
 
 // ==================== REPOSITORY MODULE ====================
@@ -58,6 +66,7 @@ val preferencesModule = module {
 val repositoryModule = module {
     singleOf(::NoteRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    singleOf(::DraftRepositoryImpl) bind DraftRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -79,6 +88,10 @@ val viewModelModule = module {
     viewModelOf(::AddNoteViewModel)
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::DraftViewModel)
+    viewModelOf(::HeroSelectViewModel)
+    viewModelOf(::SynergyViewModel)
+    viewModelOf(::CounterPickViewModel)
 }
 
 // ==================== SHARED MODULES ====================

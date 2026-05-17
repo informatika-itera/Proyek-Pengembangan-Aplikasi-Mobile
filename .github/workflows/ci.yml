@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, development,project/123140043-119140157-StudyMate ]
   pull_request:
-    branches: [main, develop]
+    branches: [ main, development,project/123140043-119140157-StudyMate ]
 
 jobs:
   build-and-test:
@@ -20,8 +20,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
-          distribution: "temurin"
+          java-version: '17'
+          distribution: 'temurin'
           cache: gradle
 
       # 3. Beri permission ke gradlew
@@ -38,10 +38,11 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew :composeApp:assembleDebug -x test --stacktrace
 
+      # 6. Upload APK sebagai artifact
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: cakapAi-debug-apk
+          name: StudyMate-debug-apk
           path: composeApp/build/outputs/apk/debug/*.apk
           retention-days: 7

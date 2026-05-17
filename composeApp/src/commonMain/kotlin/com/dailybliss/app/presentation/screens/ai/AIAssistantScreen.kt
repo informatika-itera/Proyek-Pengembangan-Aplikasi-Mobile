@@ -102,12 +102,6 @@ fun AIAssistantScreen(
                     ChatBubble(message)
                 }
             }
-            
-            uiState.error?.let {
-                item {
-                    Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.bodySmall)
-                }
-            }
         }
         
         // Chat Input
@@ -145,10 +139,11 @@ fun ChatBubble(message: ChatMessage) {
         contentAlignment = if (isUser) Alignment.CenterEnd else Alignment.CenterStart
     ) {
         Surface(
-            color = if (isUser) 
-                MaterialTheme.colorScheme.primary
-            else 
-                MaterialTheme.colorScheme.surfaceVariant,
+            color = when {
+                isUser -> MaterialTheme.colorScheme.primary
+                message.isError -> MaterialTheme.colorScheme.errorContainer
+                else -> MaterialTheme.colorScheme.surfaceVariant
+            },
             shape = RoundedCornerShape(
                 topStart = 20.dp,
                 topEnd = 20.dp,
@@ -178,10 +173,21 @@ fun ChatBubble(message: ChatMessage) {
                         style = MaterialTheme.typography.bodyLarge.copy(
                             lineHeight = 24.sp
                         ),
-                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = when {
+                            isUser -> MaterialTheme.colorScheme.onPrimary
+                            message.isError -> MaterialTheme.colorScheme.onErrorContainer
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
                     )
-                } else if (message.role == "model") {
-                    TypingIndicator(modifier = Modifier.padding(vertical = 4.dp))
+                }
+                
+                if (message.role == "model" && (message.text.isBlank() || message.isError)) {
+                    TypingIndicator(
+                        modifier = Modifier.padding(
+                            top = if (message.text.isNotBlank()) 8.dp else 4.dp, 
+                            bottom = 4.dp
+                        )
+                    )
                 }
             }
         }

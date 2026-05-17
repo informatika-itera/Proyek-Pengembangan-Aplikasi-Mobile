@@ -41,29 +41,47 @@ class AIAssistantViewModel(
                 messages = state.messages + userMessage + placeholderModelMessage,
                 input = "",
                 selectedImageBytes = null,
-                isLoading = true,
-                error = null
+                isLoading = true
             )
         }
 
         viewModelScope.launch {
-            try {
-                // Send history excluding the placeholder
-                val history = _uiState.value.messages.dropLast(1)
-                
-                // Using non-streaming chat for better coherence as requested
-                val fullResponse = aiRepository.chat(history)
-                
-                _uiState.update { state ->
-                    val updatedMessages = state.messages.toMutableList()
-                    val lastIndex = updatedMessages.lastIndex
-                    if (lastIndex >= 0) {
-                        updatedMessages[lastIndex] = updatedMessages[lastIndex].copy(text = fullResponse)
+            var attempt = 1
+            while (true) {
+                try {
+                    // Send history excluding the placeholder
+                    val history = _uiState.value.messages.dropLast(1)
+                    
+                    // Using non-streaming chat for better coherence as requested
+                    val fullResponse = aiRepository.chat(history)
+                    
+                    _uiState.update { state ->
+                        val updatedMessages = state.messages.toMutableList()
+                        val lastIndex = updatedMessages.lastIndex
+                        if (lastIndex >= 0) {
+                            updatedMessages[lastIndex] = updatedMessages[lastIndex].copy(
+                                text = fullResponse,
+                                isError = false
+                            )
+                        }
+                        state.copy(messages = updatedMessages, isLoading = false)
                     }
-                    state.copy(messages = updatedMessages, isLoading = false)
+                    break // Exit loop on success
+                } catch (e: Exception) {
+                    _uiState.update { state ->
+                        val updatedMessages = state.messages.toMutableList()
+                        val lastIndex = updatedMessages.lastIndex
+                        if (lastIndex >= 0) {
+                            updatedMessages[lastIndex] = updatedMessages[lastIndex].copy(
+                                text = "Koneksi terputus (Percobaan $attempt): ${e.message}. Mencoba menghubungkan kembali...",
+                                isError = true
+                            )
+                        }
+                        state.copy(messages = updatedMessages, isLoading = true)
+                    }
+                    attempt++
+                    kotlinx.coroutines.delay(3000) // Wait 3 seconds before retry
                 }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = "Gagal terhubung ke AI: ${e.message}") }
             }
         }
     }
@@ -72,13 +90,13 @@ class AIAssistantViewModel(
 data class ChatMessage(
     val role: String,
     val text: String,
-    val imageBytes: ByteArray? = null
+    val imageBytes: ByteArray? = null,
+    val isError: Boolean = false
 )
 
 data class AIAssistantUiState(
     val messages: List<ChatMessage> = emptyList(),
     val input: String = "",
     val selectedImageBytes: ByteArray? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val isLoading: Boolean = false
 )

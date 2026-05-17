@@ -1,4 +1,4 @@
--- Note table schema for SQLDelight
+﻿-- Note table schema for SQLDelight
 -- File: Note.sq
 
 CREATE TABLE NoteEntity (
@@ -7,6 +7,7 @@ CREATE TABLE NoteEntity (
     content TEXT NOT NULL,
     category TEXT NOT NULL DEFAULT 'GENERAL',
     color TEXT NOT NULL DEFAULT 'DEFAULT',
+    severity TEXT NOT NULL DEFAULT 'NONE',
     is_pinned INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -29,6 +30,12 @@ SELECT * FROM NoteEntity
 WHERE category = ?
 ORDER BY is_pinned DESC, updated_at DESC;
 
+-- Get notes by severity
+getNotesBySeverity:
+SELECT * FROM NoteEntity
+WHERE severity = ?
+ORDER BY is_pinned DESC, updated_at DESC;
+
 -- Search notes by title or content
 searchNotes:
 SELECT * FROM NoteEntity
@@ -42,8 +49,8 @@ WHERE id = ?;
 
 -- Insert new note
 insertNote:
-INSERT INTO NoteEntity (title, content, category, color, is_pinned, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO NoteEntity (title, content, category, color, severity, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Get last inserted ID
 lastInsertId:
@@ -52,7 +59,7 @@ SELECT last_insert_rowid();
 -- Update existing note
 updateNote:
 UPDATE NoteEntity
-SET title = ?, content = ?, category = ?, color = ?, is_pinned = ?, updated_at = ?
+SET title = ?, content = ?, category = ?, color = ?, severity = ?, is_pinned = ?, updated_at = ?
 WHERE id = ?;
 
 -- Delete note by ID
@@ -80,3 +87,9 @@ countNotesByCategory:
 SELECT category, COUNT(*) AS total
 FROM NoteEntity
 GROUP BY category;
+
+-- Count notes by severity
+countNotesBySeverity:
+SELECT severity, COUNT(*) AS total
+FROM NoteEntity
+GROUP BY severity;

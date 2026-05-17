@@ -1,9 +1,10 @@
-package com.example.noteai.data.local.entity
+﻿package com.example.noteai.data.local.entity
 
 import com.example.noteai.data.local.NoteEntity
 import com.example.noteai.domain.model.Note
 import com.example.noteai.domain.model.NoteCategory
 import com.example.noteai.domain.model.NoteColor
+import com.example.noteai.domain.model.VulnSeverity
 import kotlinx.datetime.Instant
 
 fun NoteEntity.toDomain(): Note {
@@ -13,6 +14,7 @@ fun NoteEntity.toDomain(): Note {
         content = content,
         category = NoteCategory.fromString(category),
         color = NoteColor.fromString(color),
+        severity = VulnSeverity.fromString(severity),
         isPinned = is_pinned == 1L,
         createdAt = Instant.fromEpochMilliseconds(created_at),
         updatedAt = Instant.fromEpochMilliseconds(updated_at)
@@ -24,6 +26,7 @@ data class NoteEntityValues(
     val content: String,
     val category: String,
     val color: String,
+    val severity: String,
     val isPinned: Long,
     val createdAt: Long,
     val updatedAt: Long
@@ -35,6 +38,7 @@ fun Note.toEntityValues(): NoteEntityValues {
         content = content,
         category = category.name,
         color = color.name,
+        severity = severity.name,
         isPinned = if (isPinned) 1L else 0L,
         createdAt = createdAt.toEpochMilliseconds(),
         updatedAt = updatedAt.toEpochMilliseconds()

@@ -1,4 +1,4 @@
-# 📱 News MBG - Premium Android News App with Gemini AI
+# News MBG - Premium Android News App with Gemini AI
 
 [![Android CI](https://github.com/Febvn/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/android.yml/badge.svg)](https://github.com/Febvn/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/android.yml)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.20-blue.svg?logo=kotlin)](https://kotlinlang.org/)
@@ -13,19 +13,19 @@ Proyek ini dibuat untuk memenuhi tugas mata kuliah **Pengembangan Aplikasi Mobil
 
 ---
 
-## 🚀 Fitur Utama
+## Fitur Utama
 
-1.  **✨ Premium Neumorphic UI**: Desain antarmuka visual timbul-tenggelam yang memukau (Neumorphism) menggunakan Custom Compose Modifier. Dilengkapi dengan transisi Splash Screen yang halus, Search Bar neumorphic, Bottom Navigation bar melayang, serta efek Shimmer Loading yang presisi.
-2.  **🤖 Smart Gemini AI Integration**:
+1.  **Premium Neumorphic UI**: Desain antarmuka visual timbul-tenggelam yang memukau (Neumorphism) menggunakan Custom Compose Modifier. Dilengkapi dengan transisi Splash Screen yang halus, Search Bar neumorphic, Bottom Navigation bar melayang, serta efek Shimmer Loading yang presisi.
+2.  **Smart Gemini AI Integration**:
     *   **Glowing Sentiment Indicators**: Analisis sentimen berita secara otomatis oleh AI (Positif = Hijau, Negatif = Merah, Netral = Abu-abu) dengan efek pendaran cahaya (glowing shadow) yang dinamis di halaman Detail.
     *   **Pembaruan Kategori Cerdas**: Klasifikasi artikel berita ke dalam kategori yang sesuai berdasarkan analisis kontekstual teks.
-3.  **🔍 Pencarian & Filter Kategori**: Telusuri berita favorit Anda secara instan menggunakan kata kunci dan filter kategori horizontal (All, Business, Technology, Science, Health).
-4.  **💾 Caching Offline (Room Database)**: Menyimpan berita secara lokal sehingga Anda tetap dapat membaca berita yang telah dimuat sebelumnya tanpa koneksi internet.
-5.  **🏗️ Clean Architecture & MVVM**: Pemisahan layer kode yang tegas (`data`, `domain`, `presentation`) untuk kemudahan pemeliharaan dan pengujian unit.
+3.  **Pencarian & Filter Kategori**: Telusuri berita favorit Anda secara instan menggunakan kata kunci dan filter kategori horizontal (All, Business, Technology, Science, Health).
+4.  **Caching Offline (Room Database)**: Menyimpan berita secara lokal sehingga Anda tetap dapat membaca berita yang telah dimuat sebelumnya tanpa koneksi internet.
+5.  **Clean Architecture & MVVM**: Pemisahan layer kode yang tegas (`data`, `domain`, `presentation`) untuk kemudahan pemeliharaan dan pengujian unit.
 
 ---
 
-## 📋 Evaluasi Rubrik Penilaian - Sprint 1
+## Evaluasi Rubrik Penilaian - Sprint 1
 
 Berikut adalah tabel pemenuhan kriteria penilaian berdasarkan **Rubrik Penilaian Sprint 1**:
 
@@ -40,16 +40,16 @@ Berikut adalah tabel pemenuhan kriteria penilaian berdasarkan **Rubrik Penilaian
 
 ---
 
-## 👥 Tim Pengembang (Kelompok)
+## Tim Pengembang (Kelompok)
 
 | Foto Profil | Nama Lengkap | NIM | Peran Utama |
 | :---: | :--- | :---: | :--- |
 | <img src="https://github.com/Febvn.png" width="80" style="border-radius:50%"/> | **Febrian Valentino Nugroho** | `123140034` | Lead Developer, UI/UX Designer, Integrasi Gemini AI & Koin DI |
-| <img src="https://github.com/SinagaPande.png" width="80" style="border-radius:50%"/> | **SinagaPande** | `123140153` | Database Engineer, Caching Lokal Room & Implementasi Repository |
+| <img src="https://github.com/SinagaPande.png" width="80" style="border-radius:50%"/> | **Jonathan Pande Sinaga** | `123140153` | Database Engineer, Caching Lokal Room & Implementasi Repository |
 
 ---
 
-## 🏗️ Struktur Folder Proyek (`app/`)
+## Struktur Folder Proyek (`app/`)
 
 Aplikasi dikelompokkan secara logis sesuai arsitektur Clean Architecture:
 
@@ -99,45 +99,45 @@ app/src/main/java/com/itera/news/
 
 ---
 
-## 🛠️ Cara Menjalankan Aplikasi
+## Cara Menjalankan Aplikasi
 
 1.  **Kloning Repositori**:
     ```bash
     git clone https://github.com/Febvn/Proyek-Pengembangan-Aplikasi-Mobile.git
     cd Proyek-Pengembangan-Aplikasi-Mobile
     ```
-2.  **Buat Berkas `local.properties`**:
-    Salin template `local.properties.example` menjadi `local.properties` di folder root project:
+2.  **Buat Berkas local.properties**:
+    Salin template local.properties.example menjadi local.properties di folder root project:
     ```bash
     cp local.properties.example local.properties
     ```
 3.  **Isi API Key Gemini**:
-    Buka `local.properties` dan isi API Key Gemini Anda:
+    Buka local.properties dan isi API Key Gemini Anda:
     ```properties
     GEMINI_API_KEY=AIzaSy... (API Key Anda)
     ```
-    *Catatan: Anda dapat memperoleh API Key gratis di [Google AI Studio](https://aistudio.google.com/).*
+    *Catatan: Anda dapat memperoleh API Key gratis di Google AI Studio.*
 4.  **Buka di Android Studio**:
-    *   Gunakan versi **Android Studio Ladybug (2024.2.1)** atau lebih baru.
-    *   Lakukan **Sync Project with Gradle Files** dan biarkan dependencies terunduh otomatis.
+    *   Gunakan versi Android Studio Ladybug (2024.2.1) atau lebih baru.
+    *   Lakukan Sync Project with Gradle Files dan biarkan dependencies terunduh otomatis.
 5.  **Jalankan di Device/Emulator**:
-    *   Pilih run configuration `app`.
-    *   Klik tombol **Run** (ikon putar hijau) untuk mengompilasi dan memasang aplikasi ke emulator/device aktif Anda.
+    *   Pilih run configuration app.
+    *   Klik tombol Run (ikon putar hijau) untuk mengompilasi dan memasang aplikasi ke emulator/device aktif Anda.
 
 ---
 
-## 📚 Dokumen Terkait
+## Dokumen Terkait
 
-*   [🚀 Panduan Lengkap Cara Menjalankan](./docs/CARA_MENJALANKAN.md)
-*   [📋 Rencana Project & Sprints](./docs/PROJECT_PLAN.md)
-*   [🏗️ Penjelasan Arsitektur & Kode](./docs/STRUKTUR_KODE.md)
-*   [🌿 Git Branching & Workflows](./docs/GIT_WORKFLOW.md)
-*   [🔧 Pemecahan Masalah (Troubleshooting)](./docs/TROUBLESHOOTING.md)
+*   [Panduan Lengkap Cara Menjalankan](./docs/CARA_MENJALANKAN.md)
+*   [Rencana Project & Sprints](./docs/PROJECT_PLAN.md)
+*   [Penjelasan Arsitektur & Kode](./docs/STRUKTUR_KODE.md)
+*   [Git Branching & Workflows](./docs/GIT_WORKFLOW.md)
+*   [Pemecahan Masalah (Troubleshooting)](./docs/TROUBLESHOOTING.md)
 
 ---
 
-## 👨‍🏫 Dosen Pengampu
-*   **Pak Habib** ([GitHub: mh4Scripts](https://github.com/mh4Scripts))
+## Dosen Pengampu
+*   Pak Habib (GitHub: mh4Scripts)
 
 **Program Studi Teknik Informatika**  
 Institut Teknologi Sumatera (ITERA)

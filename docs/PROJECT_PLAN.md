@@ -9,7 +9,7 @@ Proyek ini adalah aplikasi berita Android modern bernama **News MBG** (Mbgnews) 
 | Nama Anggota | NIM | Peran Utama | Tanggung Jawab Spesifik |
 |--------------|-----|-------------|-------------------------|
 | **Febrian Valentino Nugroho** | `123140034` | **Lead Developer & UI/UX Specialist** | Arsitektur utama, integrasi Gemini AI, desain tema Neumorphism, setup Koin DI, integrasi Retrofit & OkHttp, Navigation Graph. |
-| **SinagaPande** | `123140153` | **Data & Storage Engineer** | Setup local database (Room), pembuatan Entity, DAO, implementasi Repository Pattern, penanganan local data caching. |
+| **Jonathan Pande Sinaga** | `123140153` | **Data & Storage Engineer** | Setup local database (Room), pembuatan Entity, DAO, implementasi Repository Pattern, penanganan local data caching. |
 
 ---
 

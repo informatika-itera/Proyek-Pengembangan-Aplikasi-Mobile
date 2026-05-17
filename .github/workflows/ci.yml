@@ -27,10 +27,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle (Sistem Global)
+      - name: Setup Gradle (Sesuaikan ke 8.7)
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.5
+          gradle-version: 8.7
 
       - name: Create Mock local.properties for Gemini API Key
         run: echo 'GEMINI_API_KEY="mock_key_for_ci_build"' > local.properties

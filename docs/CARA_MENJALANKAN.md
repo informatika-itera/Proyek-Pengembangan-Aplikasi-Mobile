@@ -165,7 +165,7 @@ siap pakai. Anda punya 2 opsi:
 3. Copy folder `iosApp/` hasil wizard ke root project ini.
 4. Edit `iosApp/iosApp/iOSApp.swift` agar memanggil `MainViewControllerKt.MainViewController()`
    dari module `ComposeApp` (lihat dokumentasi inline di
-   `composeApp/src/iosMain/kotlin/com/example/noteai/MainViewController.kt`).
+   `composeApp/src/iosMain/kotlin/com.example.mapenumkm/MainViewController.kt`).
 
 ### Opsi B — Build framework saja
 
@@ -251,7 +251,7 @@ Pryk-PAM/
   melihat log Ktor karena kita pakai `enableLogging = true`).
 - **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
 - **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+  `/data/data/com.example.mapenumkm/files/noteai.preferences_pb` (Android).
 
 ---
 

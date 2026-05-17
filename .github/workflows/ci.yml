@@ -2,16 +2,16 @@ name: CI
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - develop
       - "Project/123140169-123140186-MoveIn"
   pull_request:
-    branches: 
+    branches:
       - main
       - develop
       - "Project/123140169-123140186-MoveIn"
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   build:

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
+// sudah disesuaikan isi dari getNotesByEmotion(), getPinnedNotes() dll
 class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
 
     private val queries = database.noteQueries

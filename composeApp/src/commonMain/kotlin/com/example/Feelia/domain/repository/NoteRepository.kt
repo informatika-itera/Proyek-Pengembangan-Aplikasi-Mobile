@@ -3,7 +3,7 @@ package com.example.Feelia.domain.repository
 import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
 import kotlinx.coroutines.flow.Flow
-
+// sudah disesuaikan isi dari getNotesByEmotion(), getPinnedNotes() dll
 interface NoteRepository {
     fun getAllNotes(): Flow<List<Note>>
     fun getPinnedNotes(): Flow<List<Note>>

@@ -2,9 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: 
+      - main
+      - develop
+      - "Project/123140169-123140186-MoveIn"
   pull_request:
-    branches: [ main, master, develop ]
+    branches: 
+      - main
+      - develop
+      - "Project/123140169-123140186-MoveIn"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -29,5 +36,3 @@ jobs:
 
       - name: Compile Assemble Debug
         run: ./gradlew assembleDebug
-
-        

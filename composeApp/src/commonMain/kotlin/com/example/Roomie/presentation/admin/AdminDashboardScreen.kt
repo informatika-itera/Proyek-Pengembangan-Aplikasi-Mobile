@@ -465,6 +465,19 @@ fun ReportAdminCard(
                 Text(report.description, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(report.location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            
+            if (report.imageUrl != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Text("📷 View Image Attached", style = MaterialTheme.typography.labelSmall)
+                        // In real implementation, use Coil to load report.imageUrl
+                    }
+                }
+            }
+
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = { 

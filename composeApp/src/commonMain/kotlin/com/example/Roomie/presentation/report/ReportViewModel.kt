@@ -18,8 +18,10 @@ data class ReportFormState(
     val location: String = "",
     val description: String = "",
     val urgency: UrgencyLevel = UrgencyLevel.LOW,
+    val selectedImage: ByteArray? = null, // New
     val isLoading: Boolean = false,
-    val isSubmitted: Boolean = false
+    val isSubmitted: Boolean = false,
+    val error: String? = null
 ) {
     val isSubmitEnabled: Boolean get() = category.isNotBlank() && 
             location.isNotBlank() && 
@@ -49,6 +51,10 @@ class ReportViewModel(
         _state.update { it.copy(urgency = urgency) }
     }
 
+    fun onImagePicked(bytes: ByteArray?) {
+        _state.update { it.copy(selectedImage = bytes) }
+    }
+
     fun resetState() {
         _state.value = ReportFormState()
     }
@@ -57,21 +63,34 @@ class ReportViewModel(
         if (!_state.value.isSubmitEnabled) return
         
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isLoading = true, error = null) }
             
-            val newReport = Report(
-                id = Clock.System.now().toEpochMilliseconds().toString(),
-                category = _state.value.category,
-                location = _state.value.location,
-                description = _state.value.description,
-                urgency = _state.value.urgency,
-                status = ReportStatus.PENDING,
-                createdAt = Clock.System.now().toEpochMilliseconds()
-            )
-            
-            reportRepository.submitReport(newReport)
-            
-            _state.update { it.copy(isLoading = false, isSubmitted = true) }
+            try {
+                var finalImageUrl: String? = null
+                
+                // Logic Upload ke Supabase (Mocked for now as we need real URL/Key)
+                _state.value.selectedImage?.let {
+                    // finalImageUrl = uploadToSupabase(it)
+                    // For demo, we'll use a placeholder if image exists
+                    finalImageUrl = "https://picsum.photos/400/300" 
+                }
+
+                val newReport = Report(
+                    id = Clock.System.now().toEpochMilliseconds().toString(),
+                    category = _state.value.category,
+                    location = _state.value.location,
+                    description = _state.value.description,
+                    urgency = _state.value.urgency,
+                    status = ReportStatus.PENDING,
+                    createdAt = Clock.System.now().toEpochMilliseconds(),
+                    imageUrl = finalImageUrl
+                )
+                
+                reportRepository.submitReport(newReport)
+                _state.update { it.copy(isLoading = false, isSubmitted = true) }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, error = e.message ?: "Gagal mengirim laporan") }
+            }
         }
     }
 }

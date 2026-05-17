@@ -34,9 +34,10 @@ object AppStrings {
     
     // Report Screen
     const val REPORT_TITLE = "Lapor Kerusakan"
+    const val REPORT_SUBTITLE = "Bantu kami menjaga fasilitas kampus tetap nyaman"
     const val REPORT_CATEGORY = "Kategori Fasilitas"
     const val REPORT_LOCATION = "Lokasi Spesifik"
-    const val REPORT_DESCRIPTION = "Deskripsi Kerusakan"
+    const val REPORT_DESC = "Deskripsi Kerusakan"
     const val REPORT_URGENCY = "Tingkat Urgensi"
     const val REPORT_SUBMIT = "Kirim Laporan"
     const val REPORT_PHOTO = "Upload Foto Bukti"

@@ -15,6 +15,8 @@ navigation = "2.8.0-alpha10"
 coil = "3.0.4"
 detekt = "1.23.7"
 napier = "2.7.1"
+supabase = "3.0.1"
+peekaboo = "0.5.2"
 
 # Testing
 turbine = "1.2.0"
@@ -66,6 +68,15 @@ coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", v
 
 # Logging (Napier)
 napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
+
+# Supabase
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+
+# Peekaboo (Media Picker)
+peekaboo-ui = { group = "io.github.onseok", name = "peekaboo-ui", version.ref = "peekaboo" }
+peekaboo-image-picker = { group = "io.github.onseok", name = "peekaboo-image-picker", version.ref = "peekaboo" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }

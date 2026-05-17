@@ -107,7 +107,7 @@ fun FacilityGridScreen(
                         contentColor = MaterialTheme.colorScheme.primary,
                         divider = {}
                     ) {
-                        (1..3).forEach { floor ->
+                        (1..4).forEach { floor ->
                             Tab(
                                 selected = state.selectedFloor == floor,
                                 onClick = { viewModel.selectFloor(floor) },

@@ -85,6 +85,14 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
+            // Supabase
+            implementation("io.github.jan-tennert.supabase:storage-kt:3.0.1")
+            implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.1")
+
+            // Peekaboo (Media Picker)
+            implementation(libs.peekaboo.ui)
+            implementation(libs.peekaboo.image.picker)
+
             // Logging
             implementation(libs.napier)
         }

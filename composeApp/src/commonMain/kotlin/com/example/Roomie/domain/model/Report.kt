@@ -19,5 +19,6 @@ data class Report(
     val description: String,
     val urgency: UrgencyLevel,
     val status: ReportStatus,
-    val createdAt: Long
+    val createdAt: Long,
+    val imageUrl: String? = null
 )

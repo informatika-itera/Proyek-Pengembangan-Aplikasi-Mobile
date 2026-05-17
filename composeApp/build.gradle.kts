@@ -110,7 +110,7 @@ android {
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.example.Feelia"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -153,7 +153,7 @@ android {
 sqldelight {
     databases {
         create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+            packageName.set("com.example.Feelia.data.local")
         }
     }
 }

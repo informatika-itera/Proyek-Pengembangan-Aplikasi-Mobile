@@ -35,7 +35,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.Feelia.core.util.formatToDisplay
@@ -56,11 +55,11 @@ fun NoteDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(noteId) {
         viewModel.loadNote(noteId)
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -69,7 +68,7 @@ fun NoteDetailScreen(
             }
         }
     }
-    
+
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
@@ -79,12 +78,12 @@ fun NoteDetailScreen(
             onDismiss = { showDeleteDialog = false }
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detail Catatan") },
+                title = { Text("Detail Jurnal") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -95,24 +94,25 @@ fun NoteDetailScreen(
                     if (currentState is NoteDetailUiState.Success) {
                         IconButton(onClick = { viewModel.togglePin() }) {
                             Icon(
-                                imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                                imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin
+                                else Icons.Outlined.PushPin,
                                 contentDescription = if (currentState.note.isPinned) "Lepas Pin" else "Pin"
                             )
                         }
-                        
-                        IconButton(onClick = { 
+
+                        IconButton(onClick = {
                             viewModel.getShareContent()?.let { onShare(it) }
                         }) {
                             Icon(Icons.Default.Share, contentDescription = "Bagikan")
                         }
-                        
+
                         IconButton(onClick = { onNavigateToEdit(noteId) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
-                        
+
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
-                                Icons.Default.Delete, 
+                                Icons.Default.Delete,
                                 contentDescription = "Hapus",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -126,7 +126,7 @@ fun NoteDetailScreen(
             is NoteDetailUiState.Loading -> {
                 LoadingIndicator()
             }
-            
+
             is NoteDetailUiState.Success -> {
                 Column(
                     modifier = Modifier
@@ -135,41 +135,37 @@ fun NoteDetailScreen(
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    if (state.note.title.isNotBlank()) {
-                        Text(
-                            text = state.note.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    
+                    // DIPERBAIKI: Note tidak punya 'title', jadi tidak ada header title.
+                    // Tampilkan badge emosi + tanggal di atas, lalu konten.
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        CategoryBadge(category = state.note.category.displayName)
-                        
+                        // CategoryBadge tetap dipakai dengan string langsung
+                        CategoryBadge(
+                            category = "${state.note.emotion.emoji} ${state.note.emotion.displayName}"
+                        )
+
                         Text(
                             text = state.note.updatedAt.formatToDisplay(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     Text(
                         text = state.note.content,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
-            
+
             is NoteDetailUiState.NotFound -> {
                 EmptyState(
-                    title = "Catatan Tidak Ditemukan",
-                    message = "Catatan mungkin sudah dihapus"
+                    title = "Jurnal Tidak Ditemukan",
+                    message = "Jurnal mungkin sudah dihapus"
                 )
             }
         }
@@ -183,8 +179,8 @@ private fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Hapus Catatan") },
-        text = { Text("Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.") },
+        title = { Text("Hapus Jurnal") },
+        text = { Text("Apakah kamu yakin ingin menghapus jurnal ini? Tindakan ini tidak dapat dibatalkan.") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("Hapus", color = MaterialTheme.colorScheme.error)

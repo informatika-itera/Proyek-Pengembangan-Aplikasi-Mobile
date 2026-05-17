@@ -1,0 +1,62 @@
+-- Feelia Journal Schema
+-- udh disesuain juga lupa commit
+CREATE TABLE NoteEntity (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    content     TEXT    NOT NULL,
+    emotion     TEXT    NOT NULL DEFAULT 'NEUTRAL',
+    is_pinned   INTEGER NOT NULL DEFAULT 0,
+    created_at  INTEGER NOT NULL,
+    updated_at  INTEGER NOT NULL
+);
+
+getAllNotes:
+SELECT * FROM NoteEntity
+ORDER BY is_pinned DESC, updated_at DESC;
+
+getPinnedNotes:
+SELECT * FROM NoteEntity
+WHERE is_pinned = 1
+ORDER BY updated_at DESC;
+
+getNotesByEmotion:
+SELECT * FROM NoteEntity
+WHERE emotion = ?
+ORDER BY updated_at DESC;
+
+searchNotes:
+SELECT * FROM NoteEntity
+WHERE content LIKE '%' || ? || '%'
+ORDER BY updated_at DESC;
+
+getNoteById:
+SELECT * FROM NoteEntity
+WHERE id = ?;
+
+insertNote:
+INSERT INTO NoteEntity (content, emotion, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+updateNote:
+UPDATE NoteEntity
+SET content = ?, emotion = ?, is_pinned = ?, updated_at = ?
+WHERE id = ?;
+
+deleteNoteById:
+DELETE FROM NoteEntity WHERE id = ?;
+
+togglePin:
+UPDATE NoteEntity
+SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END,
+    updated_at = ?
+WHERE id = ?;
+
+countNotes:
+SELECT COUNT(*) FROM NoteEntity;
+
+countNotesByEmotion:
+SELECT emotion, COUNT(*) AS total
+FROM NoteEntity
+GROUP BY emotion;

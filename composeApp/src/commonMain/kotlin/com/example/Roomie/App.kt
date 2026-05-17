@@ -60,24 +60,25 @@ fun App(
     viewModel: AppViewModel = koinViewModel()
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
+    val navController = rememberNavController()
     
     RoomieTheme {
-        val navController = rememberNavController()
-        
         // Define navigation items based on role
-        val navItems = when (currentUser?.role) {
-            UserRole.STUDENT -> listOf(
-                Screen.Home,
-                Screen.Facility,
-                Screen.Report,
-                Screen.Profile
-            )
-            UserRole.ADMIN -> listOf(
-                Screen.AdminDashboard,
-                Screen.Facility,
-                Screen.Profile
-            )
-            else -> emptyList()
+        val navItems = remember(currentUser) {
+            when (currentUser?.role) {
+                UserRole.STUDENT -> listOf(
+                    Screen.Home,
+                    Screen.Facility,
+                    Screen.Report,
+                    Screen.Profile
+                )
+                UserRole.ADMIN -> listOf(
+                    Screen.AdminDashboard,
+                    Screen.Facility,
+                    Screen.Profile
+                )
+                else -> emptyList()
+            }
         }
 
         Scaffold(
@@ -86,7 +87,6 @@ fun App(
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
                     
-                    // Show BottomBar only if current destination is one of the main role screens
                     val showBottomBar = navItems.any { it.route == currentDestination?.route }
                     
                     if (showBottomBar) {
@@ -97,17 +97,17 @@ fun App(
                                     label = { Text(screen.title) },
                                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                                     onClick = {
-                                        navController.navigate(screen.route) {
-                                            val startDest = navController.graph.findStartDestination().route
-                                            if (startDest != null) {
-                                                popUpTo(startDest) {
-                                                    saveState = true
-                                                }
+                                    navController.navigate(screen.route) {
+                                        val startDest = navController.graph.findStartDestination().route
+                                        if (startDest != null) {
+                                            popUpTo(startDest) {
+                                                saveState = true
                                             }
-                                            launchSingleTop = true
-                                            restoreState = true
                                         }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
+                                }
                                 )
                             }
                         }
@@ -115,10 +115,12 @@ fun App(
                 }
             }
         ) { innerPadding ->
-            val startRoute = when {
-                currentUser == null -> Screen.Login.route
-                currentUser?.role == UserRole.ADMIN -> Screen.AdminDashboard.route
-                else -> Screen.Home.route
+            val startRoute = remember(currentUser) {
+                when {
+                    currentUser == null -> Screen.Login.route
+                    currentUser?.role == UserRole.ADMIN -> Screen.AdminDashboard.route
+                    else -> Screen.Home.route
+                }
             }
 
             NavHost(
@@ -127,7 +129,9 @@ fun App(
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Login.route) {
-                    LoginScreen(onLoginSuccess = {})
+                    LoginScreen(onLoginSuccess = {
+                        // Role-based navigation is handled by LaunchedEffect
+                    })
                 }
 
                 composable(Screen.Home.route) {
@@ -138,15 +142,7 @@ fun App(
                         onNavigateToReport = { navController.navigate(Screen.Report.route) }
                     )
                 }
-
-                composable(Screen.Schedule.route) {
-                    ScheduleScreen(onBack = { navController.popBackStack() })
-                }
-
-                composable(Screen.Help.route) {
-                    HelpScreen(onBack = { navController.popBackStack() })
-                }
-
+                
                 composable(Screen.SearchRoom.route) {
                     SearchRoomScreen(
                         onBack = { navController.popBackStack() },
@@ -154,6 +150,14 @@ fun App(
                             navController.navigate(Screen.RoomDetail.createRoute(roomId))
                         }
                     )
+                }
+                
+                composable(Screen.Schedule.route) {
+                    ScheduleScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Screen.Help.route) {
+                    HelpScreen(onBack = { navController.popBackStack() })
                 }
                 
                 composable(Screen.Facility.route) {
@@ -190,32 +194,25 @@ fun App(
                 }
                 
                 composable(Screen.Profile.route) {
-                    ProfileScreen(
-                        onLogout = { viewModel.logout() }
-                    )
+                    ProfileScreen(onLogout = { viewModel.logout() })
                 }
 
                 composable(Screen.AdminDashboard.route) {
-                    AdminDashboardScreen(
-                        onBack = { navController.popBackStack() }
-                    )
+                    AdminDashboardScreen(onBack = { navController.popBackStack() })
                 }
             }
         }
         
-        // Auto-navigation on auth change
+        // Final Fix for Auth Auto-Navigation
         LaunchedEffect(currentUser) {
             if (currentUser == null) {
                 navController.navigate(Screen.Login.route) {
-                    popUpTo(0)
+                    popUpTo(0) { inclusive = true }
                 }
             } else {
-                val currentRoute = navController.currentDestination?.route
-                if (currentRoute == Screen.Login.route || currentRoute == null) {
-                    val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
-                    navController.navigate(dest) {
-                        popUpTo(0)
-                    }
+                val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
+                navController.navigate(dest) {
+                    popUpTo(0) { inclusive = true }
                 }
             }
         }

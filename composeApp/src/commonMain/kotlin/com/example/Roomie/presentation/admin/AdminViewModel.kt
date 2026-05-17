@@ -2,18 +2,9 @@ package com.example.Roomie.presentation.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.Roomie.domain.model.Announcement
-import com.example.Roomie.domain.model.Report
-import com.example.Roomie.domain.model.ReportStatus
-import com.example.Roomie.domain.model.RoomStatus
-import com.example.Roomie.domain.usecase.GetAllReportsUseCase
-import com.example.Roomie.domain.usecase.UpdateReportStatusUseCase
-import com.example.Roomie.domain.usecase.UpdateRoomStatusUseCase
-import com.example.Roomie.domain.usecase.PostAnnouncementUseCase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import com.example.Roomie.domain.model.*
+import com.example.Roomie.domain.usecase.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
@@ -21,6 +12,8 @@ sealed interface AdminUiState {
     data object Loading : AdminUiState
     data class Success(
         val allReports: List<Report>,
+        val buildings: List<Building>,
+        val rooms: List<Room>,
         val pendingCount: Int,
         val highUrgencyCount: Int
     ) : AdminUiState
@@ -31,24 +24,39 @@ class AdminViewModel(
     private val getAllReportsUseCase: GetAllReportsUseCase,
     private val updateReportStatusUseCase: UpdateReportStatusUseCase,
     private val updateRoomStatusUseCase: UpdateRoomStatusUseCase,
-    private val postAnnouncementUseCase: PostAnnouncementUseCase
+    private val postAnnouncementUseCase: PostAnnouncementUseCase,
+    private val getBuildingsUseCase: GetBuildingsUseCase,
+    private val getRoomsByBuildingUseCase: GetRoomsByBuildingUseCase
 ) : ViewModel() {
+    
     private val _uiState = MutableStateFlow<AdminUiState>(AdminUiState.Loading)
     val uiState: StateFlow<AdminUiState> = _uiState.asStateFlow()
 
     init {
-        observeAdminData()
+        observeAllData()
     }
 
-    private fun observeAdminData() {
+    private fun observeAllData() {
         viewModelScope.launch {
             _uiState.value = AdminUiState.Loading
-            getAllReportsUseCase().collectLatest { reports ->
-                _uiState.value = AdminUiState.Success(
+            
+            combine(
+                getAllReportsUseCase(),
+                getBuildingsUseCase(),
+                // Kita ambil data GKU2 sebagai default untuk picker ruangan
+                getRoomsByBuildingUseCase("GKU2")
+            ) { reports, buildings, rooms ->
+                AdminUiState.Success(
                     allReports = reports.reversed(),
+                    buildings = buildings,
+                    rooms = rooms,
                     pendingCount = reports.count { it.status == ReportStatus.PENDING },
-                    highUrgencyCount = reports.count { it.urgency.name == "HIGH" }
+                    highUrgencyCount = reports.count { it.urgency == UrgencyLevel.HIGH }
                 )
+            }.catch { e ->
+                _uiState.value = AdminUiState.Error(e.message ?: "Gagal memuat data admin")
+            }.collect { state ->
+                _uiState.value = state
             }
         }
     }

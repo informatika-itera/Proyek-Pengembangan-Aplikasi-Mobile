@@ -137,4 +137,4 @@ git checkout project/123140082-123140069-MyWallet
 
 ---
 
-Pengembangan Aplikasi Mobile 
+Pengembangan Aplikasi Mobile (RA)

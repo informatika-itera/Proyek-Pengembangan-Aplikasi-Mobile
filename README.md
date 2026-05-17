@@ -192,6 +192,18 @@ composeApp/
 
 ---
 
+## Project Plan (Sprint 1 - 5) — MoveIn
+
+| Minggu ke- | Aktivitas | Penanggung Jawab |
+| :---: | :--- | :--- |
+| **W11** | Sprint 1: Project setup & rancangan arsitektur | Raisya |
+| **W12** | Sprint 2: Core feature (UI, Navigation, Data Layer lokal) | Ardani |
+| **W13** | Sprint 3: Advanced feature (Ktor Client / API integration & Gemini AI) | Raisya |
+| **W14** | Sprint 4: Polish UI, handle error state, dan Unit Testing | Ardani |
+| **W15** | Sprint 5: Final preparation, bug fixing, dan optimasi aplikasi | Raisya |
+| **W16** | UAS: Final Demo Day presentasi proyek | Ardani & Raisya |
+
+
 # Setup Project
 
 ## Clone Repository

@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 
 class DraftRepositoryImpl(
-    private val draftPreferences: DraftPreferences
+    // PERBAIKAN: Menjadikan preferensi nullable agar mudah di-test tanpa Fake object
+    private val draftPreferences: DraftPreferences? = null
 ) : DraftRepository {
 
     private val _draftState = MutableStateFlow(DraftState())
 
     override fun getDraftState(): Flow<DraftState> = _draftState.asStateFlow()
 
-    // PERBAIKAN: Memanggil allHeroes sesuai dengan HeroDataSource Anda
     override fun getAllHeroes(): Flow<List<Hero>> = flowOf(HeroDataSource.allHeroes)
 
     override suspend fun pickHero(slotIndex: Int, isAlly: Boolean, hero: Hero?) {

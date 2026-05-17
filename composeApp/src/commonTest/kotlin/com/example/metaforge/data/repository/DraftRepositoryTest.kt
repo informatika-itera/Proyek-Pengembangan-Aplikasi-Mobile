@@ -11,8 +11,8 @@ import kotlin.test.assertTrue
 
 class DraftRepositoryTest {
 
-    private val fakePreferences = FakeDraftPreferences()
-    private val repository = DraftRepositoryImpl(fakePreferences)
+    // PERBAIKAN: Langsung passing null, karena kita tidak butuh DataStore untuk in-memory test!
+    private val repository = DraftRepositoryImpl(draftPreferences = null)
 
     private val testHero = Hero(
         id = 11,
@@ -46,7 +46,6 @@ class DraftRepositoryTest {
     @Test
     fun `remove hero should set slot to null`() = runTest {
         repository.pickHero(0, isAlly = true, hero = testHero)
-        // Fungsi removeHero tidak ada di interface baru, kita gunakan pickHero dengan null
         repository.pickHero(0, isAlly = true, hero = null)
 
         val state = repository.getDraftState().first()
@@ -58,7 +57,6 @@ class DraftRepositoryTest {
         repository.pickHero(0, true, testHero)
         repository.pickHero(0, false, testHero)
 
-        // Fungsi resetDraft sudah diganti menjadi clearDraft
         repository.clearDraft()
 
         val state = repository.getDraftState().first()

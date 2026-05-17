@@ -13,6 +13,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 data class AddEditUiState(
+    val wordId: String? = null,
     val term: String = "",
     val definition: String = "",
     val category: String = "Umum",
@@ -39,7 +40,7 @@ class AddEditViewModel(
 
     private fun loadWord(id: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, wordId = id) }
             repository.getWordById(id)?.let { word ->
                 _uiState.update { 
                     it.copy(

@@ -46,3 +46,7 @@ Aplikasi ini dikembangkan dengan prinsip **Clean Architecture**:
 
 Tautan berikut berisi demonstrasi pemenuhan target **Sprint 2** (Navigasi antar layar, implementasi Data Layer & Repository, CRUD pada fase *Pick & Ban*, dan pengelolaan UI State):
 
+
+https://github.com/user-attachments/assets/9f3c1265-c264-40a0-b0ac-dc754f712ab0
+
+

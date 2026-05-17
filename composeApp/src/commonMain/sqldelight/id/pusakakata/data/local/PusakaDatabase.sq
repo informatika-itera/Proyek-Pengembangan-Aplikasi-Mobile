@@ -1,0 +1,36 @@
+CREATE TABLE WordEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    term TEXT NOT NULL,
+    definition TEXT NOT NULL,
+    category TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    -- SRS Fields
+    intervalDays INTEGER NOT NULL DEFAULT 0,
+    easeFactor REAL NOT NULL DEFAULT 2.5,
+    nextReview INTEGER,
+    level INTEGER NOT NULL DEFAULT 0
+);
+
+getAllWords:
+SELECT * FROM WordEntity ORDER BY createdAt DESC;
+
+getWordById:
+SELECT * FROM WordEntity WHERE id = ?;
+
+insertWord:
+INSERT OR REPLACE INTO WordEntity(id, term, definition, category, createdAt, intervalDays, easeFactor, nextReview, level)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteWord:
+DELETE FROM WordEntity WHERE id = ?;
+
+updateWord:
+UPDATE WordEntity
+SET term = ?,
+    definition = ?,
+    category = ?,
+    intervalDays = ?,
+    easeFactor = ?,
+    nextReview = ?,
+    level = ?
+WHERE id = ?;

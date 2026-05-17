@@ -77,10 +77,10 @@ Database version mismatch
 ```kotlin
 // Di DatabaseDriverFactory
 val driver = AndroidSqliteDriver(
-    schema = NoteDatabase.Schema,
+    schema = PusakaDatabase.Schema,
     context = context,
     name = "noteai.db",
-    callback = object : AndroidSqliteDriver.Callback(NoteDatabase.Schema) {
+    callback = object : AndroidSqliteDriver.Callback(PusakaDatabase.Schema) {
         override fun onUpgrade(
             db: SupportSQLiteDatabase,
             oldVersion: Int,

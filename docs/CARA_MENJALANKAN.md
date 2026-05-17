@@ -115,11 +115,11 @@ manual — wrapper akan mendownload Gradle 8.9 sendiri.
 Generate file SQLDelight (biasanya otomatis, tapi kalau perlu manual):
 
 ```bash
-./gradlew :composeApp:generateCommonMainNoteDatabaseInterface
+./gradlew :composeApp:generateCommonMainPusakaDatabaseInterface
 ```
 
 > Nama task ini berasal dari konfigurasi di `composeApp/build.gradle.kts`:
-> `sqldelight { databases { create("NoteDatabase") { ... } } }`.
+> `sqldelight { databases { create("PusakaDatabase") { ... } } }`.
 
 Jalankan unit test (commonTest):
 

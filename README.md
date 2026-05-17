@@ -198,6 +198,30 @@ Daftarkan API key di:
 
 ---
 
+## 🎯 Status Proyek: SPRINT 2 (Core Features)
+
+[cite_start]Saat ini proyek telah menyelesaikan tahapan **Sprint 2** dengan fokus pada *UI Implementation, Navigation, dan Data Layer* sesuai dengan target *deliverables*[cite: 12, 485]. 
+
+**Fitur yang telah berjalan (100% Real Data):**
+- [cite_start]✅ **UI Implementation (Jetpack Compose):** 5 Main Screens (Beranda, Pemindai, Riwayat, Artikel, Profil) dengan tema *Material 3 Dark Mode + Neon Green*[cite: 500].
+- [cite_start]✅ **Navigation Setup:** *Bottom Navigation Bar* yang terhubung dengan `NavHost`, termasuk argument passing untuk layar form/edit[cite: 487].
+- [cite_start]✅ **Data Layer & CRUD:** Operasi *Create, Read, Update, Delete* (CRUD) fungsional menggunakan **SQLDelight** dengan *Repository Pattern* untuk mencatat Riwayat Aktivitas[cite: 488, 492].
+- ✅ **State Management & Persistence:** UI States (Loading, Success, Empty) tertangani dengan baik. [cite_start]Penyimpanan profil pengguna (Nama, Usia, Berat, Tinggi) & kalkulasi BMI *real-time* menggunakan **Jetpack DataStore**[cite: 489, 493].
+
+*(Catatan: Fitur Vision AI, GPS Tracking, dan News API saat ini masih berupa mock/dummy UI dan akan diimplementasikan secara penuh pada Sprint 3 
+
+## 🎥 Demo Sprint 2
+
+Berikut adalah demonstrasi fitur inti (Navigasi & CRUD) dari Sprint 2:
+Demo Aplikasi Pantau Jompo Sprint 2
+
+
+https://github.com/user-attachments/assets/7df9fc3a-b7a5-49a0-a2ce-75d2969fba29
+
+
+> *Klik gambar di atas untuk memutar video demo (Durasi: ~1 Menit).*
+
+---
 <div align="center">
 
 Dibuat dengan ❤️ · Institut Teknologi Sumatera · 2025

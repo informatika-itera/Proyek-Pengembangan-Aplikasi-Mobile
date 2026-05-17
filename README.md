@@ -1,5 +1,7 @@
 # 🎬 Rewind — Film & Series Personal Tracker
 
+![CI](https://github.com/choirunnisasy/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+
 Proyek mata kuliah **Pengembangan Aplikasi Mobile (IF25-22017)** Kelas RB   
 Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
 

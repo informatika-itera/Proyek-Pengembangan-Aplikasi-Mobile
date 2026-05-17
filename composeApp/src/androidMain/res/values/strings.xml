@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">NoteAI</string>
+    <string name="app_name">MaPen UMKM</string>
     
     <!-- Navigation -->
     <string name="nav_home">Beranda</string>
-    <string name="nav_add_note">Tambah Catatan</string>
-    <string name="nav_edit_note">Edit Catatan</string>
-    <string name="nav_note_detail">Detail Catatan</string>
+    <string name="nav_add_note">Tambah Produk</string>
+    <string name="nav_edit_note">Edit Produk</string>
+    <string name="nav_note_detail">Detail Produk</string>
     <string name="nav_ai_assistant">Asisten AI</string>
     <string name="nav_settings">Pengaturan</string>
     
     <!-- Home Screen -->
-    <string name="home_title">Catatan Saya</string>
-    <string name="home_search_hint">Cari catatan...</string>
-    <string name="home_empty_title">Belum Ada Catatan</string>
-    <string name="home_empty_message">Tap + untuk membuat catatan baru</string>
+    <string name="home_title">Daftar Produk</string>
+    <string name="home_search_hint">Cari produk...</string>
+    <string name="home_empty_title">Belum Ada Produk</string>
+    <string name="home_empty_message">Tap + untuk menambah produk baru</string>
     <string name="home_not_found_title">Tidak Ditemukan</string>
     <string name="home_not_found_message">Coba ubah kata kunci atau filter</string>
     <string name="home_filter_all">Semua</string>
@@ -47,12 +47,14 @@
     <string name="color_pink">Pink</string>
     
     <!-- Add/Edit Note Screen -->
-    <string name="add_note_title">Catatan Baru</string>
-    <string name="edit_note_title">Edit Catatan</string>
-    <string name="note_title_label">Judul</string>
-    <string name="note_title_hint">Masukkan judul...</string>
-    <string name="note_content_label">Konten</string>
-    <string name="note_content_hint">Tulis catatan di sini...</string>
+    <string name="add_note_title">Produk Baru</string>
+    <string name="edit_note_title">Edit Produk</string>
+    <string name="note_title_label">Nama Produk</string>
+    <string name="note_title_hint">Masukkan nama produk...</string>
+    <string name="note_content_label">Deskripsi</string>
+    <string name="note_content_hint">Tulis deskripsi produk di sini...</string>
+    <string name="note_price_label">Harga (Rp)</string>
+    <string name="note_stock_label">Stok</string>
     <string name="note_category_label">Kategori</string>
     <string name="note_color_label">Warna</string>
     <string name="note_save">Simpan</string>

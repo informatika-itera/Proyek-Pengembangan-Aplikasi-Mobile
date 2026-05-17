@@ -7,7 +7,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// ==================== COLORS ====================
 
 private val Primary = Color(0xFF6750A4)
 private val OnPrimary = Color(0xFFFFFFFF)
@@ -46,7 +45,6 @@ private val OnSurfaceVariantDark = Color(0xFFCAC4D0)
 private val OutlineLight = Color(0xFF79747E)
 private val OutlineDark = Color(0xFF938F99)
 
-// ==================== COLOR SCHEMES ====================
 
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
@@ -100,7 +98,6 @@ private val DarkColorScheme = darkColorScheme(
     outline = OutlineDark
 )
 
-// ==================== THEME ====================
 
 @Composable
 fun TabungInTheme(

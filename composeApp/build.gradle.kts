@@ -152,7 +152,7 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
+        create("TabunginDatabase") {
             packageName.set("com.example.tabungin.data.local")
         }
     }

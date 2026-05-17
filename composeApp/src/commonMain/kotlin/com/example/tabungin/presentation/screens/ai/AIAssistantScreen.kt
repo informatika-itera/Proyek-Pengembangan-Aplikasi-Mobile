@@ -54,11 +54,11 @@ fun AIAssistantScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(initialText) {
         viewModel.setInitialText(initialText)
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -73,7 +73,7 @@ fun AIAssistantScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -99,7 +99,7 @@ fun AIAssistantScreen(
                 style = MaterialTheme.typography.labelLarge
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -111,17 +111,17 @@ fun AIAssistantScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = uiState.selectedAction.description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             OutlinedTextField(
                 value = uiState.inputText,
                 onValueChange = viewModel::onInputTextChange,
@@ -133,9 +133,9 @@ fun AIAssistantScreen(
                 supportingText = uiState.error?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Button(
                 onClick = { viewModel.executeAction() },
                 enabled = uiState.canExecute,
@@ -156,18 +156,18 @@ fun AIAssistantScreen(
                     Text("Jalankan")
                 }
             }
-            
+
             AnimatedVisibility(visible = uiState.result != null) {
                 Column {
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Text(
                         text = "Hasil",
                         style = MaterialTheme.typography.labelLarge
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -179,9 +179,9 @@ fun AIAssistantScreen(
                                 text = uiState.result ?: "",
                                 style = MaterialTheme.typography.bodyMedium
                             )
-                            
+
                             Spacer(modifier = Modifier.height(16.dp))
-                            
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -197,7 +197,7 @@ fun AIAssistantScreen(
                                     )
                                     Text("Salin")
                                 }
-                                
+
                                 if (noteId != null) {
                                     Button(
                                         onClick = { viewModel.applyToNote() },

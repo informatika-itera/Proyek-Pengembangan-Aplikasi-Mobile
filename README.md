@@ -1,7 +1,8 @@
 # 💰 TabungIn - KMP Project
+![CI](https://github.com/ScienceCom/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=project%2F123140129-123140143-TabungIn)
 
-Aplikasi **manajemen target tabungan** berbasis mobile multiplatform untuk mata kuliah **Pengembangan Aplikasi Mobile** di ITERA.
 
+Aplikasi manajemen target tabungan berbasis mobile multiplatform untuk mata kuliah Pengembangan Aplikasi Mobile di ITERA.
 TabungIn memfasilitasi pengguna untuk mencatat dan memantau progres celengan fisik secara digital, dilengkapi asisten finansial berbasis AI untuk membantu perencanaan tabungan yang lebih cerdas.
 
 ## ✨ Fitur Aplikasi

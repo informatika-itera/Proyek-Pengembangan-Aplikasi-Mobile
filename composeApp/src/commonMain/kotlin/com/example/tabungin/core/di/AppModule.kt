@@ -2,26 +2,21 @@ package com.example.tabungin.core.di
 
 import com.example.tabungin.core.network.HttpClientFactory
 import com.example.tabungin.core.util.DatabaseDriverFactory
-import com.example.tabungin.data.local.NoteDatabase
+import com.example.tabungin.data.local.TabunginDatabase
 import com.example.tabungin.data.local.datastore.DataStoreFactory
 import com.example.tabungin.data.local.datastore.UserPreferences
 import com.example.tabungin.data.local.datastore.create
 import com.example.tabungin.data.remote.api.GeminiService
-import com.example.tabungin.data.repository.AIRepositoryImpl
-import com.example.tabungin.data.repository.NoteRepositoryImpl
-import com.example.tabungin.domain.repository.AIRepository
-import com.example.tabungin.domain.repository.NoteRepository
-import com.example.tabungin.domain.usecase.DeleteNoteUseCase
-import com.example.tabungin.domain.usecase.GenerateIdeasUseCase
-import com.example.tabungin.domain.usecase.GetAllNotesUseCase
-import com.example.tabungin.domain.usecase.ImproveWritingUseCase
-import com.example.tabungin.domain.usecase.SaveNoteUseCase
-import com.example.tabungin.domain.usecase.SearchNotesUseCase
-import com.example.tabungin.domain.usecase.SummarizeNoteUseCase
-import com.example.tabungin.presentation.screens.addnote.AddNoteViewModel
-import com.example.tabungin.presentation.screens.ai.AIAssistantViewModel
-import com.example.tabungin.presentation.screens.detail.NoteDetailViewModel
+import com.example.tabungin.data.repository.TargetRepositoryImpl
+import com.example.tabungin.domain.repository.TargetRepository
+import com.example.tabungin.domain.usecase.*
+import com.example.tabungin.presentation.screens.add_edit.AddEditViewModel
+import com.example.tabungin.presentation.screens.detail.DetailViewModel
 import com.example.tabungin.presentation.screens.home.HomeViewModel
+import com.example.tabungin.presentation.screens.riwayat.RiwayatViewModel
+import com.example.tabungin.presentation.screens.settings.SettingsViewModel
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -30,58 +25,58 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-// ==================== NETWORK MODULE ====================
+
 
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
 }
 
-// ==================== DATABASE MODULE ====================
+
 
 val databaseModule = module {
-    single {
-        val driverFactory: DatabaseDriverFactory = get()
-        NoteDatabase(driverFactory.createDriver())
-    }
+    single { get<DatabaseDriverFactory>().createDriver() }
+    single { TabunginDatabase(get()) }
 }
 
-// ==================== PREFERENCES MODULE ====================
+
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
+
 
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
-    singleOf(::AIRepositoryImpl) bind AIRepository::class
+    single<TargetRepository> { TargetRepositoryImpl(get()) }
 }
 
-// ==================== USE CASE MODULE ====================
+
 
 val useCaseModule = module {
-    singleOf(::GetAllNotesUseCase)
-    singleOf(::SearchNotesUseCase)
-    singleOf(::SaveNoteUseCase)
-    singleOf(::DeleteNoteUseCase)
-    singleOf(::SummarizeNoteUseCase)
-    singleOf(::ImproveWritingUseCase)
-    singleOf(::GenerateIdeasUseCase)
+    factory { GetAllTargetsUseCase(get()) }
+    factory { GetTargetByIdUseCase(get()) }
+    factory { InsertTargetUseCase(get()) }
+    factory { UpdateTargetUseCase(get()) }
+    factory { DeleteTargetUseCase(get()) }
+    factory { GetSetoranByTargetUseCase(get()) }
+    factory { GetAllSetoranUseCase(get()) }
+    factory { InsertSetoranUseCase(get()) }
+    factory { DeleteSetoranUseCase(get()) }
 }
 
-// ==================== VIEWMODEL MODULE ====================
+
 
 val viewModelModule = module {
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::AddNoteViewModel)
-    viewModelOf(::NoteDetailViewModel)
-    viewModelOf(::AIAssistantViewModel)
+    viewModel { HomeViewModel(get(), get()) }
+    viewModel { (id: Long) -> DetailViewModel(id, get(), get(), get(), get()) }
+    viewModel { params -> AddEditViewModel(params.getOrNull<Long>(), get(), get(), get()) }
+    viewModel { RiwayatViewModel(get()) }
+    viewModel { SettingsViewModel() }
 }
 
-// ==================== SHARED MODULES ====================
+
 
 val sharedModules = listOf(
     networkModule,
@@ -92,8 +87,14 @@ val sharedModules = listOf(
     viewModelModule
 )
 
-// ==================== INIT FUNCTION ====================
 
+
+fun commonModules(): List<Module> = listOf(
+    databaseModule,
+    repositoryModule,
+    useCaseModule,
+    viewModelModule
+)
 fun initKoin(
     platformModules: List<Module> = emptyList(),
     config: KoinAppDeclaration? = null

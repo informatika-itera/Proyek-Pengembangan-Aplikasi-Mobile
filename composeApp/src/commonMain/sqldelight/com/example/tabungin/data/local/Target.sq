@@ -1,0 +1,64 @@
+
+CREATE TABLE IF NOT EXISTS TargetEntity (
+    id            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    nama          TEXT    NOT NULL,
+    targetAmount  REAL    NOT NULL,
+    deadline      TEXT    NOT NULL,
+    icon          TEXT    NOT NULL DEFAULT '🎯',
+    warna         TEXT    NOT NULL DEFAULT '#4CAF50',
+    createdAt     TEXT    NOT NULL,
+    updatedAt     TEXT    NOT NULL
+);
+
+
+getAllTargets:
+SELECT
+    t.id,
+    t.nama,
+    t.targetAmount,
+    t.deadline,
+    t.icon,
+    t.warna,
+    t.createdAt,
+    t.updatedAt,
+    COALESCE(SUM(s.amount), 0.0) AS terkumpul
+FROM TargetEntity t
+LEFT JOIN SetoranEntity s ON s.targetId = t.id
+GROUP BY t.id
+ORDER BY t.createdAt DESC;
+
+getTargetById:
+SELECT
+    t.id,
+    t.nama,
+    t.targetAmount,
+    t.deadline,
+    t.icon,
+    t.warna,
+    t.createdAt,
+    t.updatedAt,
+    COALESCE(SUM(s.amount), 0.0) AS terkumpul
+FROM TargetEntity t
+LEFT JOIN SetoranEntity s ON s.targetId = t.id
+WHERE t.id = ?
+GROUP BY t.id;
+
+insertTarget:
+INSERT INTO TargetEntity (nama, targetAmount, deadline, icon, warna, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateTarget:
+UPDATE TargetEntity
+SET nama         = ?,
+    targetAmount = ?,
+    deadline     = ?,
+    icon         = ?,
+    warna        = ?,
+    updatedAt    = ?
+WHERE id = ?;
+
+deleteTarget:
+DELETE FROM TargetEntity WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

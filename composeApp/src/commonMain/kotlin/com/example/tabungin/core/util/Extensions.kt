@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-// ==================== DATE/TIME EXTENSIONS ====================
+
 
 fun Instant.formatToDisplay(): String {
     val dateTime = this.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -23,7 +23,6 @@ fun Instant.formatTimeOnly(): String {
     return "${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
 }
 
-// ==================== STRING EXTENSIONS ====================
 
 fun String.truncate(maxLength: Int): String {
     return if (this.length > maxLength) {
@@ -37,7 +36,6 @@ fun String.capitalizeFirst(): String {
     return this.replaceFirstChar { it.uppercase() }
 }
 
-// ==================== RETRY HELPER ====================
 
 suspend fun <T> retryWithBackoff(
     times: Int = 3,
@@ -59,7 +57,6 @@ suspend fun <T> retryWithBackoff(
     return block()
 }
 
-// ==================== RESULT EXTENSIONS ====================
 
 inline fun <T, R> Result<T>.mapSuccess(transform: (T) -> R): Result<R> {
     return this.map(transform)

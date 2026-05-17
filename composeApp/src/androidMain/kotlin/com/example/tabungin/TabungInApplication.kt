@@ -5,12 +5,8 @@ import com.example.tabungin.core.di.androidModule
 import com.example.tabungin.core.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.core.logger.Level
 
-/**
- * Android Application class
- * 
- * Entry point untuk inisialisasi app-wide dependencies.
- */
 class TabungInApplication : Application() {
     
     override fun onCreate() {
@@ -20,7 +16,7 @@ class TabungInApplication : Application() {
         initKoin(
             platformModules = listOf(androidModule)
         ) {
-            androidLogger()
+            androidLogger(Level.DEBUG)
             androidContext(this@TabungInApplication)
         }
     }

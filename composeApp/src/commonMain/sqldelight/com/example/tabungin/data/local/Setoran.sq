@@ -1,0 +1,34 @@
+
+CREATE TABLE IF NOT EXISTS SetoranEntity (
+    id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    targetId  INTEGER NOT NULL,
+    amount    REAL    NOT NULL,
+    catatan   TEXT    NOT NULL DEFAULT '',
+    tanggal   TEXT    NOT NULL,
+    createdAt TEXT    NOT NULL,
+    FOREIGN KEY (targetId) REFERENCES TargetEntity(id) ON DELETE CASCADE
+);
+
+
+getSetoranByTarget:
+SELECT * FROM SetoranEntity
+WHERE targetId = ?
+ORDER BY tanggal DESC;
+
+getAllSetoran:
+SELECT
+    s.*,
+    t.nama AS targetNama
+FROM SetoranEntity s
+INNER JOIN TargetEntity t ON t.id = s.targetId
+ORDER BY s.tanggal DESC;
+
+insertSetoran:
+INSERT INTO SetoranEntity (targetId, amount, catatan, tanggal, createdAt)
+VALUES (?, ?, ?, ?, ?);
+
+deleteSetoran:
+DELETE FROM SetoranEntity WHERE id = ?;
+
+totalTerkumpulByTarget:
+SELECT COALESCE(SUM(amount), 0.0) FROM SetoranEntity WHERE targetId = ?;

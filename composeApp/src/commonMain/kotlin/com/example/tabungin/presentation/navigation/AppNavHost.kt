@@ -1,68 +1,66 @@
 package com.example.tabungin.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.example.tabungin.presentation.screens.addnote.AddNoteScreen
-import com.example.tabungin.presentation.screens.ai.AIAssistantScreen
-import com.example.tabungin.presentation.screens.detail.NoteDetailScreen
+import com.example.tabungin.presentation.screens.add_edit.AddEditScreen
+import com.example.tabungin.presentation.screens.detail.DetailScreen
 import com.example.tabungin.presentation.screens.home.HomeScreen
+import com.example.tabungin.presentation.screens.riwayat.RiwayatScreen
+import com.example.tabungin.presentation.screens.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController(),
-    modifier: Modifier = Modifier
+    navController: NavHostController = rememberNavController()
 ) {
-    val navigationActions = createNavigationActions(navController)
-    
     NavHost(
-        navController = navController,
-        startDestination = Route.Home,
-        modifier = modifier
+        navController    = navController,
+        startDestination = Routes.Home.route
     ) {
-        composable<Route.Home> {
+        composable(Routes.Home.route) {
             HomeScreen(
-                onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                onNavigateToDetail  = { navController.navigate(Routes.Detail.createRoute(it)) },
+                onNavigateToAddEdit = { navController.navigate(Routes.AddEdit.createRoute()) },
+                onNavigateToRiwayat  = { navController.navigate(Routes.Riwayat.route) },
+                onNavigateToSettings = { navController.navigate(Routes.Settings.route) }
             )
         }
-        
-        composable<Route.AddNote> { backStackEntry ->
-            val route: Route.AddNote = backStackEntry.toRoute()
-            AddNoteScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToAI = { text ->
-                    navigationActions.navigateToAIAssistant(
-                        noteId = route.noteId,
-                        initialText = text
-                    )
-                }
+
+        composable(
+            route     = Routes.Detail.route,
+            arguments = Routes.Detail.arguments
+        ) { back ->
+            val targetId = back.arguments?.getLong("targetId") ?: return@composable
+            DetailScreen(
+                targetId        = targetId,
+                onNavigateBack  = { navController.popBackStack() },
+                onNavigateToEdit = { navController.navigate(Routes.AddEdit.createRoute(it)) }
             )
         }
-        
-        composable<Route.NoteDetail> { backStackEntry ->
-            val route: Route.NoteDetail = backStackEntry.toRoute()
-            NoteDetailScreen(
-                noteId = route.noteId,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { navigationActions.navigateToAddNote(route.noteId) },
-                onShare = { _ -> }
+
+        composable(
+            route     = Routes.AddEdit.route,
+            arguments = Routes.AddEdit.arguments
+        ) { back ->
+            val targetId = back.arguments?.getLong("targetId")?.takeIf { it != -1L }
+            AddEditScreen(
+                targetId       = targetId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
-        
-        composable<Route.AIAssistant> { backStackEntry ->
-            val route: Route.AIAssistant = backStackEntry.toRoute()
-            AIAssistantScreen(
-                noteId = route.noteId,
-                initialText = route.initialText,
-                onNavigateBack = { navigationActions.navigateBack() },
-                onApplyResult = null
+
+        composable(Routes.Riwayat.route) {
+            RiwayatScreen(
+                onNavigateBack      = { navController.popBackStack() },
+                onNavigateToDetail  = { navController.navigate(Routes.Detail.createRoute(it)) }
+            )
+        }
+
+        composable(Routes.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

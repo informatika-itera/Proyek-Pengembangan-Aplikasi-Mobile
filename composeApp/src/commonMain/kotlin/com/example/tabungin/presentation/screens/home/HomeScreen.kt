@@ -44,138 +44,107 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.tabungin.domain.model.Note
-import com.example.tabungin.domain.model.NoteCategory
-import com.example.tabungin.domain.usecase.NoteSortBy
-import com.example.tabungin.presentation.components.EmptyState
-import com.example.tabungin.presentation.components.ErrorState
-import com.example.tabungin.presentation.components.LoadingIndicator
-import com.example.tabungin.presentation.components.NoteCard
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.text.font.FontWeight
+import com.example.tabungin.presentation.components.SummaryCard
+import com.example.tabungin.presentation.components.TargetCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
-    onNavigateToAI: () -> Unit,
+    onNavigateToAddEdit: () -> Unit,
+    onNavigateToRiwayat: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
-    var showSearch by remember { mutableStateOf(false) }
-    var showSortMenu by remember { mutableStateOf(false) }
-    
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { 
-                    if (showSearch) {
-                        SearchField(
-                            query = when (val state = uiState) {
-                                is HomeUiState.Success -> state.query
-                                is HomeUiState.Empty -> state.query
-                                else -> ""
-                            },
-                            onQueryChange = viewModel::onSearchQueryChange,
-                            onClear = {
-                                viewModel.clearSearch()
-                                showSearch = false
-                            }
-                        )
-                    } else {
-                        Text("TabungIn")
-                    }
-                },
+                title = { Text("TabungIn 🏦", fontWeight = FontWeight.Bold) },
                 actions = {
-                    if (!showSearch) {
-                        IconButton(onClick = { showSearch = true }) {
-                            Icon(Icons.Default.Search, contentDescription = "Cari")
-                        }
-                        
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
-                        }
-                        
-                        SortDropdownMenu(
-                            expanded = showSortMenu,
-                            currentSortBy = currentSortBy,
-                            onSortSelected = { 
-                                viewModel.onSortByChanged(it)
-                                showSortMenu = false
-                            },
-                            onDismiss = { showSortMenu = false }
-                        )
+                    IconButton(onClick = onNavigateToRiwayat) {
+                        Icon(Icons.Default.History, contentDescription = "Riwayat")
                     }
-                    
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAddNote) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+            FloatingActionButton(onClick = onNavigateToAddEdit) {
+                Icon(Icons.Default.Add, contentDescription = "Tambah Target")
             }
         }
-    ) { paddingValues ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
+                .padding(horizontal = 16.dp)
         ) {
-            CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
-                    else -> null
-                },
-                onCategorySelected = viewModel::onCategorySelected
+            Spacer(Modifier.height(8.dp))
+            SummaryCard(
+                totalTerkumpul = uiState.totalTerkumpul,
+                totalTarget    = uiState.totalTarget,
+                jumlahTarget   = uiState.targets.size
             )
-            
-            when (val state = uiState) {
-                is HomeUiState.Loading -> {
-                    LoadingIndicator()
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "Target Tabungan",
+                style      = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(8.dp))
+
+            when {
+                uiState.isLoading -> Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) { CircularProgressIndicator() }
+
+                uiState.targets.isEmpty() -> Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("🎯", style = MaterialTheme.typography.displayMedium)
+                        Spacer(Modifier.height(8.dp))
+                        Text("Belum ada target tabungan",
+                            style = MaterialTheme.typography.bodyLarge)
+                        Text("Tap + untuk mulai menabung",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
-                
-                is HomeUiState.Success -> {
-                    NotesList(
-                        notes = state.notes,
-                        onNoteClick = onNavigateToDetail,
-                        onPinClick = viewModel::togglePin,
-                        onDeleteClick = viewModel::deleteNote
-                    )
-                }
-                
-                is HomeUiState.Empty -> {
-                    EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
-                            "Tidak Ditemukan"
-                        } else {
-                            "Belum Ada Catatan"
-                        },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
-                        } else {
-                            "Tap + untuk membuat catatan baru"
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Outlined.NoteAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            )
-                        }
-                    )
-                }
-                
-                is HomeUiState.Error -> {
-                    ErrorState(
-                        message = state.message,
-                        onRetry = { viewModel.clearSearch() }
-                    )
+
+                else -> LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding      = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(uiState.targets, key = { it.id }) { target ->
+                        TargetCard(
+                            target   = target,
+                            onClick  = { onNavigateToDetail(target.id) },
+                            onDelete = { viewModel.deleteTarget(target.id) }
+                        )
+                    }
                 }
             }
         }
@@ -208,88 +177,3 @@ private fun SearchField(
     )
 }
 
-@Composable
-private fun SortDropdownMenu(
-    expanded: Boolean,
-    currentSortBy: NoteSortBy,
-    onSortSelected: (NoteSortBy) -> Unit,
-    onDismiss: () -> Unit
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss
-    ) {
-        NoteSortBy.entries.forEach { sortBy ->
-            DropdownMenuItem(
-                text = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(sortBy.displayName)
-                        if (sortBy == currentSortBy) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                },
-                onClick = { onSortSelected(sortBy) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun CategoryFilterRow(
-    selectedCategory: NoteCategory?,
-    onCategorySelected: (NoteCategory?) -> Unit
-) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        item {
-            FilterChip(
-                selected = selectedCategory == null,
-                onClick = { onCategorySelected(null) },
-                label = { Text("Semua") }
-            )
-        }
-        
-        items(NoteCategory.entries) { category ->
-            FilterChip(
-                selected = selectedCategory == category,
-                onClick = { 
-                    onCategorySelected(
-                        if (selectedCategory == category) null else category
-                    )
-                },
-                label = { Text(category.displayName) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun NotesList(
-    notes: List<Note>,
-    onNoteClick: (Long) -> Unit,
-    onPinClick: (Long) -> Unit,
-    onDeleteClick: (Long) -> Unit
-) {
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(
-            items = notes,
-            key = { it.id }
-        ) { note ->
-            NoteCard(
-                note = note,
-                onClick = { onNoteClick(note.id) },
-                onPinClick = { onPinClick(note.id) },
-                onDeleteClick = { onDeleteClick(note.id) }
-            )
-        }
-    }
-}

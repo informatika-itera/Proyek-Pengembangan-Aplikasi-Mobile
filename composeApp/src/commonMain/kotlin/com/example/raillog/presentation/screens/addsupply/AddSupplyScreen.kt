@@ -15,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -27,17 +26,23 @@ import com.example.raillog.domain.model.PartCategory
 import com.example.raillog.domain.model.Priority
 import org.koin.compose.viewmodel.koinViewModel
 
-// Warna sesuai design spec (Success Emerald)
 private val SuccessEmerald = Color(0xFF10B981)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSupplyScreen(
+    itemId: Long? = null,
     onNavigateBack: () -> Unit,
     viewModel: AddSupplyViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(itemId) {
+        if (itemId != null) {
+            viewModel.loadItemForEdit(itemId)
+        }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) onNavigateBack()
@@ -46,7 +51,12 @@ fun AddSupplyScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambah Suku Cadang", fontWeight = FontWeight.SemiBold) },
+                title = {
+                    Text(
+                        if (uiState.isEditMode) "Edit Suku Cadang" else "Tambah Suku Cadang",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -59,7 +69,6 @@ fun AddSupplyScreen(
             )
         },
         bottomBar = {
-            // Tombol Utama diletakkan di bawah sesuai mockup
             Surface(
                 shadowElevation = 8.dp,
                 color = MaterialTheme.colorScheme.surface
@@ -70,12 +79,15 @@ fun AddSupplyScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .height(56.dp),
-                    shape = RoundedCornerShape(4.dp), // Radius 4px
+                    shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(Icons.Default.Save, contentDescription = "Simpan Data")
+                    Icon(Icons.Default.Save, contentDescription = "Simpan")
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Simpan Data", fontWeight = FontWeight.Bold)
+                    Text(
+                        if (uiState.isEditMode) "Simpan Perubahan" else "Simpan Data",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -91,10 +103,13 @@ fun AddSupplyScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             if (uiState.generalError != null) {
-                Text(text = uiState.generalError!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = uiState.generalError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
 
-            // 1. Nama Komponen
             OutlinedTextField(
                 value = uiState.name,
                 onValueChange = { viewModel.onEvent(AddSupplyEvent.NameChanged(it)) },
@@ -105,10 +120,11 @@ fun AddSupplyScreen(
                 shape = RoundedCornerShape(4.dp)
             )
 
-            // 2. ID Part (Dengan validasi visual Error)
             OutlinedTextField(
                 value = uiState.partCode,
-                onValueChange = { viewModel.onEvent(AddSupplyEvent.PartCodeChanged(it.uppercase())) },
+                onValueChange = {
+                    viewModel.onEvent(AddSupplyEvent.PartCodeChanged(it.uppercase()))
+                },
                 label = { Text("ID Part (Nomor Seri)") },
                 placeholder = { Text("Contoh: PRT-BOGI-001") },
                 isError = uiState.partCodeError != null,
@@ -119,16 +135,19 @@ fun AddSupplyScreen(
                 },
                 trailingIcon = {
                     if (uiState.partCodeError != null) {
-                        Icon(Icons.Default.ErrorOutline, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
+                        Icon(
+                            Icons.Default.ErrorOutline,
+                            contentDescription = "Error",
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 },
-                textStyle = TextStyle(fontFamily = FontFamily.Monospace), // Technical ID font spec
+                textStyle = TextStyle(fontFamily = FontFamily.Monospace),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(4.dp)
             )
 
-            // 3. Kategori Subsistem (Custom Chips)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Kategori Subsistem", style = MaterialTheme.typography.titleSmall)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -136,12 +155,20 @@ fun AddSupplyScreen(
                         val isSelected = uiState.category == category
                         FilterChip(
                             selected = isSelected,
-                            onClick = { viewModel.onEvent(AddSupplyEvent.CategoryChanged(category)) },
+                            onClick = {
+                                viewModel.onEvent(AddSupplyEvent.CategoryChanged(category))
+                            },
                             label = { Text(category.displayName) },
                             leadingIcon = if (isSelected) {
-                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                                {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
                             } else null,
-                            shape = RoundedCornerShape(12.dp), // Radius 12px untuk chip
+                            shape = RoundedCornerShape(12.dp),
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = SuccessEmerald.copy(alpha = 0.2f),
                                 selectedLabelColor = SuccessEmerald,
@@ -152,11 +179,13 @@ fun AddSupplyScreen(
                 }
             }
 
-            // 4. Jumlah & Satuan
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = uiState.quantity,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.onEvent(AddSupplyEvent.QuantityChanged(it)) },
+                    onValueChange = {
+                        if (it.all { char -> char.isDigit() })
+                            viewModel.onEvent(AddSupplyEvent.QuantityChanged(it))
+                    },
                     label = { Text("Jumlah") },
                     placeholder = { Text("0") },
                     modifier = Modifier.weight(1f),
@@ -175,7 +204,6 @@ fun AddSupplyScreen(
                 )
             }
 
-            // 5. Pemasok
             OutlinedTextField(
                 value = uiState.supplier,
                 onValueChange = { viewModel.onEvent(AddSupplyEvent.SupplierChanged(it)) },
@@ -186,18 +214,23 @@ fun AddSupplyScreen(
                 shape = RoundedCornerShape(4.dp)
             )
 
-            // 6. Prioritas Pengadaan
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Prioritas Pengadaan", style = MaterialTheme.typography.titleSmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Priority.entries.forEach { priority ->
                         val isSelected = uiState.priority == priority
-                        val activeColor = if (priority == Priority.CRITICAL) MaterialTheme.colorScheme.error else SuccessEmerald
+                        val activeColor = if (priority == Priority.CRITICAL)
+                            MaterialTheme.colorScheme.error else SuccessEmerald
 
                         FilterChip(
                             selected = isSelected,
                             onClick = { viewModel.onEvent(AddSupplyEvent.PriorityChanged(priority)) },
-                            label = { Text(priority.displayName, modifier = Modifier.fillMaxWidth()) },
+                            label = {
+                                Text(priority.displayName, modifier = Modifier.fillMaxWidth())
+                            },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
@@ -209,13 +242,14 @@ fun AddSupplyScreen(
                 }
             }
 
-            // 7. Deskripsi Teknis
             OutlinedTextField(
                 value = uiState.notes,
                 onValueChange = { viewModel.onEvent(AddSupplyEvent.NotesChanged(it)) },
                 label = { Text("Deskripsi Teknis") },
-                placeholder = { Text("Masukkan spesifikasi, material, atau catatan khusus...") },
-                modifier = Modifier.fillMaxWidth().height(140.dp),
+                placeholder = { Text("Spesifikasi, material, atau catatan khusus...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp),
                 shape = RoundedCornerShape(4.dp)
             )
 

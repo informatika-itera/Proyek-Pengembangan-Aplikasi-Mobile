@@ -10,28 +10,61 @@ import com.example.raillog.domain.repository.SupplyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddSupplyViewModel(
     private val repository: SupplyRepository
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(AddSupplyUiState())
     val uiState: StateFlow<AddSupplyUiState> = _uiState.asStateFlow()
 
+    fun loadItemForEdit(itemId: Long) {
+        viewModelScope.launch {
+            try {
+                val item = repository.getItemById(itemId).first()
+                if (item != null) {
+                    _uiState.update {
+                        it.copy(
+                            editingItemId = item.id,
+                            name = item.name,
+                            partCode = item.partCode,
+                            category = item.category,
+                            quantity = item.quantity.toString(),
+                            unit = item.unit,
+                            supplier = item.supplier,
+                            priority = item.priority,
+                            notes = item.notes,
+                            isEditMode = true
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(generalError = "Gagal memuat data item") }
+            }
+        }
+    }
+
     fun onEvent(event: AddSupplyEvent) {
         when (event) {
-            is AddSupplyEvent.NameChanged -> _uiState.update { it.copy(name = event.name, generalError = null) }
-            is AddSupplyEvent.PartCodeChanged -> {
-                // Hapus error saat user mulai mengetik lagi
+            is AddSupplyEvent.NameChanged ->
+                _uiState.update { it.copy(name = event.name, generalError = null) }
+            is AddSupplyEvent.PartCodeChanged ->
                 _uiState.update { it.copy(partCode = event.code, partCodeError = null, generalError = null) }
-            }
-            is AddSupplyEvent.CategoryChanged -> _uiState.update { it.copy(category = event.category) }
-            is AddSupplyEvent.QuantityChanged -> _uiState.update { it.copy(quantity = event.quantity) }
-            is AddSupplyEvent.UnitChanged -> _uiState.update { it.copy(unit = event.unit) }
-            is AddSupplyEvent.SupplierChanged -> _uiState.update { it.copy(supplier = event.supplier) }
-            is AddSupplyEvent.PriorityChanged -> _uiState.update { it.copy(priority = event.priority) }
-            is AddSupplyEvent.NotesChanged -> _uiState.update { it.copy(notes = event.notes) }
+            is AddSupplyEvent.CategoryChanged ->
+                _uiState.update { it.copy(category = event.category) }
+            is AddSupplyEvent.QuantityChanged ->
+                _uiState.update { it.copy(quantity = event.quantity) }
+            is AddSupplyEvent.UnitChanged ->
+                _uiState.update { it.copy(unit = event.unit) }
+            is AddSupplyEvent.SupplierChanged ->
+                _uiState.update { it.copy(supplier = event.supplier) }
+            is AddSupplyEvent.PriorityChanged ->
+                _uiState.update { it.copy(priority = event.priority) }
+            is AddSupplyEvent.NotesChanged ->
+                _uiState.update { it.copy(notes = event.notes) }
             AddSupplyEvent.SaveItem -> saveItem()
         }
     }
@@ -40,16 +73,14 @@ class AddSupplyViewModel(
         val state = _uiState.value
         var hasError = false
 
-        // Validasi Nama
         if (state.name.isBlank()) {
             _uiState.update { it.copy(generalError = "Nama Komponen wajib diisi!") }
             hasError = true
         }
 
-        // Validasi Format ID Part (Contoh struktur: PRT-XXXX-000)
         val partCodeRegex = Regex("^PRT-[A-Z0-9]{4}-\\d{3}\$")
         if (state.partCode.isBlank() || !state.partCode.matches(partCodeRegex)) {
-            _uiState.update { it.copy(partCodeError = "Format tidak lengkap. Gunakan struktur PRT-XXXX-000.") }
+            _uiState.update { it.copy(partCodeError = "Format tidak valid. Gunakan struktur PRT-XXXX-000.") }
             hasError = true
         }
 
@@ -57,18 +88,35 @@ class AddSupplyViewModel(
 
         viewModelScope.launch {
             try {
-                val item = SupplyItem(
-                    partCode = state.partCode,
-                    name = state.name,
-                    category = state.category,
-                    quantity = state.quantity.toIntOrNull() ?: 0,
-                    unit = state.unit,
-                    supplier = state.supplier,
-                    status = SupplyStatus.PENDING,
-                    priority = state.priority,
-                    notes = state.notes
-                )
-                repository.insertItem(item)
+                if (state.isEditMode && state.editingItemId != null) {
+                    val existing = repository.getItemById(state.editingItemId).first()
+                    if (existing != null) {
+                        val updated = existing.copy(
+                            partCode = state.partCode,
+                            name = state.name,
+                            category = state.category,
+                            quantity = state.quantity.toIntOrNull() ?: 0,
+                            unit = state.unit,
+                            supplier = state.supplier,
+                            priority = state.priority,
+                            notes = state.notes
+                        )
+                        repository.updateItem(updated)
+                    }
+                } else {
+                    val item = SupplyItem(
+                        partCode = state.partCode,
+                        name = state.name,
+                        category = state.category,
+                        quantity = state.quantity.toIntOrNull() ?: 0,
+                        unit = state.unit,
+                        supplier = state.supplier,
+                        status = SupplyStatus.PENDING,
+                        priority = state.priority,
+                        notes = state.notes
+                    )
+                    repository.insertItem(item)
+                }
                 _uiState.update { it.copy(isSaved = true) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(generalError = e.message) }
@@ -78,6 +126,8 @@ class AddSupplyViewModel(
 }
 
 data class AddSupplyUiState(
+    val editingItemId: Long? = null,
+    val isEditMode: Boolean = false,
     val name: String = "",
     val partCode: String = "",
     val category: PartCategory = PartCategory.BOGIE,

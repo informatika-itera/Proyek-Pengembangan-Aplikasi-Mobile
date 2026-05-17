@@ -29,3 +29,5 @@ jobs:
 
       - name: Compile Assemble Debug
         run: ./gradlew assembleDebug
+
+        

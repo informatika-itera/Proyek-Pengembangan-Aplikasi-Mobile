@@ -1,0 +1,36 @@
+-- TasbihCount.sq
+-- Schema untuk menyimpan sesi tasbih aktif
+
+CREATE TABLE TasbihCountEntity (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    dzikir_id    INTEGER NOT NULL,
+    target_count INTEGER NOT NULL DEFAULT 33,
+    current_count INTEGER NOT NULL DEFAULT 0,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    created_at   INTEGER NOT NULL
+);
+
+-- Ambil sesi tasbih aktif
+getActiveTasbih:
+SELECT * FROM TasbihCountEntity
+WHERE is_completed = 0
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- Buat sesi tasbih baru
+insertTasbihSession:
+INSERT INTO TasbihCountEntity (dzikir_id, target_count, current_count, is_completed, created_at)
+VALUES (?, ?, 0, 0, ?);
+
+-- Update hitungan
+updateCount:
+UPDATE TasbihCountEntity
+SET current_count = ?,
+    is_completed = CASE WHEN ? >= target_count THEN 1 ELSE 0 END
+WHERE id = ?;
+
+-- Reset sesi
+resetSession:
+UPDATE TasbihCountEntity
+SET current_count = 0, is_completed = 0
+WHERE id = ?;

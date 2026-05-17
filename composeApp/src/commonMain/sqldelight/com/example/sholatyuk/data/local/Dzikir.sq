@@ -1,0 +1,46 @@
+-- Dzikir.sq
+-- Schema untuk menyimpan dzikir dan hitungan tasbih
+
+CREATE TABLE DzikirEntity (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    title         TEXT    NOT NULL,
+    arabic        TEXT    NOT NULL,
+    latin         TEXT    NOT NULL,
+    translation   TEXT    NOT NULL,
+    benefit       TEXT    NOT NULL DEFAULT '',
+    count         INTEGER NOT NULL DEFAULT 33,
+    current_count INTEGER NOT NULL DEFAULT 0,
+    category      TEXT    NOT NULL
+);
+
+-- Ambil semua dzikir
+getAllDzikir:
+SELECT * FROM DzikirEntity
+ORDER BY category, id;
+
+-- Ambil dzikir berdasarkan kategori
+getDzikirByCategory:
+SELECT * FROM DzikirEntity
+WHERE category = ?
+ORDER BY id;
+
+-- Tambah hitungan tasbih
+incrementTasbih:
+UPDATE DzikirEntity
+SET current_count = current_count + 1
+WHERE id = ?;
+
+-- Reset hitungan tasbih
+resetTasbih:
+UPDATE DzikirEntity
+SET current_count = 0
+WHERE id = ?;
+
+-- Insert dzikir (untuk seed data)
+insertDzikir:
+INSERT OR IGNORE INTO DzikirEntity (id, title, arabic, latin, translation, benefit, count, current_count, category)
+VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?);
+
+-- Hitung jumlah dzikir
+countDzikir:
+SELECT COUNT(*) FROM DzikirEntity;

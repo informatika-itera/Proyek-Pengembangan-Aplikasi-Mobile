@@ -8,6 +8,7 @@ import com.example.Feelia.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+// validasi save note, logic sorting, search/filter berdasarkan emotion dan update business rules journaling
 class GetAllNotesUseCase(private val repository: NoteRepository) {
     operator fun invoke(sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC): Flow<List<Note>> {
         return repository.getAllNotes().map { notes ->

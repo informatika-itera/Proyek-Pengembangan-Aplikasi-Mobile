@@ -1,4 +1,4 @@
-package com.studyhub.core.network
+package core.network
 
 import com.studyhub.BuildConfig
 

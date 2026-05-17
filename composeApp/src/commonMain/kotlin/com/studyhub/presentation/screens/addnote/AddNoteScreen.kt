@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -45,7 +44,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AddNoteScreen(
     noteId: Long?,
     onNavigateBack: () -> Unit,
-    onNavigateToAI: (String) -> Unit,
     viewModel: AddNoteViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -77,13 +75,6 @@ fun AddNoteScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { onNavigateToAI(uiState.content) },
-                        enabled = uiState.content.isNotBlank()
-                    ) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
-                    }
-                    
                     IconButton(
                         onClick = { viewModel.saveNote() },
                         enabled = uiState.canSave

@@ -72,7 +72,7 @@ class GeminiService(private val client: HttpClient) {
         response.getTextContent() ?: throw Exception("Respons kosong dari AI")
     }
 }
-
+// membuat prompt emotion detector, prompt emotional insight dan update AI context ke Feelia
 // ====================
 // System Prompts
 // ====================

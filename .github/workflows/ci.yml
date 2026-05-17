@@ -19,7 +19,7 @@ jobs:
 
       # --- TAMBAHKAN LANGKAH INI ---
       - name: Create Mock local.properties for Build
-        run: echo "GEMINI_API_KEY=\"mock_api_key_for_ci\"" > local.properties
+        run: echo "GEMINI_API_KEY=\"mock_api_key_for_ci\" > local.properties
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew

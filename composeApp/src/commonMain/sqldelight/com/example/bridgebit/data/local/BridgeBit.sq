@@ -1,0 +1,67 @@
+-- Database schema for BridgeBit (Translation App)
+-- File: BridgeBit.sq
+
+CREATE TABLE TranslationEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_text TEXT NOT NULL,         -- Teks asli yang diketik user
+    translated_text TEXT NOT NULL,     -- Hasil terjemahan atau output AI
+    source_language TEXT NOT NULL,     -- Bahasa asal (misal: "id", "en", atau "auto")
+    target_language TEXT NOT NULL,     -- Bahasa tujuan (misal: "en", "ja")
+    is_vaulted INTEGER NOT NULL DEFAULT 0, -- 1 = Disimpan ke Phrase Vault (sebelumnya is_pinned)
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+
+-- Mendapatkan semua riwayat terjemahan, diurutkan dari yang terbaru
+getAllHistory:
+SELECT * FROM TranslationEntity
+ORDER BY updated_at DESC;
+
+-- Mencari terjemahan di Dashboard berdasarkan teks asli atau terjemahan
+searchHistory:
+SELECT * FROM TranslationEntity
+WHERE source_text LIKE '%' || ? || '%' OR translated_text LIKE '%' || ? || '%'
+ORDER BY updated_at DESC;
+
+-- Mendapatkan hanya terjemahan yang disimpan ke Vault
+getVaultPhrases:
+SELECT * FROM TranslationEntity
+WHERE is_vaulted = 1
+ORDER BY updated_at DESC;
+
+-- Tombol bintang/simpan: Memasukkan atau mengeluarkan dari Vault
+toggleVaultStatus:
+UPDATE TranslationEntity
+SET is_vaulted = CASE WHEN is_vaulted = 1 THEN 0 ELSE 1 END, updated_at = ?
+WHERE id = ?;
+
+-- Mengambil satu data spesifik untuk ditampilkan di Detail atau dikirim ke AI
+getTranslationById:
+SELECT * FROM TranslationEntity
+WHERE id = ?;
+
+-- Menyimpan hasil terjemahan baru dari Workspace
+insertTranslation:
+INSERT INTO TranslationEntity (source_text, translated_text, source_language, target_language, is_vaulted, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- Mendapatkan ID terakhir (berguna untuk navigasi ke Detail setelah menyimpan)
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- Mengupdate terjemahan jika user mengeditnya di layar Detail
+updateTranslation:
+UPDATE TranslationEntity
+SET source_text = ?, translated_text = ?, source_language = ?, target_language = ?, is_vaulted = ?, updated_at = ?
+WHERE id = ?;
+
+-- Menghapus satu riwayat terjemahan
+deleteTranslationById:
+DELETE FROM TranslationEntity
+WHERE id = ?;
+
+-- Menghapus banyak riwayat sekaligus (Fitur hapus massal)
+deleteTranslationsByIds:
+DELETE FROM TranslationEntity
+WHERE id IN ?;

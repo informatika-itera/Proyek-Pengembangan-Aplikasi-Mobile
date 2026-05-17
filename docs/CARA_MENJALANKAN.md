@@ -57,7 +57,7 @@ Lalu edit `local.properties`:
 # macOS  :
 # sdk.dir=/Users/<USER>/Library/Android/sdk
 # Linux  :
-# sdk.dir=/home/<USER>/Android/Sdk
+# sdk.dir=/dashboard/<USER>/Android/Sdk
 # Windows:
 # sdk.dir=C\:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
 
@@ -251,7 +251,7 @@ Pryk-PAM/
   melihat log Ktor karena kita pakai `enableLogging = true`).
 - **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
 - **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+  `/data/data/bridgebit/files/noteai.preferences_pb` (Android).
 
 ---
 

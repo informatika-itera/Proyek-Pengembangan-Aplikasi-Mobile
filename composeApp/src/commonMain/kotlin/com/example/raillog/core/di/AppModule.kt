@@ -12,6 +12,7 @@ import com.example.raillog.data.repository.SupplyRepositoryImpl
 import com.example.raillog.domain.repository.AIRepository
 import com.example.raillog.domain.repository.SupplyRepository
 import com.example.raillog.presentation.screens.addsupply.AddSupplyViewModel
+import com.example.raillog.presentation.screens.ai.AIAssistantViewModel
 import com.example.raillog.presentation.screens.detail.SupplyDetailViewModel
 import com.example.raillog.presentation.screens.home.HomeViewModel
 import org.koin.core.context.startKoin
@@ -55,7 +56,7 @@ val repositoryModule = module {
 // ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
-    // Use cases RailLog ditambahkan di Sprint 2
+    // Use cases RailLog ditambahkan di Sprint 3
 }
 
 // ==================== VIEWMODEL MODULE ====================
@@ -64,6 +65,7 @@ val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddSupplyViewModel)
     viewModelOf(::SupplyDetailViewModel)
+    viewModelOf(::AIAssistantViewModel)
 }
 
 // ==================== SHARED MODULES ====================

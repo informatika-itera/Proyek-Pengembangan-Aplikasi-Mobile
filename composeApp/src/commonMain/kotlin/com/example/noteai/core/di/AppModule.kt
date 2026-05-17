@@ -9,8 +9,12 @@ import com.example.noteai.data.local.datastore.create
 import com.example.noteai.data.remote.api.GeminiService
 import com.example.noteai.data.repository.AIRepositoryImpl
 import com.example.noteai.data.repository.NoteRepositoryImpl
+import com.example.noteai.data.repository.hujjah.BookmarkRepositoryImpl
+import com.example.noteai.data.repository.hujjah.HujjahRepositoryImpl
 import com.example.noteai.domain.repository.AIRepository
 import com.example.noteai.domain.repository.NoteRepository
+import com.example.noteai.domain.repository.hujjah.BookmarkRepository
+import com.example.noteai.domain.repository.hujjah.HujjahRepository
 import com.example.noteai.domain.usecase.DeleteNoteUseCase
 import com.example.noteai.domain.usecase.GenerateIdeasUseCase
 import com.example.noteai.domain.usecase.GetAllNotesUseCase
@@ -20,11 +24,16 @@ import com.example.noteai.domain.usecase.SearchNotesUseCase
 import com.example.noteai.domain.usecase.SummarizeNoteUseCase
 import com.example.noteai.presentation.screens.addnote.AddNoteViewModel
 import com.example.noteai.presentation.screens.ai.AIAssistantViewModel
+import com.example.noteai.presentation.screens.bookmark.BookmarkViewModel
 import com.example.noteai.presentation.screens.detail.NoteDetailViewModel
 import com.example.noteai.presentation.screens.home.HomeViewModel
+import com.example.noteai.presentation.screens.lens.HujjahLensViewModel
+import com.example.noteai.presentation.screens.reference.ReferenceDetailViewModel
+import com.example.noteai.presentation.screens.result.HujjahResultViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
@@ -56,8 +65,13 @@ val preferencesModule = module {
 // ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
+    // Legacy Sprint 1 repositories
     singleOf(::NoteRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+
+    // Sprint 2 Hujjah repositories
+    singleOf(::HujjahRepositoryImpl) bind HujjahRepository::class
+    singleOf(::BookmarkRepositoryImpl) bind BookmarkRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -75,10 +89,17 @@ val useCaseModule = module {
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
+    // Legacy Sprint 1 ViewModels
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddNoteViewModel)
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+
+    // Sprint 2 Hujjah ViewModels
+    viewModelOf(::HujjahLensViewModel)
+    viewModel { params -> HujjahResultViewModel(params.get(), get()) }
+    viewModel { params -> ReferenceDetailViewModel(params.get(), get(), get()) }
+    viewModelOf(::BookmarkViewModel)
 }
 
 // ==================== SHARED MODULES ====================

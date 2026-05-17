@@ -1,5 +1,6 @@
 package com.example.Roomie
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
@@ -60,9 +61,16 @@ fun App(
     viewModel: AppViewModel = koinViewModel()
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
+    val themeMode by viewModel.themeMode.collectAsState()
     val navController = rememberNavController()
+
+    val darkTheme = when (themeMode) {
+        1 -> false // Light
+        2 -> true  // Dark
+        else -> isSystemInDarkTheme() // System
+    }
     
-    RoomieTheme {
+    RoomieTheme(darkTheme = darkTheme) {
         // Define navigation items based on role
         val navItems = remember(currentUser) {
             when (currentUser?.role) {
@@ -97,17 +105,17 @@ fun App(
                                     label = { Text(screen.title) },
                                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                                     onClick = {
-                                    navController.navigate(screen.route) {
-                                        val startDest = navController.graph.findStartDestination().route
-                                        if (startDest != null) {
-                                            popUpTo(startDest) {
-                                                saveState = true
+                                        navController.navigate(screen.route) {
+                                            val startDest = navController.graph.findStartDestination().route
+                                            if (startDest != null) {
+                                                popUpTo(startDest) {
+                                                    saveState = true
+                                                }
                                             }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
                                     }
-                                }
                                 )
                             }
                         }
@@ -129,9 +137,7 @@ fun App(
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Login.route) {
-                    LoginScreen(onLoginSuccess = {
-                        // Role-based navigation is handled by LaunchedEffect
-                    })
+                    LoginScreen(onLoginSuccess = {})
                 }
 
                 composable(Screen.Home.route) {
@@ -194,7 +200,11 @@ fun App(
                 }
                 
                 composable(Screen.Profile.route) {
-                    ProfileScreen(onLogout = { viewModel.logout() })
+                    ProfileScreen(
+                        onLogout = { viewModel.logout() },
+                        currentThemeMode = themeMode,
+                        onThemeChange = { viewModel.setThemeMode(it) }
+                    )
                 }
 
                 composable(Screen.AdminDashboard.route) {
@@ -203,16 +213,21 @@ fun App(
             }
         }
         
-        // Final Fix for Auth Auto-Navigation
+        // Auto-navigation on auth change
         LaunchedEffect(currentUser) {
             if (currentUser == null) {
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(0) { inclusive = true }
+                if (navController.currentDestination?.route != Screen.Login.route) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             } else {
-                val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
-                navController.navigate(dest) {
-                    popUpTo(0) { inclusive = true }
+                val currentRoute = navController.currentDestination?.route
+                if (currentRoute == Screen.Login.route || currentRoute == null) {
+                    val dest = if (currentUser?.role == UserRole.ADMIN) Screen.AdminDashboard.route else Screen.Home.route
+                    navController.navigate(dest) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             }
         }

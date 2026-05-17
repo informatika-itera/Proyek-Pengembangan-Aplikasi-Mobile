@@ -1,6 +1,7 @@
 package com.example.Roomie.presentation.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,11 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +27,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    currentThemeMode: Int,
+    onThemeChange: (Int) -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -56,7 +57,11 @@ fun ProfileScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
                 }
                 is ProfileUiState.Success -> {
-                    ProfileContent(state)
+                    ProfileContent(
+                        state = state,
+                        currentThemeMode = currentThemeMode,
+                        onThemeChange = onThemeChange
+                    )
                 }
                 is ProfileUiState.Error -> {
                     Text(
@@ -70,8 +75,13 @@ fun ProfileScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileContent(state: ProfileUiState.Success) {
+fun ProfileContent(
+    state: ProfileUiState.Success,
+    currentThemeMode: Int,
+    onThemeChange: (Int) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp),
@@ -124,6 +134,73 @@ fun ProfileContent(state: ProfileUiState.Success) {
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        // Theme Selection Section (Dropdown Mode)
+        item {
+            var expanded by remember { mutableStateOf(false) }
+            val themeOptions = listOf(
+                Triple(0, "Default Sistem", Icons.Default.SettingsSuggest),
+                Triple(1, "Mode Terang", Icons.Default.LightMode),
+                Triple(2, "Mode Gelap", Icons.Default.DarkMode)
+            )
+            val selectedOption = themeOptions.find { it.first == currentThemeMode } ?: themeOptions[0]
+
+            Text(
+                text = "Tampilan Aplikasi",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedCard(
+                    onClick = { expanded = true },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(selectedOption.third, null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(16.dp))
+                        Text(selectedOption.second, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.weight(1f))
+                        Icon(
+                            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                ) {
+                    themeOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { 
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(option.third, null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(option.second)
+                                }
+                            },
+                            onClick = {
+                                onThemeChange(option.first)
+                                expanded = false
+                            },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        )
                     }
                 }
             }

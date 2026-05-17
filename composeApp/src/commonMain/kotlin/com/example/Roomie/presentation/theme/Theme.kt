@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 
 // ITERA Official Palette
 private val IteraGold = Color(0xFFD4AF37)
+private val IteraGoldDark = Color(0xFF8B7500)
 private val IteraGoldLight = Color(0xFFFFD700)
 private val IteraRed = Color(0xFFB22222)
 private val DeepBlack = Color(0xFF121212)
@@ -33,14 +34,34 @@ private val DarkColorScheme = darkColorScheme(
     outline = IteraGold
 )
 
-// Kita paksa Dark Theme biar kerasa vibe ITERA-nya (Black & Gold)
+private val LightColorScheme = lightColorScheme(
+    primary = IteraGold,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFFFF4CC),
+    onPrimaryContainer = IteraGoldDark,
+    secondary = IteraGoldDark,
+    onSecondary = Color.White,
+    tertiary = IteraRed,
+    onTertiary = Color.White,
+    background = Color(0xFFFDFDFD),
+    onBackground = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFF5F5F5),
+    onSurfaceVariant = Color.DarkGray,
+    error = IteraRed,
+    outline = IteraGold
+)
+
 @Composable
 fun RoomieTheme(
-    darkTheme: Boolean = true, // Force dark for premium look
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = colorScheme,
         content = content
     )
 }

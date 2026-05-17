@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.Roomie.core.util.SecurityUtils
 import com.example.Roomie.domain.model.User
@@ -15,20 +16,23 @@ class UserPreferences(
     private val dataStore: DataStore<Preferences>
 ) {
     private object Keys {
-        val DARK_MODE = booleanPreferencesKey("dark_mode")
+        val THEME_MODE = intPreferencesKey("theme_mode") // 0: System, 1: Light, 2: Dark
         val USER_ID = stringPreferencesKey("user_id")
         val USER_NAME = stringPreferencesKey("user_name")
-        val USER_NIM = stringPreferencesKey("user_nim") // Will be obfuscated
+        val USER_NIM = stringPreferencesKey("user_nim")
         val USER_ROLE = stringPreferencesKey("user_role")
     }
     
-    val isDarkMode: Flow<Boolean> = dataStore.data.map { prefs ->
-        prefs[Keys.DARK_MODE] ?: false
+    /**
+     * Theme Mode: 0 = System, 1 = Light, 2 = Dark
+     */
+    val themeMode: Flow<Int> = dataStore.data.map { prefs ->
+        prefs[Keys.THEME_MODE] ?: 0
     }
     
-    suspend fun setDarkMode(enabled: Boolean) {
+    suspend fun setThemeMode(mode: Int) {
         dataStore.edit { prefs ->
-            prefs[Keys.DARK_MODE] = enabled
+            prefs[Keys.THEME_MODE] = mode
         }
     }
 

@@ -1,21 +1,24 @@
 package com.kelazzz.app.di
 
+import com.kelazzz.app.presentation.screens.home.HomeViewModel
+import com.kelazzz.app.presentation.screens.jadwal.JadwalViewModel
+import com.kelazzz.app.presentation.screens.login.LoginViewModel
+import com.kelazzz.app.presentation.screens.profile.ProfileViewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 /**
  * ViewModel Layer — Koin DI Module
  * 
  * Menyediakan ViewModels untuk presentation layer.
- * 
- * Saat ini kosong — ViewModels akan ditambahkan seiring
- * implementasi screen di sprint berikutnya:
- * - Sprint 2: LoginViewModel, HomeViewModel
- * - Sprint 3: PresensiViewModel, DaftarPresensiViewModel
- * - Sprint 4: KalenderViewModel, AIAsistenViewModel
  */
 val viewModelModule = module {
-    // TODO: Sprint 2
-    // viewModelOf(::LoginViewModel)
+    // ==================== Sprint 2 ====================
+    viewModelOf(::LoginViewModel)
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::ProfileViewModel)
+    viewModelOf(::JadwalViewModel)
+    // TODO: Sprint 2 — more ViewModels
     // viewModelOf(::HomeViewModel)
     
     // TODO: Sprint 3

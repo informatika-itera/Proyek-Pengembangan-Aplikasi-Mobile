@@ -33,8 +33,12 @@ class UserPreferences(
         val AUTH_TOKEN = stringPreferencesKey("auth_token")
         val USER_NIM = stringPreferencesKey("user_nim")
         val USER_NAME = stringPreferencesKey("user_name")
+        val USER_EMAIL = stringPreferencesKey("user_email")
+        val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val DEVICE_NAME = stringPreferencesKey("device_name")
+        val DEVICE_ID = stringPreferencesKey("device_id")
     }
     
     // ==================== DARK MODE ====================
@@ -94,10 +98,20 @@ class UserPreferences(
         prefs[Keys.USER_NAME]
     }
     
-    suspend fun saveUserInfo(nim: String, name: String) {
+    val userEmail: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_EMAIL]
+    }
+    
+    val userPhotoUrl: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_PHOTO_URL]
+    }
+    
+    suspend fun saveUserInfo(nim: String, name: String, email: String, photoUrl: String) {
         dataStore.edit { prefs ->
             prefs[Keys.USER_NIM] = nim
             prefs[Keys.USER_NAME] = name
+            prefs[Keys.USER_EMAIL] = email
+            prefs[Keys.USER_PHOTO_URL] = photoUrl
         }
     }
     
@@ -122,6 +136,23 @@ class UserPreferences(
     suspend fun setOnboardingCompleted() {
         dataStore.edit { prefs ->
             prefs[Keys.ONBOARDING_COMPLETED] = true
+        }
+    }
+    
+    // ==================== DEVICE INFO ====================
+    
+    val deviceId: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.DEVICE_ID]
+    }
+    
+    val deviceName: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.DEVICE_NAME]
+    }
+    
+    suspend fun saveDeviceInfo(device: String, deviceId: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.DEVICE_NAME] = device
+            prefs[Keys.DEVICE_ID] = deviceId
         }
     }
     

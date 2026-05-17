@@ -40,6 +40,11 @@ object HttpClientFactory {
      */
     fun create(enableLogging: Boolean = true): HttpClient {
         return HttpClient {
+            // Throw exceptions untuk non-2xx responses
+            // Ini memungkinkan PocketApiService menangkap ClientRequestException (4xx)
+            // dan ServerResponseException (5xx) dengan pesan user-friendly
+            expectSuccess = true
+            
             // JSON Serialization
             install(ContentNegotiation) {
                 json(json)

@@ -1,4 +1,4 @@
-# KelazZz — Aplikasi Presensi Mahasiswa ITERA
+s# KelazZz — Aplikasi Presensi Mahasiswa ITERA
 
 ![CI](https://github.com/MuhammadBintangAl-Fasya/KelazZz/actions/workflows/ci.yml/badge.svg)
 

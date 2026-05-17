@@ -2,11 +2,11 @@ package com.example.mybawanggacha.presentation.screens.ai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mybawanggacha.domain.repository.AIRepository
-import com.example.mybawanggacha.domain.repository.WritingStyle
-import com.example.mybawanggacha.domain.usecase.GenerateIdeasUseCase
-import com.example.mybawanggacha.domain.usecase.ImproveWritingUseCase
-import com.example.mybawanggacha.domain.usecase.SummarizeNoteUseCase
+import com.example.mybawanggacha.domain.ai.repository.AIRepository
+import com.example.mybawanggacha.domain.ai.repository.WritingStyle
+import com.example.mybawanggacha.domain.note.usecase.GenerateIdeasUseCase
+import com.example.mybawanggacha.domain.note.usecase.ImproveWritingUseCase
+import com.example.mybawanggacha.domain.note.usecase.SummarizeNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

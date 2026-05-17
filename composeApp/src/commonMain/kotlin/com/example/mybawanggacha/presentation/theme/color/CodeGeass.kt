@@ -52,14 +52,12 @@ object CodeGeassColors {
 
     val LelouchError = Color(0xFFFFB4AB)
     val LelouchOnError = Color(0xFF690005)
-    val LelouchErrorContainer = Color(0xFF93000A)
-    val LelouchOnErrorContainer = Color(0xFFFFDAD6)
 
-    val LelouchBackground = Color(0xFF2E313A)
+    val LelouchDeepBlack = Color(0xFF0F0F12)
+    val LelouchSurfaceDark = Color(0xFF18191F)
+
     val LelouchOnBackground = Color(0xFFF0F0F4)
-    val LelouchSurface = Color(0xFF2E313A)
     val LelouchOnSurface = Color(0xFFF0F0F4)
-    val LelouchSurfaceVariant = Color(0xFF454854)
-    val LelouchOnSurfaceVariant = Color(0xFFC6C8D3)
-    val LelouchOutline = Color(0xFF90929D)
+    val LelouchSurfaceVariant = Color(0xFF2A2D35)
+    val LelouchOutline = Color(0xFF9489CC)
 }

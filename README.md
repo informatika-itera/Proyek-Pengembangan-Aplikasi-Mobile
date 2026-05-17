@@ -45,14 +45,37 @@ Proyek ini menggunakan Clean Architecture dan MVVM:
 Lihat detail progress di [PLAN.md](PLAN.md)
 
 ## Dosen Pengampu
-### Pak Habib
-[GitHub: mh4Scripts](https://github.com/mh4Scripts)
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/mh4Scripts">
+        <img src="https://github.com/mh4Scripts.png" width="100px;" alt="Pak Habib" style="border-radius:50%;"/><br />
+        <sub><b>Pak Habib</b></sub>
+      </a><br />
+      <sub>mh4Scripts</sub>
+    </td>
+  </tr>
+</table>
 
 ## Member Kelompok
-### Varasina Farmadani (123140107)
-[GitHub: sinavarasina](https://github.com/sinavarasina)
-### Faiq Ghozy Erlangga (123140139)
-[GitHub: Faiq1818](https://github.com/Faiq1818)
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/sinavarasina">
+        <img src="https://github.com/sinavarasina.png" width="100px;" alt="Varasina Farmadani" style="border-radius:50%;"/><br />
+        <sub><b>Varasina Farmadani</b></sub>
+      </a><br />
+      <sub>NIM. 123140107</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Faiq1818">
+        <img src="https://github.com/Faiq1818.png" width="100px;" alt="Faiq Ghozy Erlangga" style="border-radius:50%;"/><br />
+        <sub><b>Faiq Ghozy Erlangga</b></sub>
+      </a><br />
+      <sub>NIM. 123140139</sub>
+    </td>
+  </tr>
+</table>
 
 **Program Studi Teknik Informatika**  
 Institut Teknologi Sumatera (ITERA)

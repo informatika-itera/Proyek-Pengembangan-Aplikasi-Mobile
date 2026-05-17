@@ -2,16 +2,14 @@ package com.example.mybawanggacha.presentation
 
 import app.cash.turbine.test
 import com.example.mybawanggacha.data.repository.FakeNoteRepository
-import com.example.mybawanggacha.domain.model.Note
-import com.example.mybawanggacha.domain.model.NoteCategory
-import com.example.mybawanggacha.domain.model.NoteColor
-import com.example.mybawanggacha.domain.repository.NoteRepository
-import com.example.mybawanggacha.domain.usecase.DeleteNoteUseCase
-import com.example.mybawanggacha.domain.usecase.GetAllNotesUseCase
-import com.example.mybawanggacha.domain.usecase.NoteSortBy
-import com.example.mybawanggacha.domain.usecase.SearchNotesUseCase
-import com.example.mybawanggacha.presentation.screens.home.HomeUiState
-import com.example.mybawanggacha.presentation.screens.home.HomeViewModel
+import com.example.mybawanggacha.domain.note.model.Note
+import com.example.mybawanggacha.domain.note.model.NoteCategory
+import com.example.mybawanggacha.domain.note.model.NoteColor
+import com.example.mybawanggacha.domain.note.usecase.DeleteNoteUseCase
+import com.example.mybawanggacha.domain.note.usecase.GetAllNotesUseCase
+import com.example.mybawanggacha.domain.note.usecase.SearchNotesUseCase
+import com.example.mybawanggacha.presentation.screens.discover.HomeUiState
+import com.example.mybawanggacha.presentation.screens.discover.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

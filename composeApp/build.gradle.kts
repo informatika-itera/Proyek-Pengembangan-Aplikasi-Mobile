@@ -36,7 +36,6 @@ kotlin {
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.android)
             implementation(libs.sqlDelight.android.driver)
-            implementation(libs.compose.material.icons.extended)
         }
 
         iosMain.dependencies {
@@ -82,6 +81,12 @@ kotlin {
 
             // Navigation
             implementation(libs.navigation.compose)
+
+            // Coil
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
+            implementation(compose.materialIconsExtended)
         }
 
         commonTest.dependencies {

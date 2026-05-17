@@ -1,10 +1,10 @@
 package com.example.mybawanggacha.data.repository
 
 import app.cash.turbine.test
-import com.example.mybawanggacha.domain.model.Note
-import com.example.mybawanggacha.domain.model.NoteCategory
-import com.example.mybawanggacha.domain.model.NoteColor
-import com.example.mybawanggacha.domain.repository.NoteRepository
+import com.example.mybawanggacha.domain.note.model.Note
+import com.example.mybawanggacha.domain.note.model.NoteCategory
+import com.example.mybawanggacha.domain.note.model.NoteColor
+import com.example.mybawanggacha.domain.note.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

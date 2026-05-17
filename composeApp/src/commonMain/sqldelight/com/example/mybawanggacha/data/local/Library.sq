@@ -1,0 +1,76 @@
+CREATE TABLE LibraryEntryEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    media_id INTEGER NOT NULL,
+    media_type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    image_url TEXT,
+    status TEXT NOT NULL,
+    progress INTEGER NOT NULL DEFAULT 0,
+    total_count INTEGER,
+    user_score INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(media_id, media_type)
+);
+
+getLibraryEntries:
+SELECT *
+FROM LibraryEntryEntity
+ORDER BY updated_at DESC;
+
+getLibraryEntriesByStatus:
+SELECT *
+FROM LibraryEntryEntity
+WHERE status = ?
+ORDER BY updated_at DESC;
+
+getLibraryEntryById:
+SELECT *
+FROM LibraryEntryEntity
+WHERE id = ?;
+
+getLibraryEntryByMedia:
+SELECT *
+FROM LibraryEntryEntity
+WHERE media_id = ? AND media_type = ?;
+
+lastLibraryInsertId:
+SELECT last_insert_rowid();
+
+insertLibraryEntry:
+INSERT INTO LibraryEntryEntity(
+    media_id,
+    media_type,
+    title,
+    image_url,
+    status,
+    progress,
+    total_count,
+    user_score,
+    notes,
+    created_at,
+    updated_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateLibraryEntry:
+UPDATE LibraryEntryEntity
+SET
+    title = ?,
+    image_url = ?,
+    status = ?,
+    progress = ?,
+    total_count = ?,
+    user_score = ?,
+    notes = ?,
+    updated_at = ?
+WHERE id = ?;
+
+deleteLibraryEntryById:
+DELETE FROM LibraryEntryEntity
+WHERE id = ?;
+
+deleteLibraryEntryByMedia:
+DELETE FROM LibraryEntryEntity
+WHERE media_id = ? AND media_type = ?;

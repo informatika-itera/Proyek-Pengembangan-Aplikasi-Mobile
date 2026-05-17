@@ -63,7 +63,9 @@ fun AdminDashboardScreen(
                     is AdminUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                     is AdminUiState.Success -> {
                         if (selectedTab == 0) {
-                            ReportManagementTab(state, viewModel)
+                            ReportManagementTab(state, viewModel, onActionSuccess = { msg ->
+                                scope.launch { snackbarHostState.showSnackbar(msg) }
+                            })
                         } else {
                             SystemControlTab(
                                 state = state,
@@ -84,7 +86,7 @@ fun AdminDashboardScreen(
 }
 
 @Composable
-fun ReportManagementTab(state: AdminUiState.Success, viewModel: AdminViewModel) {
+fun ReportManagementTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -97,7 +99,7 @@ fun ReportManagementTab(state: AdminUiState.Success, viewModel: AdminViewModel) 
             }
         }
         items(state.allReports) { report ->
-            ReportAdminCard(report, viewModel)
+            ReportAdminCard(report, viewModel, onActionSuccess)
         }
     }
 }
@@ -164,7 +166,7 @@ fun SystemControlTab(
                         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.MeetingRoom, contentDescription = null)
                             Spacer(Modifier.width(12.dp))
-                            Text(selectedRoom?.let { "Ruang ${it.name} - Lt ${it.floor} (${it.id.split("-")[0]})" } ?: "Pilih Ruangan...")
+                            Text(selectedRoom?.let { "Ruang ${it.name} - Lt ${it.floor}" } ?: "Pilih Ruangan...")
                             Spacer(Modifier.weight(1f))
                             Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                         }
@@ -172,44 +174,46 @@ fun SystemControlTab(
 
                     OutlinedTextField(value = roomNote, onValueChange = { roomNote = it }, label = { Text("Catatan/Alasan") }, modifier = Modifier.fillMaxWidth())
                     
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { 
+                                    selectedRoom?.let {
+                                        viewModel.overrideRoomStatus(it.id, RoomStatus.BOOKED, roomNote)
+                                        onActionSuccess("Status ${it.name} diubah ke PENUH")
+                                        selectedRoom = null; roomNote = "" 
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
+                                enabled = selectedRoom != null
+                            ) { Text("Set Full") }
+                            Button(
+                                onClick = { 
+                                    selectedRoom?.let {
+                                        viewModel.overrideRoomStatus(it.id, RoomStatus.MAINTENANCE, roomNote)
+                                        onActionSuccess("Status ${it.name} diubah ke PERBAIKAN")
+                                        selectedRoom = null; roomNote = "" 
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEB3B), contentColor = Color.Black),
+                                enabled = selectedRoom != null
+                            ) { Text("Set Repair") }
+                        }
+                        
                         Button(
-                            onClick = { 
-                                selectedRoom?.let {
-                                    viewModel.overrideRoomStatus(it.id, RoomStatus.BOOKED, roomNote)
-                                    onActionSuccess("Status ${it.name} diubah ke PENUH")
-                                    selectedRoom = null; roomNote = "" 
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
-                            enabled = selectedRoom != null
-                        ) { Text("Set Full") }
-                        Button(
-                            onClick = { 
-                                selectedRoom?.let {
-                                    viewModel.overrideRoomStatus(it.id, RoomStatus.MAINTENANCE, roomNote)
-                                    onActionSuccess("Status ${it.name} diubah ke PERBAIKAN")
-                                    selectedRoom = null; roomNote = "" 
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEB3B), contentColor = Color.Black),
-                            enabled = selectedRoom != null
-                        ) { Text("Set Repair") }
-                    }
-                    
-                    if (selectedRoom != null) {
-                        OutlinedButton(
                             onClick = {
                                 selectedRoom?.let {
                                     viewModel.overrideRoomStatus(it.id, RoomStatus.AVAILABLE, null)
                                     onActionSuccess("Status ${it.name} kembali TERSEDIA")
-                                    selectedRoom = null
+                                    selectedRoom = null; roomNote = ""
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text("Reset ke Tersedia") }
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                            enabled = selectedRoom != null
+                        ) { Text("Set Tersedia (Available)") }
                     }
                 }
             }
@@ -288,7 +292,11 @@ fun SystemControlTab(
 }
 
 @Composable
-fun ReportAdminCard(report: com.example.Roomie.domain.model.Report, viewModel: AdminViewModel) {
+fun ReportAdminCard(
+    report: com.example.Roomie.domain.model.Report, 
+    viewModel: AdminViewModel,
+    onActionSuccess: (String) -> Unit
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -300,11 +308,17 @@ fun ReportAdminCard(report: com.example.Roomie.domain.model.Report, viewModel: A
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = { viewModel.updateReportStatus(report.id, ReportStatus.IN_PROGRESS) },
+                    onClick = { 
+                        viewModel.updateReportStatus(report.id, ReportStatus.IN_PROGRESS) 
+                        onActionSuccess("Laporan diubah ke PROSES")
+                    },
                     enabled = report.status == ReportStatus.PENDING
                 ) { Text("Proses") }
                 OutlinedButton(
-                    onClick = { viewModel.updateReportStatus(report.id, ReportStatus.DONE) },
+                    onClick = { 
+                        viewModel.updateReportStatus(report.id, ReportStatus.DONE)
+                        onActionSuccess("Laporan ditandai SELESAI")
+                    },
                     enabled = report.status != ReportStatus.DONE
                 ) { Text("Selesai") }
             }

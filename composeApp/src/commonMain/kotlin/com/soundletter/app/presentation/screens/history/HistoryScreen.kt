@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.screens.home.MessageCard
 import com.soundletter.app.presentation.theme.SoundLetterColors
@@ -27,7 +28,7 @@ fun HistoryScreen(
     onNavigateToDetail: (String) -> Unit,
     viewModel: HistoryScreenViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.historyState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -51,27 +52,44 @@ fun HistoryScreen(
                 .background(Brush.verticalGradient(SoundLetterColors.BackgroundGradient))
                 .padding(padding)
         ) {
-            if (state.historyMessages.isEmpty() && !state.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No history yet.", color = Color.White)
+            when (val state = uiState) {
+                is UiState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(state.historyMessages) { note: Note ->
-                        MessageCard(message = note, onClick = { onNavigateToDetail(note.id.toString()) })
+                is UiState.Success -> {
+                    val letters = state.data
+                    if (letters.isEmpty()) {
+                        Text(
+                            text = "No history yet.",
+                            color = Color.White.copy(alpha = 0.6f),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(letters) { note ->
+                                MessageCard(
+                                    message = note,
+                                    onClick = { onNavigateToDetail(note.id.toString()) }
+                                )
+                            }
+                        }
                     }
                 }
-            }
-
-            if (state.isLoading) {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth().height(2.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
+                is UiState.Error -> {
+                    Text(
+                        text = "Error: ${state.message}",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                else -> {}
             }
         }
     }

@@ -10,14 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.soundletter.app.core.util.UiState
 import com.soundletter.app.presentation.components.GlassCard
 import com.soundletter.app.presentation.theme.SoundLetterColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -30,8 +30,26 @@ fun ComposeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Handle Side Effects for Success/Error
+    LaunchedEffect(state.sendStatus) {
+        when (val status = state.sendStatus) {
+            is UiState.Success -> {
+                snackbarHostState.showSnackbar("Letter sent successfully!")
+                viewModel.resetStatus()
+                onNavigateBack()
+            }
+            is UiState.Error -> {
+                snackbarHostState.showSnackbar("Error: ${status.message}")
+                viewModel.resetStatus()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Compose Letter") },
@@ -61,7 +79,7 @@ fun ComposeScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedTextField(
-                    value = state.to,
+                    value = state.recipient,
                     onValueChange = { viewModel.onToChange(it) },
                     label = { Text("To") },
                     modifier = Modifier.fillMaxWidth(),
@@ -72,7 +90,7 @@ fun ComposeScreen(
                 )
 
                 OutlinedTextField(
-                    value = state.from,
+                    value = state.sender,
                     onValueChange = { viewModel.onFromChange(it) },
                     label = { Text("From (Optional)") },
                     modifier = Modifier.fillMaxWidth(),
@@ -127,13 +145,25 @@ fun ComposeScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { /* Handle Send */ },
+                    onClick = { 
+                        viewModel.sendSoundLetter(
+                            to = state.recipient,
+                            from = state.sender,
+                            message = state.message,
+                            songTitle = state.suggestions.firstOrNull()?.title // Ambil saran pertama sebagai contoh
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    ),
+                    enabled = state.sendStatus !is UiState.Loading
                 ) {
-                    Text("Send Letter", color = Color.Black, fontWeight = FontWeight.Bold)
+                    if (state.sendStatus is UiState.Loading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black)
+                    } else {
+                        Text("Send Letter", color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

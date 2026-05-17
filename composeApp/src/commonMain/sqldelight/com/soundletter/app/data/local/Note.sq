@@ -1,0 +1,29 @@
+CREATE TABLE NoteEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipient TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    content TEXT NOT NULL,
+    song_title TEXT,
+    song_artist TEXT,
+    category TEXT NOT NULL DEFAULT 'General',
+    color TEXT NOT NULL DEFAULT 'DEFAULT',
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+getAllNotes:
+SELECT * FROM NoteEntity
+ORDER BY is_pinned DESC, updated_at DESC;
+
+getNoteById:
+SELECT * FROM NoteEntity
+WHERE id = ?;
+
+insertNote:
+INSERT INTO NoteEntity (recipient, sender, content, song_title, song_artist, category, color, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteNoteById:
+DELETE FROM NoteEntity
+WHERE id = ?;

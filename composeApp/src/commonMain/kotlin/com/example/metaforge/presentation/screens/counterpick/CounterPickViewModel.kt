@@ -30,9 +30,7 @@ class CounterPickViewModel(
         val hero = HeroDataSource.getById(heroId) ?: return
         viewModelScope.launch {
             _uiState.value = CounterPickUiState.Analyzing
-            // Sprint 3: akan diganti dengan Gemini API call
-            // Untuk Sprint 2, tampilkan state analyzing saja
-            _uiState.value = CounterPickUiState.Analyzing
+            // Sprint 3: Gemini API call akan ditambahkan di sini
         }
     }
 

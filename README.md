@@ -21,12 +21,12 @@
 
 | Dashboard Eisenhower (Home) | Detail Kuadran (Tabbed List) |
 | :---: | :---: |
-| <img src="{<img width="178" height="298" alt="Screenshot 2026-05-17 175559" src="https://github.com/user-attachments/assets/b5ce6b08-ff53-4523-84a4-018d46e01cb2" />}" width="250"/> | <img src="{<img width="153" height="227" alt="Screenshot 2026-05-17 175849" src="https://github.com/user-attachments/assets/31a4df1f-da6b-4d93-853c-b42d4d5e5d64" />}" width="250"/> |
+| <img src="<img width="178" height="298" alt="Screenshot 2026-05-17 175559" src="https://github.com/user-attachments/assets/b5ce6b08-ff53-4523-84a4-018d46e01cb2" />" width="250"/> | <img src="<img width="153" height="227" alt="Screenshot 2026-05-17 175849" src="https://github.com/user-attachments/assets/31a4df1f-da6b-4d93-853c-b42d4d5e5d64" />" width="250"/> |
 | **Batas kognitif harian & Ringkasan tugas.** | **Manajemen tugas interaktif per kuadran.** |
 
 | Form Tambah/Edit Tugas | Detail Tugas (CRUD) |
 | :---: | :---: |
-| <img src="{<img width="153" height="238" alt="Screenshot 2026-05-17 175959" src="https://github.com/user-attachments/assets/73e93f3e-577e-465a-b0d0-245bb872399b" />}" width="250"/> | <img src="{<img width="155" height="254" alt="Screenshot 2026-05-17 180104" src="https://github.com/user-attachments/assets/243f2317-6448-4020-9389-1c1a7aef9f75" />}" width="250"/> |
+| <img src="<img width="153" height="238" alt="Screenshot 2026-05-17 175959" src="https://github.com/user-attachments/assets/73e93f3e-577e-465a-b0d0-245bb872399b" />" width="250"/> | <img src="<img width="155" height="254" alt="Screenshot 2026-05-17 180104" src="https://github.com/user-attachments/assets/243f2317-6448-4020-9389-1c1a7aef9f75" />" width="250"/> |
 | **Input tugas dengan validasi kuota *Do First*.** | **Melihat detail, mengedit, atau menghapus.** |
 
 ---

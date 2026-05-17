@@ -67,7 +67,7 @@ Dokumen ini menjelaskan struktur kode dan arsitektur yang digunakan dalam templa
 ```
 composeApp/src/
 │
-├── commonMain/kotlin/com/example/noteai/    # ← Shared code (95%+)
+├── commonMain/kotlin/com.example.mapenumkm/    # ← Shared code (95%+)
 │   │
 │   ├── core/                                 # Core utilities
 │   │   ├── di/                               # Dependency Injection
@@ -138,18 +138,18 @@ composeApp/src/
 │   └── App.kt                                # App entry point
 │
 ├── commonMain/sqldelight/                    # SQLDelight schema
-│   └── com/example/noteai/
+│   └── com.example.mapenumkm/
 │       └── Note.sq                           # Database schema & queries
 │
 ├── commonTest/kotlin/                        # Shared tests
-│   └── com/example/noteai/
+│   └── com.example.mapenumkm/
 │       ├── data/repository/
 │       │   └── NoteRepositoryTest.kt
 │       └── presentation/
 │           └── HomeViewModelTest.kt
 │
 ├── androidMain/kotlin/                       # Android-specific
-│   └── com/example/noteai/
+│   └── com.example.mapenumkm/
 │       ├── MainActivity.kt
 │       ├── NoteAIApplication.kt
 │       └── core/
@@ -158,7 +158,7 @@ composeApp/src/
 │           └── util/DatabaseDriverFactory.android.kt  # actual: Android driver
 │
 └── iosMain/kotlin/                           # iOS-specific
-    └── com/example/noteai/
+    └── com.example.mapenumkm/
         ├── MainViewController.kt
         └── core/
             ├── di/IosModule.kt               # actual: iOS DI
@@ -547,7 +547,7 @@ Contoh: User menambah note baru
 
 | Type | Convention | Example |
 |------|------------|---------|
-| Package | lowercase | `com.example.noteai.domain` |
+| Package | lowercase | `com.example.mapenumkm.domain` |
 | Class | PascalCase | `NoteRepository`, `HomeViewModel` |
 | Function | camelCase | `getAllNotes()`, `onSaveClick()` |
 | Variable | camelCase | `noteList`, `isLoading` |

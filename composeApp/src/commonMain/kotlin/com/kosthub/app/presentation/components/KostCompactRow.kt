@@ -36,11 +36,17 @@ fun KostCompactRow(kost: Kost) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            Text(text = kost.hargaTahunan, style = MaterialTheme.typography.labelMedium)
+            Text(text = formatHargaTahunan(kost.hargaTahunan), style = MaterialTheme.typography.labelMedium)
         }
     }
 }
 
 private fun formatJarakKm(km: Double): String {
     return km.toString().replace(".", ",")
+}
+
+private fun formatHargaTahunan(value: Long): String {
+    val digits = value.toString()
+    val grouped = digits.reversed().chunked(3).joinToString(".").reversed()
+    return "Rp$grouped"
 }

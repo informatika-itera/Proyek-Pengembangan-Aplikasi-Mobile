@@ -100,7 +100,7 @@ private fun buildKostFromForm(
         nomorTelepon = nomorTelepon.ifBlank { null },
         daerah = daerah,
         jarakKm = parseJarakKm(jarakKm),
-        hargaTahunan = hargaTahunan,
+        hargaTahunan = hargaTahunan.toLongOrNull() ?: 0L,
         tipeKos = tipeKos,
         kamarMandi = kamarMandi,
         wifi = wifi,

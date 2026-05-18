@@ -41,7 +41,7 @@ fun KostCard(
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = kost.hargaTahunan, style = MaterialTheme.typography.bodyMedium)
+            Text(text = formatHargaTahunan(kost.hargaTahunan), style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "${kost.daerah} - ${formatJarakKm(kost.jarakKm)} km", style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
@@ -59,7 +59,7 @@ private fun badgeItems(kost: Kost): List<String> {
     if (kost.wifi == "Ada") {
         items.add("WiFi")
     }
-    if (kost.fasilitasPendingin != "Tidak Ada") {
+    if (kost.fasilitasPendingin != "Tidak ada") {
         items.add(kost.fasilitasPendingin)
     }
     if (kost.kamarMandi.isNotBlank()) {
@@ -79,4 +79,10 @@ private fun badgeItems(kost: Kost): List<String> {
 
 private fun formatJarakKm(km: Double): String {
     return km.toString().replace(".", ",")
+}
+
+private fun formatHargaTahunan(value: Long): String {
+    val digits = value.toString()
+    val grouped = digits.reversed().chunked(3).joinToString(".").reversed()
+    return "Rp$grouped"
 }

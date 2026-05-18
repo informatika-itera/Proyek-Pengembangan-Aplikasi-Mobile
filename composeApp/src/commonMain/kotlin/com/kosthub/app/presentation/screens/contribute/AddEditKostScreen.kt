@@ -8,7 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -72,7 +78,7 @@ fun AddEditKostScreen(
             nomorTelepon = existingKost.nomorTelepon.orEmpty()
             daerah = existingKost.daerah
             jarakKm = formatJarakKm(existingKost.jarakKm)
-            hargaTahunan = existingKost.hargaTahunan
+            hargaTahunan = existingKost.hargaTahunan.toString()
             tipeKos = existingKost.tipeKos
             kamarMandi = existingKost.kamarMandi
             wifi = existingKost.wifi
@@ -94,7 +100,7 @@ fun AddEditKostScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) {
         Text(text = title, style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -112,21 +118,107 @@ fun AddEditKostScreen(
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Informasi Umum
+            Text(
+                text = "Informasi Umum",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
             FormField(label = "Nama Kost", value = namaKos, onValueChange = { namaKos = it })
             FormField(label = "Nomor Telepon", value = nomorTelepon, onValueChange = { nomorTelepon = it })
-            FormField(label = "Daerah", value = daerah, onValueChange = { daerah = it })
-            FormField(label = "Jarak (km)", value = jarakKm, onValueChange = { jarakKm = it })
-            FormField(label = "Harga Tahunan", value = hargaTahunan, onValueChange = { hargaTahunan = it })
-            FormField(label = "Tipe Kos", value = tipeKos, onValueChange = { tipeKos = it })
-            FormField(label = "Kamar Mandi", value = kamarMandi, onValueChange = { kamarMandi = it })
-            FormField(label = "Wifi (Ada/Tidak Ada)", value = wifi, onValueChange = { wifi = it })
-            FormField(label = "Furnitur Kasur", value = furniturKasur, onValueChange = { furniturKasur = it })
-            FormField(label = "Furnitur Lemari", value = furniturLemari, onValueChange = { furniturLemari = it })
-            FormField(label = "Furnitur Meja Belajar", value = furniturMejaBelajar, onValueChange = { furniturMejaBelajar = it })
-            FormField(label = "Pendingin (AC/Kipas Angin/Tidak Ada)", value = fasilitasPendingin, onValueChange = { fasilitasPendingin = it })
-            FormField(label = "Area Laundry", value = areaLaundry, onValueChange = { areaLaundry = it })
-            FormField(label = "Area Dapur", value = areaDapur, onValueChange = { areaDapur = it })
-            FormField(label = "Keamanan CCTV", value = keamananCctv, onValueChange = { keamananCctv = it })
+            SelectField(
+                label = "Tipe Kos",
+                value = tipeKos,
+                options = listOf("Laki-laki", "Perempuan", "Campur"),
+                onSelect = { tipeKos = it }
+            )
+            FormField(label = "Harga Tahunan (angka)", value = hargaTahunan, onValueChange = { hargaTahunan = it })
+
+            // Lokasi
+            Text(
+                text = "Lokasi",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            SelectField(
+                label = "Daerah",
+                value = daerah,
+                options = listOf("Belwis", "Airan", "Korpri"),
+                onSelect = { daerah = it }
+            )
+            FormField(label = "Jarak ke Kampus (km)", value = jarakKm, onValueChange = { jarakKm = it })
+
+            // Fasilitas Kamar
+            Text(
+                text = "Fasilitas Kamar",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            SelectField(
+                label = "Kamar Mandi",
+                value = kamarMandi,
+                options = listOf("Dalam", "Luar"),
+                onSelect = { kamarMandi = it }
+            )
+            SelectField(
+                label = "Wifi",
+                value = wifi,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { wifi = it }
+            )
+            SelectField(
+                label = "Furnitur Kasur",
+                value = furniturKasur,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { furniturKasur = it }
+            )
+            SelectField(
+                label = "Furnitur Lemari",
+                value = furniturLemari,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { furniturLemari = it }
+            )
+            SelectField(
+                label = "Furnitur Meja Belajar",
+                value = furniturMejaBelajar,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { furniturMejaBelajar = it }
+            )
+            SelectField(
+                label = "Pendingin",
+                value = fasilitasPendingin,
+                options = listOf("AC", "Kipas Angin", "Tidak ada"),
+                onSelect = { fasilitasPendingin = it }
+            )
+
+            // Fasilitas Umum & Keamanan
+            Text(
+                text = "Fasilitas Umum & Keamanan",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            SelectField(
+                label = "Area Laundry",
+                value = areaLaundry,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { areaLaundry = it }
+            )
+            SelectField(
+                label = "Area Dapur",
+                value = areaDapur,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { areaDapur = it }
+            )
+            SelectField(
+                label = "Keamanan CCTV",
+                value = keamananCctv,
+                options = listOf("Ada", "Tidak Ada"),
+                onSelect = { keamananCctv = it }
+            )
         }
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -192,6 +284,45 @@ private fun FormField(label: String, value: String, onValueChange: (String) -> U
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelectField(
+    label: String,
+    value: String,
+    options: List<String>,
+    onSelect: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        TextField(
+            value = value,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text = option) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 private fun buildKostFromForm(
     existingKost: Kost?,
     contributorId: Long,
@@ -218,7 +349,7 @@ private fun buildKostFromForm(
         nomorTelepon = nomorTelepon.ifBlank { null },
         daerah = daerah,
         jarakKm = parseJarakKm(jarakKm),
-        hargaTahunan = hargaTahunan,
+        hargaTahunan = parseHargaTahunan(hargaTahunan),
         tipeKos = tipeKos,
         kamarMandi = kamarMandi,
         wifi = wifi,
@@ -235,6 +366,10 @@ private fun buildKostFromForm(
 
 private fun parseJarakKm(value: String): Double {
     return value.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
+}
+
+private fun parseHargaTahunan(value: String): Long {
+    return value.trim().replace(".", "").toLongOrNull() ?: 0L
 }
 
 private fun formatJarakKm(km: Double): String {

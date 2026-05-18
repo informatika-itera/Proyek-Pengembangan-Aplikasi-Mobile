@@ -5,7 +5,7 @@ CREATE TABLE KostEntity (
     nomor_telepon TEXT,
     daerah TEXT NOT NULL,
     jarak_km REAL NOT NULL,
-    harga_tahunan TEXT NOT NULL,
+    harga_tahunan INTEGER NOT NULL,
     tipe_kos TEXT NOT NULL,
     kamar_mandi TEXT NOT NULL,
     wifi TEXT NOT NULL,

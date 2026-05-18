@@ -7,7 +7,7 @@ data class Kost(
     val nomorTelepon: String?,
     val daerah: String,
     val jarakKm: Double,
-    val hargaTahunan: String,
+    val hargaTahunan: Long,
     val tipeKos: String,
     val kamarMandi: String,
     val wifi: String,

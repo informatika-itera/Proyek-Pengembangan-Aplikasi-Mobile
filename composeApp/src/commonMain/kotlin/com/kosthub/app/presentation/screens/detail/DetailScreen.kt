@@ -57,7 +57,7 @@ private fun DetailContent(kost: Kost, onBack: () -> Unit) {
     )
     Spacer(modifier = Modifier.height(12.dp))
     Text(text = kost.namaKos, style = MaterialTheme.typography.titleLarge)
-    Text(text = kost.hargaTahunan, style = MaterialTheme.typography.bodyMedium)
+    Text(text = formatHargaTahunan(kost.hargaTahunan), style = MaterialTheme.typography.bodyMedium)
     Text(text = "${kost.daerah} - ${formatJarakKm(kost.jarakKm)} km", style = MaterialTheme.typography.bodySmall)
     Spacer(modifier = Modifier.height(8.dp))
     Text(text = "Tipe: ${kost.tipeKos}", style = MaterialTheme.typography.bodySmall)
@@ -75,7 +75,7 @@ private fun DetailContent(kost: Kost, onBack: () -> Unit) {
 private fun fasilitasLabels(kost: Kost): List<String> {
     val items = mutableListOf<String>()
     if (kost.wifi == "Ada") items.add("WiFi")
-    if (kost.fasilitasPendingin != "Tidak Ada") items.add(kost.fasilitasPendingin)
+    if (kost.fasilitasPendingin != "Tidak ada") items.add(kost.fasilitasPendingin)
     if (kost.furniturKasur == "Ada") items.add("Kasur")
     if (kost.furniturLemari == "Ada") items.add("Lemari")
     if (kost.furniturMejaBelajar == "Ada") items.add("Meja belajar")
@@ -87,4 +87,10 @@ private fun fasilitasLabels(kost: Kost): List<String> {
 
 private fun formatJarakKm(km: Double): String {
     return km.toString().replace(".", ",")
+}
+
+private fun formatHargaTahunan(value: Long): String {
+    val digits = value.toString()
+    val grouped = digits.reversed().chunked(3).joinToString(".").reversed()
+    return "Rp$grouped"
 }

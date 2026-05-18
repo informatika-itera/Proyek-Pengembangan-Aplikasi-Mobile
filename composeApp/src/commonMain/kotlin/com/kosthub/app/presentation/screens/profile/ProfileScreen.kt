@@ -29,12 +29,22 @@ import com.kosthub.app.domain.model.Profile
 import com.kosthub.app.presentation.components.EmptyState
 import com.kosthub.app.presentation.components.ErrorState
 import com.kosthub.app.presentation.components.LoadingState
+import com.kosthub.app.presentation.state.OperationState
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.presentation.viewmodel.ProfileViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileScreen(profileViewModel: ProfileViewModel) {
     val uiState by profileViewModel.uiState.collectAsState()
+    val operationState by profileViewModel.operationState.collectAsState()
+
+    LaunchedEffect(operationState) {
+        if (operationState is OperationState.Success) {
+            delay(1500)
+            profileViewModel.clearOperationState()
+        }
+    }
 
     when (val state = uiState) {
         is UiState.Loading -> LoadingState()
@@ -42,25 +52,24 @@ fun ProfileScreen(profileViewModel: ProfileViewModel) {
         is UiState.Empty -> EmptyState(text = "Profil belum tersedia")
         is UiState.Success -> ProfileForm(
             profile = state.data,
+            operationState = operationState,
             onSave = { profileViewModel.saveProfile(it) }
         )
     }
 }
 
 @Composable
-private fun ProfileForm(profile: Profile, onSave: (Profile) -> Unit) {
+private fun ProfileForm(
+    profile: Profile,
+    operationState: OperationState,
+    onSave: (Profile) -> Unit
+) {
     var name by remember { mutableStateOf(profile.name) }
-    var role by remember { mutableStateOf(profile.role) }
-    var contact by remember { mutableStateOf(profile.contact) }
-    var preference by remember { mutableStateOf(profile.preference) }
-    var location by remember { mutableStateOf(profile.location) }
+    var email by remember { mutableStateOf(profile.email) }
 
     LaunchedEffect(profile) {
         name = profile.name
-        role = profile.role
-        contact = profile.contact
-        preference = profile.preference
-        location = profile.location
+        email = profile.email
     }
 
     Column(
@@ -84,42 +93,40 @@ private fun ProfileForm(profile: Profile, onSave: (Profile) -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
             TextField(
-                value = role,
-                onValueChange = { role = it },
-                label = { Text(text = "Peran") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextField(
-                value = contact,
-                onValueChange = { contact = it },
-                label = { Text(text = "Kontak") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextField(
-                value = preference,
-                onValueChange = { preference = it },
-                label = { Text(text = "Preferensi") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextField(
-                value = location,
-                onValueChange = { location = it },
-                label = { Text(text = "Lokasi Manual") },
+                value = email,
+                onValueChange = { email = it },
+                label = { Text(text = "Email") },
                 modifier = Modifier.fillMaxWidth()
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = {
+        when (operationState) {
+            is OperationState.Loading -> Text(
+                text = "Menyimpan profil...",
+                style = MaterialTheme.typography.bodySmall
+            )
+            is OperationState.Success -> Text(
+                text = operationState.message,
+                style = MaterialTheme.typography.bodySmall
+            )
+            is OperationState.Error -> Text(
+                text = operationState.message,
+                style = MaterialTheme.typography.bodySmall
+            )
+            OperationState.Idle -> Unit
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(
+            onClick = {
             onSave(
                 profile.copy(
                     name = name,
-                    role = role,
-                    contact = contact,
-                    preference = preference,
-                    location = location
+                    email = email
                 )
             )
-        }) {
+        },
+            enabled = operationState !is OperationState.Loading
+        ) {
             Text(text = "Simpan Profil")
         }
     }

@@ -2,6 +2,7 @@ package com.kosthub.app.domain.model
 
 data class Kost(
     val id: Long,
+    val contributorId: Long,
     val namaKos: String,
     val nomorTelepon: String?,
     val daerah: String,

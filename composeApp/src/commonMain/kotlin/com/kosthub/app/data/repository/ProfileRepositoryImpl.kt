@@ -18,10 +18,7 @@ class ProfileRepositoryImpl(private val database: KostDatabase) : ProfileReposit
         queries.upsertProfile(
             id = profile.id,
             name = profile.name,
-            role = profile.role,
-            contact = profile.contact,
-            preference = profile.preference,
-            location = profile.location,
+            email = profile.email,
             updated_at = currentTimeMillis()
         )
     }
@@ -37,9 +34,6 @@ private fun com.kosthub.app.data.local.ProfileEntity.toDomain(): Profile {
     return Profile(
         id = id,
         name = name,
-        role = role,
-        contact = contact,
-        preference = preference,
-        location = location
+        email = email
     )
 }

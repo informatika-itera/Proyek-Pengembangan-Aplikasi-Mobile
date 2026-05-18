@@ -21,6 +21,7 @@ class KostRepositoryImpl(private val database: KostDatabase) : KostRepository {
     override suspend fun add(kost: Kost): Long = withContext(Dispatchers.Default) {
         val now = currentTimeMillis()
         queries.insertKost(
+            contributor_id = kost.contributorId,
             nama_kos = kost.namaKos,
             nomor_telepon = kost.nomorTelepon,
             daerah = kost.daerah,
@@ -45,6 +46,7 @@ class KostRepositoryImpl(private val database: KostDatabase) : KostRepository {
 
     override suspend fun update(kost: Kost) = withContext(Dispatchers.Default) {
         queries.updateKost(
+            contributor_id = kost.contributorId,
             nama_kos = kost.namaKos,
             nomor_telepon = kost.nomorTelepon,
             daerah = kost.daerah,
@@ -83,6 +85,7 @@ class KostRepositoryImpl(private val database: KostDatabase) : KostRepository {
 private fun com.kosthub.app.data.local.KostEntity.toDomain(): Kost {
     return Kost(
         id = id,
+        contributorId = contributor_id,
         namaKos = nama_kos,
         nomorTelepon = nomor_telepon,
         daerah = daerah,

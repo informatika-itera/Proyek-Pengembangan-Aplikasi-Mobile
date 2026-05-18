@@ -7,6 +7,7 @@ object DummyKostData {
         return listOf(
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kost Barokah-Itera",
                 nomorTelepon = "81271425445",
                 daerah = "belwis",
@@ -26,6 +27,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kost Barokah-Itera",
                 nomorTelepon = "81271425445",
                 daerah = "belwis",
@@ -45,6 +47,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kost steven",
                 nomorTelepon = "82372868406",
                 daerah = "belwis",
@@ -64,6 +67,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "NADA KOST",
                 nomorTelepon = null,
                 daerah = "belwis",
@@ -83,6 +87,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Monera Kost",
                 nomorTelepon = null,
                 daerah = "belwis",
@@ -102,6 +107,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Monera Kost",
                 nomorTelepon = null,
                 daerah = "belwis",
@@ -121,6 +127,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kos Nyoto",
                 nomorTelepon = "81379507825",
                 daerah = "airan",
@@ -140,6 +147,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kosan Putri Sindy",
                 nomorTelepon = "85778272639",
                 daerah = "airan",
@@ -159,6 +167,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kosan pondok kita",
                 nomorTelepon = "82124388648",
                 daerah = "airan",
@@ -178,6 +187,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Kosan pondok kita",
                 nomorTelepon = "82124388648",
                 daerah = "airan",
@@ -197,6 +207,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Sekar Wangi Kost",
                 nomorTelepon = "85758732389",
                 daerah = "airan",
@@ -216,6 +227,7 @@ object DummyKostData {
             ),
             Kost(
                 id = 0,
+                contributorId = 1,
                 namaKos = "Empat Saudara Kost",
                 nomorTelepon = "85896153172",
                 daerah = "airan",
@@ -233,28 +245,6 @@ object DummyKostData {
                 keamananCctv = "Ada",
                 isFavorite = false
             )
-        )
-    }
-
-    fun newItem(index: Int): Kost {
-        return Kost(
-            id = 0,
-            namaKos = "Kost Baru #$index",
-            nomorTelepon = null,
-            daerah = "belwis",
-            jarakKm = 0.9,
-            hargaTahunan = "Rp9.000.000",
-            tipeKos = "Campur",
-            kamarMandi = "Kamar Mandi Dalam",
-            wifi = "Ada",
-            furniturKasur = "Ada",
-            furniturLemari = "Ada",
-            furniturMejaBelajar = "Ada",
-            fasilitasPendingin = "Kipas Angin",
-            areaLaundry = "Ada",
-            areaDapur = "Ada",
-            keamananCctv = "Ada",
-            isFavorite = false
         )
     }
 

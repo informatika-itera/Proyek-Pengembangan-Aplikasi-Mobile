@@ -1,5 +1,6 @@
 CREATE TABLE KostEntity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contributor_id INTEGER NOT NULL,
     nama_kos TEXT NOT NULL,
     nomor_telepon TEXT,
     daerah TEXT NOT NULL,
@@ -30,6 +31,7 @@ WHERE id = ?;
 
 insertKost:
 INSERT INTO KostEntity (
+    contributor_id,
     nama_kos,
     nomor_telepon,
     daerah,
@@ -49,14 +51,15 @@ INSERT INTO KostEntity (
     created_at,
     updated_at
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertId:
 SELECT last_insert_rowid();
 
 updateKost:
 UPDATE KostEntity
-SET nama_kos = ?,
+SET contributor_id = ?,
+    nama_kos = ?,
     nomor_telepon = ?,
     daerah = ?,
     jarak_km = ?,

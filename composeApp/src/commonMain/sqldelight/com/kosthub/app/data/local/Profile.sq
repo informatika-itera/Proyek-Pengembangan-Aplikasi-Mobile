@@ -1,10 +1,7 @@
 CREATE TABLE ProfileEntity (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
-    role TEXT NOT NULL,
-    contact TEXT NOT NULL,
-    preference TEXT NOT NULL,
-    location TEXT NOT NULL,
+    email TEXT NOT NULL,
     updated_at INTEGER NOT NULL
 );
 
@@ -12,8 +9,8 @@ getProfile:
 SELECT * FROM ProfileEntity WHERE id = 1;
 
 upsertProfile:
-INSERT OR REPLACE INTO ProfileEntity (id, name, role, contact, preference, location, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO ProfileEntity (id, name, email, updated_at)
+VALUES (?, ?, ?, ?);
 
 clearProfile:
 DELETE FROM ProfileEntity WHERE id = 1;

@@ -8,12 +8,12 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NoteAI">
+        android:theme="@style/Theme.KostHub">
         
         <activity
-            android:name="com.kosthup.apa.MainActivity"
+            android:name="com.kosthub.app.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.NoteAI">
+            android:theme="@style/Theme.KostHub">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -67,7 +67,7 @@ Dokumen ini menjelaskan struktur kode dan arsitektur yang digunakan dalam templa
 ```
 composeApp/src/
 │
-├── commonMain/kotlin/com/example/noteai/    # ← Shared code (95%+)
+├── commonMain/kotlin/com/kosthub/app/    # ← Shared code (95%+)
 │   │
 │   ├── core/                                 # Core utilities
 │   │   ├── di/                               # Dependency Injection
@@ -138,27 +138,27 @@ composeApp/src/
 │   └── App.kt                                # App entry point
 │
 ├── commonMain/sqldelight/                    # SQLDelight schema
-│   └── com/example/noteai/
-│       └── Note.sq                           # Database schema & queries
+│   └── com/kosthub/app/
+│       └── Kost.sq                           # Database schema & queries
 │
 ├── commonTest/kotlin/                        # Shared tests
-│   └── com/example/noteai/
+│   └── com/kosthub/app/
 │       ├── data/repository/
 │       │   └── NoteRepositoryTest.kt
 │       └── presentation/
 │           └── HomeViewModelTest.kt
 │
 ├── androidMain/kotlin/                       # Android-specific
-│   └── com/example/noteai/
+│   └── com/kosthub/app/
 │       ├── MainActivity.kt
-│       ├── NoteAIApplication.kt
+│       ├── KostHubApplication.kt
 │       └── core/
 │           ├── di/AndroidModule.kt           # actual: Android DI
 │           ├── network/ApiConfig.android.kt  # actual: BuildConfig
 │           └── util/DatabaseDriverFactory.android.kt  # actual: Android driver
 │
 └── iosMain/kotlin/                           # iOS-specific
-    └── com/example/noteai/
+    └── com/kosthub/app/
         ├── MainViewController.kt
         └── core/
             ├── di/IosModule.kt               # actual: iOS DI
@@ -407,10 +407,10 @@ val viewModelModule = module {
 // ═══════════════════════════════════════════════════════════
 
 // Android
-class NoteAIApplication : Application() {
+class KostHubApplication : Application() {
     override fun onCreate() {
         initKoin(platformModules = listOf(androidModule)) {
-            androidContext(this@NoteAIApplication)
+            androidContext(this@KostHubApplication)
         }
     }
 }
@@ -547,7 +547,7 @@ Contoh: User menambah note baru
 
 | Type | Convention | Example |
 |------|------------|---------|
-| Package | lowercase | `com.example.noteai.domain` |
+| Package | lowercase | `com.kosthub.app.domain` |
 | Class | PascalCase | `NoteRepository`, `HomeViewModel` |
 | Function | camelCase | `getAllNotes()`, `onSaveClick()` |
 | Variable | camelCase | `noteList`, `isLoading` |

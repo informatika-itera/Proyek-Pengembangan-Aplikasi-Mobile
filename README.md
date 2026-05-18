@@ -40,11 +40,10 @@ Aplikasi ini memenuhi standar wajib proyek akhir:
 
 *Fokus: UI Dasar dan Data Layer* 
 
-
-- [ ] Setup navigasi antar layar menggunakan `NavHost` dan *argument passing*.
-- [ ] Pembuatan *Repository pattern* dan database lokal SQLDelight.
-- [ ] Implementasi fungsi CRUD dasar untuk data kos.
-- [ ] Manajemen status UI (Loading, Success, Error) pada layar utama.
+- [x] Setup navigasi antar layar menggunakan `NavHost` dan *argument passing*.
+- [x] Pembuatan *Repository pattern* dan database lokal SQLDelight.
+- [x] Implementasi fungsi CRUD dasar untuk data kos.
+- [x] Manajemen status UI (Loading, Success, Error) pada layar utama.
 
 ### Sprint 3: Advanced Features (Week 13)
 

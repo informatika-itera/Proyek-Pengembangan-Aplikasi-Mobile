@@ -1,6 +1,6 @@
-# 🚀 Cara Menjalankan NoteAI
+# 🚀 Cara Menjalankan KostHub
 
-Panduan lengkap untuk menjalankan template aplikasi **NoteAI** (Kotlin Multiplatform).
+Panduan lengkap untuk menjalankan template aplikasi **KostHub** (Kotlin Multiplatform).
 
 > **Status target build:**
 > - ✅ **Android** — jalur utama yang didukung penuh oleh template ini.
@@ -115,11 +115,11 @@ manual — wrapper akan mendownload Gradle 8.9 sendiri.
 Generate file SQLDelight (biasanya otomatis, tapi kalau perlu manual):
 
 ```bash
-./gradlew :composeApp:generateCommonMainNoteDatabaseInterface
+./gradlew :composeApp:generateCommonMainKostDatabaseInterface
 ```
 
 > Nama task ini berasal dari konfigurasi di `composeApp/build.gradle.kts`:
-> `sqldelight { databases { create("NoteDatabase") { ... } } }`.
+> `sqldelight { databases { create("KostDatabase") { ... } } }`.
 
 Jalankan unit test (commonTest):
 
@@ -165,7 +165,7 @@ siap pakai. Anda punya 2 opsi:
 3. Copy folder `iosApp/` hasil wizard ke root project ini.
 4. Edit `iosApp/iosApp/iOSApp.swift` agar memanggil `MainViewControllerKt.MainViewController()`
    dari module `ComposeApp` (lihat dokumentasi inline di
-   `composeApp/src/iosMain/kotlin/com/example/noteai/MainViewController.kt`).
+  `composeApp/src/iosMain/kotlin/com/kosthub/app/MainViewController.kt`).
 
 ### Opsi B — Build framework saja
 
@@ -251,7 +251,7 @@ Pryk-PAM/
   melihat log Ktor karena kita pakai `enableLogging = true`).
 - **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
 - **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+  `/data/data/com.kosthub.app/files/kosthub.preferences_pb` (Android).
 
 ---
 

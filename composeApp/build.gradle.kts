@@ -114,11 +114,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.kosthub.app"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.kosthub.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -160,8 +160,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("KostDatabase") {
+            packageName.set("com.kosthub.app.data.local")
         }
     }
 }

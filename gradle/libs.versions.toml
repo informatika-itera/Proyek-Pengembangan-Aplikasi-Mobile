@@ -15,7 +15,7 @@ navigation = "2.8.0-alpha10"
 coil = "3.0.4"
 detekt = "1.23.7"
 napier = "2.7.1"
-supabase = "3.0.1"
+supabase = "2.6.1"
 peekaboo = "0.5.2"
 
 # Testing
@@ -73,6 +73,7 @@ napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
 supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
 supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt" }
 supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+supabase-gotrue = { group = "io.github.jan-tennert.supabase", name = "gotrue-kt" }
 
 # Peekaboo (Media Picker)
 peekaboo-ui = { group = "io.github.onseok", name = "peekaboo-ui", version.ref = "peekaboo" }

@@ -23,7 +23,8 @@ fun initKoin(
             platformModules + 
             dataModule + 
             domainModule + 
-            viewModelModule
+            viewModelModule +
+            supabaseModule
         )
     }
 }

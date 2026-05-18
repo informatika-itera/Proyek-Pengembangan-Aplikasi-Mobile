@@ -5,7 +5,7 @@ compose-multiplatform = "1.7.0"
 kotlinx-coroutines = "1.9.0"
 kotlinx-serialization = "1.7.3"
 kotlinx-datetime = "0.6.1"
-ktor = "3.0.1"
+ktor = "2.3.12"
 koin = "4.0.0"
 sqldelight = "2.0.2"
 datastore = "1.1.1"
@@ -64,7 +64,7 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 
 # Coil (Image Loading)
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor2", version.ref = "coil" }
 
 # Logging (Napier)
 napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }

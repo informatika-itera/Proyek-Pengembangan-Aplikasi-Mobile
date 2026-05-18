@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.example.Roomie.domain.model.*
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -468,13 +469,15 @@ fun ReportAdminCard(
             
             if (report.imageUrl != null) {
                 Card(
-                    modifier = Modifier.fillMaxWidth().height(150.dp),
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        Text("📷 View Image Attached", style = MaterialTheme.typography.labelSmall)
-                        // In real implementation, use Coil to load report.imageUrl
-                    }
+                    AsyncImage(
+                        model = report.imageUrl,
+                        contentDescription = "Bukti Kerusakan",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
                 }
             }
 

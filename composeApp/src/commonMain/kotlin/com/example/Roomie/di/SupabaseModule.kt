@@ -1,9 +1,11 @@
 package com.example.Roomie.di
 
+import com.example.Roomie.data.remote.SupabaseService
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.storage.Storage
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val supabaseModule = module {
@@ -16,4 +18,6 @@ val supabaseModule = module {
             install(Postgrest)
         }
     }
+    
+    singleOf(::SupabaseService)
 }

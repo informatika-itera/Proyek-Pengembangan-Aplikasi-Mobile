@@ -2,6 +2,7 @@ package com.example.Roomie.presentation.report
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.Roomie.data.remote.SupabaseService
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.domain.model.UrgencyLevel
@@ -18,7 +19,7 @@ data class ReportFormState(
     val location: String = "",
     val description: String = "",
     val urgency: UrgencyLevel = UrgencyLevel.LOW,
-    val selectedImage: ByteArray? = null, // New
+    val selectedImage: ByteArray? = null,
     val isLoading: Boolean = false,
     val isSubmitted: Boolean = false,
     val error: String? = null
@@ -30,7 +31,8 @@ data class ReportFormState(
 }
 
 class ReportViewModel(
-    private val reportRepository: ReportRepository
+    private val reportRepository: ReportRepository,
+    private val supabaseService: SupabaseService
 ) : ViewModel() {
     private val _state = MutableStateFlow(ReportFormState())
     val state: StateFlow<ReportFormState> = _state.asStateFlow()
@@ -68,11 +70,12 @@ class ReportViewModel(
             try {
                 var finalImageUrl: String? = null
                 
-                // Logic Upload ke Supabase (Mocked for now as we need real URL/Key)
-                _state.value.selectedImage?.let {
-                    // finalImageUrl = uploadToSupabase(it)
-                    // For demo, we'll use a placeholder if image exists
-                    finalImageUrl = "https://picsum.photos/400/300" 
+                // Real Logic Upload ke Supabase
+                _state.value.selectedImage?.let { bytes ->
+                    finalImageUrl = supabaseService.uploadReportImage(bytes)
+                    if (finalImageUrl == null) {
+                        throw Exception("Gagal mengupload gambar ke server")
+                    }
                 }
 
                 val newReport = Report(

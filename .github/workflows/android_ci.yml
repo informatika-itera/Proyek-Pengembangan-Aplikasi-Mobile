@@ -24,7 +24,9 @@ jobs:
       run: chmod +x gradlew
 
     - name: Create local.properties
-      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > local.properties
+      run: |
+        echo "GAMEBRAIN_API_KEY=${{ secrets.GAMEBRAIN_API_KEY }}" >> local.properties
+        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
 
     - name: Build with Gradle
       run: ./gradlew assembleDebug

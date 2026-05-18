@@ -40,7 +40,6 @@ Aplikasi ini memenuhi standar wajib proyek akhir:
 
 *Fokus: UI Dasar dan Data Layer* 
 
-
 - [ ] Setup navigasi antar layar menggunakan `NavHost` dan *argument passing*.
 - [ ] Pembuatan *Repository pattern* dan database lokal SQLDelight.
 - [ ] Implementasi fungsi CRUD dasar untuk data kos.

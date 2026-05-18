@@ -129,12 +129,12 @@ class AIAssistantViewModel(
 }
 
 enum class AIAction(val displayName: String, val description: String) {
-    SUMMARIZE("Ringkas", "Buat ringkasan dari teks"),
-    GENERATE_IDEAS("Ide", "Generate ide berdasarkan topik"),
-    IMPROVE_WRITING("Perbaiki", "Perbaiki tulisan"),
-    TRANSLATE("Terjemah", "Terjemahkan ke bahasa lain"),
-    SUGGEST_TITLE("Judul", "Sarankan judul"),
-    CHAT("Tanya", "Tanya AI tentang apapun")
+    SUMMARIZE("Evaluasi", "Evaluasi data atau catatan harian"),
+    GENERATE_IDEAS("Ide Menu", "Beri ide menu sehat hemat"),
+    IMPROVE_WRITING("Rapikan", "Rapikan catatan makanan"),
+    TRANSLATE("Terjemah", "Terjemahkan teks"),
+    SUGGEST_TITLE("Judul", "Sarankan judul catatan"),
+    CHAT("Tanya FitKos", "Tanya AI tentang hidup sehat anak kos")
 }
 
 data class AIAssistantUiState(

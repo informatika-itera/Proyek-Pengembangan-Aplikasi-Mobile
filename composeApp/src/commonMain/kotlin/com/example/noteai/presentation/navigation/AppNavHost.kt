@@ -28,7 +28,15 @@ fun AppNavHost(
         composable<Route.Dashboard> {
             DashboardScreen(
                 onNavigateToMealLog = { navigationActions.navigateToHome() },
-                onNavigateToAddMeal = { navigationActions.navigateToAddNote() }
+                onNavigateToAddMeal = { navigationActions.navigateToAddNote() },
+                onNavigateToAI = {
+                    navigationActions.navigateToAIAssistant(
+                        initialText = """
+                            Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
+                            Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
+                            """.trimIndent()
+                    )
+                }
             )
         }
 

@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DashboardScreen(
     onNavigateToMealLog: () -> Unit,
-    onNavigateToAddMeal: () -> Unit
+    onNavigateToAddMeal: () -> Unit,
+    onNavigateToAI: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -71,6 +72,13 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Tambah Catatan Makanan")
+            }
+
+            Button(
+                onClick = onNavigateToAI,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Tanya AI FitKos")
             }
         }
     }

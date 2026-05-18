@@ -85,7 +85,7 @@ fun HomeScreen(
                             }
                         )
                     } else {
-                        Text("NoteAI")
+                        Text("Catatan Makanan")
                     }
                 },
                 actions = {
@@ -154,12 +154,12 @@ fun HomeScreen(
                         title = if (state.query.isNotBlank() || state.category != null) {
                             "Tidak Ditemukan"
                         } else {
-                            "Belum Ada Catatan"
+                            "Belum Ada Catatan Makanan"
                         },
                         message = if (state.query.isNotBlank() || state.category != null) {
                             "Coba ubah kata kunci atau filter"
                         } else {
-                            "Tap + untuk membuat catatan baru"
+                            "Tap + untuk menambah catatan makanan"
                         },
                         icon = {
                             Icon(
@@ -192,7 +192,7 @@ private fun SearchField(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Cari catatan...") },
+        placeholder = { Text("Cari makanan...") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         trailingIcon = {

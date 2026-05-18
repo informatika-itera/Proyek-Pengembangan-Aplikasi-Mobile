@@ -17,13 +17,13 @@ class NoteDetailViewModel(
     private val repository: NoteRepository,
     private val deleteNoteUseCase: DeleteNoteUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
     val uiState: StateFlow<NoteDetailUiState> = _uiState.asStateFlow()
-    
+
     private val _events = MutableSharedFlow<NoteDetailEvent>()
     val events: SharedFlow<NoteDetailEvent> = _events.asSharedFlow()
-    
+
     fun loadNote(noteId: Long) {
         viewModelScope.launch {
             repository.getNoteById(noteId).collect { note ->
@@ -35,7 +35,7 @@ class NoteDetailViewModel(
             }
         }
     }
-    
+
     fun togglePin() {
         val currentState = _uiState.value
         if (currentState is NoteDetailUiState.Success) {
@@ -44,7 +44,7 @@ class NoteDetailViewModel(
             }
         }
     }
-    
+
     fun deleteNote() {
         val currentState = _uiState.value
         if (currentState is NoteDetailUiState.Success) {
@@ -54,12 +54,12 @@ class NoteDetailViewModel(
                         _events.emit(NoteDetailEvent.NoteDeleted)
                     }
                     .onFailure { error ->
-                        _events.emit(NoteDetailEvent.Error(error.message ?: "Gagal menghapus"))
+                        _events.emit(NoteDetailEvent.Error(error.message ?: "Gagal menghapus catatan makanan"))
                     }
             }
         }
     }
-    
+
     fun getShareContent(): String? {
         val currentState = _uiState.value
         return if (currentState is NoteDetailUiState.Success) {
@@ -71,7 +71,9 @@ class NoteDetailViewModel(
                 }
                 append(note.content)
             }
-        } else null
+        } else {
+            null
+        }
     }
 }
 

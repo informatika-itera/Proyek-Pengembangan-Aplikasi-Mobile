@@ -4,8 +4,6 @@ import com.example.gamenews.domain.model.Game
 import kotlinx.coroutines.flow.Flow
 
 interface GameRepository {
-    /**
-     * Mengambil daftar game terbaru dari API/Database.
-     */
+    fun searchGames(query: String, genre: String? = null): Flow<List<Game>>
     fun getLatestGames(): Flow<List<Game>>
 }

@@ -31,8 +31,6 @@ fun HomeScreen(
 ) {
     val games by viewModel.games.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val selectedGenre by viewModel.selectedGenre.collectAsState()
-    val availableGenres by viewModel.availableGenres.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
@@ -45,26 +43,17 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Search Bar
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Cari game...") },
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                },
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                placeholder = { Text("Cari judul atau genre (Shooter, RPG, dll)...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Hapus")
+                            Icon(Icons.Default.Clear, contentDescription = null)
                         }
                     }
                 },
@@ -72,56 +61,19 @@ fun HomeScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            if (availableGenres.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    GenreChip(
-                        genre = "Semua",
-                        isSelected = selectedGenre == null,
-                        onClick = { viewModel.onGenreSelected(null) }
-                    )
-                    availableGenres.forEach { genre ->
-                        GenreChip(
-                            genre = genre,
-                            isSelected = selectedGenre == genre,
-                            onClick = { viewModel.onGenreSelected(genre) }
-                        )
-                    }
-                }
-            }
-
             Box(modifier = Modifier.fillMaxSize()) {
-                when {
-                    isLoading -> {
-                        Column(
-                            modifier = Modifier.align(Alignment.Center),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("Mengambil data game...", color = Color.Gray)
-                        }
-                    }
-                    games.isEmpty() -> {
-                        Text(
-                            text = "Tidak ada game ditemukan",
-                            modifier = Modifier.align(Alignment.Center),
-                            color = Color.Gray
-                        )
-                    }
-                    else -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(games) { game ->
-                                GameItem(game = game)
-                            }
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (games.isEmpty()) {
+                    Text("Hasil tidak ditemukan", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(games) { game ->
+                            GameItem(game = game)
                         }
                     }
                 }
@@ -134,10 +86,9 @@ fun HomeScreen(
 fun GenreChip(genre: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) MaterialTheme.colors.primary
-        else MaterialTheme.colors.surface,
+        color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.surface,
         border = BorderStroke(1.dp, MaterialTheme.colors.primary),
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = Modifier.clickable { onClick() }
     ) {
         Text(
             text = genre,
@@ -154,13 +105,9 @@ fun GameItem(game: Game) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = 4.dp,
-        shape = MaterialTheme.shapes.medium
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = game.title,
                 style = MaterialTheme.typography.h6,
@@ -172,16 +119,8 @@ fun GameItem(game: Game) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = game.genre,
-                    style = MaterialTheme.typography.body2,
-                    color = Color.DarkGray
-                )
-                Text(
-                    text = "⭐ ${game.rating}",
-                    style = MaterialTheme.typography.body2,
-                    fontWeight = FontWeight.Medium
-                )
+                Text(text = game.genre, style = MaterialTheme.typography.body2, color = Color.DarkGray)
+                Text(text = "⭐ ${game.rating}", style = MaterialTheme.typography.body2, fontWeight = FontWeight.Medium)
             }
             if (game.description.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))

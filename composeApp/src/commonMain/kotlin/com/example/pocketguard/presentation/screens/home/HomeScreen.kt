@@ -3,10 +3,12 @@ package com.example.pocketguard.presentation.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -19,15 +21,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pocketguard.domain.model.Transaction
 import com.example.pocketguard.domain.model.TransactionCategory
+import com.example.pocketguard.domain.model.TransactionType
 import com.example.pocketguard.domain.usecase.TransactionSortBy
 import com.example.pocketguard.presentation.components.EmptyState
 import com.example.pocketguard.presentation.components.ErrorState
 import com.example.pocketguard.presentation.components.LoadingIndicator
 import com.example.pocketguard.presentation.components.TransactionCard
+import com.example.pocketguard.presentation.theme.PgDanger
+import com.example.pocketguard.presentation.theme.PgPrimary
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +46,6 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
-    // Menggunakan state dari ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
 
@@ -64,7 +70,7 @@ fun HomeScreen(
                             }
                         )
                     } else {
-                        Text("PocketGuard")
+                        Text("PocketGuard", fontWeight = FontWeight.SemiBold)
                     }
                 },
                 actions = {
@@ -98,7 +104,11 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAdd) {
+            FloatingActionButton(
+                onClick = onNavigateToAdd,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Tambah Transaksi")
             }
         }
@@ -108,7 +118,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Baris Filter Kategori
+            // Baris Filter Kategori bawaan
             CategoryFilterRow(
                 selectedCategory = when (val state = uiState) {
                     is HomeUiState.Success -> state.category
@@ -118,6 +128,36 @@ fun HomeScreen(
                 onCategorySelected = viewModel::onCategorySelected
             )
 
+            // Hitung variabel finansial berdasarkan isi State UI secara dinamis
+            val (totalBalance, totalIncome, totalExpense) = remember(uiState) {
+                when (val state = uiState) {
+                    is HomeUiState.Success -> {
+                        val inc = state.transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+                        val exp = state.transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+                        Triple(inc - exp, inc, exp)
+                    }
+                    else -> Triple(0.0, 0.0, 0.0)
+                }
+            }
+
+            // Tampilkan komponen visual Dashboard Finansial di bagian atas list
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                BalanceCard(balance = totalBalance)
+                Spacer(modifier = Modifier.height(8.dp))
+                MiniStatRow(income = totalIncome, expense = totalExpense)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (uiState is HomeUiState.Success) {
+                    Text(
+                        text = "Transaksi terbaru",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
+            }
+
+            // Penanganan State Pemuatan Data List
             when (val state = uiState) {
                 is HomeUiState.Loading -> LoadingIndicator()
 
@@ -154,6 +194,102 @@ fun HomeScreen(
         }
     }
 }
+
+// ==================== DESIGN SYSTEM COMPONENTS ====================
+
+@Composable
+private fun BalanceCard(balance: Double) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = PgPrimary),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Total Saldo",
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White.copy(alpha = 0.75f)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Rp ${formatCurrency(balance)}",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Diperbarui barusan",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun MiniStatRow(income: Double, expense: Double) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Kotak Statistik Pemasukan
+        Card(
+            modifier = Modifier.weight(1f),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = "Pemasukan",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "+${formatCurrency(income)}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = PgPrimary
+                )
+            }
+        }
+
+        // Kotak Statistik Pengeluaran
+        Card(
+            modifier = Modifier.weight(1f),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = "Pengeluaran",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "-${formatCurrency(expense)}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = PgDanger
+                )
+            }
+        }
+    }
+}
+
+// Fungsi pembantu murni (KMP compatible) untuk memformat ribuan menggunakan titik (e.g. 1.000.000)
+private fun formatCurrency(amount: Double): String {
+    val isNegative = amount < 0
+    val absAmount = if (isNegative) -amount else amount
+    val str = absAmount.toLong().toString().reversed().chunked(3).joinToString(".").reversed()
+    return if (isNegative) "-$str" else str
+}
+
+// ==================== COMPONENT BAWAAN ====================
 
 @Composable
 private fun SearchField(
@@ -235,7 +371,7 @@ private fun TransactionsList(
     onDeleteClick: (Long) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(bottom = 16.dp, start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(items = transactions, key = { it.id }) { transaction ->

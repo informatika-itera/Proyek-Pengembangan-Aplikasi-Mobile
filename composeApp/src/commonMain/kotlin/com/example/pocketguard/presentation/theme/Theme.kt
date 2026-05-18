@@ -7,97 +7,70 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// ==================== COLORS ====================
-// Anda bisa mengubah nilai Hex ini jika ingin warna yang lebih khas "Finance"
-private val Primary = Color(0xFF6750A4)
-private val OnPrimary = Color(0xFFFFFFFF)
-private val PrimaryContainer = Color(0xFFEADDFF)
-private val OnPrimaryContainer = Color(0xFF21005D)
+// ==================== POCKETGUARD COLORS ====================
+// Diambil dari pocketguard_design_system.html
+val PgPrimary = Color(0xFF1A6B4A)       // Hijau utama aplikasi
+val PgPrimaryLight = Color(0xFFE8F5EE)  // Latar belakang hijau muda/light chip
+val PgAccent = Color(0xFF2ECC8A)        // Hijau terang untuk aksen/aktivitas aktif
+val PgWarning = Color(0xFFF5A623)       // Oranye untuk peringatan batas anggaran
+val PgDanger = Color(0xFFE84040)        // Merah untuk pengeluaran / tombol hapus
 
-private val Secondary = Color(0xFF625B71)
-private val OnSecondary = Color(0xFFFFFFFF)
-private val SecondaryContainer = Color(0xFFE8DEF8)
-private val OnSecondaryContainer = Color(0xFF1D192B)
+// Warna dasar Tampilan Terang (Light Mode)
+val BackgroundLight = Color(0xFFFFFFFF)
+val OnBackgroundLight = Color(0xFF1C1B1F)
+val SurfaceLight = Color(0xFFFFFFFF)
+val OnSurfaceLight = Color(0xFF1C1B1F)
+val SurfaceVariantLight = Color(0xFFF8F9FA) // Warna muted (abu-abu sangat muda) untuk kartu/list
+val OnSurfaceVariantLight = Color(0xFF49454F)
 
-private val Tertiary = Color(0xFF7D5260)
-private val OnTertiary = Color(0xFFFFFFFF)
-private val TertiaryContainer = Color(0xFFFFD8E4)
-private val OnTertiaryContainer = Color(0xFF31111D)
-
-private val Error = Color(0xFFB3261E)
-private val OnError = Color(0xFFFFFFFF)
-private val ErrorContainer = Color(0xFFF9DEDC)
-private val OnErrorContainer = Color(0xFF410E0B)
-
-private val BackgroundLight = Color(0xFFFFFBFE)
-private val OnBackgroundLight = Color(0xFF1C1B1F)
-private val SurfaceLight = Color(0xFFFFFBFE)
-private val OnSurfaceLight = Color(0xFF1C1B1F)
-private val SurfaceVariantLight = Color(0xFFE7E0EC)
-private val OnSurfaceVariantLight = Color(0xFF49454F)
-
-private val BackgroundDark = Color(0xFF1C1B1F)
-private val OnBackgroundDark = Color(0xFFE6E1E5)
-private val SurfaceDark = Color(0xFF1C1B1F)
-private val OnSurfaceDark = Color(0xFFE6E1E5)
-private val SurfaceVariantDark = Color(0xFF49454F)
-private val OnSurfaceVariantDark = Color(0xFFCAC4D0)
-
-private val OutlineLight = Color(0xFF79747E)
-private val OutlineDark = Color(0xFF938F99)
+// Warna dasar Tampilan Gelap (Dark Mode)
+val BackgroundDark = Color(0xFF121212)
+val OnBackgroundDark = Color(0xFFE6E1E5)
+val SurfaceDark = Color(0xFF1E1E1E)
+val OnSurfaceDark = Color(0xFFE6E1E5)
+val SurfaceVariantDark = Color(0xFF2D2D2D) // Abu-abu gelap untuk kontainer komponen
+val OnSurfaceVariantDark = Color(0xFFCAC4D0)
 
 // ==================== COLOR SCHEMES ====================
 
 private val LightColorScheme = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
+    primary = PgPrimary,
+    onPrimary = Color.White,
+    primaryContainer = PgPrimaryLight,
+    onPrimaryContainer = PgPrimary,
+    secondary = PgAccent,
+    onSecondary = Color.White,
+    secondaryContainer = PgPrimaryLight,
+    onSecondaryContainer = PgPrimary,
+    error = PgDanger,
+    onError = Color.White,
     background = BackgroundLight,
     onBackground = OnBackgroundLight,
     surface = SurfaceLight,
     onSurface = OnSurfaceLight,
     surfaceVariant = SurfaceVariantLight,
     onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight
+    outline = Color(0xFF79747E)
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF492532),
-    tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = Color(0xFFFFD8E4),
-    error = Color(0xFFF2B8B5),
-    onError = Color(0xFF601410),
-    errorContainer = Color(0xFF8C1D18),
-    onErrorContainer = Color(0xFFF9DEDC),
+    primary = PgAccent, // Menggunakan warna aksen yang lebih cerah agar kontras di mode gelap
+    onPrimary = Color(0xFF003822),
+    primaryContainer = Color(0xFF005234),
+    onPrimaryContainer = PgPrimaryLight,
+    secondary = PgPrimary,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFF1A3D2B),
+    onSecondaryContainer = PgPrimaryLight,
+    error = PgDanger,
+    onError = Color.White,
     background = BackgroundDark,
     onBackground = OnBackgroundDark,
     surface = SurfaceDark,
     onSurface = OnSurfaceDark,
     surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+    outline = Color(0xFF938F99)
 )
 
 // ==================== THEME ====================

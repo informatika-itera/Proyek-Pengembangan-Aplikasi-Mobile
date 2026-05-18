@@ -46,4 +46,4 @@ caches/
 daemon/
 kotlin-profile/
 native/
-wrapper/
+# wrapper/ # Dihapus agar folder gradle/wrapper tidak ter-ignore

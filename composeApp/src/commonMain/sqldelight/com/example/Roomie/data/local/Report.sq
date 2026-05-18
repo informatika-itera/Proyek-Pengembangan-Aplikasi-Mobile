@@ -5,15 +5,16 @@ CREATE TABLE ReportEntity (
     description TEXT NOT NULL,
     urgency TEXT NOT NULL,
     status TEXT NOT NULL,
-    createdAt INTEGER NOT NULL
+    createdAt INTEGER NOT NULL,
+    imageUrl TEXT
 );
 
 getAllReports:
 SELECT * FROM ReportEntity ORDER BY createdAt DESC;
 
 insertReport:
-INSERT OR REPLACE INTO ReportEntity(id, category, location, description, urgency, status, createdAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO ReportEntity(id, category, location, description, urgency, status, createdAt, imageUrl)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 updateReportStatus:
 UPDATE ReportEntity SET status = ? WHERE id = ?;

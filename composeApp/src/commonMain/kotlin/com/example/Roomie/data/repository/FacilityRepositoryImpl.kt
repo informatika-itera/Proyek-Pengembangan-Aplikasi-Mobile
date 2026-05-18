@@ -1,6 +1,7 @@
 package com.example.Roomie.data.repository
 
 import com.example.Roomie.data.local.RoomieDatabase
+import com.example.Roomie.data.local.RoomEntity
 import com.example.Roomie.domain.model.Building
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.model.RoomStatus
@@ -41,20 +42,7 @@ class FacilityRepositoryImpl(
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { entities ->
-                entities.map { entity ->
-                    Room(
-                        id = entity.id,
-                        name = entity.name,
-                        floor = entity.floor.toInt(),
-                        status = RoomStatus.valueOf(entity.status),
-                        type = RoomType.valueOf(entity.type),
-                        capacity = entity.capacity.toInt(),
-                        hasAc = entity.hasAc == 1L,
-                        hasProjector = entity.hasProjector == 1L,
-                        borrowerName = entity.borrowerName,
-                        maintenanceDescription = entity.maintenanceDescription
-                    )
-                }
+                entities.map { it.toDomain() }
             }
     }
 
@@ -63,20 +51,7 @@ class FacilityRepositoryImpl(
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { entities ->
-                entities.map { entity ->
-                    Room(
-                        id = entity.id,
-                        name = entity.name,
-                        floor = entity.floor.toInt(),
-                        status = RoomStatus.valueOf(entity.status),
-                        type = RoomType.valueOf(entity.type),
-                        capacity = entity.capacity.toInt(),
-                        hasAc = entity.hasAc == 1L,
-                        hasProjector = entity.hasProjector == 1L,
-                        borrowerName = entity.borrowerName,
-                        maintenanceDescription = entity.maintenanceDescription
-                    )
-                }
+                entities.map { it.toDomain() }
             }
     }
 
@@ -85,20 +60,7 @@ class FacilityRepositoryImpl(
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { entities ->
-                entities.map { entity ->
-                    Room(
-                        id = entity.id,
-                        name = entity.name,
-                        floor = entity.floor.toInt(),
-                        status = RoomStatus.valueOf(entity.status),
-                        type = RoomType.valueOf(entity.type),
-                        capacity = entity.capacity.toInt(),
-                        hasAc = entity.hasAc == 1L,
-                        hasProjector = entity.hasProjector == 1L,
-                        borrowerName = entity.borrowerName,
-                        maintenanceDescription = entity.maintenanceDescription
-                    )
-                }
+                entities.map { it.toDomain() }
             }
     }
 
@@ -107,21 +69,40 @@ class FacilityRepositoryImpl(
             .asFlow()
             .mapToOneOrNull(Dispatchers.IO)
             .map { entity ->
-                entity?.let {
-                    Room(
-                        id = it.id,
-                        name = it.name,
-                        floor = it.floor.toInt(),
-                        status = RoomStatus.valueOf(it.status),
-                        type = RoomType.valueOf(it.type),
-                        capacity = it.capacity.toInt(),
-                        hasAc = it.hasAc == 1L,
-                        hasProjector = it.hasProjector == 1L,
-                        borrowerName = it.borrowerName,
-                        maintenanceDescription = it.maintenanceDescription
-                    )
-                }
+                entity?.toDomain()
             }
+    }
+
+    override suspend fun updateRoomStatus(
+        roomId: String,
+        status: RoomStatus,
+        borrowerName: String?,
+        maintenanceDescription: String?
+    ) {
+        withContext(Dispatchers.IO) {
+            queries.updateRoomStatus(
+                status = status.name,
+                borrowerName = borrowerName,
+                maintenanceDescription = maintenanceDescription,
+                id = roomId
+            )
+        }
+    }
+
+    private fun RoomEntity.toDomain(): Room {
+        return Room(
+            id = id,
+            buildingId = buildingId,
+            name = name,
+            floor = floor.toInt(),
+            status = try { RoomStatus.valueOf(status) } catch (e: Exception) { RoomStatus.AVAILABLE },
+            type = try { RoomType.valueOf(type) } catch (e: Exception) { RoomType.REGULAR },
+            capacity = capacity.toInt(),
+            hasAc = hasAc == 1L,
+            hasProjector = hasProjector == 1L,
+            borrowerName = borrowerName,
+            maintenanceDescription = maintenanceDescription
+        )
     }
 
     suspend fun seedData() {
@@ -134,7 +115,37 @@ class FacilityRepositoryImpl(
                 queries.insertBuilding("GEDUNG-E", "Gedung E", "Laboratorium dan kantor jurusan", 0L)
                 queries.insertBuilding("GEDUNG-F", "Gedung F", "Ruang kelas dan pusat penelitian", 0L)
 
-                // Seed GKU2 Rooms
+                // Seed GKU1 Rooms (Coming Soon Preview)
+                queries.insertRoom(
+                    id = "GKU1-101",
+                    buildingId = "GKU1",
+                    name = "101",
+                    floor = 1L,
+                    status = RoomStatus.AVAILABLE.name,
+                    type = RoomType.REGULAR.name,
+                    capacity = 40L,
+                    hasAc = 1L,
+                    hasProjector = 1L,
+                    borrowerName = null,
+                    maintenanceDescription = null
+                )
+
+                // Seed GEDUNG-E Rooms
+                queries.insertRoom(
+                    id = "GEDUNG-E-LAB01",
+                    buildingId = "GEDUNG-E",
+                    name = "LAB 01",
+                    floor = 1L,
+                    status = RoomStatus.MAINTENANCE.name,
+                    type = RoomType.REGULAR.name,
+                    capacity = 30L,
+                    hasAc = 1L,
+                    hasProjector = 0L,
+                    borrowerName = null,
+                    maintenanceDescription = "Upgrade Komputer"
+                )
+
+                // Seed GKU2 Rooms (Existing logic)
                 for (f in 1..3) {
                     for (i in 1..25) {
                         val roomNum = f * 100 + i
@@ -143,6 +154,7 @@ class FacilityRepositoryImpl(
                             roomNum % 3 == 0 -> RoomStatus.BOOKED
                             else -> RoomStatus.AVAILABLE
                         }
+
                         queries.insertRoom(
                             id = "GKU2-$roomNum",
                             buildingId = "GKU2",

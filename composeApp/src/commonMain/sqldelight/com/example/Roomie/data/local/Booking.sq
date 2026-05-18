@@ -1,0 +1,23 @@
+CREATE TABLE BookingEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    roomId TEXT NOT NULL,
+    roomName TEXT NOT NULL,
+    buildingName TEXT NOT NULL,
+    startTime INTEGER NOT NULL,
+    endTime INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    subject TEXT
+);
+
+getAllBookings:
+SELECT * FROM BookingEntity ORDER BY startTime ASC;
+
+insertBooking:
+INSERT OR REPLACE INTO BookingEntity(id, roomId, roomName, buildingName, startTime, endTime, status, subject)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateBookingStatus:
+UPDATE BookingEntity SET status = ? WHERE id = ?;
+
+deleteBooking:
+DELETE FROM BookingEntity WHERE id = ?;

@@ -3,6 +3,7 @@ package com.example.Roomie.core.util
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.example.Roomie.core.util.AppConfig
 import com.example.Roomie.data.local.RoomieDatabase
 
 /**
@@ -18,7 +19,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = RoomieDatabase.Schema,
             context = context,
-            name = "Roomie.db"
+            name = AppConfig.databaseName
         )
     }
 }

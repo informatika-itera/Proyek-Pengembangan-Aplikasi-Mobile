@@ -3,7 +3,8 @@ package com.example.Roomie.presentation.facility
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
-import com.example.Roomie.domain.usecase.GetRoomsByBuildingUseCase
+import com.example.Roomie.domain.repository.FacilityRepository
+import com.example.Roomie.data.repository.FacilityRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,25 +25,35 @@ sealed interface FacilityUiState {
 }
 
 class FacilityViewModel(
-    private val getRoomsByBuildingUseCase: GetRoomsByBuildingUseCase
+    private val facilityRepository: FacilityRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
     val uiState: StateFlow<FacilityUiState> = _uiState.asStateFlow()
 
     init {
-        observeGKU2Rooms()
+        initData()
+    }
+
+    private fun initData() {
+        viewModelScope.launch {
+            // 1. Pastikan data sudah di-seed
+            (facilityRepository as? FacilityRepositoryImpl)?.seedData()
+            
+            // 2. Observasi data secara reaktif
+            observeGKU2Rooms()
+        }
     }
 
     private fun observeGKU2Rooms() {
         viewModelScope.launch {
             _uiState.value = FacilityUiState.Loading
-            getRoomsByBuildingUseCase("GKU2")
+            
+            facilityRepository.getRoomsByBuilding("GKU2")
                 .catch { e -> _uiState.value = FacilityUiState.Error(e.message ?: "Error") }
                 .collectLatest { allRooms ->
-                    if (allRooms.isNotEmpty()) {
-                        val currentFloor = (uiState.value as? FacilityUiState.Success)?.selectedFloor ?: 1
-                        _uiState.value = FacilityUiState.Success(allRooms, currentFloor)
-                    }
+                    // FIX: Tetap set Success biarpun list kosong (biar nggak stuck di Loading)
+                    val currentFloor = (uiState.value as? FacilityUiState.Success)?.selectedFloor ?: 1
+                    _uiState.value = FacilityUiState.Success(allRooms, currentFloor)
                 }
         }
     }

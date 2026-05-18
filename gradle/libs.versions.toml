@@ -5,7 +5,7 @@ compose-multiplatform = "1.7.0"
 kotlinx-coroutines = "1.9.0"
 kotlinx-serialization = "1.7.3"
 kotlinx-datetime = "0.6.1"
-ktor = "3.0.1"
+ktor = "2.3.12"
 koin = "4.0.0"
 sqldelight = "2.0.2"
 datastore = "1.1.1"
@@ -13,6 +13,10 @@ okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+detekt = "1.23.7"
+napier = "2.7.1"
+supabase = "2.6.1"
+peekaboo = "0.5.2"
 
 # Testing
 turbine = "1.2.0"
@@ -60,7 +64,20 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 
 # Coil (Image Loading)
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor2", version.ref = "coil" }
+
+# Logging (Napier)
+napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
+
+# Supabase
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+supabase-gotrue = { group = "io.github.jan-tennert.supabase", name = "gotrue-kt" }
+
+# Peekaboo (Media Picker)
+peekaboo-ui = { group = "io.github.onseok", name = "peekaboo-ui", version.ref = "peekaboo" }
+peekaboo-image-picker = { group = "io.github.onseok", name = "peekaboo-image-picker", version.ref = "peekaboo" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
@@ -74,3 +91,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

@@ -1,9 +1,14 @@
 package com.example.Roomie.presentation.home
 
+import com.example.Roomie.data.repository.FakeAnnouncementRepository
+import com.example.Roomie.data.repository.FakeAuthRepository
 import com.example.Roomie.data.repository.FakeReportRepository
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.domain.model.UrgencyLevel
+import com.example.Roomie.domain.usecase.GetAllAnnouncementsUseCase
+import com.example.Roomie.domain.usecase.GetAllReportsUseCase
+import com.example.Roomie.domain.usecase.GetCurrentUserUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -18,15 +23,25 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    private lateinit var repository: FakeReportRepository
+    private lateinit var reportRepository: FakeReportRepository
+    private lateinit var authRepository: FakeAuthRepository
+    private lateinit var announcementRepository: FakeAnnouncementRepository
     private lateinit var viewModel: HomeViewModel
     private val testDispatcher = StandardTestDispatcher()
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        repository = FakeReportRepository()
-        viewModel = HomeViewModel(repository)
+        reportRepository = FakeReportRepository()
+        authRepository = FakeAuthRepository()
+        announcementRepository = FakeAnnouncementRepository()
+        
+        viewModel = HomeViewModel(
+            getCurrentUserUseCase = GetCurrentUserUseCase(authRepository),
+            getAllReportsUseCase = GetAllReportsUseCase(reportRepository),
+            getAllAnnouncementsUseCase = GetAllAnnouncementsUseCase(announcementRepository),
+            reportRepository = reportRepository
+        )
     }
 
     @AfterTest
@@ -41,7 +56,7 @@ class HomeViewModelTest {
             Report("2", "B", "L2", "D2", UrgencyLevel.LOW, ReportStatus.IN_PROGRESS, 0),
             Report("3", "C", "L3", "D3", UrgencyLevel.LOW, ReportStatus.PENDING, 0)
         )
-        repository.setReports(reports)
+        reportRepository.setReports(reports)
         
         testDispatcher.scheduler.advanceUntilIdle()
         
@@ -58,7 +73,7 @@ class HomeViewModelTest {
             Report("3", "C", "L3", "D3", UrgencyLevel.LOW, ReportStatus.PENDING, 3),
             Report("4", "D", "L4", "D4", UrgencyLevel.LOW, ReportStatus.PENDING, 4)
         )
-        repository.setReports(reports)
+        reportRepository.setReports(reports)
         
         testDispatcher.scheduler.advanceUntilIdle()
         

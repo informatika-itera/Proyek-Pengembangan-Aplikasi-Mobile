@@ -1,5 +1,6 @@
 package com.example.Roomie.presentation.report
 
+import com.example.Roomie.data.remote.SupabaseService
 import com.example.Roomie.data.repository.FakeReportRepository
 import com.example.Roomie.domain.model.UrgencyLevel
 import kotlin.test.BeforeTest
@@ -15,7 +16,14 @@ class ReportViewModelTest {
     @BeforeTest
     fun setup() {
         repository = FakeReportRepository()
-        viewModel = ReportViewModel(repository)
+        
+        val fakeSupabaseService = object : SupabaseService(null) {
+            override suspend fun uploadReportImage(imageBytes: ByteArray): String {
+                return "https://fake-url.com/image.jpg"
+            }
+        }
+        
+        viewModel = ReportViewModel(repository, fakeSupabaseService)
     }
 
     @Test

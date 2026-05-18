@@ -92,6 +92,7 @@ class FacilityRepositoryImpl(
     private fun RoomEntity.toDomain(): Room {
         return Room(
             id = id,
+            buildingId = buildingId,
             name = name,
             floor = floor.toInt(),
             status = try { RoomStatus.valueOf(status) } catch (e: Exception) { RoomStatus.AVAILABLE },

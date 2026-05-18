@@ -35,12 +35,11 @@ class FacilityViewModelTest {
 
     @Test
     fun `selectFloor should update selectedFloor in Success state`() = runTest {
-        // Setup data for ALL 4 floors because ViewModel combines them
         val rooms = listOf(
-            Room("1", "101", 1, RoomStatus.AVAILABLE),
-            Room("2", "201", 2, RoomStatus.AVAILABLE),
-            Room("3", "301", 3, RoomStatus.AVAILABLE),
-            Room("4", "401", 4, RoomStatus.AVAILABLE)
+            Room("1", "GKU2", "101", 1, RoomStatus.AVAILABLE),
+            Room("2", "GKU2", "201", 2, RoomStatus.AVAILABLE),
+            Room("3", "GKU2", "301", 3, RoomStatus.AVAILABLE),
+            Room("4", "GKU2", "401", 4, RoomStatus.AVAILABLE)
         )
         repository.setRooms(rooms)
         
@@ -56,11 +55,11 @@ class FacilityViewModelTest {
     @Test
     fun `filteredRooms should only contain rooms for the selected floor`() = runTest {
         val rooms = listOf(
-            Room("1", "101", 1, RoomStatus.AVAILABLE),
-            Room("2", "102", 1, RoomStatus.AVAILABLE),
-            Room("3", "201", 2, RoomStatus.AVAILABLE),
-            Room("4", "301", 3, RoomStatus.AVAILABLE),
-            Room("5", "401", 4, RoomStatus.AVAILABLE)
+            Room("1", "GKU2", "101", 1, RoomStatus.AVAILABLE),
+            Room("2", "GKU2", "102", 1, RoomStatus.AVAILABLE),
+            Room("3", "GKU2", "201", 2, RoomStatus.AVAILABLE),
+            Room("4", "GKU2", "301", 3, RoomStatus.AVAILABLE),
+            Room("5", "GKU2", "401", 4, RoomStatus.AVAILABLE)
         )
         repository.setRooms(rooms)
         

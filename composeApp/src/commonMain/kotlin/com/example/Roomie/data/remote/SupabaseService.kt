@@ -5,13 +5,14 @@ import io.github.jan.supabase.storage.storage
 import io.github.aakira.napier.Napier
 import kotlinx.datetime.Clock
 
-class SupabaseService(
-    private val client: SupabaseClient
+open class SupabaseService(
+    private val client: SupabaseClient? = null // Made nullable for easier testing
 ) {
-    suspend fun uploadReportImage(imageBytes: ByteArray): String? {
+    open suspend fun uploadReportImage(imageBytes: ByteArray): String? {
+        val currentClient = client ?: return null
         return try {
             val fileName = "report_${Clock.System.now().toEpochMilliseconds()}.jpg"
-            val bucket = client.storage.from("roomie-images")
+            val bucket = currentClient.storage.from("roomie-images")
             
             Napier.d("Supabase: Memulai upload file $fileName ke bucket roomie-images")
             

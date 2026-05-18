@@ -1,9 +1,12 @@
 package com.example.Roomie.presentation.profile
 
+import com.example.Roomie.data.repository.FakeAuthRepository
 import com.example.Roomie.data.repository.FakeReportRepository
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.domain.model.UrgencyLevel
+import com.example.Roomie.domain.usecase.GetAllReportsUseCase
+import com.example.Roomie.domain.usecase.GetCurrentUserUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -18,15 +21,21 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
-    private lateinit var repository: FakeReportRepository
+    private lateinit var reportRepository: FakeReportRepository
+    private lateinit var authRepository: FakeAuthRepository
     private lateinit var viewModel: ProfileViewModel
     private val testDispatcher = StandardTestDispatcher()
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        repository = FakeReportRepository()
-        viewModel = ProfileViewModel(repository)
+        reportRepository = FakeReportRepository()
+        authRepository = FakeAuthRepository()
+        
+        viewModel = ProfileViewModel(
+            getCurrentUserUseCase = GetCurrentUserUseCase(authRepository),
+            getAllReportsUseCase = GetAllReportsUseCase(reportRepository)
+        )
     }
 
     @AfterTest
@@ -42,7 +51,7 @@ class ProfileViewModelTest {
             Report("3", "C", "L3", "D3", UrgencyLevel.LOW, ReportStatus.IN_PROGRESS, 0),
             Report("4", "D", "L4", "D4", UrgencyLevel.LOW, ReportStatus.PENDING, 0)
         )
-        repository.setReports(reports)
+        reportRepository.setReports(reports)
         
         testDispatcher.scheduler.advanceUntilIdle()
         
@@ -60,7 +69,7 @@ class ProfileViewModelTest {
             Report("1", "A", "L1", "D1", UrgencyLevel.LOW, ReportStatus.PENDING, 100),
             Report("2", "B", "L2", "D2", UrgencyLevel.LOW, ReportStatus.PENDING, 200)
         )
-        repository.setReports(reports)
+        reportRepository.setReports(reports)
         
         testDispatcher.scheduler.advanceUntilIdle()
         

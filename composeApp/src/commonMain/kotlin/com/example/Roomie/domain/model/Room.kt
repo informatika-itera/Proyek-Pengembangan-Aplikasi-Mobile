@@ -13,6 +13,7 @@ enum class RoomType {
 
 data class Room(
     val id: String,
+    val buildingId: String,
     val name: String,
     val floor: Int,
     val status: RoomStatus,

@@ -25,4 +25,19 @@ class GameRepositoryImpl(
             emit(emptyList())
         }
     }
+    override fun searchGames(query: String, genre: String?): Flow<List<Game>> = flow {
+        val searchQuery = query.ifBlank { "*" }
+
+        val result = apiService.searchGames(
+            query = searchQuery,
+            genre = genre,
+            sortBy = "release_date"
+        )
+
+        result.onSuccess { response ->
+            emit(response.results.map { it.toDomain() })
+        }.onFailure {
+            emit(emptyList())
+        }
+    }
 }

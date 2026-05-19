@@ -1,12 +1,12 @@
 package com.example.noteai.core.di
 
-import com.example.noteai.core.util.DatabaseDriverFactory
-import com.example.noteai.data.local.datastore.DataStoreFactory
+import com.example.foodsaver.core.util.DatabaseDriverFactory
+import com.example.foodsaver.data.local.datastore.DataStoreFactory
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 /**
- * Android-specific Koin module.
+ * Android-specific Koin module (Legacy noteai package).
  *
  * Menyediakan dependencies yang membutuhkan `Context`:
  * - DatabaseDriverFactory: untuk SQLDelight driver

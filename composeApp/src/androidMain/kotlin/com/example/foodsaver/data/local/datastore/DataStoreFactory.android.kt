@@ -4,16 +4,17 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import okio.Path.Companion.toPath
+import java.io.File
 
 /**
  * Implementasi Android untuk DataStoreFactory.
  */
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class DataStoreFactory(private val context: Context) {
     actual fun create(): DataStore<Preferences> {
         return PreferenceDataStoreFactory.create(
             produceFile = {
-                context.filesDir.resolve(DATASTORE_FILE_NAME).absolutePath.toPath()
+                File(context.filesDir, DATASTORE_FILE_NAME)
             }
         )
     }

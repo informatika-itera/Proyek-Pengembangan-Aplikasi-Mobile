@@ -3,10 +3,10 @@ package com.example.noteai.presentation.screens.ai
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteai.domain.repository.AIRepository
-import com.example.noteai.domain.repository.WritingStyle
-import com.example.noteai.domain.usecase.GenerateIdeasUseCase
-import com.example.noteai.domain.usecase.ImproveWritingUseCase
-import com.example.noteai.domain.usecase.SummarizeNoteUseCase
+import com.example.foodsaver.domain.repository.WritingStyle
+import com.example.foodsaver.domain.usecase.GenerateIdeasUseCase
+import com.example.foodsaver.domain.usecase.ImproveWritingUseCase
+import com.example.foodsaver.domain.usecase.SummarizeNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -98,8 +98,6 @@ class AIAssistantViewModel(
     fun onTargetLanguageChange(language: String) {
         _uiState.update { it.copy(targetLanguage = language) }
     }
-    
-    // ==================== AI OPERATIONS ====================
     
     private suspend fun summarize(text: String): Result<String> {
         return summarizeUseCase(text)

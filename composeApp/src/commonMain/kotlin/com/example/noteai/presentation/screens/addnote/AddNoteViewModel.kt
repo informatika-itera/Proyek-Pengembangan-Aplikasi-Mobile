@@ -2,11 +2,11 @@ package com.example.noteai.presentation.screens.addnote
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.NoteColor
 import com.example.noteai.domain.repository.NoteRepository
-import com.example.noteai.domain.usecase.SaveNoteUseCase
+import com.example.foodsaver.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -53,8 +53,6 @@ class AddNoteViewModel(
             }
         }
     }
-    
-    // ==================== USER ACTIONS ====================
     
     fun onTitleChange(title: String) {
         _uiState.update { it.copy(title = title, titleError = null) }

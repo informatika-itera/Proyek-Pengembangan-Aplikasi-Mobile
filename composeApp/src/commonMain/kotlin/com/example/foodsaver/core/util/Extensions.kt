@@ -8,6 +8,6 @@ import kotlinx.datetime.toLocalDateTime
  * Extension untuk memformat Instant menjadi string tanggal yang mudah dibaca.
  */
 fun Instant.formatToDisplay(): String {
-    val dateTime \= this.toLocalDateTime(TimeZone.currentSystemDefault())
+    val dateTime = this.toLocalDateTime(TimeZone.currentSystemDefault())
     return "${dateTime.dayOfMonth}/${dateTime.monthNumber}/${dateTime.year}"
 }

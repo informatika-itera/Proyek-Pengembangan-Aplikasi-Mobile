@@ -2,13 +2,13 @@ package com.example.noteai.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteCategory
 import com.example.noteai.domain.repository.NoteRepository
-import com.example.noteai.domain.usecase.DeleteNoteUseCase
-import com.example.noteai.domain.usecase.GetAllNotesUseCase
-import com.example.noteai.domain.usecase.NoteSortBy
-import com.example.noteai.domain.usecase.SearchNotesUseCase
+import com.example.foodsaver.domain.usecase.DeleteNoteUseCase
+import com.example.foodsaver.domain.usecase.GetAllNotesUseCase
+import com.example.foodsaver.domain.usecase.NoteSortBy
+import com.example.foodsaver.domain.usecase.SearchNotesUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow

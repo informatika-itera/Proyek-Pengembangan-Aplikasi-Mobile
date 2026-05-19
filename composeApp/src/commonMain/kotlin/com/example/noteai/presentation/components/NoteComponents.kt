@@ -38,8 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteColor
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteColor
 
 @Composable
 fun NoteCard(

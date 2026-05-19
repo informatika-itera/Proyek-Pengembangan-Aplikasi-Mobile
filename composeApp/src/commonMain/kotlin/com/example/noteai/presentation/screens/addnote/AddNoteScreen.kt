@@ -35,7 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.noteai.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.NoteCategory
 import com.example.noteai.presentation.components.ColorPickerRow
 import com.example.noteai.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel

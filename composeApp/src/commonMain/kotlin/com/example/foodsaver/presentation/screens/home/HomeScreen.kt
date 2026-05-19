@@ -13,6 +13,7 @@ import com.example.foodsaver.presentation.components.FoodItemCard
 /**
  * Layar utama FoodSaver untuk menampilkan inventory makanan.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onAddFoodClick: () -> Unit = {}

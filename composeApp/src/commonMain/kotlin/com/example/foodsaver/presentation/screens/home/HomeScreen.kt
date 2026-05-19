@@ -1,27 +1,42 @@
 package com.example.foodsaver.presentation.screens.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.presentation.components.FoodItemCard
+import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Layar utama FoodSaver untuk menampilkan inventory makanan.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onAddFoodClick: () -> Unit = {}
+    onAddFoodClick: () -> Unit,
+    onFoodClick: (Long) -> Unit,
+    onAIClick: () -> Unit,
+    viewModel: HomeViewModel = koinViewModel()
 ) {
+    val state by viewModel.state.collectAsState()
+
     Scaffold(
         topBar = {
-            LargeTopAppBar(
-                title = { Text("FoodSaver Inventory") }
+            TopAppBar(
+                title = { Text("FoodSaver Inventory") },
+                actions = {
+                    IconButton(onClick = onAIClick) {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = "AI Assistant")
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -30,26 +45,36 @@ fun HomeScreen(
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (state.error != null) {
                 Text(
-                    "Bahan Makanan Anda",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    text = state.error ?: "Terjadi kesalahan",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
                 )
-            }
-            
-            // Placeholder data untuk demonstrasi struktur
-            items(5) { index ->
-                FoodItemCard(
-                    name = "Bahan Makanan #$index",
-                    expiryDate = "10/12/2024",
-                    quantity = "2 kg"
+            } else if (state.items.isEmpty()) {
+                Text(
+                    text = "Belum ada data makanan.\nKlik + untuk menambah.",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.bodyLarge
                 )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(state.items, key = { it.id }) { item ->
+                        FoodItemCard(
+                            name = item.name,
+                            expiryDate = item.expiryDate.toString().substringBefore("T"),
+                            quantity = "${item.quantity} ${item.unit}",
+                            modifier = Modifier.clickable { onFoodClick(item.id) }
+                        )
+                    }
+                }
             }
         }
     }

@@ -6,14 +6,14 @@ import com.example.foodsaver.data.local.FoodItemEntity
 import com.example.foodsaver.data.local.FoodSaverDatabase
 import com.example.foodsaver.data.remote.api.GeminiService
 import com.example.foodsaver.data.repository.AIRepositoryImpl
-import com.example.foodsaver.data.repository.NoteRepositoryImpl
+import com.example.foodsaver.data.repository.FoodRepositoryImpl
 import com.example.foodsaver.domain.repository.AIRepository
-import com.example.foodsaver.domain.repository.NoteRepository
+import com.example.foodsaver.domain.repository.FoodRepository
 import com.example.foodsaver.domain.usecase.*
-import com.example.noteai.presentation.screens.addnote.AddNoteViewModel
-import com.example.noteai.presentation.screens.ai.AIAssistantViewModel
-import com.example.noteai.presentation.screens.detail.NoteDetailViewModel
-import com.example.noteai.presentation.screens.home.HomeViewModel
+import com.example.foodsaver.presentation.screens.addfood.AddFoodViewModel
+import com.example.foodsaver.presentation.screens.detail.FoodDetailViewModel
+import com.example.foodsaver.presentation.screens.home.HomeViewModel
+import com.example.foodsaver.presentation.screens.ai.AIAssistantViewModel
 import kotlinx.datetime.Instant
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -46,21 +46,23 @@ val commonModule = module {
 
     // Repositories
     single<AIRepository> { AIRepositoryImpl(get()) }
-    single<NoteRepository> { NoteRepositoryImpl(get()) }
+    single<FoodRepository> { FoodRepositoryImpl(get()) }
     
-    // Use Cases
-    factory { GetAllNotesUseCase(get()) }
-    factory { SearchNotesUseCase(get()) }
-    factory { SaveNoteUseCase(get()) }
-    factory { DeleteNoteUseCase(get()) }
+    // Use Cases (Food)
+    factory { GetAllFoodUseCase(get()) }
+    factory { GetFoodDetailUseCase(get()) }
+    factory { SaveFoodUseCase(get()) }
+    factory { DeleteFoodUseCase(get()) }
+    
+    // Use Cases (AI)
     factory { SummarizeNoteUseCase(get()) }
     factory { ImproveWritingUseCase(get()) }
     factory { GenerateIdeasUseCase(get()) }
 
     // ViewModels
-    viewModel { HomeViewModel(get(), get(), get(), get()) }
-    viewModel { AddNoteViewModel(get(), get()) }
-    viewModel { NoteDetailViewModel(get(), get()) }
+    viewModel { HomeViewModel(get(), get()) }
+    viewModel { AddFoodViewModel(get(), get()) }
+    viewModel { FoodDetailViewModel(get(), get()) }
     viewModel { AIAssistantViewModel(get(), get(), get(), get()) }
 }
 

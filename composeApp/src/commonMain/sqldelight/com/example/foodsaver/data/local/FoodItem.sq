@@ -9,11 +9,19 @@ CREATE TABLE FoodItemEntity (
 );
 
 insertFoodItem:
-INSERT OR REPLACE INTO FoodItemEntity(name, quantity, unit, expiryDate, category, isConsumed)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO FoodItemEntity(id, name, quantity, unit, expiryDate, category, isConsumed)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 getAllFoodItems:
 SELECT * FROM FoodItemEntity ORDER BY expiryDate ASC;
 
+getFoodItemById:
+SELECT * FROM FoodItemEntity WHERE id = ?;
+
 deleteFoodItem:
 DELETE FROM FoodItemEntity WHERE id = ?;
+
+updateFoodItem:
+UPDATE FoodItemEntity
+SET name = ?, quantity = ?, unit = ?, expiryDate = ?, category = ?, isConsumed = ?
+WHERE id = ?;

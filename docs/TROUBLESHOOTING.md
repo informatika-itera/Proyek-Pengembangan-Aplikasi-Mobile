@@ -77,10 +77,10 @@ Database version mismatch
 ```kotlin
 // Di DatabaseDriverFactory
 val driver = AndroidSqliteDriver(
-    schema = NoteDatabase.Schema,
+    schema = KostDatabase.Schema,
     context = context,
-    name = "noteai.db",
-    callback = object : AndroidSqliteDriver.Callback(NoteDatabase.Schema) {
+    name = "kosthub.db",
+    callback = object : AndroidSqliteDriver.Callback(KostDatabase.Schema) {
         override fun onUpgrade(
             db: SupportSQLiteDatabase,
             oldVersion: Int,
@@ -110,7 +110,7 @@ Preview tidak muncul
 @Preview
 @Composable
 fun NoteCardPreview() {
-    NoteAITheme {
+    KostHubTheme {
         NoteCard(
             note = Note(title = "Preview", content = "Test"),
             onClick = {},
@@ -159,7 +159,7 @@ val sharedModules = listOf(
 override fun onCreate() {
     super.onCreate()
     initKoin(platformModules = listOf(androidModule)) {
-        androidContext(this@NoteAIApplication)
+        androidContext(this@KostHubApplication)
     }
 }
 ```

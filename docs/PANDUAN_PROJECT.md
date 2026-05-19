@@ -8,7 +8,7 @@
 | **Kode** | IF25-22017 |
 | **Program Studi** | Teknik Informatika |
 | **Institusi** | Institut Teknologi Sumatera (ITERA) |
-| **Template** | NoteAI - KMP Project Template |
+| **Template** | KostHub - KMP Project Template |
 
 ---
 

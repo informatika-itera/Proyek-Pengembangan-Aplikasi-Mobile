@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.noteai.presentation.screens.addnote.AddNoteScreen
 import com.example.noteai.presentation.screens.ai.AIAssistantScreen
+import com.example.noteai.presentation.screens.dashboard.DashboardScreen
 import com.example.noteai.presentation.screens.detail.NoteDetailScreen
 import com.example.noteai.presentation.screens.home.HomeScreen
 
@@ -18,12 +19,27 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
-    
+
     NavHost(
         navController = navController,
-        startDestination = Route.Home,
+        startDestination = Route.Dashboard,
         modifier = modifier
     ) {
+        composable<Route.Dashboard> {
+            DashboardScreen(
+                onNavigateToMealLog = { navigationActions.navigateToHome() },
+                onNavigateToAddMeal = { navigationActions.navigateToAddNote() },
+                onNavigateToAI = {
+                    navigationActions.navigateToAIAssistant(
+                        initialText = """
+                            Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
+                            Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
+                            """.trimIndent()
+                    )
+                }
+            )
+        }
+
         composable<Route.Home> {
             HomeScreen(
                 onNavigateToAddNote = { navigationActions.navigateToAddNote() },
@@ -31,7 +47,7 @@ fun AppNavHost(
                 onNavigateToAI = { navigationActions.navigateToAIAssistant() }
             )
         }
-        
+
         composable<Route.AddNote> { backStackEntry ->
             val route: Route.AddNote = backStackEntry.toRoute()
             AddNoteScreen(
@@ -45,7 +61,7 @@ fun AppNavHost(
                 }
             )
         }
-        
+
         composable<Route.NoteDetail> { backStackEntry ->
             val route: Route.NoteDetail = backStackEntry.toRoute()
             NoteDetailScreen(
@@ -55,7 +71,7 @@ fun AppNavHost(
                 onShare = { _ -> }
             )
         }
-        
+
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
@@ -70,20 +86,24 @@ fun AppNavHost(
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
-        override fun navigateToHome() {
-            navController.navigate(Route.Home) {
-                popUpTo(Route.Home) { inclusive = true }
+        override fun navigateToDashboard() {
+            navController.navigate(Route.Dashboard) {
+                popUpTo(Route.Dashboard) { inclusive = true }
             }
         }
-        
+
+        override fun navigateToHome() {
+            navController.navigate(Route.Home)
+        }
+
         override fun navigateToAddNote(noteId: Long?) {
             navController.navigate(Route.AddNote(noteId))
         }
-        
+
         override fun navigateToNoteDetail(noteId: Long) {
             navController.navigate(Route.NoteDetail(noteId))
         }
-        
+
         override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
             navController.navigate(Route.AIAssistant(noteId, initialText))
         }

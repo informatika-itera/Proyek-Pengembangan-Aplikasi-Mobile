@@ -3,16 +3,19 @@ package com.example.noteai.presentation.navigation
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
-    
+
+    @Serializable
+    data object Dashboard : Route
+
     @Serializable
     data object Home : Route
-    
+
     @Serializable
     data class AddNote(val noteId: Long? = null) : Route
-    
+
     @Serializable
     data class NoteDetail(val noteId: Long) : Route
-    
+
     @Serializable
     data class AIAssistant(
         val noteId: Long? = null,
@@ -21,6 +24,7 @@ sealed interface Route {
 }
 
 interface NavigationActions {
+    fun navigateToDashboard()
     fun navigateToHome()
     fun navigateToAddNote(noteId: Long? = null)
     fun navigateToNoteDetail(noteId: Long)

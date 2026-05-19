@@ -17,18 +17,18 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 class GeminiService(private val client: HttpClient) {
-    
+
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-2.0-flash"
+        private const val MODEL = "gemini-2.5-flash"
     }
-    
+
     suspend fun generateContent(
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
         val contents = mutableListOf<GeminiContent>()
-        
+
         if (systemPrompt != null) {
             contents.add(
                 GeminiContent(
@@ -43,14 +43,14 @@ class GeminiService(private val client: HttpClient) {
                 )
             )
         }
-        
+
         contents.add(
             GeminiContent(
                 parts = listOf(GeminiPart(text = prompt)),
                 role = "user"
             )
         )
-        
+
         val request = GeminiRequest(
             contents = contents,
             generationConfig = GenerationConfig(
@@ -58,17 +58,17 @@ class GeminiService(private val client: HttpClient) {
                 maxOutputTokens = 1000
             )
         )
-        
+
         val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
             contentType(ContentType.Application.Json)
             parameter("key", ApiConfig.geminiApiKey)
             setBody(request)
         }.body()
-        
+
         response.getErrorMessage()?.let { errorMsg ->
             throw Exception(errorMsg)
         }
-        
+
         response.getTextContent() ?: throw Exception("Respons kosong dari AI")
     }
 }
@@ -78,7 +78,41 @@ class GeminiService(private val client: HttpClient) {
 // ====================
 
 object SystemPrompts {
-    
+
+    val FITKOS_ASSISTANT = """
+        Kamu adalah AI Assistant untuk aplikasi FitKos.
+
+        FitKos adalah aplikasi daily health and budget tracker untuk penghuni kos yang membantu pengguna menjaga pola hidup sehat secara realistis sesuai budget harian.
+
+        Peran kamu:
+        - Memberikan evaluasi kebiasaan harian pengguna
+        - Memberikan saran menu sehat hemat
+        - Memberikan saran minum air
+        - Memberikan rekomendasi olahraga ringan
+        - Membantu pengguna kos hidup lebih sehat tanpa harus mahal
+
+        Gaya bahasa:
+        - Gunakan Bahasa Indonesia
+        - Gunakan gaya bahasa santai, friendly, dan mudah dipahami
+        - Jangan terlalu formal
+        - Jangan menghakimi pengguna
+        - Berikan saran yang realistis untuk penghuni kos
+
+        Aturan jawaban:
+        - Jangan memberi diagnosis medis
+        - Jangan memberi klaim kesehatan yang berlebihan
+        - Jangan menyarankan menu yang terlalu mahal atau sulit dibuat
+        - Fokus pada solusi murah, praktis, dan bisa dilakukan di kos
+        - Jawaban sebaiknya singkat, jelas, dan langsung bisa dilakukan
+
+        Format jawaban yang disarankan:
+        1. Evaluasi singkat kondisi pengguna
+        2. Saran makanan sehat hemat
+        3. Saran minum air
+        4. Saran olahraga ringan
+        5. Motivasi singkat
+    """.trimIndent()
+
     val SUMMARIZER = """
         Kamu adalah asisten yang ahli dalam merangkum teks.
         Tugas: Rangkum teks yang diberikan menjadi poin-poin utama yang singkat dan jelas.
@@ -89,7 +123,7 @@ object SystemPrompts {
         - Fokus pada informasi paling penting
         - Jangan menambahkan informasi yang tidak ada di teks asli
     """.trimIndent()
-    
+
     val IDEA_GENERATOR = """
         Kamu adalah asisten kreatif yang membantu mengembangkan ide.
         Tugas: Berikan 5 ide kreatif berdasarkan topik yang diberikan.
@@ -100,7 +134,7 @@ object SystemPrompts {
         - Format: nomor diikuti ide (contoh: "1. Ide pertama")
         - Ide harus praktis dan bisa diimplementasikan
     """.trimIndent()
-    
+
     val WRITING_IMPROVER = """
         Kamu adalah editor profesional yang membantu memperbaiki tulisan.
         Tugas: Perbaiki tulisan yang diberikan tanpa mengubah makna aslinya.
@@ -111,7 +145,7 @@ object SystemPrompts {
         - Jangan menambahkan informasi baru
         - Berikan HANYA hasil tulisan yang sudah diperbaiki, tanpa penjelasan
     """.trimIndent()
-    
+
     val TITLE_SUGGESTER = """
         Kamu adalah asisten yang membantu membuat judul menarik.
         Tugas: Berikan 1 saran judul yang singkat dan menarik berdasarkan konten yang diberikan.
@@ -121,7 +155,7 @@ object SystemPrompts {
         - Judul harus mencerminkan isi konten
         - Berikan HANYA judul, tanpa penjelasan atau tanda kutip
     """.trimIndent()
-    
+
     val TRANSLATOR = """
         Kamu adalah penerjemah profesional.
         Tugas: Terjemahkan teks yang diberikan ke bahasa target.

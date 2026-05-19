@@ -4,19 +4,24 @@ on:
   push:
     branches:
       - main
+      - master
       - project/123140089-123140125-FoodSaver
+      - Project/123140089-123140125-FoodSaver
 
   pull_request:
     branches:
       - main
+      - master
       - project/123140089-123140125-FoodSaver
+      - Project/123140089-123140125-FoodSaver
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4

@@ -1,10 +1,10 @@
-# 🔧 Troubleshooting Guide
+﻿# ðŸ”§ Troubleshooting Guide
 
 Panduan untuk mengatasi masalah umum yang mungkin ditemui saat mengerjakan project.
 
 ---
 
-## 🚨 Masalah Umum & Solusi
+## ðŸš¨ Masalah Umum & Solusi
 
 ### 1. Gradle Sync Failed
 
@@ -63,7 +63,7 @@ GEMINI_API_KEY=your_actual_api_key_here
 
 **Gejala:**
 ```
-android.database.sqlite.SQLiteException: no such table: NoteEntity
+android.database.sqlite.SQLiteException: no such table: BookEntity
 Database version mismatch
 ```
 
@@ -77,10 +77,10 @@ Database version mismatch
 ```kotlin
 // Di DatabaseDriverFactory
 val driver = AndroidSqliteDriver(
-    schema = NoteDatabase.Schema,
+    schema = BookDatabase.Schema,
     context = context,
-    name = "noteai.db",
-    callback = object : AndroidSqliteDriver.Callback(NoteDatabase.Schema) {
+    name = "bookku.db",
+    callback = object : AndroidSqliteDriver.Callback(BookDatabase.Schema) {
         override fun onUpgrade(
             db: SupportSQLiteDatabase,
             oldVersion: Int,
@@ -110,7 +110,7 @@ Preview tidak muncul
 @Preview
 @Composable
 fun NoteCardPreview() {
-    NoteAITheme {
+    bookkuTheme {
         NoteCard(
             note = Note(title = "Preview", content = "Test"),
             onClick = {},
@@ -148,7 +148,7 @@ val repositoryModule = module {
 val sharedModules = listOf(
     networkModule,
     databaseModule,
-    repositoryModule,  // ← Pastikan ada
+    repositoryModule,  // â† Pastikan ada
     viewModelModule
 )
 ```
@@ -159,7 +159,7 @@ val sharedModules = listOf(
 override fun onCreate() {
     super.onCreate()
     initKoin(platformModules = listOf(androidModule)) {
-        androidContext(this@NoteAIApplication)
+        androidContext(this@bookkuApplication)
     }
 }
 ```
@@ -235,10 +235,10 @@ install(Logging) {
 
 1. Pastikan menggunakan `collectAsStateWithLifecycle`:
 ```kotlin
-// ✅ BENAR
+// âœ… BENAR
 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-// ❌ SALAH (untuk Android)
+// âŒ SALAH (untuk Android)
 val uiState by viewModel.uiState.collectAsState()
 ```
 
@@ -324,7 +324,7 @@ fun tearDown() {
 
 ---
 
-## 🔍 Debugging Tips
+## ðŸ” Debugging Tips
 
 ### 1. Enable Verbose Logging
 
@@ -368,7 +368,7 @@ fun MyScreen() {
 
 ---
 
-## 📞 Mendapatkan Bantuan
+## ðŸ“ž Mendapatkan Bantuan
 
 ### 1. Sebelum Bertanya
 
@@ -406,7 +406,7 @@ fun MyScreen() {
 
 ---
 
-## 📚 Resources
+## ðŸ“š Resources
 
 ### Official Documentation
 - [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
@@ -423,3 +423,5 @@ fun MyScreen() {
 ---
 
 *Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+
+

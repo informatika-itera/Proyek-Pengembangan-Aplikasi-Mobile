@@ -1,10 +1,10 @@
-# 📜 Aturan Modifikasi Template
+﻿# ðŸ“œ Aturan Modifikasi Template
 
 Dokumen ini menjelaskan **apa yang boleh dan tidak boleh** dimodifikasi dalam template project. Ikuti aturan ini untuk memastikan project Anda tetap terstruktur dengan baik.
 
 ---
 
-## 🎯 Prinsip Utama
+## ðŸŽ¯ Prinsip Utama
 
 1. **Pertahankan Arsitektur** - Clean Architecture + MVVM harus tetap digunakan
 2. **Gunakan Pattern yang Sama** - Repository, Use Case, ViewModel patterns
@@ -13,7 +13,7 @@ Dokumen ini menjelaskan **apa yang boleh dan tidak boleh** dimodifikasi dalam te
 
 ---
 
-## ✅ WAJIB Dimodifikasi
+## âœ… WAJIB Dimodifikasi
 
 Bagian-bagian ini **HARUS** diubah sesuai project Anda:
 
@@ -21,7 +21,7 @@ Bagian-bagian ini **HARUS** diubah sesuai project Anda:
 
 ```kotlin
 // SEBELUM (Template)
-package com.example.noteai
+package com.example.bookku
 
 // SESUDAH (Project Anda)
 package com.example.todomaster    // Sesuaikan dengan nama app
@@ -30,9 +30,9 @@ package com.example.fitnessapp
 ```
 
 **File yang perlu diubah:**
-- `composeApp/build.gradle.kts` → `namespace` dan `applicationId`
-- Semua file `.kt` → package declaration
-- `AndroidManifest.xml` → package references
+- `composeApp/build.gradle.kts` â†’ `namespace` dan `applicationId`
+- Semua file `.kt` â†’ package declaration
+- `AndroidManifest.xml` â†’ package references
 
 ### 2. Domain Models
 
@@ -44,7 +44,7 @@ data class Note(
     val id: Long,
     val title: String,
     val content: String,
-    val category: NoteCategory,
+    val category: BookGenre,
     ...
 )
 
@@ -76,7 +76,7 @@ Update schema database sesuai model baru:
 
 ```sql
 -- SEBELUM (Note.sq)
-CREATE TABLE NoteEntity (
+CREATE TABLE BookEntity (
     id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE TaskEntity (
 // SEBELUM
 interface NoteRepository {
     fun getAllNotes(): Flow<List<Note>>
-    suspend fun insertNote(note: Note): Long
+    suspend fun addBook(note: Note): Long
     ...
 }
 
@@ -121,20 +121,20 @@ interface TaskRepository {
 Buat screens sesuai kebutuhan aplikasi:
 
 ```
-SEBELUM (NoteAI):
-├── screens/
-│   ├── home/
-│   ├── addnote/
-│   ├── detail/
-│   └── ai/
+SEBELUM (bookku):
+â”œâ”€â”€ screens/
+â”‚   â”œâ”€â”€ home/
+â”‚   â”œâ”€â”€ addnote/
+â”‚   â”œâ”€â”€ detail/
+â”‚   â””â”€â”€ ai/
 
 SESUDAH (Todo App):
-├── screens/
-│   ├── home/          → TaskListScreen
-│   ├── addtask/       → AddTaskScreen
-│   ├── calendar/      → CalendarScreen (BARU)
-│   ├── statistics/    → StatisticsScreen (BARU)
-│   └── ai/            → AIAssistantScreen (modifikasi)
+â”œâ”€â”€ screens/
+â”‚   â”œâ”€â”€ home/          â†’ TaskListScreen
+â”‚   â”œâ”€â”€ addtask/       â†’ AddTaskScreen
+â”‚   â”œâ”€â”€ calendar/      â†’ CalendarScreen (BARU)
+â”‚   â”œâ”€â”€ statistics/    â†’ StatisticsScreen (BARU)
+â”‚   â””â”€â”€ ai/            â†’ AIAssistantScreen (modifikasi)
 ```
 
 ### 6. Navigation Routes
@@ -143,8 +143,8 @@ SESUDAH (Todo App):
 // SEBELUM
 sealed interface Route {
     data object Home : Route
-    data class AddNote(val noteId: Long? = null) : Route
-    data class NoteDetail(val noteId: Long) : Route
+    data class AddBook(val noteId: Long? = null) : Route
+    data class BookDetail(val noteId: Long) : Route
     ...
 }
 
@@ -177,7 +177,7 @@ Update README dengan:
 
 ---
 
-## 🔧 BOLEH Dimodifikasi
+## ðŸ”§ BOLEH Dimodifikasi
 
 Bagian-bagian ini **boleh** diubah sesuai kebutuhan:
 
@@ -265,33 +265,33 @@ class StatisticsUseCaseTest { ... }
 
 ---
 
-## ❌ TIDAK BOLEH Dimodifikasi
+## âŒ TIDAK BOLEH Dimodifikasi
 
 Bagian-bagian ini **TIDAK BOLEH** diubah strukturnya:
 
 ### 1. Folder Structure (Arsitektur)
 
 ```
-❌ TIDAK BOLEH mengubah struktur folder utama:
+âŒ TIDAK BOLEH mengubah struktur folder utama:
 
 composeApp/src/commonMain/kotlin/
-├── core/           ← JANGAN diubah strukturnya
-│   ├── di/
-│   ├── network/
-│   └── util/
-├── data/           ← JANGAN diubah strukturnya
-│   ├── local/
-│   ├── remote/
-│   └── repository/
-├── domain/         ← JANGAN diubah strukturnya
-│   ├── model/
-│   ├── repository/
-│   └── usecase/
-└── presentation/   ← JANGAN diubah strukturnya
-    ├── navigation/
-    ├── screens/
-    ├── components/
-    └── theme/
+â”œâ”€â”€ core/           â† JANGAN diubah strukturnya
+â”‚   â”œâ”€â”€ di/
+â”‚   â”œâ”€â”€ network/
+â”‚   â””â”€â”€ util/
+â”œâ”€â”€ data/           â† JANGAN diubah strukturnya
+â”‚   â”œâ”€â”€ local/
+â”‚   â”œâ”€â”€ remote/
+â”‚   â””â”€â”€ repository/
+â”œâ”€â”€ domain/         â† JANGAN diubah strukturnya
+â”‚   â”œâ”€â”€ model/
+â”‚   â”œâ”€â”€ repository/
+â”‚   â””â”€â”€ usecase/
+â””â”€â”€ presentation/   â† JANGAN diubah strukturnya
+    â”œâ”€â”€ navigation/
+    â”œâ”€â”€ screens/
+    â”œâ”€â”€ components/
+    â””â”€â”€ theme/
 ```
 
 ### 2. expect/actual Pattern
@@ -348,7 +348,7 @@ fun initKoin(
 
 ---
 
-## 📋 Checklist Modifikasi
+## ðŸ“‹ Checklist Modifikasi
 
 Sebelum mengubah template, pastikan:
 
@@ -380,15 +380,15 @@ Sebelum mengubah template, pastikan:
 
 ---
 
-## 🔍 Contoh Modifikasi yang Benar
+## ðŸ” Contoh Modifikasi yang Benar
 
-### Mengubah dari NoteAI ke TodoMaster
+### Mengubah dari bookku ke TodoMaster
 
 #### Step 1: Rename Package
 ```bash
 # Di Android Studio:
 # Right-click package > Refactor > Rename
-# com.example.noteai → com.example.todomaster
+# com.example.bookku â†’ com.example.todomaster
 ```
 
 #### Step 2: Update Model
@@ -462,7 +462,7 @@ val repositoryModule = module {
 
 ---
 
-## ⚠️ Peringatan
+## âš ï¸ Peringatan
 
 ### Jangan Lakukan:
 1. **Menghapus layer** - Semua layer (domain, data, presentation) harus ada
@@ -481,3 +481,5 @@ val repositoryModule = module {
 ---
 
 *Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+
+

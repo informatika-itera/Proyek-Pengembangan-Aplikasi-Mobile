@@ -1,4 +1,4 @@
-# ProGuard Rules for NoteAI
+﻿# ProGuard Rules for bookku
 # ===========================
 
 # Keep Kotlin Serialization
@@ -13,11 +13,11 @@
 }
 
 # Keep serializable classes
--keep,includedescriptorclasses class com.example.noteai.**$$serializer { *; }
--keepclassmembers class com.example.noteai.** {
+-keep,includedescriptorclasses class com.example.bookku.**$$serializer { *; }
+-keepclassmembers class com.example.bookku.** {
     *** Companion;
 }
--keepclasseswithmembers class com.example.noteai.** {
+-keepclasseswithmembers class com.example.bookku.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -30,12 +30,12 @@
 -dontwarn org.slf4j.**
 
 # Ktor common code mereferensikan JVM-only API (java.lang.management.*)
-# lewat IntellijIdeaDebugDetector. Tidak ada di Android runtime → silence-kan.
+# lewat IntellijIdeaDebugDetector. Tidak ada di Android runtime â†’ silence-kan.
 -dontwarn io.ktor.util.debug.**
 -dontwarn java.lang.management.**
 
 # Keep SQLDelight generated classes
--keep class com.example.noteai.data.local.** { *; }
+-keep class com.example.bookku.data.local.** { *; }
 
 # Keep Koin DI metadata + ViewModel constructors agar reflection-based
 # resolution tidak ke-strip oleh R8.
@@ -43,3 +43,4 @@
 -keepclassmembers class * extends androidx.lifecycle.ViewModel {
     <init>(...);
 }
+

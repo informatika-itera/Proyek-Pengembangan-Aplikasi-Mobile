@@ -1,4 +1,4 @@
-# 📚 Panduan Project - Pengembangan Aplikasi Mobile
+﻿# ðŸ“š Panduan Project - Pengembangan Aplikasi Mobile
 
 ## Informasi Mata Kuliah
 
@@ -8,11 +8,11 @@
 | **Kode** | IF25-22017 |
 | **Program Studi** | Teknik Informatika |
 | **Institusi** | Institut Teknologi Sumatera (ITERA) |
-| **Template** | NoteAI - KMP Project Template |
+| **Template** | bookku - KMP Project Template |
 
 ---
 
-## 🎯 Tujuan Project
+## ðŸŽ¯ Tujuan Project
 
 Project ini bertujuan untuk:
 
@@ -24,7 +24,7 @@ Project ini bertujuan untuk:
 
 ---
 
-## 👥 Ketentuan Kelompok
+## ðŸ‘¥ Ketentuan Kelompok
 
 | Ketentuan | Detail |
 |-----------|--------|
@@ -48,7 +48,7 @@ Project ini bertujuan untuk:
 | Anggota 2 | Data layer, Database, API Integration |
 | Anggota 3 | Presentation layer, UI/UX, Navigation |
 
-### ⚠️ Penting!
+### âš ï¸ Penting!
 - **SETIAP anggota WAJIB** memiliki commit di repository
 - Commit harus **meaningful** (bukan hanya edit spasi/komentar)
 - Jika ada anggota yang tidak berkontribusi, laporkan ke dosen
@@ -56,7 +56,7 @@ Project ini bertujuan untuk:
 
 ---
 
-## 📋 Persyaratan
+## ðŸ“‹ Persyaratan
 
 ### Software yang Dibutuhkan
 
@@ -75,11 +75,11 @@ Project ini bertujuan untuk:
 
 ---
 
-## 🚀 Langkah Memulai Project
+## ðŸš€ Langkah Memulai Project
 
 ### Step 1: Fork Repository (1 Orang per Kelompok)
 
-> **📝 Untuk Kelompok:** Cukup **1 orang saja** yang fork. Anggota lain akan di-invite sebagai collaborator.
+> **ðŸ“ Untuk Kelompok:** Cukup **1 orang saja** yang fork. Anggota lain akan di-invite sebagai collaborator.
 
 1. Buka repository template di GitHub
 2. Klik tombol **Fork** di kanan atas
@@ -119,7 +119,7 @@ git checkout -b project/121140003-121140004-FitnessApp
 git checkout -b project/121140007-121140008-121140009-StudyPlanner
 ```
 
-> **📝 Note:** NIM diurutkan dari kecil ke besar, dipisahkan dengan dash (-)
+> **ðŸ“ Note:** NIM diurutkan dari kecil ke besar, dipisahkan dengan dash (-)
 
 ### Step 4: Setup API Key
 
@@ -146,7 +146,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## 📅 Timeline Project (Sprint-based)
+## ðŸ“… Timeline Project (Sprint-based)
 
 | Minggu | Sprint | Deliverables | Bobot |
 |--------|--------|--------------|-------|
@@ -161,7 +161,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## 📝 Deliverables Setiap Sprint
+## ðŸ“ Deliverables Setiap Sprint
 
 ### Sprint 1: Foundation (Minggu 11)
 - [ ] Repository GitHub sudah di-fork dan branch dibuat
@@ -201,7 +201,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## 📊 Rubrik Penilaian
+## ðŸ“Š Rubrik Penilaian
 
 ### Sprint 1-5 (masing-masing 5%)
 
@@ -224,9 +224,9 @@ GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## 💡 Tips Sukses
+## ðŸ’¡ Tips Sukses
 
-### Do's ✅
+### Do's âœ…
 - Commit secara teratur (minimal 1x per hari saat aktif coding)
 - Tulis commit message yang deskriptif
 - Test aplikasi di berbagai ukuran layar
@@ -234,7 +234,7 @@ GEMINI_API_KEY=your_api_key_here
 - Tanya jika ada yang tidak dipahami
 - Mulai dari yang sederhana, tambahkan fitur bertahap
 
-### Don'ts ❌
+### Don'ts âŒ
 - Jangan copy-paste tanpa memahami
 - Jangan tunggu deadline untuk mulai
 - Jangan abaikan error/warning
@@ -243,7 +243,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## 🆘 Bantuan & Resources
+## ðŸ†˜ Bantuan & Resources
 
 ### Dokumentasi Resmi
 - [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
@@ -262,7 +262,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## 📎 File Dokumentasi Lainnya
+## ðŸ“Ž File Dokumentasi Lainnya
 
 | File | Deskripsi |
 |------|-----------|
@@ -274,3 +274,4 @@ GEMINI_API_KEY=your_api_key_here
 ---
 
 *Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+

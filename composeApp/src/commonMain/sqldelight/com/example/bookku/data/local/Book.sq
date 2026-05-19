@@ -1,0 +1,84 @@
+﻿-- book table schema for SQLDelight
+-- File: book.sq
+
+CREATE TABLE BookEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'GENERAL',
+    color TEXT NOT NULL DEFAULT 'DEFAULT',
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Get all books ordered by updated_at descending
+getAllNotes:
+SELECT * FROM BookEntity
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get pinned books
+getPinnedNotes:
+SELECT * FROM BookEntity
+WHERE is_pinned = 1
+ORDER BY updated_at DESC;
+
+-- Get books by category
+getNotesByCategory:
+SELECT * FROM BookEntity
+WHERE category = ?
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Search books by title or content
+searchNotes:
+SELECT * FROM BookEntity
+WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%'
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get single book by ID
+getBookById:
+SELECT * FROM BookEntity
+WHERE id = ?;
+
+-- Insert new book
+addBook:
+INSERT INTO BookEntity (title, content, category, color, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- Get last inserted ID
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- Update existing book
+updateBook:
+UPDATE BookEntity
+SET title = ?, content = ?, category = ?, color = ?, is_pinned = ?, updated_at = ?
+WHERE id = ?;
+
+-- Delete book by ID
+deleteNoteById:
+DELETE FROM BookEntity
+WHERE id = ?;
+
+-- Toggle pin status
+togglePin:
+UPDATE BookEntity
+SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END, updated_at = ?
+WHERE id = ?;
+
+-- Delete multiple books
+deleteNotesByIds:
+DELETE FROM BookEntity
+WHERE id IN ?;
+
+-- Count all books
+countNotes:
+SELECT COUNT(*) FROM BookEntity;
+
+-- Count books by category
+countNotesByCategory:
+SELECT category, COUNT(*) AS total
+FROM BookEntity
+GROUP BY category;
+
+

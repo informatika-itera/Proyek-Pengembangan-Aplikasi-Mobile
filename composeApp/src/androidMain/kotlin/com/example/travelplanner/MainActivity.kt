@@ -1,4 +1,4 @@
-package com.example.noteai
+package com.example.travelplanner
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

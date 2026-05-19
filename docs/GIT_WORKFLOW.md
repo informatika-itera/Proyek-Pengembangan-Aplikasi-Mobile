@@ -1,53 +1,53 @@
-# 🌿 Git Workflow & Branching Strategy
+﻿# ðŸŒ¿ Git Workflow & Branching Strategy
 
 Dokumen ini menjelaskan cara menggunakan Git untuk project ini, termasuk strategi branching yang harus diikuti setiap mahasiswa.
 
 ---
 
-## 📌 Konsep Dasar
+## ðŸ“Œ Konsep Dasar
 
 ### Repository Structure
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    REPOSITORY TEMPLATE                      │
-│                      (Dosen/Asisten)                        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              │ Fork
-                              ▼
-┌──────────────────────────────────────────────────────────────┐
-│                   FORKED REPOSITORY                          │
-│                   (Salah satu anggota kelompok)              │
-│                                                              │
-│  main ─────────────────────────────────────────────────────  │
-│    │                                                         │
-│    ├── project/121140001-TodoMaster (individu) ──────────────│
-│    │        │                                                │
-│    │        ├── feature/add-task-screen                      │
-│    │        └── fix/database-crash                           │
-│    │                                                         │
-│    ├── project/121140003-121140004-FitnessApp (2 orang) ─────│
-│    │        │                                                │
-│    │        ├── feature/workout-tracker                      │
-│    │        └── feature/progress-chart                       │
-│    │                                                         │
-│    └── project/121140007-121140008-121140009-StudyPlanner ───│
-│             │            (3 orang)                           │
-│             ├── feature/schedule-view                        │
-│             └── feature/reminder                             │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    REPOSITORY TEMPLATE                      â”‚
+â”‚                      (Dosen/Asisten)                        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+                              â”‚ Fork
+                              â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                   FORKED REPOSITORY                          â”‚
+â”‚                   (Salah satu anggota kelompok)              â”‚
+â”‚                                                              â”‚
+â”‚  main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  â”‚
+â”‚    â”‚                                                         â”‚
+â”‚    â”œâ”€â”€ project/121140001-TodoMaster (individu) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚
+â”‚    â”‚        â”‚                                                â”‚
+â”‚    â”‚        â”œâ”€â”€ feature/add-task-screen                      â”‚
+â”‚    â”‚        â””â”€â”€ fix/database-crash                           â”‚
+â”‚    â”‚                                                         â”‚
+â”‚    â”œâ”€â”€ project/121140003-121140004-FitnessApp (2 orang) â”€â”€â”€â”€â”€â”‚
+â”‚    â”‚        â”‚                                                â”‚
+â”‚    â”‚        â”œâ”€â”€ feature/workout-tracker                      â”‚
+â”‚    â”‚        â””â”€â”€ feature/progress-chart                       â”‚
+â”‚    â”‚                                                         â”‚
+â”‚    â””â”€â”€ project/121140007-121140008-121140009-StudyPlanner â”€â”€â”€â”‚
+â”‚             â”‚            (3 orang)                           â”‚
+â”‚             â”œâ”€â”€ feature/schedule-view                        â”‚
+â”‚             â””â”€â”€ feature/reminder                             â”‚
+â”‚                                                              â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-> **📝 Note untuk Kelompok:** 
+> **ðŸ“ Note untuk Kelompok:** 
 > - Cukup **1 orang yang fork** repository
 > - Anggota lain di-invite sebagai **collaborator** di Settings > Collaborators
 > - Semua anggota clone dari repository yang sudah di-fork
 
 ---
 
-## 🏷️ Branch Naming Convention
+## ðŸ·ï¸ Branch Naming Convention
 
 ### Format Wajib
 
@@ -87,7 +87,7 @@ project/[Kelompok]-[NamaAplikasi]
 
 ---
 
-## 🔄 Workflow Step-by-Step
+## ðŸ”„ Workflow Step-by-Step
 
 ### 1. Fork Repository (Sekali di Awal)
 
@@ -102,31 +102,31 @@ project/[Kelompok]-[NamaAplikasi]
 
 ```bash
 # Clone ke komputer lokal
-git clone https://github.com/USERNAME_ANDA/NoteAI-KMP.git
+git clone https://github.com/USERNAME_ANDA/bookku-KMP.git
 
 # Masuk ke folder
-cd NoteAI-KMP
+cd bookku-KMP
 
 # Cek remote
 git remote -v
 # Output:
-# origin  https://github.com/USERNAME_ANDA/NoteAI-KMP.git (fetch)
-# origin  https://github.com/USERNAME_ANDA/NoteAI-KMP.git (push)
+# origin  https://github.com/USERNAME_ANDA/bookku-KMP.git (fetch)
+# origin  https://github.com/USERNAME_ANDA/bookku-KMP.git (push)
 ```
 
 ### 3. Tambahkan Upstream Remote
 
 ```bash
 # Tambahkan remote ke repository template (untuk sync update)
-git remote add upstream https://github.com/DOSEN/NoteAI-KMP-Template.git
+git remote add upstream https://github.com/DOSEN/bookku-KMP-Template.git
 
 # Verifikasi
 git remote -v
 # Output:
-# origin    https://github.com/USERNAME_ANDA/NoteAI-KMP.git (fetch)
-# origin    https://github.com/USERNAME_ANDA/NoteAI-KMP.git (push)
-# upstream  https://github.com/DOSEN/NoteAI-KMP-Template.git (fetch)
-# upstream  https://github.com/DOSEN/NoteAI-KMP-Template.git (push)
+# origin    https://github.com/USERNAME_ANDA/bookku-KMP.git (fetch)
+# origin    https://github.com/USERNAME_ANDA/bookku-KMP.git (push)
+# upstream  https://github.com/DOSEN/bookku-KMP-Template.git (fetch)
+# upstream  https://github.com/DOSEN/bookku-KMP-Template.git (push)
 ```
 
 ### 4. Buat Branch Project
@@ -176,7 +176,7 @@ git commit -m "feat: add task list screen with filter"
 git push origin project/121140003-121140004-FitnessApp
 ```
 
-### ⚠️ Tips Kolaborasi Kelompok
+### âš ï¸ Tips Kolaborasi Kelompok
 
 1. **Selalu pull sebelum mulai coding** untuk mendapatkan perubahan terbaru dari anggota lain
 2. **Komunikasikan** file yang sedang dikerjakan untuk menghindari conflict
@@ -186,7 +186,7 @@ git push origin project/121140003-121140004-FitnessApp
 
 ---
 
-## 📝 Commit Message Convention
+## ðŸ“ Commit Message Convention
 
 ### Format
 
@@ -211,7 +211,7 @@ git push origin project/121140003-121140004-FitnessApp
 ### Contoh Commit Messages
 
 ```bash
-# ✅ BAIK
+# âœ… BAIK
 git commit -m "feat: implement task creation with validation"
 git commit -m "fix: resolve database migration issue"
 git commit -m "refactor: move API calls to repository"
@@ -219,7 +219,7 @@ git commit -m "style: improve task card design"
 git commit -m "test: add HomeViewModel unit tests"
 git commit -m "docs: update README with setup instructions"
 
-# ❌ BURUK
+# âŒ BURUK
 git commit -m "update"
 git commit -m "fix bug"
 git commit -m "changes"
@@ -229,7 +229,7 @@ git commit -m "WIP"
 
 ---
 
-## 🌿 Feature Branches (Opsional tapi Direkomendasikan)
+## ðŸŒ¿ Feature Branches (Opsional tapi Direkomendasikan)
 
 Untuk fitur besar, gunakan feature branches:
 
@@ -266,7 +266,7 @@ Contoh:
 
 ---
 
-## 🔄 Sync dengan Template Updates
+## ðŸ”„ Sync dengan Template Updates
 
 Jika dosen mengupdate template:
 
@@ -293,17 +293,17 @@ git push origin project/121140001-TodoMaster
 
 ---
 
-## ⚠️ Hal yang Harus Dihindari
+## âš ï¸ Hal yang Harus Dihindari
 
 ### 1. JANGAN Push ke Main
 ```bash
-# ❌ JANGAN LAKUKAN INI
+# âŒ JANGAN LAKUKAN INI
 git checkout main
 git add .
 git commit -m "my changes"
 git push origin main
 
-# ✅ LAKUKAN INI
+# âœ… LAKUKAN INI
 git checkout project/121140001-TodoMaster
 git add .
 git commit -m "feat: my changes"
@@ -321,7 +321,7 @@ google-services.json     # Firebase config
 
 ### 3. JANGAN Force Push
 ```bash
-# ❌ SANGAT BERBAHAYA
+# âŒ SANGAT BERBAHAYA
 git push --force
 
 # Jika terpaksa (konsultasi dulu):
@@ -330,7 +330,7 @@ git push --force-with-lease
 
 ---
 
-## 📊 Git History yang Baik
+## ðŸ“Š Git History yang Baik
 
 ### Contoh History yang Baik
 ```
@@ -357,7 +357,7 @@ git push --force-with-lease
 
 ---
 
-## 🛠️ Git Commands Cheat Sheet
+## ðŸ› ï¸ Git Commands Cheat Sheet
 
 ### Basic Commands
 ```bash
@@ -396,7 +396,7 @@ git reset --hard HEAD~1    # Undo commit terakhir (discard changes)
 
 ---
 
-## 📋 Checklist Sebelum Push
+## ðŸ“‹ Checklist Sebelum Push
 
 - [ ] Semua file yang diperlukan sudah di-add
 - [ ] Tidak ada file sensitif yang ter-commit
@@ -407,7 +407,7 @@ git reset --hard HEAD~1    # Undo commit terakhir (discard changes)
 
 ---
 
-## 🆘 Troubleshooting
+## ðŸ†˜ Troubleshooting
 
 ### "Permission denied" saat push
 ```bash
@@ -454,3 +454,4 @@ git cherry-pick <commit-hash>
 ---
 
 *Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+

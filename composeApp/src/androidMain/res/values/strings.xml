@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">NoteAI</string>
+    <string name="app_name">bookku</string>
     
     <!-- Navigation -->
     <string name="nav_home">Beranda</string>
-    <string name="nav_add_note">Tambah Catatan</string>
-    <string name="nav_edit_note">Edit Catatan</string>
-    <string name="nav_note_detail">Detail Catatan</string>
+    <string name="nav_add_note">Tambah Buku</string>
+    <string name="nav_edit_note">Edit Buku</string>
+    <string name="nav_note_detail">Detail Buku</string>
     <string name="nav_ai_assistant">Asisten AI</string>
     <string name="nav_settings">Pengaturan</string>
     
     <!-- Home Screen -->
-    <string name="home_title">Catatan Saya</string>
+    <string name="home_title">Buku Saya</string>
     <string name="home_search_hint">Cari catatan...</string>
-    <string name="home_empty_title">Belum Ada Catatan</string>
+    <string name="home_empty_title">Belum Ada Buku</string>
     <string name="home_empty_message">Tap + untuk membuat catatan baru</string>
     <string name="home_not_found_title">Tidak Ditemukan</string>
     <string name="home_not_found_message">Coba ubah kata kunci atau filter</string>
@@ -28,7 +28,7 @@
     <string name="sort_updated_asc">Diupdate (Lama)</string>
     <string name="sort_updated_desc">Diupdate (Baru)</string>
     
-    <!-- Note Categories -->
+    <!-- book Categories -->
     <string name="category_general">Umum</string>
     <string name="category_work">Pekerjaan</string>
     <string name="category_personal">Pribadi</string>
@@ -36,7 +36,7 @@
     <string name="category_todo">Tugas</string>
     <string name="category_study">Belajar</string>
     
-    <!-- Note Colors -->
+    <!-- book Colors -->
     <string name="color_default">Default</string>
     <string name="color_red">Merah</string>
     <string name="color_orange">Oranye</string>
@@ -46,9 +46,9 @@
     <string name="color_purple">Ungu</string>
     <string name="color_pink">Pink</string>
     
-    <!-- Add/Edit Note Screen -->
-    <string name="add_note_title">Catatan Baru</string>
-    <string name="edit_note_title">Edit Catatan</string>
+    <!-- Add/Edit book Screen -->
+    <string name="add_note_title">Buku Baru</string>
+    <string name="edit_note_title">Edit Buku</string>
     <string name="note_title_label">Judul</string>
     <string name="note_title_hint">Masukkan judul...</string>
     <string name="note_content_label">Konten</string>
@@ -61,8 +61,8 @@
     <string name="note_untitled">Tanpa Judul</string>
     <string name="note_validation_error">Judul atau konten harus diisi</string>
     
-    <!-- Note Detail Screen -->
-    <string name="detail_title">Detail Catatan</string>
+    <!-- book Detail Screen -->
+    <string name="detail_title">Detail Buku</string>
     <string name="detail_created">Dibuat</string>
     <string name="detail_updated">Diperbarui</string>
     <string name="detail_pin">Pin</string>
@@ -71,8 +71,8 @@
     <string name="detail_edit">Edit</string>
     <string name="detail_delete">Hapus</string>
     <string name="detail_ai_assist">Bantuan AI</string>
-    <string name="detail_not_found_title">Catatan Tidak Ditemukan</string>
-    <string name="detail_not_found_message">Catatan mungkin sudah dihapus</string>
+    <string name="detail_not_found_title">Buku Tidak Ditemukan</string>
+    <string name="detail_not_found_message">Buku mungkin sudah dihapus</string>
     
     <!-- AI Assistant Screen -->
     <string name="ai_title">AI Assistant</string>
@@ -106,15 +106,15 @@
     <string name="style_creative">Kreatif</string>
     
     <!-- Dialogs -->
-    <string name="dialog_delete_title">Hapus Catatan</string>
+    <string name="dialog_delete_title">Hapus Buku</string>
     <string name="dialog_delete_message">Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="dialog_confirm">Hapus</string>
     <string name="dialog_cancel">Batal</string>
     
     <!-- Messages -->
-    <string name="msg_note_saved">Catatan berhasil disimpan</string>
-    <string name="msg_note_deleted">Catatan berhasil dihapus</string>
-    <string name="msg_note_pinned">Catatan disematkan</string>
+    <string name="msg_note_saved">Buku berhasil disimpan</string>
+    <string name="msg_note_deleted">Buku berhasil dihapus</string>
+    <string name="msg_note_pinned">Buku disematkan</string>
     <string name="msg_note_unpinned">Sematan dilepas</string>
     <string name="msg_copied">Disalin ke clipboard</string>
     <string name="msg_applied">Diterapkan ke catatan</string>
@@ -134,7 +134,7 @@
     <string name="error_content_too_short">Konten terlalu pendek untuk diringkas</string>
     <string name="error_content_empty">Konten tidak boleh kosong</string>
     <string name="error_topic_empty">Topik tidak boleh kosong</string>
-    <string name="error_note_empty">Note tidak boleh kosong</string>
+    <string name="error_note_empty">book tidak boleh kosong</string>
     <string name="error_retry">Coba Lagi</string>
     
     <!-- Loading -->
@@ -160,3 +160,4 @@
     <string name="cd_sort">Urutkan catatan</string>
     <string name="cd_ai_assistant">Buka AI Assistant</string>
 </resources>
+

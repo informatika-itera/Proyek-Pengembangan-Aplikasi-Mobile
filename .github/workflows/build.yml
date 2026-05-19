@@ -30,10 +30,17 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Repair and Regenerate Gradle Wrapper
+      - name: Repair and Regenerate Gradle Wrapper (Safe Method)
         run: |
-          rm -f gradle/wrapper/gradle-wrapper.jar
+          # Buat folder sementara agar Gradle sistem tidak mencoba membaca build.gradle proyek
+          mkdir temp_wrapper
+          cd temp_wrapper
           gradle wrapper --gradle-version 8.7
+          cd ..
+          # Pindahkan file yang benar ke lokasi proyek
+          mkdir -p gradle/wrapper
+          cp temp_wrapper/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar
+          rm -rf temp_wrapper
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -42,4 +49,4 @@ jobs:
         run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > local.properties
 
       - name: Build and Test
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace

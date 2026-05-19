@@ -1,4 +1,4 @@
-![CI](https://github.com/rmdnsantoso/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/rmdnsantoso/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yaml/badge.svg)
 
 #  AI Travel Planner
 

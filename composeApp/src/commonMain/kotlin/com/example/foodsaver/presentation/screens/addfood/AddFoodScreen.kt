@@ -1,15 +1,20 @@
 package com.example.foodsaver.presentation.screens.addfood
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,6 +25,7 @@ fun AddFoodScreen(
     viewModel: AddFoodViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(foodId) {
         if (foodId != null) {
@@ -30,6 +36,28 @@ fun AddFoodScreen(
     LaunchedEffect(state.isSaved) {
         if (state.isSaved) {
             onNavigateBack()
+        }
+    }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = state.expiryDate.toEpochMilliseconds()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        viewModel.onDateChange(Instant.fromEpochMilliseconds(it))
+                    }
+                    showDatePicker = false
+                }) { Text("Pilih") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 
@@ -59,6 +87,7 @@ fun AddFoodScreen(
                         value = state.name,
                         onValueChange = viewModel::onNameChange,
                         label = { Text("Nama Makanan") },
+                        placeholder = { Text("Contoh: Susu Sapi") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -74,6 +103,7 @@ fun AddFoodScreen(
                             value = state.unit,
                             onValueChange = viewModel::onUnitChange,
                             label = { Text("Satuan") },
+                            placeholder = { Text("kg/pcs") },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -85,16 +115,33 @@ fun AddFoodScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    // Input Tanggal Kadaluwarsa
+                    OutlinedTextField(
+                        value = state.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),
+                        onValueChange = {},
+                        label = { Text("Tanggal Kadaluwarsa") },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(Icons.Default.CalendarMonth, contentDescription = "Pilih Tanggal")
+                            }
+                        }
+                    )
+
                     state.error?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
+                        Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
+
+                    Spacer(modifier = Modifier.weight(1f))
 
                     Button(
                         onClick = viewModel::saveFood,
                         modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(16.dp)
+                        contentPadding = PaddingValues(16.dp),
+                        shape = MaterialTheme.shapes.medium
                     ) {
-                        Text("Simpan")
+                        Text(if (foodId == null) "Simpan Makanan" else "Perbarui Makanan")
                     }
                 }
             }

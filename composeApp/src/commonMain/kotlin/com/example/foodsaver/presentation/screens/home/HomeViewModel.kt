@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 data class HomeUiState(
     val isLoading: Boolean = false,
     val items: List<FoodItem> = emptyList(),
+    val selectedIds: Set<Long> = emptySet(),
     val error: String? = null
 )
 
@@ -37,6 +38,21 @@ class HomeViewModel(
                     _state.update { it.copy(isLoading = false, items = items, error = null) }
                 }
         }
+    }
+
+    fun toggleSelection(id: Long) {
+        _state.update { currentState ->
+            val newSelection = if (currentState.selectedIds.contains(id)) {
+                currentState.selectedIds - id
+            } else {
+                currentState.selectedIds + id
+            }
+            currentState.copy(selectedIds = newSelection)
+        }
+    }
+
+    fun clearSelection() {
+        _state.update { it.copy(selectedIds = emptySet()) }
     }
 
     fun deleteItem(id: Long) {

@@ -1,0 +1,23 @@
+CREATE TABLE FavoriteRecipeEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    imageUrl TEXT NOT NULL,
+    category TEXT,
+    area TEXT,
+    instructions TEXT,
+    ingredients TEXT NOT NULL, -- JSON string or comma-separated
+    dateSaved INTEGER NOT NULL
+);
+
+insertFavorite:
+INSERT OR REPLACE INTO FavoriteRecipeEntity(id, name, imageUrl, category, area, instructions, ingredients, dateSaved)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteFavorite:
+DELETE FROM FavoriteRecipeEntity WHERE id = ?;
+
+getAllFavorites:
+SELECT * FROM FavoriteRecipeEntity ORDER BY dateSaved DESC;
+
+getFavoriteById:
+SELECT * FROM FavoriteRecipeEntity WHERE id = ?;

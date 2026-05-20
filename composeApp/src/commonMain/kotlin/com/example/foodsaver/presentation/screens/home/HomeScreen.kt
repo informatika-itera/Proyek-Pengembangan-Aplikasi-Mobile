@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,8 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.foodsaver.domain.model.FoodItem
+import androidx.compose.ui.unit.sp
 import com.example.foodsaver.presentation.components.FoodItemCard
+import com.example.foodsaver.presentation.theme.DangerRed
+import com.example.foodsaver.presentation.theme.WarningOrange
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,11 +38,16 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    if (isMultiSelectMode) {
-                        Text("${state.selectedIds.size} dipilih")
-                    } else {
-                        Text("FoodSaver Inventory") 
+                title = {
+                    Column {
+                        Text("FoodSaver Inventory", fontWeight = FontWeight.Bold)
+                        if (!isMultiSelectMode) {
+                            Text(
+                                "Kelola stok makananmu sebelum kedaluwarsa",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 },
                 actions = {
@@ -60,80 +68,69 @@ fun HomeScreen(
         },
         floatingActionButton = {
             if (!isMultiSelectMode) {
-                FloatingActionButton(onClick = onAddFoodClick) {
-                    Icon(Icons.Default.Add, contentDescription = "Tambah Makanan")
-                }
-            }
-        },
-        bottomBar = {
-            AnimatedVisibility(
-                visible = isMultiSelectMode,
-                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
-            ) {
-                BottomAppBar(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                FloatingActionButton(
+                    onClick = onAddFoodClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "Gunakan bahan terpilih?",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Button(
-                            onClick = {
-                                val selectedNames = state.items
-                                    .filter { it.id in state.selectedIds }
-                                    .map { it.name }
-                                onRecommendClick(selectedNames)
-                                viewModel.clearSelection()
-                            }
-                        ) {
-                            Icon(Icons.Default.RestaurantMenu, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Dapatkan Resep")
-                        }
-                    }
+                    Icon(Icons.Default.Add, contentDescription = "Tambah Makanan")
                 }
             }
         }
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (state.error != null) {
-                Text(
-                    text = state.error ?: "Terjadi kesalahan",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
-                )
-            } else if (state.items.isEmpty()) {
-                Text(
-                    text = "Belum ada data makanan.\nKlik + untuk menambah.",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(state.items, key = { it.id }) { item ->
-                        val isSelected = state.selectedIds.contains(item.id)
-                        
-                        Box {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Search Bar
+            OutlinedTextField(
+                value = state.searchQuery,
+                onValueChange = viewModel::onSearchQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Cari makanan...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
+                singleLine = true
+            )
+
+            if (!isMultiSelectMode && state.items.isNotEmpty()) {
+                SummaryCards(state)
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (state.error != null) {
+                    ErrorState(
+                        message = state.error ?: "Terjadi kesalahan database. Mohon Rebuild atau Reinstall aplikasi.", 
+                        onRetry = { viewModel.loadItems() }
+                    )
+                } else if (state.items.isEmpty()) {
+                    EmptyState(onAddFoodClick)
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 80.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(state.filteredItems, key = { it.id }) { item ->
+                            val isSelected = state.selectedIds.contains(item.id)
+                            
                             FoodItemCard(
                                 name = item.name,
                                 expiryDate = item.expiryDate.toString().substringBefore("T"),
                                 quantity = "${item.quantity} ${item.unit}",
+                                category = item.category,
+                                status = item.getStatus(),
+                                daysRemaining = item.getDaysRemaining(),
                                 modifier = Modifier
                                     .clickable { 
                                         if (isMultiSelectMode) {
@@ -143,33 +140,115 @@ fun HomeScreen(
                                         }
                                     }
                                     .then(
-                                        if (isSelected) Modifier.background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+                                        if (isSelected) Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                         else Modifier
                                     )
                             )
-                            
-                            if (isMultiSelectMode) {
-                                Checkbox(
-                                    checked = isSelected,
-                                    onCheckedChange = { viewModel.toggleSelection(item.id) },
-                                    modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
-                                )
-                            } else {
-                                IconButton(
-                                    onClick = { viewModel.toggleSelection(item.id) },
-                                    modifier = Modifier.align(Alignment.TopEnd)
-                                ) {
-                                    Icon(
-                                        Icons.Default.CheckCircleOutline,
-                                        contentDescription = "Pilih",
-                                        tint = Color.Gray.copy(alpha = 0.5f)
-                                    )
-                                }
-                            }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SummaryCards(state: HomeUiState) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SummaryItem(
+            label = "Total",
+            count = state.totalItems.toString(),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f)
+        )
+        SummaryItem(
+            label = "Hampir Expired",
+            count = state.nearlyExpiredCount.toString(),
+            color = WarningOrange,
+            modifier = Modifier.weight(1f)
+        )
+        SummaryItem(
+            label = "Expired",
+            count = state.expiredCount.toString(),
+            color = DangerRed,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun SummaryItem(label: String, count: String, color: Color, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f))
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = count, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = color)
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = color)
+        }
+    }
+}
+
+@Composable
+fun EmptyState(onAddFoodClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            Icons.Default.Inventory2,
+            contentDescription = null,
+            modifier = Modifier.size(100.dp),
+            tint = Color.LightGray
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "Belum ada makanan tersimpan",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "Tambahkan makanan pertama kamu agar FoodSaver bisa membantu mengingatkan tanggal kedaluwarsa.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onAddFoodClick) {
+            Text("Tambah Makanan")
+        }
+    }
+}
+
+@Composable
+fun ErrorState(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = message, 
+            color = MaterialTheme.colorScheme.error,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onRetry) {
+            Text("Coba Lagi")
         }
     }
 }

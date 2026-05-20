@@ -1,0 +1,3 @@
+-- Migrasi dari versi 1 ke 2
+ALTER TABLE FoodItemEntity ADD COLUMN storageLocation TEXT NOT NULL DEFAULT 'Kulkas';
+ALTER TABLE FoodItemEntity ADD COLUMN notes TEXT;

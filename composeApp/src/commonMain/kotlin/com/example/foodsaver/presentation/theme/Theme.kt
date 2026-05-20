@@ -3,9 +3,29 @@ package com.example.foodsaver.presentation.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme()
-private val LightColorScheme = lightColorScheme()
+private val LightColorScheme = lightColorScheme(
+    primary = FreshGreen,
+    onPrimary = Color.White,
+    primaryContainer = FreshGreenLight,
+    onPrimaryContainer = FreshGreenDark,
+    secondary = WarningOrange,
+    onSecondary = Color.White,
+    background = BackgroundCream,
+    onBackground = TextMain,
+    surface = Color.White,
+    onSurface = TextMain,
+    error = DangerRed,
+    onError = Color.White
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = FreshGreen,
+    onPrimary = Color.White,
+    secondary = WarningOrange,
+    error = DangerRed
+)
 
 @Composable
 fun FoodSaverTheme(

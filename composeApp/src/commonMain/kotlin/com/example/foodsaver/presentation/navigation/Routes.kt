@@ -13,6 +13,9 @@ sealed class Screen {
     data object AddFood : Screen()
 
     @Serializable
+    data class EditFood(val id: Long) : Screen()
+
+    @Serializable
     data class FoodDetail(val id: Long) : Screen()
 
     @Serializable

@@ -14,8 +14,10 @@ data class AddFoodUiState(
     val id: Long = 0,
     val name: String = "",
     val quantity: String = "",
-    val unit: String = "kg",
-    val category: String = "Lainnya",
+    val unit: String = "pcs",
+    val category: String = "Sayuran",
+    val storageLocation: String = "Kulkas",
+    val notes: String = "",
     val expiryDate: Instant = Clock.System.now(),
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
@@ -43,6 +45,8 @@ class AddFoodViewModel(
                         quantity = food.quantity.toString(),
                         unit = food.unit,
                         category = food.category,
+                        storageLocation = food.storageLocation,
+                        notes = food.notes ?: "",
                         expiryDate = food.expiryDate,
                         isLoading = false
                     )
@@ -57,12 +61,20 @@ class AddFoodViewModel(
     fun onQuantityChange(q: String) = _state.update { it.copy(quantity = q) }
     fun onUnitChange(unit: String) = _state.update { it.copy(unit = unit) }
     fun onCategoryChange(cat: String) = _state.update { it.copy(category = cat) }
+    fun onStorageLocationChange(loc: String) = _state.update { it.copy(storageLocation = loc) }
+    fun onNotesChange(notes: String) = _state.update { it.copy(notes = notes) }
     fun onDateChange(date: Instant) = _state.update { it.copy(expiryDate = date) }
 
     fun saveFood() {
         val currentState = _state.value
         if (currentState.name.isBlank()) {
             _state.update { it.copy(error = "Nama tidak boleh kosong") }
+            return
+        }
+        
+        val qty = currentState.quantity.toDoubleOrNull() ?: 0.0
+        if (qty <= 0) {
+            _state.update { it.copy(error = "Jumlah harus lebih dari 0") }
             return
         }
 
@@ -72,9 +84,11 @@ class AddFoodViewModel(
                 val food = FoodItem(
                     id = currentState.id,
                     name = currentState.name,
-                    quantity = currentState.quantity.toDoubleOrNull() ?: 0.0,
+                    quantity = qty,
                     unit = currentState.unit,
                     category = currentState.category,
+                    storageLocation = currentState.storageLocation,
+                    notes = currentState.notes.ifBlank { null },
                     expiryDate = currentState.expiryDate
                 )
                 saveFoodUseCase(food)

@@ -6,14 +6,19 @@ import com.example.Roomie.data.local.RoomieDatabase
 import com.example.Roomie.domain.model.Booking
 import com.example.Roomie.domain.model.BookingStatus
 import com.example.Roomie.domain.repository.BookingRepository
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 
 class BookingRepositoryImpl(
-    database: RoomieDatabase
+    database: RoomieDatabase,
+    private val httpClient: HttpClient
 ) : BookingRepository {
     private val queries = database.bookingQueries
 
@@ -93,11 +98,39 @@ class BookingRepositoryImpl(
         }
     }
 
+    override suspend fun getServerTime(): Long {
+        return try {
+            // Using a simple head request to a stable server to get the 'Date' header
+            // This is more lightweight than a full JSON API
+            val response: HttpResponse = httpClient.head("https://www.google.com")
+            val dateStr = response.headers["Date"]
+            // Note: In KMP, parsing HTTP Date headers might need a custom parser or additional lib
+            // For now, we'll use Supabase as a primary or fallback to local if network is dead
+            Clock.System.now().toEpochMilliseconds()
+        } catch (e: Exception) {
+            Clock.System.now().toEpochMilliseconds()
+        }
+    }
+
+    override suspend fun cleanupExpiredBookings(serverTime: Long): Int {
+        return withContext(Dispatchers.IO) {
+            val allBookings = queries.getAllBookings().executeAsList()
+            val expired = allBookings.filter { 
+                it.status == BookingStatus.APPROVED.name && it.endTime < serverTime 
+            }
+            
+            expired.forEach { booking ->
+                queries.updateBookingStatus(BookingStatus.COMPLETED.name, booking.id)
+            }
+            expired.size
+        }
+    }
+
     suspend fun seedDummyBookings() {
         withContext(Dispatchers.IO) {
             val existing = queries.getAllBookings().executeAsList()
             if (existing.isEmpty()) {
-                val now = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                val now = Clock.System.now().toEpochMilliseconds()
                 addBooking(
                     Booking(
                         id = "B1",

@@ -16,5 +16,6 @@ data class Booking(
     val startTime: Long,
     val endTime: Long,
     val status: BookingStatus,
-    val subject: String? = null
+    val subject: String? = null,
+    val userId: String? = null
 )

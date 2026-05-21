@@ -17,10 +17,11 @@ class ReportViewModelTest {
     fun setup() {
         repository = FakeReportRepository()
         
-        val fakeSupabaseService = object : SupabaseService(null) {
-            override suspend fun uploadReportImage(imageBytes: ByteArray): String {
+        val fakeSupabaseService = object : SupabaseService {
+            override suspend fun uploadReportImage(imageBytes: ByteArray): String? {
                 return "https://fake-url.com/image.jpg"
             }
+            override suspend fun uploadAvatar(imageBytes: ByteArray): String? = null
         }
         
         viewModel = ReportViewModel(repository, fakeSupabaseService)

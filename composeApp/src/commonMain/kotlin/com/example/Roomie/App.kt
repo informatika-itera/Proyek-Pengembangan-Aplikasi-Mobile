@@ -68,8 +68,8 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object Profile : Screen("profile", AppStrings.NAV_PROFILE, Icons.Default.AccountCircle)
     data object AdminDashboard : Screen("admin_dashboard", "Admin", Icons.Default.Dashboard)
     data object Notifications : Screen("notifications", "Notifikasi")
-    data object RoomDetail : Screen("room_detail/{roomId}", "Detail Ruangan") {
-        fun createRoute(roomId: String) = "room_detail/$roomId"
+    data object RoomDetail : Screen("room_detail/{roomId}/{date}", "Detail Ruangan") {
+        fun createRoute(roomId: String, date: String) = "room_detail/$roomId/$date"
     }
 }
 
@@ -216,8 +216,8 @@ fun App(
                 composable(Screen.SearchRoom.route) {
                     SearchRoomScreen(
                         onBack = { navController.popBackStack() },
-                        onNavigateToDetail = { roomId ->
-                            navController.navigate(Screen.RoomDetail.createRoute(roomId))
+                        onNavigateToDetail = { roomId, date ->
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId, date))
                         }
                     )
                 }
@@ -246,8 +246,8 @@ fun App(
 
                 composable(Screen.RoomSelection.route) {
                     FacilityGridScreen(
-                        onNavigateToDetail = { roomId ->
-                            navController.navigate(Screen.RoomDetail.createRoute(roomId))
+                        onNavigateToDetail = { roomId, date ->
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId, date))
                         },
                         onNavigateToMultiBooking = { ids ->
                             val idsParam = ids.joinToString(",")
@@ -259,11 +259,16 @@ fun App(
                 
                 composable(
                     route = Screen.RoomDetail.route,
-                    arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+                    arguments = listOf(
+                        navArgument("roomId") { type = NavType.StringType },
+                        navArgument("date") { type = NavType.StringType }
+                    )
                 ) { backStackEntry ->
-                    val roomId = backStackEntry.arguments?.getString("roomId")
+                    val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
+                    val date = backStackEntry.arguments?.getString("date") ?: ""
                     RoomDetailScreen(
                         roomId = roomId,
+                        date = date,
                         onBack = { navController.popBackStack() },
                         onNavigateToBooking = { id ->
                             navController.navigate(Screen.Booking.createRoute(id))

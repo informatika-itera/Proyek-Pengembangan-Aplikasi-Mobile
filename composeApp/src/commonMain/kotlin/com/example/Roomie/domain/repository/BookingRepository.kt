@@ -10,4 +10,6 @@ interface BookingRepository {
     suspend fun updateBookingStatus(id: String, status: BookingStatus): Result<Unit>
     suspend fun deleteBooking(id: String): Result<Unit>
     suspend fun checkConflict(roomId: String, startTime: Long, endTime: Long): Boolean
+    suspend fun getServerTime(): Long // New
+    suspend fun cleanupExpiredBookings(serverTime: Long): Int // New
 }

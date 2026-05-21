@@ -6,31 +6,31 @@ Aplikasi ini dibangun menggunakan **Kotlin Multiplatform (KMP)** dan **Compose M
 
 ---
 
-## 🚀 Fitur Utama (Sprint 1 Completed)
+## 🚀 Fitur Utama
 
-### 1. 🔐 Role-Based Access Control (RBAC) & Smart Auth
+### 1. 🔐 Role-Based Access Control (RBAC) & Cloud Auth
 - **Dual Perspective:** Alur kerja dinamis untuk **Mahasiswa** (Lapor & Cari) dan **Admin** (Approval & Kontrol).
-- **Smart Validation:** Validasi NIM (ITERA Standard) dan NIP menggunakan Regex.
-- **Secure Session:** Manajemen session persisten menggunakan **DataStore** dengan obfuscation data sensitif.
+- **Secure Cloud Auth:** Autentikasi terpusat menggunakan **Supabase Auth** dengan sistem *Shadow Email* untuk keamanan NIM/NIP.
+- **Persistent Profile:** Manajemen session menggunakan **DataStore** yang menyimpan data profil dan identitas user secara aman.
 
-### 2. 🏢 Interactive Facility Explorer & Multi-Select
-- **Building Hierarchy:** Penjelajahan berbasis gedung (GKU 1, GKU 2, Gedung E, Gedung F).
-- **Multi-Room Selection:** Kemampuan memilih beberapa ruangan sekaligus untuk peminjaman massal.
-- **Real-time Status:** Visualisasi status ruangan (Tersedia, Penuh, Perbaikan) secara reaktif.
+### 2. 🏢 Smart Facility Explorer & Advanced Search
+- **Date-Aware Status:** Status ruangan (Tersedia/Penuh) bersifat dinamis mengikuti kalender. Ruangan bisa terlihat penuh di tanggal 21, tapi tersedia di tanggal 22.
+- **Capacity Filtering:** Pencarian ruangan cerdas berdasarkan kapasitas kursi (Range 35 - 60 kursi) menggunakan **Dropdown Filter**.
+- **Real-time Multi-Device Sync:** Perubahan status ruangan di satu HP (misal: di-book oleh Mulya) akan langsung terlihat di HP lain (Nahli) secara instan via **Supabase Realtime**.
 
-### 3. 📝 Advanced Booking & Approval Workflow
-- **Harmony-style Limit:** Pembatasan pengajuan aktif (Anti-Spam) untuk menjaga antrean administrasi.
-- **Admin Approval Tab:** Dashboard khusus Admin untuk menyetujui atau menolak pengajuan secara instan.
-- **Automatic Status Sync:** Status ruangan otomatis berubah menjadi "BOOKED" setelah Admin memberikan persetujuan.
+### 3. 📝 Integrity-Driven Booking Workflow
+- **Multi-Room Selection:** Kemampuan memilih beberapa ruangan sekaligus (e.g. Ruang 101 & 102) dalam satu pengajuan peminjaman.
+- **NTP Server Time Sync:** Pencegahan manipulasi waktu lokal menggunakan sinkronisasi jam server pusat (NTP) untuk validasi peminjaman.
+- **Automatic Status Janitor:** Sistem otomatis mengubah status peminjaman menjadi "COMPLETED" dan membebaskan ruangan jika waktu sewa telah usai.
 
-### 4. 📸 Rich Reporting with Cloud Storage
-- **Image Evidence:** Mahasiswa dapat melampirkan foto bukti kerusakan menggunakan **Peekaboo Image Picker**.
-- **Supabase Integration:** Foto diunggah secara otomatis ke **Supabase Cloud Storage**.
-- **Admin Evidence Viewer:** Admin dapat memvalidasi laporan melalui pratinjau gambar di dashboard.
+### 4. 📸 Cloud Reporting & Dynamic Profile
+- **Avatar Management:** Fitur ganti foto profil langsung dari galeri yang diunggah ke **Supabase Storage** dan muncul secara sinkron di Header Beranda.
+- **Image Evidence:** Pelaporan kerusakan fasilitas dilengkapi dengan lampiran foto bukti menggunakan **Peekaboo Image Picker**.
+- **Admin Evidence Viewer:** Admin dapat memvalidasi laporan langsung melalui pratinjau gambar yang ditarik dari Cloud.
 
-### 5. 📅 Master Schedule & Notifications
-- **Global Calendar:** Transparansi jadwal penggunaan seluruh ruangan kampus bagi semua pengguna.
-- **Smart Notifications:** Mahasiswa menerima notifikasi reaktif saat pengajuan mereka disetujui atau ditolak.
+### 5. 📅 Master Schedule & Live Notifications
+- **Global Transparency:** Kalender jadwal penggunaan seluruh ruangan kampus yang dapat diakses oleh semua pengguna untuk menghindari bentrok internal.
+- **Reactive Alerts:** Mahasiswa menerima notifikasi reaktif saat pengajuan mereka disetujui atau ditolak oleh Admin.
 
 ---
 
@@ -86,10 +86,31 @@ composeApp/src/commonMain/kotlin/com/example/Roomie/
 | Sprint | Fokus Utama | Ringkasan Milestone | Status |
 |---|---|---|---|
 | **Sprint 1** | Infrastructure | Repository Setup, Koin DI, SQLDelight, GitHub Actions CI/CD | ✅ Done |
-| **Sprint 2** | Core Features | Login RBAC, Multi-Select Grid, Booking Logic, Supabase Cloud Storage | 🏗️ In Progress |
+| **Sprint 2** | Core Features | Login RBAC, Multi-Select Grid, Booking Logic, Supabase Cloud Storage | ✅ Done |
 | **Sprint 3** | Advanced Logic | Ktor API Integration, Reactive Search, Offline-First Support, UX Animations | 🚀 Planned |
 | **Sprint 4** | Quality Control | Systematic Bug Fixing, Unit & UI Testing, UI Polish, Performance Profiling | 🚀 Planned |
 | **Sprint 5** | Final Delivery | Signed APK Generation, Demo Scripting, Backup Plan, UAS Demo Day Prep | 🏁 Final |
+
+---
+
+## 📑 Detail Progress Pengembangan (Sprint 1 & 2)
+
+| Sprint | Kriteria | Status | Detail / Bukti Implementasi |
+|:---:|---|:---:|---|
+| **1** | GitHub Collaboration | ✅ | Tim (Mulya & Nahli) terdaftar sebagai kolaborator dengan riwayat commit aktif. |
+| | KMP Project Structure | ✅ | Struktur folder mengikuti *Clean Architecture*: core, data, domain, presentation, di. |
+| | GitHub Actions CI | ✅ | Pipeline CI otomatis aktif untuk validasi Build & Unit Testing (11 tests passed). |
+| | Comprehensive README | ✅ | Dokumentasi lengkap mencakup tim, deskripsi fitur, tech stack, dan arsitektur. |
+| | Project Plan & Tasks | ✅ | Roadmap terukur per sprint dengan pembagian tugas (Logic vs UI). |
+| | Koin DI Setup | ✅ | Dependency Injection modular terbagi dalam AppModule, Data, Domain, & ViewModel. |
+| **2** | Minimal 3 Screens | ✅ | Tersedia >10 layar fungsional: Home, Detail, Booking, Report, Admin, Search, dll. |
+| | Navigasi & Argumen | ✅ | Navigasi dinamis dengan passing data (e.g. roomId, date, listRoomIds). |
+| | Repository Pattern | ✅ | Abstraksi data layer menggunakan interface domain dan implementasi Supabase. |
+| | Local & Cloud Storage | ✅ | Sinkronisasi SQLDelight (Local v5), DataStore (Prefs), & Supabase (Cloud Database). |
+| | CRUD Operations | ✅ | Operasi Create, Read, Update, Delete fungsional dan tersinkron ke Cloud. |
+| | UI States (L/S/E) | ✅ | Penanganan state reaktif (Loading, Success, Error) di seluruh layar utama. |
+| | App Accessibility | ✅ | Alur navigasi tertutup (no dead ends), user dapat menjelajah seluruh fitur app. |
+| | API Integration | ✅ | Integrasi Supabase SDK (DB/Auth/Realtime) & Ktor Client (Server Time Sync). |
 
 ---
 

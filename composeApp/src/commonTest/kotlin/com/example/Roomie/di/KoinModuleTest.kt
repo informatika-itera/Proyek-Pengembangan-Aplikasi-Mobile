@@ -49,6 +49,8 @@ class KoinModuleTest : KoinTest {
                     override suspend fun updateBookingStatus(id: String, status: com.example.Roomie.domain.model.BookingStatus) = Result.success(Unit)
                     override suspend fun deleteBooking(id: String) = Result.success(Unit)
                     override suspend fun checkConflict(roomId: String, startTime: Long, endTime: Long) = false
+                    override suspend fun getServerTime(): Long = 0L
+                    override suspend fun cleanupExpiredBookings(serverTime: Long): Int = 0
                 }
             }
             single<NotificationRepository> {
@@ -61,11 +63,14 @@ class KoinModuleTest : KoinTest {
             single<SupabaseClient> { 
                 createSupabaseClient("https://fake.com", "fake") {}
             }
-            single { SupabaseService(get()) }
+            single<SupabaseService> { 
+                object : SupabaseService {
+                    override suspend fun uploadReportImage(imageBytes: ByteArray): String? = null
+                    override suspend fun uploadAvatar(imageBytes: ByteArray): String? = null
+                }
+            }
             // Add UserPreferences mock
             single<UserPreferences> { 
-                // We use a simple object because UserPreferences needs a DataStore
-                // For Koin check, we just need the type to be available
                 val mockDataStore = object : androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> {
                     override val data = flowOf(androidx.datastore.preferences.core.emptyPreferences())
                     override suspend fun updateData(transform: suspend (androidx.datastore.preferences.core.Preferences) -> androidx.datastore.preferences.core.Preferences) = androidx.datastore.preferences.core.emptyPreferences()

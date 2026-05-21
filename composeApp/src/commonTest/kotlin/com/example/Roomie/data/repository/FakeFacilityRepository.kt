@@ -33,6 +33,15 @@ class FakeFacilityRepository : FacilityRepository {
         }
     }
 
+    override fun searchRoomsFiltered(query: String, minCapacity: Int, maxCapacity: Int): Flow<List<Room>> {
+        return _rooms.asStateFlow().map { rooms ->
+            rooms.filter { 
+                it.name.contains(query, ignoreCase = true) && 
+                it.capacity in minCapacity..maxCapacity 
+            }
+        }
+    }
+
     override fun getRoomById(roomId: String): Flow<Room?> {
         return _rooms.asStateFlow().map { rooms ->
             rooms.find { it.id == roomId }

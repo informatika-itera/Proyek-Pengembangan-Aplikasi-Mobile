@@ -22,6 +22,17 @@ class UserPreferences(
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_NIM = stringPreferencesKey("user_nim")
         val USER_ROLE = stringPreferencesKey("user_role")
+        val USER_AVATAR = stringPreferencesKey("user_avatar") // New
+    }
+    
+    val userAvatar: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_AVATAR]
+    }
+
+    suspend fun saveAvatar(url: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.USER_AVATAR] = url
+        }
     }
     
     val isOnboardingCompleted: Flow<Boolean> = dataStore.data.map { prefs ->

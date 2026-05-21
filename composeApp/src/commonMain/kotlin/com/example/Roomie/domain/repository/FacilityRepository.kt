@@ -10,6 +10,7 @@ interface FacilityRepository {
     fun getRoomsByFloor(buildingId: String, floor: Int): Flow<List<Room>>
     fun getRoomsByBuilding(buildingId: String): Flow<List<Room>>
     fun searchRooms(query: String): Flow<List<Room>>
+    fun searchRoomsFiltered(query: String, minCapacity: Int, maxCapacity: Int): Flow<List<Room>>
     fun getRoomById(roomId: String): Flow<Room?>
     suspend fun updateRoomStatus(
         roomId: String, 

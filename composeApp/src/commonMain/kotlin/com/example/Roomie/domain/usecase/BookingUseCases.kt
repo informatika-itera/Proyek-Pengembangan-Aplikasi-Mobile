@@ -17,3 +17,10 @@ class CheckBookingConflictUseCase(private val repository: BookingRepository) {
     suspend operator fun invoke(roomId: String, startTime: Long, endTime: Long) = 
         repository.checkConflict(roomId, startTime, endTime)
 }
+
+class PerformAutomaticCleanupUseCase(private val repository: BookingRepository) {
+    suspend operator fun invoke(): Int {
+        val serverTime = repository.getServerTime()
+        return repository.cleanupExpiredBookings(serverTime)
+    }
+}

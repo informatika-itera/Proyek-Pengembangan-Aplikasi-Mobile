@@ -38,6 +38,12 @@ SELECT * FROM RoomEntity WHERE buildingId = ?;
 searchRooms:
 SELECT * FROM RoomEntity WHERE name LIKE '%' || ? || '%';
 
+searchRoomsFiltered:
+SELECT * FROM RoomEntity
+WHERE name LIKE '%' || :query || '%'
+AND capacity >= :minCapacity
+AND capacity <= :maxCapacity;
+
 getRoomById:
 SELECT * FROM RoomEntity WHERE id = ?;
 

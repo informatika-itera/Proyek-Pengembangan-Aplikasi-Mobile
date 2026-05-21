@@ -1,7 +1,12 @@
 package com.example.Roomie.presentation.home
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import com.example.Roomie.data.local.datastore.UserPreferences
 import com.example.Roomie.data.repository.FakeAnnouncementRepository
 import com.example.Roomie.data.repository.FakeAuthRepository
+import com.example.Roomie.data.repository.FakeBookingRepository
 import com.example.Roomie.data.repository.FakeReportRepository
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
@@ -9,8 +14,10 @@ import com.example.Roomie.domain.model.UrgencyLevel
 import com.example.Roomie.domain.usecase.GetAllAnnouncementsUseCase
 import com.example.Roomie.domain.usecase.GetAllReportsUseCase
 import com.example.Roomie.domain.usecase.GetCurrentUserUseCase
+import com.example.Roomie.domain.usecase.PerformAutomaticCleanupUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -26,6 +33,8 @@ class HomeViewModelTest {
     private lateinit var reportRepository: FakeReportRepository
     private lateinit var authRepository: FakeAuthRepository
     private lateinit var announcementRepository: FakeAnnouncementRepository
+    private lateinit var bookingRepository: FakeBookingRepository
+    private lateinit var userPreferences: UserPreferences
     private lateinit var viewModel: HomeViewModel
     private val testDispatcher = StandardTestDispatcher()
 
@@ -35,12 +44,21 @@ class HomeViewModelTest {
         reportRepository = FakeReportRepository()
         authRepository = FakeAuthRepository()
         announcementRepository = FakeAnnouncementRepository()
+        bookingRepository = FakeBookingRepository()
+        
+        val mockDataStore = object : DataStore<Preferences> {
+            override val data = flowOf(emptyPreferences())
+            override suspend fun updateData(transform: suspend (Preferences) -> Preferences) = emptyPreferences()
+        }
+        userPreferences = UserPreferences(mockDataStore)
         
         viewModel = HomeViewModel(
             getCurrentUserUseCase = GetCurrentUserUseCase(authRepository),
             getAllReportsUseCase = GetAllReportsUseCase(reportRepository),
             getAllAnnouncementsUseCase = GetAllAnnouncementsUseCase(announcementRepository),
-            reportRepository = reportRepository
+            performAutomaticCleanupUseCase = PerformAutomaticCleanupUseCase(bookingRepository),
+            reportRepository = reportRepository,
+            userPreferences = userPreferences
         )
     }
 

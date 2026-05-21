@@ -64,6 +64,22 @@ class FacilityRepositoryImpl(
             }
     }
 
+    override fun searchRoomsFiltered(
+        query: String,
+        minCapacity: Int,
+        maxCapacity: Int
+    ): Flow<List<Room>> {
+        return queries.searchRoomsFiltered(
+            query = query,
+            minCapacity = minCapacity.toLong(),
+            maxCapacity = maxCapacity.toLong()
+        ).asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { entities ->
+                entities.map { it.toDomain() }
+            }
+    }
+
     override fun getRoomById(roomId: String): Flow<Room?> {
         return queries.getRoomById(roomId)
             .asFlow()
@@ -115,7 +131,7 @@ class FacilityRepositoryImpl(
                 queries.insertBuilding("GEDUNG-E", "Gedung E", "Laboratorium dan kantor jurusan", 0L)
                 queries.insertBuilding("GEDUNG-F", "Gedung F", "Ruang kelas dan pusat penelitian", 0L)
 
-                // Seed GKU1 Rooms (Coming Soon Preview)
+                // Seed GKU1 Rooms
                 queries.insertRoom(
                     id = "GKU1-101",
                     buildingId = "GKU1",
@@ -123,7 +139,7 @@ class FacilityRepositoryImpl(
                     floor = 1L,
                     status = RoomStatus.AVAILABLE.name,
                     type = RoomType.REGULAR.name,
-                    capacity = 40L,
+                    capacity = 45L,
                     hasAc = 1L,
                     hasProjector = 1L,
                     borrowerName = null,
@@ -138,14 +154,14 @@ class FacilityRepositoryImpl(
                     floor = 1L,
                     status = RoomStatus.MAINTENANCE.name,
                     type = RoomType.REGULAR.name,
-                    capacity = 30L,
+                    capacity = 35L,
                     hasAc = 1L,
                     hasProjector = 0L,
                     borrowerName = null,
                     maintenanceDescription = "Upgrade Komputer"
                 )
 
-                // Seed GKU2 Rooms (Existing logic)
+                // Seed GKU2 Rooms with VARYING CAPACITIES (35-60)
                 for (f in 1..3) {
                     for (i in 1..25) {
                         val roomNum = f * 100 + i
@@ -154,6 +170,9 @@ class FacilityRepositoryImpl(
                             roomNum % 3 == 0 -> RoomStatus.BOOKED
                             else -> RoomStatus.AVAILABLE
                         }
+                        
+                        // New Variation Logic: pseudo-random between 35 and 60
+                        val variedCapacity = 35L + (roomNum % 26L)
 
                         queries.insertRoom(
                             id = "GKU2-$roomNum",
@@ -162,7 +181,7 @@ class FacilityRepositoryImpl(
                             floor = f.toLong(),
                             status = status.name,
                             type = RoomType.REGULAR.name,
-                            capacity = 40L,
+                            capacity = variedCapacity,
                             hasAc = 1L,
                             hasProjector = 1L,
                             borrowerName = if (status == RoomStatus.BOOKED) "Mata Kuliah PAM - Dosen X" else null,
@@ -172,6 +191,7 @@ class FacilityRepositoryImpl(
                 }
                 for (i in 1..20) {
                     val roomNum = 400 + i
+                    val variedCapacity = 35L + ((roomNum * 3) % 26L)
                     queries.insertRoom(
                         id = "GKU2-$roomNum",
                         buildingId = "GKU2",
@@ -179,7 +199,7 @@ class FacilityRepositoryImpl(
                         floor = 4L,
                         status = RoomStatus.AVAILABLE.name,
                         type = RoomType.REGULAR.name,
-                        capacity = 40L,
+                        capacity = variedCapacity,
                         hasAc = 1L,
                         hasProjector = 1L,
                         borrowerName = null,

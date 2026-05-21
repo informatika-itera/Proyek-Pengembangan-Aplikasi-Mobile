@@ -3,21 +3,21 @@ package com.example.Roomie.presentation.facility
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.Roomie.domain.model.Room
+import com.example.Roomie.domain.model.RoomStatus
+import com.example.Roomie.domain.model.BookingStatus
 import com.example.Roomie.domain.repository.FacilityRepository
+import com.example.Roomie.domain.repository.BookingRepository
 import com.example.Roomie.data.repository.FacilityRepositoryImpl
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.*
 
 sealed interface FacilityUiState {
     data object Loading : FacilityUiState
     data class Success(
         val rooms: List<Room>,
-        val selectedFloor: Int = 1
+        val selectedFloor: Int = 1,
+        val selectedDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     ) : FacilityUiState {
         val filteredRooms: List<Room> get() = rooms.filter { it.floor == selectedFloor }
     }
@@ -25,8 +25,12 @@ sealed interface FacilityUiState {
 }
 
 class FacilityViewModel(
-    private val facilityRepository: FacilityRepository
+    private val facilityRepository: FacilityRepository,
+    private val bookingRepository: BookingRepository
 ) : ViewModel() {
+    private val _selectedFloor = MutableStateFlow(1)
+    private val _selectedDate = MutableStateFlow(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
+    
     private val _uiState = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
     val uiState: StateFlow<FacilityUiState> = _uiState.asStateFlow()
 
@@ -36,32 +40,58 @@ class FacilityViewModel(
 
     private fun initData() {
         viewModelScope.launch {
-            // 1. Pastikan data sudah di-seed
             (facilityRepository as? FacilityRepositoryImpl)?.seedData()
-            
-            // 2. Observasi data secara reaktif
-            observeGKU2Rooms()
+            observeGKU2RoomsWithDate()
         }
     }
 
-    private fun observeGKU2Rooms() {
+    private fun observeGKU2RoomsWithDate() {
         viewModelScope.launch {
             _uiState.value = FacilityUiState.Loading
             
-            facilityRepository.getRoomsByBuilding("GKU2")
-                .catch { e -> _uiState.value = FacilityUiState.Error(e.message ?: "Error") }
-                .collectLatest { allRooms ->
-                    // FIX: Tetap set Success biarpun list kosong (biar nggak stuck di Loading)
-                    val currentFloor = (uiState.value as? FacilityUiState.Success)?.selectedFloor ?: 1
-                    _uiState.value = FacilityUiState.Success(allRooms, currentFloor)
+            combine(
+                facilityRepository.getRoomsByBuilding("GKU2"),
+                bookingRepository.getAllBookings(),
+                _selectedFloor,
+                _selectedDate
+            ) { allRooms, allBookings, floor, date ->
+                
+                // Logic: Merging Room status with Booking data for selected date
+                val roomsWithDynamicStatus = allRooms.map { room ->
+                    // 1. If maintenance, always show maintenance (fixed)
+                    if (room.status == RoomStatus.MAINTENANCE) return@map room
+                    
+                    // 2. Check if there is an approved booking for this room on this date
+                    val isBookedOnThisDate = allBookings.any { booking ->
+                        val bookingDate = Instant.fromEpochMilliseconds(booking.startTime)
+                            .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                        booking.roomId == room.id && 
+                        booking.status == BookingStatus.APPROVED &&
+                        bookingDate == date
+                    }
+                    
+                    if (isBookedOnThisDate) {
+                        room.copy(status = RoomStatus.BOOKED)
+                    } else {
+                        // Room is available if not booked on this specific date
+                        room.copy(status = RoomStatus.AVAILABLE)
+                    }
                 }
+
+                FacilityUiState.Success(roomsWithDynamicStatus, floor, date)
+            }.catch { e -> 
+                _uiState.value = FacilityUiState.Error(e.message ?: "Error") 
+            }.collectLatest { successState ->
+                _uiState.value = successState
+            }
         }
     }
 
     fun selectFloor(floor: Int) {
-        val currentState = _uiState.value
-        if (currentState is FacilityUiState.Success) {
-            _uiState.update { currentState.copy(selectedFloor = floor) }
-        }
+        _selectedFloor.value = floor
+    }
+
+    fun selectDate(date: LocalDate) {
+        _selectedDate.value = date
     }
 }

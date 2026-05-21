@@ -1,5 +1,6 @@
 package com.example.Roomie.presentation.facility
 
+import com.example.Roomie.data.repository.FakeBookingRepository
 import com.example.Roomie.data.repository.FakeFacilityRepository
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.model.RoomStatus
@@ -18,6 +19,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class FacilityViewModelTest {
     private lateinit var repository: FakeFacilityRepository
+    private lateinit var bookingRepository: FakeBookingRepository
     private lateinit var viewModel: FacilityViewModel
     private val testDispatcher = StandardTestDispatcher()
 
@@ -25,7 +27,8 @@ class FacilityViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeFacilityRepository()
-        viewModel = FacilityViewModel(repository)
+        bookingRepository = FakeBookingRepository()
+        viewModel = FacilityViewModel(repository, bookingRepository)
     }
 
     @AfterTest
@@ -46,6 +49,7 @@ class FacilityViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         viewModel.selectFloor(2)
+        testDispatcher.scheduler.advanceUntilIdle()
         
         val state = viewModel.uiState.value
         assertTrue(state is FacilityUiState.Success)
@@ -66,6 +70,7 @@ class FacilityViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         viewModel.selectFloor(1)
+        testDispatcher.scheduler.advanceUntilIdle()
         
         val state = viewModel.uiState.value as FacilityUiState.Success
         assertEquals(2, state.filteredRooms.size)

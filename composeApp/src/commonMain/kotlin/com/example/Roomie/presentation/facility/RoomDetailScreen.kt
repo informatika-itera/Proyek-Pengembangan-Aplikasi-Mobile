@@ -33,12 +33,13 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun RoomDetailScreen(
     roomId: String?,
+    date: String?, // Added date parameter
     onBack: () -> Unit,
     onNavigateToBooking: (String) -> Unit,
     viewModel: FacilityDetailViewModel = koinViewModel(),
     appViewModel: AppViewModel = koinViewModel()
 ) {
-    val room by viewModel.getRoom(roomId ?: "").collectAsState(null)
+    val room by viewModel.getRoom(roomId ?: "", date).collectAsState(null)
     val currentUser by appViewModel.currentUser.collectAsState()
     val isAdmin = currentUser?.role == UserRole.ADMIN
 
@@ -129,6 +130,14 @@ fun RoomDetailScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (date != null) {
+                        Text(
+                            text = "Status untuk tanggal: $date",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 // Dynamic Status Banner

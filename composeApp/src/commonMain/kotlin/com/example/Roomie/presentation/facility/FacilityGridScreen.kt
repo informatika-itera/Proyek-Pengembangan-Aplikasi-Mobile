@@ -1,6 +1,7 @@
 package com.example.Roomie.presentation.facility
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -9,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.*
@@ -18,16 +20,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.model.RoomStatus
 import com.example.Roomie.domain.model.UserRole
 import com.example.Roomie.presentation.AppViewModel
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FacilityGridScreen(
-    onNavigateToDetail: (String) -> Unit,
+    onNavigateToDetail: (String, String) -> Unit, // Updated with date
     onNavigateToMultiBooking: (List<String>) -> Unit,
     onBack: () -> Unit,
     viewModel: FacilityViewModel = koinViewModel(),
@@ -39,6 +45,7 @@ fun FacilityGridScreen(
 
     var selectedRooms by remember { mutableStateOf(setOf<String>()) }
     var isSelectionMode by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -101,6 +108,32 @@ fun FacilityGridScreen(
             when (val state = uiState) {
                 is FacilityUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is FacilityUiState.Success -> {
+                    // Date Selector Bar
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.CalendarMonth, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text("Melihat Jadwal Untuk:", style = MaterialTheme.typography.labelSmall)
+                                Text(
+                                    text = "${state.selectedDate.dayOfMonth}/${state.selectedDate.monthNumber}/${state.selectedDate.year}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(Modifier.weight(1f))
+                            Text("GANTI", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+
+                    // Floor Selector
                     ScrollableTabRow(
                         selectedTabIndex = state.selectedFloor - 1,
                         containerColor = MaterialTheme.colorScheme.background,
@@ -134,10 +167,30 @@ fun FacilityGridScreen(
                                             selectedRooms = if (isSelected) selectedRooms - room.id else selectedRooms + room.id
                                         }
                                     } else {
-                                        onNavigateToDetail(room.id)
+                                        onNavigateToDetail(room.id, state.selectedDate.toString())
                                     }
                                 }
                             )
+                        }
+                    }
+
+                    // Date Picker Dialog
+                    if (showDatePicker) {
+                        val datePickerState = rememberDatePickerState()
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    datePickerState.selectedDateMillis?.let {
+                                        val date = Instant.fromEpochMilliseconds(it)
+                                            .toLocalDateTime(TimeZone.UTC).date
+                                        viewModel.selectDate(date)
+                                    }
+                                    showDatePicker = false
+                                }) { Text("PILIH") }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
                         }
                     }
                 }

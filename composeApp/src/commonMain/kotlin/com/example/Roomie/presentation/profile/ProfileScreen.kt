@@ -16,11 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.presentation.util.AppStrings
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +36,15 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    
+    val avatarPicker = rememberImagePickerLauncher(
+        selectionMode = SelectionMode.Single,
+        scope = scope,
+        onResult = { byteArrays ->
+            byteArrays.firstOrNull()?.let { viewModel.updateAvatar(it) }
+        }
+    )
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -60,7 +73,8 @@ fun ProfileScreen(
                     ProfileContent(
                         state = state,
                         currentThemeMode = currentThemeMode,
-                        onThemeChange = onThemeChange
+                        onThemeChange = onThemeChange,
+                        onUpdateAvatar = { avatarPicker.launch() }
                     )
                 }
                 is ProfileUiState.Error -> {
@@ -80,7 +94,8 @@ fun ProfileScreen(
 fun ProfileContent(
     state: ProfileUiState.Success,
     currentThemeMode: Int,
-    onThemeChange: (Int) -> Unit
+    onThemeChange: (Int) -> Unit,
+    onUpdateAvatar: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -101,12 +116,36 @@ fun ProfileContent(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(72.dp)
+                            .size(80.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                            .clickable { onUpdateAvatar() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
+                        if (state.avatarUrl != null) {
+                            AsyncImage(
+                                model = state.avatarUrl,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
+                        }
+                        
+                        // Edit Overlay
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.CameraAlt, null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+                        }
+
+                        if (state.isUploading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primary)
+                        }
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     Column {

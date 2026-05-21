@@ -3,7 +3,7 @@ package com.example.noteai.data.repository
 import com.example.noteai.data.remote.api.GeminiService
 import com.example.noteai.data.remote.api.SystemPrompts
 import com.example.noteai.domain.repository.AIRepository
-import com.example.noteai.domain.repository.WritingStyle
+import com.example.foodsaver.domain.repository.WritingStyle
 
 class AIRepositoryImpl(
     private val geminiService: GeminiService

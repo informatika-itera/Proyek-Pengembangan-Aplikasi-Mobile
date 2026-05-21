@@ -2,104 +2,96 @@ package com.example.foodsaver.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.foodsaver.domain.model.Note
-import com.example.foodsaver.domain.model.NoteCategory
-import com.example.foodsaver.domain.repository.NoteRepository
-import com.example.foodsaver.domain.usecase.GetAllNotesUseCase
-import com.example.foodsaver.domain.usecase.NoteSortBy
-import com.example.foodsaver.domain.usecase.SearchNotesUseCase
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.stateIn
+import com.example.foodsaver.domain.model.FoodItem
+import com.example.foodsaver.domain.model.FoodStatus
+import com.example.foodsaver.domain.usecase.DeleteFoodUseCase
+import com.example.foodsaver.domain.usecase.GetAllFoodUseCase
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-sealed interface HomeUiState {
-    data object Loading : HomeUiState
-    data class Success(
-        val notes: List<Note>,
-        val query: String = "",
-        val category: NoteCategory? = null
-    ) : HomeUiState
-    data class Empty(
-        val query: String = "",
-        val category: NoteCategory? = null
-    ) : HomeUiState
-    data class Error(val message: String) : HomeUiState
-}
+data class HomeUiState(
+    val isLoading: Boolean = false,
+    val items: List<FoodItem> = emptyList(),
+    val filteredItems: List<FoodItem> = emptyList(),
+    val searchQuery: String = "",
+    val totalItems: Int = 0,
+    val nearlyExpiredCount: Int = 0,
+    val expiredCount: Int = 0,
+    val selectedIds: Set<Long> = emptySet(),
+    val error: String? = null
+)
 
-@OptIn(FlowPreview::class)
 class HomeViewModel(
-    private val getAllNotesUseCase: GetAllNotesUseCase,
-    private val searchNotesUseCase: SearchNotesUseCase,
-    private val noteRepository: NoteRepository
+    private val getAllFoodUseCase: GetAllFoodUseCase,
+    private val deleteFoodUseCase: DeleteFoodUseCase
 ) : ViewModel() {
 
-    private val _searchQuery = MutableStateFlow("")
-    private val _selectedCategory = MutableStateFlow<NoteCategory?>(null)
-    private val _sortBy = MutableStateFlow(NoteSortBy.UPDATED_DESC)
-    val sortBy = _sortBy.asStateFlow()
+    private val _state = MutableStateFlow(HomeUiState())
+    val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
-    val uiState: StateFlow<HomeUiState> = combine(
-        _searchQuery.debounce(300),
-        _selectedCategory,
-        _sortBy
-    ) { query, category, sort ->
-        Triple(query, category, sort)
-    }.flatMapLatest { (query, category, sort) ->
-        searchNotesUseCase(query, category).combine(
-            getAllNotesUseCase(sort)
-        ) { searchResult, allNotes ->
-            // If searching/filtering, use searchResult. Otherwise use sorted allNotes.
-            val displayNotes = if (query.isBlank() && category == null) {
-                allNotes
-            } else {
-                searchResult
-            }
+    init {
+        loadItems()
+    }
 
-            if (displayNotes.isEmpty()) {
-                HomeUiState.Empty(query, category)
-            } else {
-                HomeUiState.Success(displayNotes, query, category)
-            }
+    fun loadItems() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+            getAllFoodUseCase()
+                .catch { e ->
+                    _state.update { it.copy(isLoading = false, error = e.message) }
+                }
+                .collect { items ->
+                    val nearlyExpired = items.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
+                    val expired = items.count { it.getStatus() == FoodStatus.EXPIRED }
+                    
+                    _state.update { it.copy(
+                        isLoading = false, 
+                        items = items, 
+                        filteredItems = filterItems(items, it.searchQuery),
+                        totalItems = items.size,
+                        nearlyExpiredCount = nearlyExpired,
+                        expiredCount = expired,
+                        error = null
+                    ) }
+                }
         }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeUiState.Loading
-    )
+    }
 
     fun onSearchQueryChange(query: String) {
-        _searchQuery.value = query
-    }
-
-    fun onCategorySelected(category: NoteCategory?) {
-        _selectedCategory.value = category
-    }
-
-    fun onSortByChanged(sortBy: NoteSortBy) {
-        _sortBy.value = sortBy
-    }
-
-    fun clearSearch() {
-        _searchQuery.value = ""
-        _selectedCategory.value = null
-    }
-
-    fun togglePin(id: Long) {
-        viewModelScope.launch {
-            noteRepository.togglePinNote(id)
+        _state.update { 
+            it.copy(
+                searchQuery = query,
+                filteredItems = filterItems(it.items, query)
+            )
         }
     }
 
-    fun deleteNote(id: Long) {
+    private fun filterItems(items: List<FoodItem>, query: String): List<FoodItem> {
+        return if (query.isBlank()) {
+            items
+        } else {
+            items.filter { it.name.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
+        }
+    }
+
+    fun toggleSelection(id: Long) {
+        _state.update { currentState ->
+            val newSelection = if (currentState.selectedIds.contains(id)) {
+                currentState.selectedIds - id
+            } else {
+                currentState.selectedIds + id
+            }
+            currentState.copy(selectedIds = newSelection)
+        }
+    }
+
+    fun clearSelection() {
+        _state.update { it.copy(selectedIds = emptySet()) }
+    }
+
+    fun deleteItem(id: Long) {
         viewModelScope.launch {
-            noteRepository.deleteNote(id)
+            deleteFoodUseCase(id)
         }
     }
 }

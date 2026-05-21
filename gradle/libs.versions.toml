@@ -46,6 +46,7 @@ sqldelight-native-driver = { group = "app.cash.sqldelight", name = "native-drive
 
 # DataStore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
+datastore-android = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 # Okio (dipakai bersama DataStore untuk path penyimpanan)
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }

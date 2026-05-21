@@ -1,19 +1,31 @@
+import kotlinx.datetime.Instant;
+
 CREATE TABLE FoodItemEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     quantity REAL NOT NULL,
     unit TEXT NOT NULL,
-    expiryDate INTEGER AS kotlinx.datetime.Instant NOT NULL,
+    expiryDate INTEGER AS Instant NOT NULL,
     category TEXT NOT NULL,
+    storageLocation TEXT NOT NULL DEFAULT 'Kulkas',
+    notes TEXT,
     isConsumed INTEGER NOT NULL DEFAULT 0
 );
 
 insertFoodItem:
-INSERT OR REPLACE INTO FoodItemEntity(name, quantity, unit, expiryDate, category, isConsumed)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO FoodItemEntity(id, name, quantity, unit, expiryDate, category, storageLocation, notes, isConsumed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getAllFoodItems:
 SELECT * FROM FoodItemEntity ORDER BY expiryDate ASC;
 
+getFoodItemById:
+SELECT * FROM FoodItemEntity WHERE id = ?;
+
 deleteFoodItem:
 DELETE FROM FoodItemEntity WHERE id = ?;
+
+updateFoodItem:
+UPDATE FoodItemEntity
+SET name = ?, quantity = ?, unit = ?, expiryDate = ?, category = ?, storageLocation = ?, notes = ?, isConsumed = ?
+WHERE id = ?;

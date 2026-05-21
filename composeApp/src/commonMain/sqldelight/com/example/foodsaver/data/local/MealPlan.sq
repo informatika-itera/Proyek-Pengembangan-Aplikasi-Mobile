@@ -1,0 +1,21 @@
+CREATE TABLE MealPlanEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    recipeId TEXT NOT NULL,
+    recipeName TEXT NOT NULL,
+    recipeImageUrl TEXT NOT NULL,
+    date INTEGER NOT NULL, -- Epoch milliseconds
+    mealType TEXT NOT NULL -- BREAKFAST, LUNCH, DINNER
+);
+
+insertMealPlan:
+INSERT OR REPLACE INTO MealPlanEntity(recipeId, recipeName, recipeImageUrl, date, mealType)
+VALUES (?, ?, ?, ?, ?);
+
+getMealPlansByDate:
+SELECT * FROM MealPlanEntity WHERE date = ? ORDER BY mealType ASC;
+
+deleteMealPlan:
+DELETE FROM MealPlanEntity WHERE id = ?;
+
+getAllMealPlans:
+SELECT * FROM MealPlanEntity ORDER BY date DESC;

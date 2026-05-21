@@ -38,7 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.noteai.core.util.formatToDisplay
+import com.example.foodsaver.core.util.formatToDisplay
 import com.example.noteai.presentation.components.CategoryBadge
 import com.example.noteai.presentation.components.EmptyState
 import com.example.noteai.presentation.components.LoadingIndicator

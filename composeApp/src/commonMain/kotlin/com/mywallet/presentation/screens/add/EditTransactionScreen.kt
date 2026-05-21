@@ -1,4 +1,4 @@
-package com.mywallet.presentation.add
+package com.mywallet.presentation.screens.add
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,20 +10,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mywallet.domain.model.TransactionType
+import com.mywallet.presentation.screens.detail.DetailUiState
+import com.mywallet.presentation.screens.detail.DetailViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTransactionScreen(
+fun EditTransactionScreen(
+    transactionId: Int,
     onNavigateBack: () -> Unit,
-    viewModel: AddTransactionViewModel = koinViewModel()
+    detailViewModel: DetailViewModel = koinViewModel(),
+    addViewModel: AddTransactionViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val detailState by detailViewModel.uiState.collectAsState()
+    val addState by addViewModel.uiState.collectAsState()
+    var initialized by remember { mutableStateOf(false) }
+
+    LaunchedEffect(transactionId) {
+        detailViewModel.loadTransaction(transactionId)
+    }
+
+    LaunchedEffect(detailState) {
+        if (!initialized && detailState is DetailUiState.Success) {
+            val t = (detailState as DetailUiState.Success).transaction
+            addViewModel.onTitleChange(t.title)
+            addViewModel.onAmountChange(t.amount.toString())
+            addViewModel.onTypeChange(t.type)
+            addViewModel.onDateChange(t.date)
+            addViewModel.onTimeChange(t.time)
+            initialized = true
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambah Transaksi") },
+                title = { Text("Edit Transaksi") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -40,15 +62,15 @@ fun AddTransactionScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             OutlinedTextField(
-                value = uiState.title,
-                onValueChange = viewModel::onTitleChange,
+                value = addState.title,
+                onValueChange = addViewModel::onTitleChange,
                 label = { Text("Keterangan") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             OutlinedTextField(
-                value = uiState.amount,
-                onValueChange = viewModel::onAmountChange,
+                value = addState.amount,
+                onValueChange = addViewModel::onAmountChange,
                 label = { Text("Nominal") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -56,38 +78,45 @@ fun AddTransactionScreen(
                 prefix = { Text("Rp ") }
             )
             OutlinedTextField(
-                value = uiState.date,
-                onValueChange = viewModel::onDateChange,
+                value = addState.date,
+                onValueChange = addViewModel::onDateChange,
                 label = { Text("Tanggal (contoh: 15 May 2026)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            OutlinedTextField(
+                value = addState.time,
+                onValueChange = addViewModel::onTimeChange,
+                label = { Text("Waktu (contoh: 10:30)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             Text("Jenis Transaksi", style = MaterialTheme.typography.labelLarge)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
-                    selected = uiState.type == TransactionType.EXPENSE,
-                    onClick = { viewModel.onTypeChange(TransactionType.EXPENSE) },
+                    selected = addState.type == TransactionType.EXPENSE,
+                    onClick = { addViewModel.onTypeChange(TransactionType.EXPENSE) },
                     label = { Text("Pengeluaran") }
                 )
                 FilterChip(
-                    selected = uiState.type == TransactionType.INCOME,
-                    onClick = { viewModel.onTypeChange(TransactionType.INCOME) },
+                    selected = addState.type == TransactionType.INCOME,
+                    onClick = { addViewModel.onTypeChange(TransactionType.INCOME) },
                     label = { Text("Pemasukan") }
                 )
             }
-            uiState.errorMessage?.let {
+            addState.errorMessage?.let {
                 Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(
-                onClick = { viewModel.saveTransaction(onNavigateBack) },
+                onClick = { addViewModel.updateTransaction(transactionId, onNavigateBack) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading
+                enabled = !addState.isLoading
             ) {
-                if (uiState.isLoading) {
+                if (addState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                 } else {
-                    Text("Simpan")
+                    Text("Simpan Perubahan")
                 }
             }
         }

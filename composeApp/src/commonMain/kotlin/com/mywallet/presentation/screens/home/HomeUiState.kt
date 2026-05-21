@@ -1,4 +1,4 @@
-package com.mywallet.presentation.home
+package com.mywallet.presentation.screens.home
 
 import com.mywallet.domain.model.Transaction
 

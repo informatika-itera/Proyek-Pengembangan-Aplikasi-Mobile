@@ -9,5 +9,6 @@ data class Transaction(
     val title: String,
     val amount: Double,
     val type: TransactionType,
-    val date: String
+    val date: String,
+    val time: String // Added time field
 )

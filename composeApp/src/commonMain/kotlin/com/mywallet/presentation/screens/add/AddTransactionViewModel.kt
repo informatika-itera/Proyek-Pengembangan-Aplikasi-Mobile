@@ -1,4 +1,4 @@
-package com.mywallet.presentation.add
+package com.mywallet.presentation.screens.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +15,7 @@ data class AddTransactionUiState(
     val amount: String = "",
     val type: TransactionType = TransactionType.EXPENSE,
     val date: String = "",
+    val time: String = "",
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
     val errorMessage: String? = null
@@ -42,6 +43,10 @@ class AddTransactionViewModel(
         _uiState.value = _uiState.value.copy(date = value)
     }
 
+    fun onTimeChange(value: String) {
+        _uiState.value = _uiState.value.copy(time = value)
+    }
+
     fun saveTransaction(onSuccess: () -> Unit) {
         val state = _uiState.value
         if (state.title.isBlank() || state.amount.isBlank() || state.date.isBlank()) {
@@ -61,7 +66,8 @@ class AddTransactionViewModel(
                     title = state.title,
                     amount = amount,
                     type = state.type,
-                    date = state.date
+                    date = state.date,
+                    time = if (state.time.isBlank()) "00:00" else state.time
                 )
             )
             _uiState.value = _uiState.value.copy(isLoading = false, isSaved = true)
@@ -88,7 +94,8 @@ class AddTransactionViewModel(
                     title = state.title,
                     amount = amount,
                     type = state.type,
-                    date = state.date
+                    date = state.date,
+                    time = if (state.time.isBlank()) "00:00" else state.time
                 )
             )
             _uiState.value = _uiState.value.copy(isLoading = false, isSaved = true)

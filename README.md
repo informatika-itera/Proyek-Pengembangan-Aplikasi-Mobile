@@ -21,6 +21,11 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 
 ---
 
+## Video Demo
+
+▶️ [Demo Sprint 2 My-Wallet](https://drive.google.com/file/d/1FeOSdrNuSRtN2vJ53XGHaajSZcirldII/view?usp=drive_link)
+▶️ [Demo Sprint 3 My-Wallet](https://drive.google.com/file/d/187kRjo8srat9RaCW-ozL4qeWrPrYVMTU/view?usp=drive_link)
+
 ## Fitur
 
 ### Minimum

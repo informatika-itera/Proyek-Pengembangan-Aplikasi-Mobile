@@ -3,7 +3,6 @@ package com.mywallet.presentation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -29,7 +28,7 @@ fun TransactionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp
     ) {
@@ -41,20 +40,22 @@ fun TransactionItem(
         ) {
             val isIncome = transaction.type == TransactionType.INCOME
             val icon = if (isIncome) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward
-            val iconColor = if (isIncome) Color(0xFF10B981) else Color(0xFFEF4444)
-            val iconBg = if (isIncome) Color(0xFFD1FAE5) else Color(0xFFFEE2E2)
+            
+            // Define semantic colors
+            val itemColor = if (isIncome) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            val iconBg = itemColor.copy(alpha = 0.12f)
             
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = iconColor,
+                    tint = itemColor,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -64,26 +65,45 @@ fun TransactionItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = transaction.title,
-                    style = MaterialTheme.typography.bodyLarge.copy(
+                    style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.2.sp
+                        color = MaterialTheme.colorScheme.onSurface
                     ),
-                    color = MaterialTheme.colorScheme.onSurface
+                    maxLines = 2
                 )
                 Text(
-                    text = transaction.date,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "${transaction.date} • ${transaction.time}",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
+            Spacer(modifier = Modifier.width(8.dp))
+            
             Text(
-                text = (if (isIncome) "+" else "-") + " Rp ${transaction.amount.toLong()}",
+                text = (if (isIncome) "+" else "-") + " Rp. ${formatCurrency(transaction.amount)}",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    color = iconColor
-                )
+                    fontWeight = FontWeight.Black,
+                    color = itemColor
+                ),
+                modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
     }
+}
+
+private fun formatCurrency(amount: Double): String {
+    val longAmount = amount.toLong()
+    val str = longAmount.toString()
+    val result = StringBuilder()
+    var count = 0
+    for (i in str.length - 1 downTo 0) {
+        result.append(str[i])
+        count++
+        if (count == 3 && i != 0) {
+            result.append('.')
+            count = 0
+        }
+    }
+    return result.reverse().toString()
 }

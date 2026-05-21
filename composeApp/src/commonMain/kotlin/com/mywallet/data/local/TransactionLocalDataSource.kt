@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.map
 class TransactionLocalDataSource {
     private val transactions = MutableStateFlow<List<TransactionEntity>>(
         listOf(
-            TransactionEntity(1, "Kiriman Orang Tua", 5000000.0, TransactionType.INCOME.name, "01 Oct 2023"),
-            TransactionEntity(2, "Transfer UKT", 3500000.0, TransactionType.EXPENSE.name, "02 Oct 2023"),
-            TransactionEntity(3, "Makan Siang", 50000.0, TransactionType.EXPENSE.name, "03 Oct 2023")
+            TransactionEntity(1, "Kiriman Orang Tua", 5000000.0, TransactionType.INCOME.name, "01 Oct 2023", "09:38"),
+            TransactionEntity(2, "Transfer UKT", 3500000.0, TransactionType.EXPENSE.name, "02 Oct 2023", "14:20"),
+            TransactionEntity(3, "Makan Siang", 50000.0, TransactionType.EXPENSE.name, "03 Oct 2023", "12:15")
         )
     )
 

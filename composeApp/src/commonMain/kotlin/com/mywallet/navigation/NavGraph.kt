@@ -1,15 +1,22 @@
 package com.mywallet.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.mywallet.theme.DarkNavy
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -19,11 +26,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.mywallet.presentation.add.AddTransactionScreen
-import com.mywallet.presentation.detail.DetailScreen
-import com.mywallet.presentation.home.HomeScreen
-import com.mywallet.presentation.add.EditTransactionScreen
+import com.mywallet.presentation.screens.add.AddTransactionScreen
+import com.mywallet.presentation.screens.detail.DetailScreen
+import com.mywallet.presentation.screens.home.HomeScreen
+import com.mywallet.presentation.screens.add.EditTransactionScreen
 import com.mywallet.presentation.screens.history.HistoryScreen
+import com.mywallet.presentation.screens.profile.ProfileScreen
+import com.mywallet.presentation.screens.splash.SplashScreen
+
 data class BottomNavItem(
     val title: String,
     val route: String,
@@ -34,15 +44,18 @@ data class BottomNavItem(
 fun MainNavigation() {
     val navController = rememberNavController()
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = { BottomNavigationBar(navController) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0) // Disable default inset handling to avoid double padding
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding).fillMaxSize()
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -50,9 +63,18 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = Screen.Splash.route,
         modifier = modifier
     ) {
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onSplashFinished = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToDetail = { id ->
@@ -97,7 +119,34 @@ fun AppNavHost(
             )
         }
         composable(Screen.Profile.route) {
-            Text("Profile Screen")
+            ProfileScreen(
+                onNavigateToSettings = { title ->
+                    navController.navigate(Screen.SettingsDetail.createRoute(title))
+                }
+            )
+        }
+        composable(
+            route = Screen.SettingsDetail.route,
+            arguments = listOf(navArgument(NavArgs.TITLE) { type = NavType.StringType })
+        ) { backStackEntry ->
+            val title = backStackEntry.arguments?.getString(NavArgs.TITLE) ?: ""
+            Scaffold(
+                topBar = {
+                    CenterAlignedTopAppBar(
+                        title = { Text(title) },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkNavy, titleContentColor = Color.White)
+                    )
+                }
+            ) { padding ->
+                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    Text("Halaman $title akan segera hadir!", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
         }
     }
 }

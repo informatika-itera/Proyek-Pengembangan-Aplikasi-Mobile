@@ -8,7 +8,8 @@ data class TransactionEntity(
     val title: String,
     val amount: Double,
     val type: String,
-    val date: String
+    val date: String,
+    val time: String
 )
 
 fun TransactionEntity.toDomain() = Transaction(
@@ -16,7 +17,8 @@ fun TransactionEntity.toDomain() = Transaction(
     title = title,
     amount = amount,
     type = TransactionType.valueOf(type),
-    date = date
+    date = date,
+    time = time
 )
 
 fun Transaction.toEntity() = TransactionEntity(
@@ -24,5 +26,6 @@ fun Transaction.toEntity() = TransactionEntity(
     title = title,
     amount = amount,
     type = type.name,
-    date = date
+    date = date,
+    time = time
 )

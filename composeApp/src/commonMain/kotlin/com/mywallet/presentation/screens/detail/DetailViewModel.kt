@@ -1,4 +1,4 @@
-package com.mywallet.presentation.detail
+package com.mywallet.presentation.screens.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

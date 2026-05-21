@@ -48,7 +48,7 @@ class HomeViewModel(
         if (query.isBlank() && category == null) {
             getAllNotesUseCase(sortBy)
         } else {
-            searchNotesUseCase(query, category)
+            searchNotesUseCase(query, category, sortBy)
         }
     }.combine(_isLoading) { notes, isLoading ->
         when {
@@ -59,6 +59,9 @@ class HomeViewModel(
             )
             else -> HomeUiState.Success(
                 notes = notes,
+                totalProducts = notes.size,
+                totalStockValue = notes.sumOf { it.price * it.stock },
+                lowStockCount = notes.count { it.stock <= 5 },
                 query = _searchQuery.value,
                 category = _selectedCategory.value,
                 sortBy = _sortBy.value
@@ -114,6 +117,9 @@ sealed interface HomeUiState {
     
     data class Success(
         val notes: List<Note>,
+        val totalProducts: Int = 0,
+        val totalStockValue: Double = 0.0,
+        val lowStockCount: Int = 0,
         val query: String = "",
         val category: NoteCategory? = null,
         val sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC

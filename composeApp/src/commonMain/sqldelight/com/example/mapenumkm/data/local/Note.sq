@@ -9,6 +9,7 @@ CREATE TABLE NoteEntity (
     stock INTEGER NOT NULL DEFAULT 0,
     category TEXT NOT NULL DEFAULT 'GENERAL',
     color TEXT NOT NULL DEFAULT 'DEFAULT',
+    image_uri TEXT,
     is_pinned INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -44,8 +45,8 @@ WHERE id = ?;
 
 -- Insert new note
 insertNote:
-INSERT INTO NoteEntity (title, content, price, stock, category, color, is_pinned, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO NoteEntity (title, content, price, stock, category, color, image_uri, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Get last inserted ID
 lastInsertId:
@@ -54,7 +55,7 @@ SELECT last_insert_rowid();
 -- Update existing note
 updateNote:
 UPDATE NoteEntity
-SET title = ?, content = ?, price = ?, stock = ?, category = ?, color = ?, is_pinned = ?, updated_at = ?
+SET title = ?, content = ?, price = ?, stock = ?, category = ?, color = ?, image_uri = ?, is_pinned = ?, updated_at = ?
 WHERE id = ?;
 
 -- Delete note by ID

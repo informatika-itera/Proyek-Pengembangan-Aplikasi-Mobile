@@ -64,6 +64,7 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             stock = values.stock,
             category = values.category,
             color = values.color,
+            image_uri = values.imageUri,
             is_pinned = values.isPinned,
             created_at = values.createdAt,
             updated_at = values.updatedAt
@@ -81,6 +82,7 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             stock = values.stock,
             category = values.category,
             color = values.color,
+            image_uri = values.imageUri,
             is_pinned = values.isPinned,
             updated_at = Clock.System.now().toEpochMilliseconds()
         )

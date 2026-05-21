@@ -15,6 +15,7 @@ fun NoteEntity.toDomain(): Note {
         stock = stock.toInt(),
         category = NoteCategory.fromString(category),
         color = NoteColor.fromString(color),
+        imageUri = image_uri,
         isPinned = is_pinned == 1L,
         createdAt = Instant.fromEpochMilliseconds(created_at),
         updatedAt = Instant.fromEpochMilliseconds(updated_at)
@@ -28,6 +29,7 @@ data class NoteEntityValues(
     val stock: Long,
     val category: String,
     val color: String,
+    val imageUri: String?,
     val isPinned: Long,
     val createdAt: Long,
     val updatedAt: Long
@@ -41,6 +43,7 @@ fun Note.toEntityValues(): NoteEntityValues {
         stock = stock.toLong(),
         category = category.name,
         color = color.name,
+        imageUri = imageUri,
         isPinned = if (isPinned) 1L else 0L,
         createdAt = createdAt.toEpochMilliseconds(),
         updatedAt = updatedAt.toEpochMilliseconds()

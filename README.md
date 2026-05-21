@@ -1,305 +1,241 @@
-<<<<<<< HEAD
-```
-
-## 🚀 Setup
-1. **Clone repository ini ke komputer lokal Anda:**
-   ```bash
-   git clone [https://github.com/username/mapen-umkm.git](https://github.com/username/mapen-umkm.git)
-
-```
-
-2. **Buka proyek di Android Studio:**
-* Pilih `File` > `Open` > Arahkan ke folder hasil clone.
-* Tunggu proses *Gradle Sync* selesai.
 
 
-3. **Konfigurasi API Key (Jika diperlukan):**
-* Tambahkan API Key Google Gemini / OpenAI pada file konfigurasi/`local.properties` sesuai kebutuhan modul AI.
+````markdown
+# 🛒 MaPen UMKM  
+## Manajemen Penjualan UMKM
 
+MaPen UMKM adalah aplikasi berbasis Android yang dirancang untuk membantu pelaku Usaha Mikro, Kecil, dan Menengah (UMKM) dalam mengelola transaksi penjualan secara digital, cepat, sederhana, dan efisien.
 
-4. **Jalankan Aplikasi:**
-* Sambungkan perangkat Android fisik atau aktifkan Emulator.
-* Klik tombol **Run** (`Shift + F1Tentu, ini adalah penyesuaian README dari aplikasi **MaPen UMKM** dengan mengikuti struktur template kedua yang kamu berikan.
-
-
-
-Beberapa penyesuaian dilakukan pada bagian *Tech Stack* dan *Architecture* agar tetap sinkron dengan detail proyek asli kamu (Android native, MVVM, Room), namun menggunakan format mintaan.
+Aplikasi ini membantu pemilik usaha dalam mencatat transaksi, mengelola produk dan stok, melihat riwayat penjualan, serta memantau laporan penjualan secara berkala. MaPen UMKM juga dilengkapi dengan fitur **Smart Business Assistant** berbasis Artificial Intelligence (AI) sederhana untuk memberikan ringkasan penjualan, rekomendasi stok, dan insight bisnis yang mudah dipahami.
 
 ---
 
-# 🛒 MaPen UMKM (Manajemen Penjualan UMKM)
-
 ## 👥 Team
-- **Danar Prayogo (123140015)** - [@danarPrayogo](https://github.com/danarPrayogo)
-- **Exaudi Amin Hitasoit (123140161)** - [@16-123140161-ExaudiAminHutasoit](https://github.com/16-123140161-ExaudiAminHutasoit)
 
+- **Danar Prayogo**  
+  NIM: 123140015  
+  GitHub: @danarPrayogo
+
+- **Exaudi Amin Hitasoit**  
+  NIM: 123140161  
+  GitHub: @16-123140161-ExaudiAminHutasoit
+
+---
 
 ## 📝 Description
 
-MaPen UMKM adalah aplikasi berbasis Android yang dirancang khusus untuk membantu pelaku usaha kecil dan menengah (UMKM) dalam mengelola transaksi penjualan secara digital, cepat, dan efisien.
+MaPen UMKM adalah aplikasi manajemen penjualan yang ditujukan untuk membantu pemilik UMKM mengelola aktivitas usaha sehari-hari.
 
-Aplikasi ini diintegrasikan dengan teknologi *Artificial Intelligence* (AI) melalui Smart Business Assistant untuk memberikan analisis penjualan otomatis, rekomendasi manajemen stok, serta ringkasan laporan berkala agar pelaku usaha dapat mengambil keputusan bisnis dengan lebih cerdas dan modern.
+Melalui aplikasi ini, pengguna dapat melakukan pencatatan transaksi penjualan, mengelola data produk, memantau stok barang, melihat riwayat transaksi, serta memperoleh laporan penjualan dengan tampilan yang modern dan mudah digunakan.
+
+Aplikasi ini juga mengintegrasikan fitur AI sederhana melalui **Smart Business Assistant** untuk membantu pengguna memahami kondisi bisnis, seperti produk paling laris, stok yang hampir habis, serta ringkasan laporan penjualan harian atau bulanan.
+
+---
 
 ## ✨ Features
 
-### 🟢 Minimum (Fitur Utama)
+### 🟢 Minimum Features
 
-* [ ] **Dashboard Penjualan:** Tampilan ringkas performa bisnis harian.
-* [ ] **Manajemen Produk:** Fitur lengkap untuk Tambah, Edit, Hapus, dan Cari Produk.
-* [ ] **Transaksi Penjualan:** Perhitungan total belanjaan dan kembalian secara otomatis.
-* [ ] **Riwayat & Penyimpanan:** Penyimpanan data produk dan histori transaksi yang aman secara lokal.
-* [ ] **Laporan Penjualan:** Laporan transaksi berkala dengan UI yang modern dan responsif.
+- [ ] **Login Page**  
+  Halaman awal aplikasi untuk masuk ke sistem MaPen UMKM.
 
-### 🤖 Bonus (Fitur AI & Smart Automation)
+- [ ] **Dashboard Penjualan**  
+  Menampilkan ringkasan performa bisnis harian, seperti total penjualan, jumlah transaksi, produk terlaris, dan stok menipis.
 
-* [ ] **Analisis Penjualan Otomatis:** AI menganalisis produk paling laris dan tren pasar.
-* [ ] **Rekomendasi Produk & Prediksi Stok:** Deteksi otomatis untuk produk yang perlu ditambah stoknya sebelum habis.
-* [ ] **Ringkasan Laporan Otomatis:** Pembuatan *summary* laporan harian dan bulanan bertenaga AI.
-* [ ] **Smart Search:** Pencarian produk cerdas menggunakan *keyword prediction*.
-* [ ] **Insight Penjualan:** Analisis waktu transaksi tersibuk dan pola pembelian pelanggan.
+- [ ] **Manajemen Produk**  
+  Fitur untuk menambah, mengedit, menghapus, dan mencari produk. Setiap produk memiliki data nama, harga, dan jumlah stok.
 
-## ⚙️ Tech Stack
+- [ ] **Transaksi Penjualan**  
+  Fitur untuk mencatat transaksi penjualan dengan perhitungan total belanja dan kembalian secara otomatis.
 
-* **IDE:** Android Studio
-* **Language:** Kotlin / Java
-* **UI Design:** Material Design 3, ViewBinding, RecyclerView
-* **Database:** SQLite, Room Database
-* **Asynchronous:** Coroutines & LiveData
-* **AI & Analytics:** Firebase ML Kit, Google Gemini API / OpenAI API, TensorFlow Lite (Optional)
+- [ ] **Riwayat & Penyimpanan**  
+  Menyimpan data produk dan histori transaksi secara lokal agar dapat dilihat kembali oleh pengguna.
 
-## 🏗️ Architecture
-
-Proyek ini dikembangkan menggunakan arsitektur **MVVM (Model-View-ViewModel)** dengan **Repository Pattern** untuk memastikan kode yang *scalable*, *testable*, dan mudah dirawat.
-
-### Struktur Folder Project:
-=======
-````markdown id="8k2m14"
-# 🛒 MaPen UMKM Aplikasi Manajemen Penjualan UMKM 
-
-Aplikasi Manajemen Penjualan UMKM AI adalah aplikasi berbasis Android yang dirancang untuk membantu pelaku usaha kecil dan menengah dalam mengelola transaksi penjualan secara digital, cepat, dan efisien.  
-
-Aplikasi ini dilengkapi dengan teknologi Artificial Intelligence (AI) untuk membantu analisis penjualan, rekomendasi produk, dan otomatisasi pengelolaan bisnis agar UMKM dapat berkembang lebih modern dan produktif.
+- [ ] **Laporan Penjualan**  
+  Menampilkan laporan transaksi harian, mingguan, dan bulanan dengan tampilan sederhana, modern, dan responsif.
 
 ---
 
-# ✨ Fitur Aplikasi
+### 🤖 Bonus Features: AI & Smart Automation
 
-## 🟢 Fitur Utama
--  Dashboard Penjualan
--  Manajemen Produk
--  Tambah Produk
--  Edit Produk
--  Hapus Produk
--  Pencarian Produk
--  Transaksi Penjualan
--  Perhitungan Total Otomatis
--  Perhitungan Kembalian Otomatis
--  Riwayat Transaksi
--  Laporan Penjualan
--  Penyimpanan Data Produk dan Transaksi
--  Tampilan UI Modern dan Responsif
+- [ ] **Analisis Penjualan Otomatis**  
+  Smart Business Assistant menganalisis produk paling laris berdasarkan data transaksi.
 
----
+- [ ] **Rekomendasi Produk & Prediksi Stok**  
+  Memberikan rekomendasi produk yang perlu ditambah stoknya sebelum habis.
 
-# 🤖 Fitur AI (Artificial Intelligence)
+- [ ] **Ringkasan Laporan Otomatis**  
+  Membuat ringkasan laporan penjualan harian dan bulanan secara otomatis.
 
-## 🧠 Smart Business Assistant
-Asisten AI yang membantu pengguna memahami performa penjualan dan memberikan rekomendasi bisnis secara otomatis.
+- [ ] **Smart Search**  
+  Membantu pencarian produk dengan keyword sederhana agar pengguna lebih cepat menemukan produk.
 
-### ✨ AI Features
--  Analisis Penjualan Otomatis
-  - AI menganalisis produk paling laris dan tren penjualan.
-
--  Rekomendasi Produk
-  - Memberikan saran produk yang perlu ditambah stok atau dipromosikan.
-
--  Prediksi Stok Habis
-  - AI mendeteksi stok yang hampir habis berdasarkan histori transaksi.
-
--  Ringkasan Laporan Otomatis
-  - AI membuat summary laporan penjualan harian dan bulanan.
-
--  Smart Search
-  - Pencarian produk lebih cepat dan cerdas menggunakan keyword prediction.
-
--  Insight Penjualan
-  - Menampilkan insight bisnis seperti:
-    - Produk terlaris
-    - Waktu transaksi tersibuk
-    - Pendapatan tertinggi
-    - Pola pembelian pelanggan
+- [ ] **Insight Penjualan**  
+  Memberikan informasi sederhana seperti waktu transaksi tersibuk dan pola pembelian pelanggan.
 
 ---
 
-# 🏗️ Arsitektur & Teknologi
+## 📱 Main Screens
 
-Aplikasi dikembangkan menggunakan pendekatan modern Android Development agar scalable dan mudah dikembangkan.
+Aplikasi MaPen UMKM terdiri dari beberapa halaman utama:
 
-## ⚙️ Tech Stack
+1. **Login Screen**  
+   Halaman masuk pengguna sebelum mengakses fitur utama aplikasi.
 
-### Mobile Development
-- **IDE** : Android Studio
-- **Language** : Kotlin / Java
-- **Architecture** : MVVM / Clean Architecture
-- **UI Design** : Material Design 3
+2. **Dashboard Penjualan**  
+   Menampilkan ringkasan kondisi bisnis secara cepat.
 
-### Database
-- **SQLite**
-- **Room Database**
+3. **Manajemen Produk**  
+   Digunakan untuk mengelola daftar produk dan stok.
 
-### AI & Analytics
-- **Firebase ML Kit**
-- **Google Gemini API / OpenAI API**
-- **TensorFlow Lite (Optional)**
+4. **Transaksi Penjualan**  
+   Digunakan untuk mencatat transaksi, menghitung total belanja, dan menghitung kembalian.
 
-### Additional Tools
-- **ViewBinding**
-- **RecyclerView**
-- **Coroutines**
-- **LiveData**
+5. **Riwayat Transaksi**  
+   Menampilkan daftar transaksi yang telah dilakukan.
+
+6. **Laporan Penjualan**  
+   Menampilkan ringkasan laporan penjualan berdasarkan periode tertentu.
+
+7. **Smart Business Assistant**  
+   Memberikan ringkasan, rekomendasi stok, dan insight penjualan sederhana.
 
 ---
 
-# 📁 Struktur Project
->>>>>>> 4a2ae6f21f6cb432298c4c933181783ec801662a
+## 🧭 User Flow
 
-```bash
-app/src/main/
-├── java/com/example/umkmapp/
-<<<<<<< HEAD
-│   ├── ai/            # AI module & prediction
-│   ├── activities/    # Activity aplikasi (View)
-│   ├── adapters/      # RecyclerView Adapter
-│   ├── database/      # Room / SQLite Database (Model)
-│   ├── models/        # Data Model
-│   ├── repository/    # Repository Pattern
-│   ├── viewmodel/     # MVVM ViewModel
-│   └── utils/         # Utility & helper
-└── res/
-    ├── layout/        # XML Layout
-    ├── drawable/      # Asset gambar & icon
-    └── values/        # Theme, Color, String
+Alur penggunaan aplikasi:
 
-```
+1. Pengguna membuka aplikasi.
+2. Pengguna masuk melalui halaman Login.
+3. Pengguna melihat ringkasan bisnis di Dashboard.
+4. Pengguna mengelola produk pada halaman Manajemen Produk.
+5. Pengguna mencatat transaksi penjualan.
+6. Data transaksi tersimpan ke riwayat.
+7. Stok produk diperbarui secara otomatis.
+8. Pengguna melihat laporan penjualan.
+9. Smart Business Assistant memberikan ringkasan dan rekomendasi sederhana.
 
-## 🚀 Setup
+---
 
-1. **Clone repository ini ke komputer lokal Anda:**
-```bash
-git clone [https://github.com/username/mapen-umkm.git](https://github.com/username/mapen-umkm.git)
+## 🛠️ Tech Stack
 
-```
+Project ini dikembangkan menggunakan:
 
+- **Kotlin**
+- **Jetpack Compose / Compose Multiplatform**
+- **Material Design 3**
+- **Koin** untuk dependency injection
+- **SQLDelight** untuk penyimpanan data lokal
+- **Navigation Compose** untuk navigasi antar halaman
 
-2. **Buka proyek di Android Studio:**
-* Pilih `File` > `Open` > Arahkan ke folder hasil clone.
-* Tunggu proses *Gradle Sync* selesai.
+---
 
+## 📂 Project Structure
 
-3. **Konfigurasi API Key (Jika diperlukan):**
-* Tambahkan API Key Google Gemini / OpenAI pada file konfigurasi/`local.properties` sesuai kebutuhan modul AI.
+Struktur utama project:
 
-
-4. **Jalankan Aplikasi:**
-* Sambungkan perangkat Android fisik atau aktifkan Emulator.
-* Klik tombol **Run** (`Shift + F10`) di Android Studio.
-
-
-
-```
-
-=======
-│   ├── ai/                # AI module & prediction
-│   ├── activities/        # Activity aplikasi
-│   ├── adapters/          # RecyclerView Adapter
-│   ├── database/          # Room / SQLite Database
-│   ├── models/            # Data Model
-│   ├── repository/        # Repository Pattern
-│   ├── viewmodel/         # MVVM ViewModel
-│   └── utils/             # Utility & helper
-│
-├── res/
-│   ├── layout/            # XML Layout
-│   ├── drawable/          # Asset gambar & icon
-│   └── values/            # Theme, Color, String
+```text
+composeApp/
+└── src/
+    └── commonMain/
+        └── kotlin/
+            └── com.example.mapenumkm/
+                ├── core/
+                ├── data/
+                ├── domain/
+                ├── presentation/
+                │   ├── components/
+                │   ├── navigation/
+                │   ├── screens/
+                │   │   ├── addnote/
+                │   │   ├── ai/
+                │   │   ├── detail/
+                │   │   ├── home/
+                │   │   └── login/
+                │   └── theme/
+                └── App.kt
 ````
 
 ---
 
-# 🚀 Getting Started
+## 🎨 UI/UX Design
 
-## Clone Repository
+Konsep desain MaPen UMKM dibuat dengan gaya:
 
-```bash id="o2a7df"
-git clone https://github.com/username/umkm-ai-sales-app.git
-```
+* Modern
+* Clean
+* Minimalis
+* Mudah digunakan
+* Cocok untuk pemilik UMKM
+* Menggunakan warna utama hijau
+* Menggunakan aksen biru, kuning, dan ungu pastel
+* Menggunakan card, rounded button, search bar, dan bottom navigation
 
-## Open Project
+Warna utama aplikasi:
 
-1. Buka Android Studio
-2. Pilih **Open Existing Project**
-3. Pilih folder project
-
----
-
-# 🔑 Setup AI API Key
-
-Tambahkan API Key pada file:
-
-```properties id="c8d1pz"
-local.properties
-```
-
-Contoh:
-
-```properties id="a7s6k1"
-GEMINI_API_KEY=your_api_key
-```
-
-atau
-
-```properties id="d9x2lm"
-OPENAI_API_KEY=your_api_key
+```text
+Green Primary : #16A34A
+Green Dark    : #15803D
+Green Light   : #DCFCE7
+Blue Accent   : #60A5FA
+Yellow Accent : #FACC15
+Purple Accent : #A78BFA
 ```
 
 ---
 
-# ▶️ Run Application
+## 🤖 Smart Business Assistant
 
-* Gunakan Emulator Android atau perangkat fisik
-* Klik tombol **Run ▶️** di Android Studio
+Smart Business Assistant adalah fitur pendukung berbasis AI sederhana yang membantu pengguna memahami kondisi usahanya.
 
----
+Contoh hasil ringkasan AI:
 
-# 🎯 Tujuan Aplikasi
+```text
+Penjualan hari ini cukup baik.
+Total pendapatan Rp250.000 dari 10 transaksi.
+Produk paling laris adalah Es Teh.
+Stok Kopi Susu tinggal 3, sebaiknya segera ditambah.
+```
 
-Aplikasi ini dibuat untuk membantu digitalisasi UMKM agar proses pengelolaan bisnis menjadi:
-
-* Lebih cepat
-* Lebih efisien
-* Lebih modern
-* Minim kesalahan pencatatan
-* Memiliki insight bisnis berbasis AI
+Fitur AI pada aplikasi ini dibuat sederhana agar tetap ringan dan realistis untuk dikembangkan pada tahap awal.
 
 ---
 
-# 👨‍💻 Developer
+## 🚀 Installation
 
-**Danar Prayogo-123140015**
-**Exaudi Amin Hutasoit-123140161**
-# RA
+Langkah menjalankan project:
 
-* Android Developer
-* AI Integration
-* UI/UX Implementation
-* Database Management
+1. Clone repository ini.
+
+```bash
+git clone <repository-url>
+```
+
+1. Buka project menggunakan Android Studio.
+
+2. Tunggu proses Gradle Sync selesai.
+
+3. Jalankan aplikasi pada emulator atau perangkat Android.
+
 
 ---
 
-# 📄 License
+## 🎯 Project Goal
 
-Project ini dibuat untuk kebutuhan pembelajaran dan pengembangan aplikasi Android modern berbasis AI.
+Tujuan utama dari project MaPen UMKM adalah membuat aplikasi manajemen penjualan sederhana yang dapat membantu pelaku UMKM dalam mengelola transaksi, produk, stok, dan laporan penjualan secara lebih mudah melalui perangkat Android.
+
+Aplikasi ini dirancang agar ringan, mudah digunakan, dan tetap memiliki nilai modern melalui fitur Smart Business Assistant.
+
+---
+
+## 📌 Conclusion
+
+MaPen UMKM diharapkan dapat menjadi solusi sederhana bagi pelaku UMKM untuk melakukan pencatatan transaksi, mengelola produk, memantau stok, melihat laporan penjualan, serta memperoleh insight bisnis sederhana melalui bantuan AI.
+
+Dengan fitur yang sederhana dan fokus pada kebutuhan utama UMKM, aplikasi ini realistis untuk dikembangkan sebagai project Android berbasis Kotlin dan Jetpack Compose.
 
 ```
->>>>>>> 4a2ae6f21f6cb432298c4c933181783ec801662a
+
+
 ```

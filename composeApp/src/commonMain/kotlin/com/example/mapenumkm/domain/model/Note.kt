@@ -11,6 +11,7 @@ data class Note(
     val stock: Int = 0, // Stok Produk
     val category: NoteCategory = NoteCategory.GENERAL,
     val color: NoteColor = NoteColor.DEFAULT,
+    val imageUri: String? = null,
     val isPinned: Boolean = false,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()

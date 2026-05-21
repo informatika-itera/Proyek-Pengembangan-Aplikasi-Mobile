@@ -1,404 +1,457 @@
 package com.example.mapenumkm.presentation.screens.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.NoteAlt
-import androidx.compose.material.icons.outlined.Sort
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.mapenumkm.domain.model.Note
+import coil3.compose.AsyncImage
 import com.example.mapenumkm.domain.model.NoteCategory
-import com.example.mapenumkm.domain.usecase.NoteSortBy
-import com.example.mapenumkm.presentation.components.EmptyState
-import com.example.mapenumkm.presentation.components.ErrorState
 import com.example.mapenumkm.presentation.components.LoadingIndicator
-import com.example.mapenumkm.presentation.components.NoteCard
+import com.example.mapenumkm.presentation.theme.PurpleAccent
+import mapenumkm.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
-    onNavigateToAI: () -> Unit,
+    onNavigateToProductList: () -> Unit,
+    onNavigateToHistory: () -> Unit,
+    onNavigateToReport: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
-    var showSearch by remember { mutableStateOf(false) }
-    var showSortMenu by remember { mutableStateOf(false) }
     
+    val greenPrimary = Color(0xFF16A34A)
+    val greenLight = Color(0xFFDCFCE7)
+    val blueAccent = Color(0xFF60A5FA)
+    val yellowAccent = Color(0xFFFACC15)
+    val purpleAccent = PurpleAccent
+
     Scaffold(
         topBar = {
-            Box {
-                // Background Pattern/Gradient for Header
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                                    MaterialTheme.colorScheme.background
-                                )
-                            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(greenPrimary)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Dashboard",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         )
-                )
-                
-                TopAppBar(
-                    title = { 
-                        if (showSearch) {
-                            SearchField(
-                                query = when (val state = uiState) {
-                                    is HomeUiState.Success -> state.query
-                                    is HomeUiState.Empty -> state.query
-                                    else -> ""
-                                },
-                                onQueryChange = viewModel::onSearchQueryChange,
-                                onClear = {
-                                    viewModel.clearSearch()
-                                    showSearch = false
-                                }
-                            )
-                        } else {
-                            Text(
-                                "MaPen UMKM",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    letterSpacing = (-0.5).sp
-                                )
-                            )
-                        }
-                    },
-                    actions = {
-                        if (!showSearch) {
-                            IconButton(onClick = { showSearch = true }) {
-                                Icon(Icons.Default.Search, contentDescription = "Cari Produk")
-                            }
-                            
-                            IconButton(onClick = { showSortMenu = true }) {
-                                Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
-                            }
-                            
-                            SortDropdownMenu(
-                                expanded = showSortMenu,
-                                currentSortBy = currentSortBy,
-                                onSortSelected = { 
-                                    viewModel.onSortByChanged(it)
-                                    showSortMenu = false
-                                },
-                                onDismiss = { showSortMenu = false }
-                            )
-                        }
-                        
-                        IconButton(onClick = onNavigateToAI) {
-                            Icon(Icons.Outlined.AutoAwesome, contentDescription = "Asisten AI")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent
                     )
-                )
+                    Icon(
+                        imageVector = Icons.Default.NotificationsNone,
+                        contentDescription = "Notifikasi",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToAddNote,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .padding(8.dp)
-                    .size(64.dp)
-            ) {
-                Icon(
-                    Icons.Default.Add, 
-                    contentDescription = "Tambah Produk",
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+        bottomBar = {
+            DashboardBottomNavigation(
+                selectedItem = 0,
+                onDashboardClick = {},
+                onProdukClick = onNavigateToProductList,
+                onTransaksiClick = {},
+                onRiwayatClick = onNavigateToHistory,
+                onLaporanClick = onNavigateToReport
+            )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(Color(0xFFFBFBFF))
         ) {
-            CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
-                    else -> null
-                },
-                onCategorySelected = viewModel::onCategorySelected
-            )
-            
-            when (val state = uiState) {
-                is HomeUiState.Loading -> {
-                    LoadingIndicator()
-                }
-                
-                is HomeUiState.Success -> {
-                    NotesList(
-                        notes = state.notes,
-                        onNoteClick = onNavigateToDetail,
-                        onPinClick = viewModel::togglePin,
-                        onDeleteClick = viewModel::deleteNote
-                    )
-                }
-                
-                is HomeUiState.Empty -> {
-                    EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
-                            "Tidak Ditemukan"
-                        } else {
-                            "Belum Ada Produk"
-                        },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
-                        } else {
-                            "Tap + untuk menambah produk baru"
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Outlined.NoteAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            // Greeting Section
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Halo, Owner",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 22.sp
+                                )
                             )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "👋", fontSize = 20.sp)
                         }
-                    )
-                }
-                
-                is HomeUiState.Error -> {
-                    ErrorState(
-                        message = state.message,
-                        onRetry = { viewModel.clearSearch() }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SearchField(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onClear: () -> Unit
-) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = { 
-            Text(
-                "Cari produk...",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                )
-            ) 
-        },
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-            unfocusedBorderColor = Color.Transparent,
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            cursorColor = MaterialTheme.colorScheme.primary
-        ),
-        leadingIcon = {
-            Icon(
-                Icons.Default.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-            )
-        },
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = query.isNotBlank(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                IconButton(onClick = onClear) {
-                    Icon(
-                        Icons.Default.Close, 
-                        contentDescription = "Hapus",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        },
-        textStyle = MaterialTheme.typography.bodyLarge
-    )
-}
-
-@Composable
-private fun SortDropdownMenu(
-    expanded: Boolean,
-    currentSortBy: NoteSortBy,
-    onSortSelected: (NoteSortBy) -> Unit,
-    onDismiss: () -> Unit
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss
-    ) {
-        NoteSortBy.entries.forEach { sortBy ->
-            DropdownMenuItem(
-                text = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        Text(
+                            text = "Semoga harimu menyenangkan!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                    
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f)),
+                        color = Color.White
                     ) {
-                        Text(sortBy.displayName)
-                        if (sortBy == currentSortBy) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Hari ini", style = MaterialTheme.typography.labelLarge)
+                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, modifier = Modifier.size(18.dp))
                         }
                     }
-                },
-                onClick = { onSortSelected(sortBy) }
-            )
+                }
+            }
+
+            // Stats Grid 2x2
+            item {
+                val successState = uiState as? HomeUiState.Success
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        StatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Total Produk",
+                            value = "${successState?.totalProducts ?: 0}",
+                            icon = Icons.Default.Inventory2,
+                            iconBgColor = greenLight,
+                            iconTint = greenPrimary
+                        )
+                        StatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Nilai Inventaris",
+                            value = "Rp ${successState?.totalStockValue?.toInt() ?: 0}",
+                            icon = Icons.Default.Payments,
+                            iconBgColor = Color(0xFFE0E7FF),
+                            iconTint = blueAccent
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        StatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Stok Menipis",
+                            value = "${successState?.lowStockCount ?: 0}",
+                            icon = Icons.Default.PriorityHigh,
+                            iconBgColor = Color(0xFFFEF9C3),
+                            iconTint = yellowAccent
+                        )
+                        StatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Kategori",
+                            value = "${NoteCategory.entries.size}",
+                            icon = Icons.Default.Category,
+                            iconBgColor = Color(0xFFF3E8FF),
+                            iconTint = purpleAccent
+                        )
+                    }
+                }
+            }
+
+            // Produk Terlaris Section
+            item {
+                SectionHeader(title = "Produk Terlaris", onLihatSemua = onNavigateToProductList)
+            }
+
+            when (val state = uiState) {
+                is HomeUiState.Loading -> item { LoadingIndicator() }
+                is HomeUiState.Success -> {
+                    val topProducts = state.notes.sortedByDescending { it.id }.take(3) // Placeholder sorting for "best selling"
+                    if (topProducts.isEmpty()) {
+                        item {
+                            Text("Belum ada data produk", modifier = Modifier.padding(horizontal = 20.dp), color = Color.Gray)
+                        }
+                    } else {
+                        items(topProducts) { product ->
+                            ProductItem(
+                                name = product.title,
+                                soldCount = 25, 
+                                price = product.price,
+                                imageUri = product.imageUri,
+                                onClick = { onNavigateToDetail(product.id) }
+                            )
+                        }
+                    }
+                }
+                else -> item { 
+                    Text("Belum ada data produk", modifier = Modifier.padding(horizontal = 20.dp), color = Color.Gray)
+                }
+            }
+
+            // Stok Menipis Section
+            item {
+                SectionHeader(title = "Stok Menipis", onLihatSemua = onNavigateToProductList)
+            }
+
+            // Contoh Item Stok Menipis
+            when (val state = uiState) {
+                is HomeUiState.Success -> {
+                    val lowStockProducts = state.notes.filter { it.stock <= 5 }.take(2)
+                    if (lowStockProducts.isEmpty()) {
+                        item {
+                            Text("Semua stok aman", modifier = Modifier.padding(horizontal = 20.dp), color = Color.Gray)
+                        }
+                    } else {
+                        items(lowStockProducts) { product ->
+                            StockWarningItem(
+                                name = product.title,
+                                stockRemaining = product.stock,
+                                imageUri = product.imageUri,
+                                onClick = { onNavigateToProductList() }
+                            )
+                        }
+                    }
+                }
+                else -> {}
+            }
+            
+            item { Spacer(modifier = Modifier.height(24.dp)) }
         }
     }
 }
 
 @Composable
-private fun CategoryFilterRow(
-    selectedCategory: NoteCategory?,
-    onCategorySelected: (NoteCategory?) -> Unit
+fun StatCard(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    iconBgColor: Color,
+    iconTint: Color,
+    modifier: Modifier = Modifier
 ) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        item {
-            FilterChip(
-                selected = selectedCategory == null,
-                onClick = { onCategorySelected(null) },
-                label = { Text("Semua") },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = Color.Transparent,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
-                    selected = selectedCategory == null,
-                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    selectedBorderColor = Color.Transparent,
-                    borderWidth = 1.dp
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(iconBgColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(title, style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontSize = 11.sp)
+                Text(value, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
+            }
         }
-        
-        items(NoteCategory.entries) { category ->
-            FilterChip(
-                selected = selectedCategory == category,
-                onClick = { 
-                    onCategorySelected(
-                        if (selectedCategory == category) null else category
+    }
+}
+
+@Composable
+fun SectionHeader(title: String, onLihatSemua: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 28.dp, bottom = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+        Text(
+            "Lihat semua",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color(0xFF16A34A),
+            modifier = Modifier.clickable { onLihatSemua() }
+        )
+    }
+}
+
+@Composable
+fun ProductItem(name: String, soldCount: Int, price: Double, imageUri: String?, onClick: () -> Unit) {
+    val imageRes = when {
+        name.contains("Nasi goreng", ignoreCase = true) -> Res.drawable.nasi_goreng
+        name.contains("Es teler", ignoreCase = true) -> Res.drawable.Es_teler
+        name.contains("Es teh", ignoreCase = true) -> Res.drawable.Es_teh
+        else -> null
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clickable { onClick() },
+        color = Color.Transparent
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.padding(vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF3F4F6)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (imageUri != null) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (imageRes != null) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(imageRes),
+                            contentDescription = name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(Icons.Default.Image, contentDescription = null, tint = Color.LightGray)
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text("Terjual $soldCount", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                }
+                Text(
+                    "Rp ${price.toInt()}",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+        }
+    }
+}
+
+@Composable
+fun StockWarningItem(name: String, stockRemaining: Int, imageUri: String?, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 6.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF3F4F6)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (imageUri != null) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
-                },
-                label = { Text(category.displayName) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = Color.Transparent,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
-                    selected = selectedCategory == category,
-                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    selectedBorderColor = Color.Transparent,
-                    borderWidth = 1.dp
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
+                } else {
+                    Icon(Icons.Default.Image, contentDescription = null, tint = Color.LightGray)
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                Text("Stok tersisa $stockRemaining", style = MaterialTheme.typography.bodySmall, color = Color.Red)
+            }
+            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)
         }
     }
 }
 
 @Composable
-private fun NotesList(
-    notes: List<Note>,
-    onNoteClick: (Long) -> Unit,
-    onPinClick: (Long) -> Unit,
-    onDeleteClick: (Long) -> Unit
+fun DashboardBottomNavigation(
+    selectedItem: Int = 0,
+    onDashboardClick: () -> Unit,
+    onProdukClick: () -> Unit,
+    onTransaksiClick: () -> Unit,
+    onRiwayatClick: () -> Unit,
+    onLaporanClick: () -> Unit
 ) {
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    NavigationBar(
+        containerColor = Color.White,
+        tonalElevation = 8.dp
     ) {
-        items(
-            items = notes,
-            key = { it.id }
-        ) { note ->
-            NoteCard(
-                note = note,
-                onClick = { onNoteClick(note.id) },
-                onPinClick = { onPinClick(note.id) },
-                onEditClick = { onNoteClick(note.id) },
-                onDeleteClick = { onDeleteClick(note.id) }
+        NavigationBarItem(
+            selected = selectedItem == 0,
+            onClick = onDashboardClick,
+            icon = { Icon(Icons.Default.Home, contentDescription = null) },
+            label = { Text("Dashboard", fontSize = 10.sp) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color(0xFF16A34A),
+                selectedTextColor = Color(0xFF16A34A),
+                indicatorColor = Color(0xFFDCFCE7),
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray
             )
-        }
+        )
+        NavigationBarItem(
+            selected = selectedItem == 1,
+            onClick = onProdukClick,
+            icon = { Icon(Icons.Outlined.Inventory2, contentDescription = null) },
+            label = { Text("Produk", fontSize = 10.sp) }
+        )
+        NavigationBarItem(
+            selected = selectedItem == 2,
+            onClick = onTransaksiClick,
+            icon = { Icon(Icons.Default.Receipt, contentDescription = null) },
+            label = { Text("Transaksi", fontSize = 10.sp) }
+        )
+        NavigationBarItem(
+            selected = selectedItem == 3,
+            onClick = onRiwayatClick,
+            icon = { Icon(Icons.Outlined.History, contentDescription = null) },
+            label = { Text("Riwayat", fontSize = 10.sp) }
+        )
+        NavigationBarItem(
+            selected = selectedItem == 4,
+            onClick = onLaporanClick,
+            icon = { Icon(Icons.Outlined.BarChart, contentDescription = null) },
+            label = { Text("Laporan", fontSize = 10.sp) }
+        )
     }
 }

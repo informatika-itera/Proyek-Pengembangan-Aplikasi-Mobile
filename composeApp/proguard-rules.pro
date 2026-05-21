@@ -1,18 +1,9 @@
-# ProGuard Rules for NoteAI
-# ===========================
+# Add project-specific ProGuard rules here.
+# By default, the flags in this file are appended to flags specified
+# in /Users/Shared/Android/sdk/tools/proguard/proguard-android.txt
+# You can edit the configuration file and add direct link to your custom rules.
 
-# Keep Kotlin Serialization
--keepattributes *Annotation*, InnerClasses
--dontnote kotlinx.serialization.AnnotationsKt
-
--keepclassmembers class kotlinx.serialization.json.** {
-    *** Companion;
-}
--keepclasseswithmembers class kotlinx.serialization.json.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
-
-# Keep serializable classes
+# Kotlin Serialization
 -keep,includedescriptorclasses class com.example.mapenumkm.**$$serializer { *; }
 -keepclassmembers class com.example.mapenumkm.** {
     *** Companion;
@@ -21,25 +12,12 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Keep Ktor
--keep class io.ktor.** { *; }
--keep class kotlinx.coroutines.** { *; }
--dontwarn kotlinx.atomicfu.**
--dontwarn io.netty.**
--dontwarn com.typesafe.**
--dontwarn org.slf4j.**
+# Koin
+-keep class org.koin.** { *; }
 
-# Ktor common code mereferensikan JVM-only API (java.lang.management.*)
-# lewat IntellijIdeaDebugDetector. Tidak ada di Android runtime → silence-kan.
--dontwarn io.ktor.util.debug.**
--dontwarn java.lang.management.**
-
-# Keep SQLDelight generated classes
+# SQLDelight
 -keep class com.example.mapenumkm.data.local.** { *; }
 
-# Keep Koin DI metadata + ViewModel constructors agar reflection-based
-# resolution tidak ke-strip oleh R8.
--keep class org.koin.** { *; }
--keepclassmembers class * extends androidx.lifecycle.ViewModel {
-    <init>(...);
-}
+# Compose Multiplatform
+-keep class androidx.compose.** { *; }
+-keep class org.jetbrains.compose.** { *; }

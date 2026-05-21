@@ -46,6 +46,7 @@ class AddNoteViewModel(
                             stock = note.stock.toString(),
                             category = note.category,
                             color = note.color,
+                            imageUri = note.imageUri,
                             isLoading = false,
                             isEditMode = true,
                             createdAt = note.createdAt
@@ -87,6 +88,10 @@ class AddNoteViewModel(
     fun onColorChange(color: NoteColor) {
         _uiState.update { it.copy(color = color) }
     }
+
+    fun onImageChange(uri: String?) {
+        _uiState.update { it.copy(imageUri = uri) }
+    }
     
     fun saveNote() {
         val state = _uiState.value
@@ -107,6 +112,7 @@ class AddNoteViewModel(
                 stock = state.stock.toIntOrNull() ?: 0,
                 category = state.category,
                 color = state.color,
+                imageUri = state.imageUri,
                 createdAt = if (currentNoteId == null) Clock.System.now() else state.createdAt,
                 updatedAt = Clock.System.now()
             )
@@ -138,6 +144,7 @@ data class AddNoteUiState(
     val stock: String = "",
     val category: NoteCategory = NoteCategory.GENERAL,
     val color: NoteColor = NoteColor.DEFAULT,
+    val imageUri: String? = null,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,

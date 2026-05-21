@@ -11,32 +11,22 @@ import androidx.compose.ui.unit.sp
 
 // ==================== COLORS ====================
 
-private val Primary = Color(0xFF9174D8) // More lilac
+private val Primary = Color(0xFF16A34A)
+private val PrimaryDark = Color(0xFF15803D)
+private val PrimaryLight = Color(0xFFDCFCE7)
 private val OnPrimary = Color(0xFFFFFFFF)
-private val PrimaryContainer = Color(0xFFF3EFFF) // Very faint lilac
-private val OnPrimaryContainer = Color(0xFF21005D)
 
-private val Secondary = Color(0xFF625B71)
-private val OnSecondary = Color(0xFFFFFFFF)
-private val SecondaryContainer = Color(0xFFE8DEF8)
-private val OnSecondaryContainer = Color(0xFF1D192B)
+private val Secondary = Color(0xFF60A5FA) // Blue Accent
+private val Tertiary = Color(0xFFFACC15) // Yellow Accent
+val PurpleAccent = Color(0xFFA78BFA)
 
-private val Tertiary = Color(0xFF7D5260)
-private val OnTertiary = Color(0xFFFFFFFF)
-private val TertiaryContainer = Color(0xFFFFD8E4)
-private val OnTertiaryContainer = Color(0xFF31111D)
-
-private val Error = Color(0xFFB3261E)
-private val OnError = Color(0xFFFFFFFF)
-private val ErrorContainer = Color(0xFFF9DEDC)
-private val OnErrorContainer = Color(0xFF410E0B)
-
-private val BackgroundLight = Color(0xFFFBFBFF) // Off-white
+private val BackgroundLight = Color(0xFFFBFBFF)
 private val OnBackgroundLight = Color(0xFF1C1B1F)
 private val SurfaceLight = Color(0xFFFFFFFF)
 private val OnSurfaceLight = Color(0xFF1C1B1F)
-private val SurfaceVariantLight = Color(0xFFF0EFFF)
+private val SurfaceVariantLight = Color(0xFFF3F4F6)
 private val OnSurfaceVariantLight = Color(0xFF49454F)
+private val OutlineLight = Color(0xFFE5E7EB)
 
 private val BackgroundDark = Color(0xFF1C1B1F)
 private val OnBackgroundDark = Color(0xFFE6E1E5)
@@ -44,8 +34,6 @@ private val SurfaceDark = Color(0xFF1C1B1F)
 private val OnSurfaceDark = Color(0xFFE6E1E5)
 private val SurfaceVariantDark = Color(0xFF49454F)
 private val OnSurfaceVariantDark = Color(0xFFCAC4D0)
-
-private val OutlineLight = Color(0xFF79747E)
 private val OutlineDark = Color(0xFF938F99)
 
 // ==================== COLOR SCHEMES ====================
@@ -53,20 +41,10 @@ private val OutlineDark = Color(0xFF938F99)
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
+    primaryContainer = PrimaryLight,
+    onPrimaryContainer = PrimaryDark,
     secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
     tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
     background = BackgroundLight,
     onBackground = OnBackgroundLight,
     surface = SurfaceLight,
@@ -77,22 +55,12 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF492532),
-    tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = Color(0xFFFFD8E4),
-    error = Color(0xFFF2B8B5),
-    onError = Color(0xFF601410),
-    errorContainer = Color(0xFF8C1D18),
-    onErrorContainer = Color(0xFFF9DEDC),
+    primary = Color(0xFF16A34A),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFF15803D),
+    onPrimaryContainer = Color(0xFFDCFCE7),
+    secondary = Color(0xFF60A5FA),
+    tertiary = Color(0xFFFACC15),
     background = BackgroundDark,
     onBackground = OnBackgroundDark,
     surface = SurfaceDark,

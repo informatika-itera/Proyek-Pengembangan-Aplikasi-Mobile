@@ -3,16 +3,32 @@ package com.example.mapenumkm.presentation.navigation
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
-    
+
+    @Serializable
+    data object Login : Route
+
     @Serializable
     data object Home : Route
-    
+
     @Serializable
-    data class AddNote(val noteId: Long? = null) : Route
-    
+    data object ProductList : Route
+
     @Serializable
-    data class NoteDetail(val noteId: Long) : Route
-    
+    data object History : Route
+
+    @Serializable
+    data object Report : Route
+
+    @Serializable
+    data class AddNote(
+        val noteId: Long? = null
+    ) : Route
+
+    @Serializable
+    data class NoteDetail(
+        val noteId: Long
+    ) : Route
+
     @Serializable
     data class AIAssistant(
         val noteId: Long? = null,

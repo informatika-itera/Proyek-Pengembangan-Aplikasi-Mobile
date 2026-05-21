@@ -28,6 +28,10 @@ class GetAllNotesUseCase(
             NoteSortBy.CREATED_DESC -> notes.sortedByDescending { it.createdAt }
             NoteSortBy.UPDATED_ASC -> notes.sortedBy { it.updatedAt }
             NoteSortBy.UPDATED_DESC -> notes.sortedByDescending { it.updatedAt }
+            NoteSortBy.PRICE_ASC -> notes.sortedBy { it.price }
+            NoteSortBy.PRICE_DESC -> notes.sortedByDescending { it.price }
+            NoteSortBy.STOCK_ASC -> notes.sortedBy { it.stock }
+            NoteSortBy.STOCK_DESC -> notes.sortedByDescending { it.stock }
         }
     }
 }
@@ -38,14 +42,22 @@ enum class NoteSortBy(val displayName: String) {
     CREATED_ASC("Dibuat (Lama)"),
     CREATED_DESC("Dibuat (Baru)"),
     UPDATED_ASC("Diupdate (Lama)"),
-    UPDATED_DESC("Diupdate (Baru)")
+    UPDATED_DESC("Diupdate (Baru)"),
+    PRICE_ASC("Harga Termurah"),
+    PRICE_DESC("Harga Termahal"),
+    STOCK_ASC("Stok Terendah"),
+    STOCK_DESC("Stok Tertinggi")
 }
 
 class SearchNotesUseCase(
     private val repository: NoteRepository
 ) {
-    operator fun invoke(query: String, category: NoteCategory? = null): Flow<List<Note>> {
-        return if (query.isBlank() && category == null) {
+    operator fun invoke(
+        query: String, 
+        category: NoteCategory? = null,
+        sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC
+    ): Flow<List<Note>> {
+        val flow = if (query.isBlank() && category == null) {
             repository.getAllNotes()
         } else if (query.isBlank()) {
             repository.getNotesByCategory(category!!)
@@ -57,6 +69,26 @@ class SearchNotesUseCase(
                     notes
                 }
             }
+        }
+
+        return flow.map { notes ->
+            val (pinned, unpinned) = notes.partition { it.isPinned }
+            sortNotes(pinned, sortBy) + sortNotes(unpinned, sortBy)
+        }
+    }
+
+    private fun sortNotes(notes: List<Note>, sortBy: NoteSortBy): List<Note> {
+        return when (sortBy) {
+            NoteSortBy.TITLE_ASC -> notes.sortedBy { it.title.lowercase() }
+            NoteSortBy.TITLE_DESC -> notes.sortedByDescending { it.title.lowercase() }
+            NoteSortBy.CREATED_ASC -> notes.sortedBy { it.createdAt }
+            NoteSortBy.CREATED_DESC -> notes.sortedByDescending { it.createdAt }
+            NoteSortBy.UPDATED_ASC -> notes.sortedBy { it.updatedAt }
+            NoteSortBy.UPDATED_DESC -> notes.sortedByDescending { it.updatedAt }
+            NoteSortBy.PRICE_ASC -> notes.sortedBy { it.price }
+            NoteSortBy.PRICE_DESC -> notes.sortedByDescending { it.price }
+            NoteSortBy.STOCK_ASC -> notes.sortedBy { it.stock }
+            NoteSortBy.STOCK_DESC -> notes.sortedByDescending { it.stock }
         }
     }
 }

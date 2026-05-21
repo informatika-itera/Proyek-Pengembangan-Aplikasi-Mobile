@@ -1,21 +1,29 @@
 package com.example.mapenumkm.presentation.screens.addnote
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,12 +49,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.example.mapenumkm.domain.model.NoteCategory
 import com.example.mapenumkm.presentation.components.ColorPickerRow
 import com.example.mapenumkm.presentation.components.LoadingIndicator
@@ -62,6 +73,11 @@ fun AddNoteScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Inisialisasi Image Picker
+    val imagePickerLauncher = rememberImagePickerLauncher { uri ->
+        viewModel.onImageChange(uri)
+    }
     
     LaunchedEffect(noteId) {
         noteId?.let { viewModel.loadNote(it) }
@@ -132,6 +148,15 @@ fun AddNoteScreen(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Image Picker Group
+                FormGroup(title = "Foto Produk") {
+                    ProductImagePicker(
+                        imageUri = uiState.imageUri,
+                        onImageSelected = viewModel::onImageChange,
+                        onPickImage = imagePickerLauncher
+                    )
+                }
+
                 // Product Info Group
                 FormGroup(title = "Informasi Produk") {
                     OutlinedTextField(
@@ -282,32 +307,95 @@ private fun CategoryDropdown(
             colors = customTextFieldColors()
         )
         
-        MaterialTheme(
-            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
         ) {
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
-                    .shadow(12.dp, RoundedCornerShape(16.dp))
-            ) {
-                NoteCategory.entries.forEach { category ->
-                    DropdownMenuItem(
-                        text = { 
-                            Text(
-                                category.displayName,
-                                style = MaterialTheme.typography.bodyLarge
-                            ) 
-                        },
-                        onClick = {
-                            onCategorySelected(category)
-                            expanded = false
-                        },
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp)
-                    )
-                }
+            NoteCategory.entries.forEach { category ->
+                DropdownMenuItem(
+                    text = { 
+                        Text(
+                            category.displayName,
+                            style = MaterialTheme.typography.bodyLarge
+                        ) 
+                    },
+                    onClick = {
+                        onCategorySelected(category)
+                        expanded = false
+                    },
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                )
             }
         }
     }
 }
+
+@Composable
+private fun ProductImagePicker(
+    imageUri: String?,
+    onImageSelected: (String?) -> Unit,
+    onPickImage: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable { onPickImage() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (imageUri != null) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = "Foto Produk",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                
+                // Tombol Hapus Foto
+                IconButton(
+                    onClick = { onImageSelected(null) },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                        .size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Hapus Foto",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AddPhotoAlternate,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Tambah Foto Produk",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                )
+            }
+        }
+    }
+}
+

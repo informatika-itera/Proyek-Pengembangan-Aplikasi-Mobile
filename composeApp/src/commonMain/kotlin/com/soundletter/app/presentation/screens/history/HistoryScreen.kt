@@ -73,7 +73,7 @@ fun HistoryScreen(
                             contentPadding = PaddingValues(24.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(letters) { note ->
+                            items(letters) { note: Note ->
                                 MessageCard(
                                     message = note,
                                     onClick = { onNavigateToDetail(note.id.toString()) }

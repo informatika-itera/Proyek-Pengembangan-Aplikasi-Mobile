@@ -11,10 +11,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.screens.home.MessageCard
 import com.soundletter.app.presentation.theme.SoundLetterColors
@@ -27,7 +29,8 @@ fun SearchScreen(
     onNavigateToDetail: (String) -> Unit,
     viewModel: SearchScreenViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val query by viewModel.query.collectAsState()
+    val searchState by viewModel.searchState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -53,7 +56,7 @@ fun SearchScreen(
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 SearchBar(
-                    query = state.query,
+                    query = query,
                     onQueryChange = { viewModel.onQueryChange(it) },
                     onSearch = {},
                     active = false,
@@ -67,13 +70,33 @@ fun SearchScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(state.results) { note: Note ->
-                        MessageCard(message = note, onClick = { onNavigateToDetail(note.id.toString()) })
+                when (val state = searchState) {
+                    is UiState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    }
+                    is UiState.Success -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(state.data) { note ->
+                                MessageCard(
+                                    message = note, 
+                                    onClick = { onNavigateToDetail(note.id.toString()) }
+                                )
+                            }
+                        }
+                    }
+                    is UiState.Error -> {
+                        Text(text = state.message, color = Color.Red, modifier = Modifier.padding(24.dp))
+                    }
+                    is UiState.Idle -> {
+                        Text(
+                            text = "Start typing to search...",
+                            color = Color.Gray,
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 40.dp)
+                        )
                     }
                 }
             }

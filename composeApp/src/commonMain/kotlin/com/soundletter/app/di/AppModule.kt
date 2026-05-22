@@ -37,7 +37,7 @@ val repositoryModule = module {
 val viewModelModule = module {
     viewModelOf(::SplashScreenViewModel)
     viewModelOf(::HomeScreenViewModel)
-    viewModelOf(::SearchScreenViewModel)
+    viewModelOf(::SearchScreenViewModel) // Akan otomatis mengambil LetterRepository dari binding
     viewModelOf(::ComposeViewModel)
     viewModelOf(::DetailMessageScreenViewModel)
     viewModelOf(::HistoryScreenViewModel)

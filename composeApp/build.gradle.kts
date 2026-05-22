@@ -97,6 +97,15 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
         }
+
+        // Tambahkan dependensi untuk Android UI Test
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.androidx.test.junit)
+                implementation(libs.compose.ui.test.junit4)
+            }
+        }
         
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -115,6 +124,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
         // Inject API key from local.properties
         buildConfigField(
@@ -156,4 +167,8 @@ sqldelight {
             packageName.set("com.soundletter.app.data.local")
         }
     }
+}
+
+dependencies {
+    debugImplementation(libs.compose.ui.test.manifest)
 }

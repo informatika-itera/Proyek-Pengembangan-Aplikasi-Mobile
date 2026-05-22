@@ -17,15 +17,40 @@ class LetterRepositoryImpl(
     
     private val queries = database.noteQueries
 
+    // Data dummy sebagai awalan
+    private val dummyNotes = listOf(
+        Note(
+            id = -1, // ID negatif agar tidak bentrok dengan database
+            recipient = "Dzaky",
+            sender = "Anonim",
+            content = "Semangat buat ngerjain tugasnya!",
+            songTitle = "Hati-Hati di Jalan",
+            songArtist = "Tulus"
+        ),
+        Note(
+            id = -2,
+            recipient = "Gian",
+            sender = "Anonim",
+            content = "Selamat ulang tahun! Semoga harimu menyenangkan.",
+            songTitle = "Happy Birthday",
+            songArtist = "Traditional"
+        )
+    )
+
     override fun getLetters(): Flow<List<Note>> {
         return queries.getAllNotes()
             .asFlow()
             .mapToList(Dispatchers.IO)
-            .map { entities -> entities.map { it.toDomain() } }
+            .map { entities -> 
+                // Gabungkan data dummy dengan data dari database
+                dummyNotes + entities.map { it.toDomain() }
+            }
     }
 
     override suspend fun getLetterById(id: Long): Note? {
-        return queries.getNoteById(id).executeAsOneOrNull()?.toDomain()
+        // Cari di dummy dulu, jika tidak ada baru cari di database
+        return dummyNotes.find { it.id == id } 
+            ?: queries.getNoteById(id).executeAsOneOrNull()?.toDomain()
     }
 
     override suspend fun sendLetter(letter: Note) {

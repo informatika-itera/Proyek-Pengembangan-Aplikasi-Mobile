@@ -32,7 +32,6 @@ fun ComposeScreen(
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Handle Side Effects for Success/Error
     LaunchedEffect(state.sendStatus) {
         when (val status = state.sendStatus) {
             is UiState.Success -> {
@@ -80,45 +79,29 @@ fun ComposeScreen(
             ) {
                 OutlinedTextField(
                     value = state.recipient,
-                    onValueChange = { viewModel.onToChange(it) },
+                    onValueChange = { viewModel.onRecipientChange(it) },
                     label = { Text("To") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.Gray
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = state.sender,
-                    onValueChange = { viewModel.onFromChange(it) },
+                    onValueChange = { viewModel.onSenderChange(it) },
                     label = { Text("From (Optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.Gray
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = state.message,
                     onValueChange = { viewModel.onMessageChange(it) },
                     label = { Text("Message") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.Gray
-                    )
+                    modifier = Modifier.fillMaxWidth().height(150.dp)
                 )
 
                 Button(
                     onClick = { viewModel.recommendSongs() },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     enabled = !state.isAiLoading
                 ) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null)
@@ -127,17 +110,13 @@ fun ComposeScreen(
                 }
 
                 if (state.suggestions.isNotEmpty()) {
-                    Text(
-                        text = "AI Suggestions:",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(state.suggestions) { song ->
-                            SongSuggestionCard(song)
+                            SongSuggestionCard(
+                                song = song, 
+                                isSelected = state.selectedSong == song,
+                                onClick = { viewModel.onSongSelect(song) }
+                            )
                         }
                     }
                 }
@@ -145,18 +124,9 @@ fun ComposeScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { 
-                        viewModel.sendSoundLetter(
-                            to = state.recipient,
-                            from = state.sender,
-                            message = state.message,
-                            songTitle = state.suggestions.firstOrNull()?.title // Ambil saran pertama sebagai contoh
-                        )
-                    },
+                    onClick = { viewModel.sendSoundLetter() },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     enabled = state.sendStatus !is UiState.Loading
                 ) {
                     if (state.sendStatus is UiState.Loading) {
@@ -171,19 +141,18 @@ fun ComposeScreen(
 }
 
 @Composable
-fun SongSuggestionCard(song: SongSuggestion) {
-    GlassCard(modifier = Modifier.width(160.dp)) {
-        Column {
-            Text(
-                text = song.title,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                maxLines = 1
-            )
-            Text(
-                text = song.artist,
-                style = MaterialTheme.typography.labelSmall.copy(color = Color.LightGray),
-                maxLines = 1
-            )
+fun SongSuggestionCard(song: SongSuggestion, isSelected: Boolean, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.width(160.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) 
+                             else SoundLetterColors.GlassBackground
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(text = song.title, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(text = song.artist, style = MaterialTheme.typography.labelSmall, color = Color.LightGray)
         }
     }
 }

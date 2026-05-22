@@ -2,40 +2,45 @@ package com.soundletter.app.presentation.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
-import com.soundletter.app.domain.repository.MusicRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.soundletter.app.domain.repository.LetterRepository
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-data class SearchState(
-    val query: String = "",
-    val results: List<Note> = emptyList(),
-    val isLoading: Boolean = false
-)
-
 class SearchScreenViewModel(
-    private val musicRepository: MusicRepository
+    private val letterRepository: LetterRepository
 ) : ViewModel() {
-    private val _state = MutableStateFlow(SearchState())
-    val state: StateFlow<SearchState> = _state.asStateFlow()
+
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query.asStateFlow()
+
+    private val _searchState = MutableStateFlow<UiState<List<Note>>>(UiState.Idle)
+    val searchState: StateFlow<UiState<List<Note>>> = _searchState.asStateFlow()
 
     fun onQueryChange(newQuery: String) {
-        _state.update { it.copy(query = newQuery) }
-        search(newQuery)
+        _query.value = newQuery
+        if (newQuery.isBlank()) {
+            _searchState.value = UiState.Idle
+            return
+        }
+        searchRecipient(newQuery)
     }
 
-    private fun search(query: String) {
+    private fun searchRecipient(name: String) {
         viewModelScope.launch {
-            if (query.isBlank()) {
-                _state.update { it.copy(results = emptyList()) }
-                return@launch
-            }
-            _state.update { it.copy(isLoading = true) }
-            // Simulasi hasil pencarian
-            _state.update { it.copy(isLoading = false) }
+            _searchState.value = UiState.Loading
+            // Menggunakan flow dari repository untuk pencarian real-time
+            letterRepository.getLetters()
+                .map { letters ->
+                    letters.filter { it.recipient.contains(name, ignoreCase = true) }
+                }
+                .catch { e ->
+                    _searchState.value = UiState.Error(e.message ?: "Search failed")
+                }
+                .collect { results ->
+                    _searchState.value = UiState.Success(results)
+                }
         }
     }
 }

@@ -24,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.soundletter.app.core.util.UiState
+import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.components.GlassCard
 import com.soundletter.app.presentation.theme.SoundLetterColors
 import org.koin.compose.viewmodel.koinViewModel
@@ -35,11 +37,10 @@ fun DetailMessageScreen(
     onNavigateBack: () -> Unit,
     viewModel: DetailMessageScreenViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.state.collectAsState()
 
-    // Di dalam DetailMessageScreen.kt
     LaunchedEffect(messageId) {
-        viewModel.loadMessage(messageId) // Memicu pencarian data di Repository berdasarkan ID
+        viewModel.loadMessage(messageId)
     }
 
     Scaffold(
@@ -64,53 +65,70 @@ fun DetailMessageScreen(
                 .background(Brush.verticalGradient(SoundLetterColors.BackgroundGradient))
                 .padding(padding)
         ) {
-            state.message?.let { message ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    VinylRecord()
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
-                        Column {
-                            Text(
-                                text = "To: ${message.recipient}",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = message.content,
-                                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                                textAlign = TextAlign.Start
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "— From ${message.sender}",
-                                style = MaterialTheme.typography.labelMedium.copy(color = Color.Gray),
-                                modifier = Modifier.align(Alignment.End)
-                            )
+            when (val state = uiState) {
+                is UiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is UiState.Success -> {
+                    val message = state.data
+                    DetailContent(message)
+                }
+                is UiState.Error -> {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = state.message, color = Color.White)
+                        Button(onClick = { viewModel.loadMessage(messageId) }) {
+                            Text("Retry")
                         }
                     }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    MusicControls(message.songTitle ?: "Unknown Song")
                 }
-            } ?: Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (state.isLoading) {
-                    CircularProgressIndicator()
-                } else {
-                    Text("Message not found", color = Color.White)
-                }
+                else -> {}
             }
         }
+    }
+}
+
+@Composable
+private fun DetailContent(message: Note) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        VinylRecord()
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        GlassCard(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Text(
+                    text = "To: ${message.recipient}",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = message.content,
+                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+                    textAlign = TextAlign.Start
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "— From ${message.sender}",
+                    style = MaterialTheme.typography.labelMedium.copy(color = Color.Gray),
+                    modifier = Modifier.align(Alignment.End)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        MusicControls(message.songTitle ?: "Unknown Song")
     }
 }
 
@@ -144,7 +162,7 @@ fun VinylRecord() {
                 )
             }
         }
-        
+
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -152,12 +170,7 @@ fun VinylRecord() {
                 .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(10.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black)
-            )
+            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color.Black))
         }
     }
 }
@@ -170,36 +183,22 @@ fun MusicControls(songTitle: String) {
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.secondary
         )
-        Text(
-            text = "Now Playing",
-            style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray)
-        )
+        Text(text = "Now Playing", style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray))
         Spacer(modifier = Modifier.height(16.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.SkipPrevious, contentDescription = null, modifier = Modifier.size(32.dp))
-            }
-            FloatingActionButton(
-                onClick = {},
-                containerColor = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
-            ) {
+            IconButton(onClick = {}) { Icon(Icons.Default.SkipPrevious, contentDescription = null, modifier = Modifier.size(32.dp)) }
+            FloatingActionButton(onClick = {}, containerColor = MaterialTheme.colorScheme.primary, shape = CircleShape) {
                 Icon(Icons.Default.Pause, contentDescription = null, tint = Color.Black)
             }
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.SkipNext, contentDescription = null, modifier = Modifier.size(32.dp))
-            }
+            IconButton(onClick = {}) { Icon(Icons.Default.SkipNext, contentDescription = null, modifier = Modifier.size(32.dp)) }
         }
         Spacer(modifier = Modifier.height(24.dp))
         LinearProgressIndicator(
             progress = { 0.4f },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp)
-                .clip(CircleShape),
+            modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
             color = MaterialTheme.colorScheme.primary,
             trackColor = Color.DarkGray
         )

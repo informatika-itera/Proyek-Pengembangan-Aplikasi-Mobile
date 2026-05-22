@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.components.GlassCard
 import com.soundletter.app.presentation.theme.SoundLetterColors
@@ -34,7 +35,7 @@ fun HomeScreen(
     onNavigateToHistory: () -> Unit,
     viewModel: HomeScreenViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -91,14 +92,35 @@ fun HomeScreen(
                     style = MaterialTheme.typography.titleMedium.copy(color = Color.Gray)
                 )
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(state.letters) { letter ->
-                        MessageCard(message = letter, onClick = { onNavigateToDetail(letter.id.toString()) })
+                when (val state = uiState) {
+                    is UiState.Loading -> {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
+                    is UiState.Success -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(state.data) { letter ->
+                                MessageCard(
+                                    message = letter, 
+                                    onClick = { onNavigateToDetail(letter.id.toString()) }
+                                )
+                            }
+                        }
+                    }
+                    is UiState.Error -> {
+                        Text(
+                            text = state.message,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(24.dp)
+                        )
+                    }
+                    else -> {}
                 }
             }
         }
@@ -137,7 +159,7 @@ fun MessageCard(message: Note, onClick: () -> Unit) {
             )
             message.songTitle?.let {
                 Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.Search,
                         contentDescription = null,

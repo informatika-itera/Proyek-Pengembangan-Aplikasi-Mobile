@@ -24,6 +24,7 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
     
@@ -37,7 +38,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+  
     sourceSets {
         commonMain.dependencies {
             // Compose
@@ -79,7 +80,7 @@ kotlin {
             
             // Navigation
             implementation(libs.navigation.compose)
-            
+        
             // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
@@ -106,13 +107,14 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
-    compileSdk = 35
+    // Ubah namespace agar tidak bentrok dengan app
+    namespace = "com.itera.news.composeapp" 
+    compileSdk = 34
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.itera.news.composeapp" // Ubah ID agar unik
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
         
@@ -152,8 +154,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("NewsDatabase") {
+            packageName.set("com.itera.news.data.local")
         }
     }
 }

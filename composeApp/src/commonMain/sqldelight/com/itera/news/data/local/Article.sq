@@ -1,0 +1,40 @@
+CREATE TABLE ArticleEntity (
+    url TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    imageUrl TEXT NOT NULL,
+    publishedAt TEXT NOT NULL,
+    sourceName TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'Netral'
+);
+
+insertArticle:
+INSERT OR REPLACE INTO ArticleEntity(
+    url, 
+    title, 
+    description, 
+    imageUrl, 
+    publishedAt, 
+    sourceName, 
+    category
+) VALUES(?, ?, ?, ?, ?, ?, ?);
+
+deleteArticle:
+DELETE FROM ArticleEntity 
+WHERE url = ?;
+
+getAllBookmarkedArticles:
+SELECT * FROM ArticleEntity;
+
+isArticleBookmarked:
+SELECT COUNT(*) FROM ArticleEntity 
+WHERE url = ?;
+
+updateArticle:
+UPDATE ArticleEntity
+SET title = ?, description = ?, imageUrl = ?, publishedAt = ?, sourceName = ?, category = ?
+WHERE url = ?;
+
+getArticleByUrl:
+SELECT * FROM ArticleEntity
+WHERE url = ?;

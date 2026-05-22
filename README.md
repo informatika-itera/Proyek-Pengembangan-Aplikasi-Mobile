@@ -4,140 +4,153 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.20-blue.svg?logo=kotlin)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/Compose-Jetpack-green.svg?logo=android)](https://developer.android.com/jetpack/compose)
 [![Dependency Injection](https://img.shields.io/badge/DI-Koin-purple.svg)](https://insert-koin.io/)
-[![Database](https://img.shields.io/badge/Database-Room-orange.svg)](https://developer.android.com/training/data-storage/room)
+[![Network](https://img.shields.io/badge/Network-Ktor-black.svg)](https://ktor.io/)
+[![Database](https://img.shields.io/badge/Database-SQLDelight-orange.svg)](https://cashapp.github.io/sqldelight/)
 [![AI Integration](https://img.shields.io/badge/AI-Gemini%20API-red.svg?logo=google-gemini)](https://aistudio.google.com/)
 
-**News MBG** (Mbgnews) adalah aplikasi portal berita Android modern yang mengimplementasikan **Clean Architecture**, dibalut dengan desain antarmuka **Neumorphism** yang premium, dan ditenagai oleh **Google Gemini AI** untuk analisis sentimen berita secara real-time dan kategorisasi otomatis.
+**News MBG** (Mbgnews) is a modern Android news portal application implementing **Clean Architecture** and Kotlin Multiplatform (KMP) base structure, wrapped in a premium **Neumorphism** user interface, and powered by **Google Gemini AI** for real-time news sentiment analysis and automated categorization.
 
-Proyek ini dibuat untuk memenuhi tugas mata kuliah **Pengembangan Aplikasi Mobile (PAM)** di Program Studi Teknik Informatika, Institut Teknologi Sumatera (ITERA).
-
----
-
-## Fitur Utama
-
-1.  **Premium Neumorphic UI**: Desain antarmuka visual timbul-tenggelam yang memukau (Neumorphism) menggunakan Custom Compose Modifier. Dilengkapi dengan transisi Splash Screen yang halus, Search Bar neumorphic, Bottom Navigation bar melayang, serta efek Shimmer Loading yang presisi.
-2.  **Smart Gemini AI Integration**:
-    *   **Glowing Sentiment Indicators**: Analisis sentimen berita secara otomatis oleh AI (Positif = Hijau, Negatif = Merah, Netral = Abu-abu) dengan efek pendaran cahaya (glowing shadow) yang dinamis di halaman Detail.
-    *   **Pembaruan Kategori Cerdas**: Klasifikasi artikel berita ke dalam kategori yang sesuai berdasarkan analisis kontekstual teks.
-3.  **Pencarian & Filter Kategori**: Telusuri berita favorit Anda secara instan menggunakan kata kunci dan filter kategori horizontal (All, Business, Technology, Science, Health).
-4.  **Caching Offline (Room Database)**: Menyimpan berita secara lokal sehingga Anda tetap dapat membaca berita yang telah dimuat sebelumnya tanpa koneksi internet.
-5.  **Clean Architecture & MVVM**: Pemisahan layer kode yang tegas (`data`, `domain`, `presentation`) untuk kemudahan pemeliharaan dan pengujian unit.
+This project was developed to fulfill the assignments for the **Mobile Application Development (PAM)** course at the Informatics Engineering Program, Institut Teknologi Sumatera (ITERA).
 
 ---
 
-## Evaluasi Rubrik Penilaian - Sprint 1
+## Key Features
 
-Berikut adalah tabel pemenuhan kriteria penilaian berdasarkan **Rubrik Penilaian Sprint 1**:
+1. **Premium Neumorphic UI**: A visually stunning interface utilizing Custom Compose Modifiers to create a sense of depth.
+2. **Smart Gemini AI Integration**:
+    * **Glowing Sentiment Indicators**: Automated news sentiment analysis (Positive, Negative, Neutral) represented by dynamic glowing shadows on the Detail page.
+    * **Smart Category Updates**: Contextual text-based classification of news articles into relevant categories.
+3. **Search & Category Filtering**: Instant article search functionality and horizontal category filters (All, Business, Technology, Science, Health).
+4. **Local Data Management (CRUD)**: Create, Read, Update, and Delete custom articles locally using SQLDelight.
+5. **Clean Architecture & MVVM**: Strict separation of code layers (`data`, `domain`, `presentation`) ensuring high maintainability and testability.
 
-| Komponen Penilaian | Bobot | Kriteria Rubrik | Status | Bukti Implementasi / Lokasi File |
+---
+
+## Sprint 1: Foundation and AI Integration
+
+The focus of Sprint 1 was establishing the project foundation, architectural patterns, and integrating the core external APIs.
+
+| Component | Weight | Criteria | Status | Details |
 | :--- | :---: | :--- | :---: | :--- |
-| **Repository Setup** | **20%** | Penamaan branch kelompok sesuai ketentuan, kolaborator ditambahkan. | **LENGKAP (100%)** | Branch upstream menggunakan format resmi: `project/123140034-123140131-Mbgnews`. Kolaborator (`Febvn`, `SinagaPande`) telah aktif berkontribusi. |
-| **Project Structure** | **25%** | Folder Clean Architecture rapi, project dapat di-build dengan sukses. | **LENGKAP (100%)** | Mengikuti Clean Architecture 3-layer di dalam modul `app`: [data/](file:///c:/Users/muham/Music/map/New%20folder/news/app/src/main/java/com/itera/news/data), [domain/](file:///c:/Users/muham/Music/map/New%20folder/news/app/src/main/java/com/itera/news/domain), [presentation/](file:///c:/Users/muham/Music/map/New%20folder/news/app/src/main/java/com/itera/news/presentation). |
-| **CI/CD Pipeline** | **20%** | Integrasi GitHub Actions berjalan dengan baik, status badge ditampilkan di README. | **LENGKAP (100%)** | File konfigurasi workflow [android.yml](file:///c:/Users/muham/Music/map/New%20folder/news/.github/workflows/android.yml) telah ditambahkan dan status badge ditampilkan aktif di bagian atas README. |
-| **Documentation** | **25%** | File README.md lengkap, rencana project (Project Plan) lengkap. | **LENGKAP (100%)** | File README.md ini telah dikustomisasi sepenuhnya untuk News MBG. Dokumen rencana project terperinci tersedia di [PROJECT_PLAN.md](file:///c:/Users/muham/Music/map/New%20folder/news/docs/PROJECT_PLAN.md). |
-| **Team Collaboration** | **10%** | Semua anggota berkontribusi secara seimbang dibuktikan lewat riwayat commit git. | **LENGKAP (100%)** | Kedua anggota kelompok (`Febvn` & `SinagaPande`) memiliki kontribusi commit yang jelas dalam sejarah Git. |
-| **Bonus (Koin DI)** | **+10%** | Setup Dependency Injection menggunakan Koin framework. | **AKTIF (+10%)** | DI Koin dikonfigurasi penuh di folder [di/AppModule.kt](file:///c:/Users/muham/Music/map/New%20folder/news/app/src/main/java/com/itera/news/di/AppModule.kt) dan diinisialisasi pada [NewsApplication.kt](file:///c:/Users/muham/Music/map/New%20folder/news/app/src/main/java/com/itera/news/NewsApplication.kt). |
+| **Repository Setup** | 20% | Standardized group branch naming, active collaborators. | **COMPLETED** | Upstream branch utilizes the official format: `project/123140034-123140131-Mbgnews`. |
+| **Project Structure** | 25% | Clean Architecture implemented, successful builds. | **COMPLETED** | 3-layer architecture implemented across the `composeApp` module (`data`, `domain`, `presentation`). |
+| **CI/CD Pipeline** | 20% | GitHub Actions integration, status badge displayed. | **COMPLETED** | Workflow configuration `android.yml` added; badge active in README. |
+| **Documentation** | 25% | Comprehensive README and Project Plan. | **COMPLETED** | Documentation tailored for News MBG, with detailed plans in `PROJECT_PLAN.md`. |
+| **Team Collaboration** | 10% | Balanced contributions verified via Git history. | **COMPLETED** | Both team members show clear commit histories. |
+| **Bonus (Koin DI)** | +10% | Dependency Injection setup using Koin. | **ACHIEVED** | Koin DI fully configured in `di/AppModule.kt`. |
 
 ---
 
-## Tim Pengembang (Kelompok)
+## Sprint 2: UI Implementation and Data Persistence
 
-| Foto Profil | Nama Lengkap | NIM | Peran Utama |
-| :---: | :--- | :---: | :--- |
-| <img src="https://github.com/Febvn.png" width="80" style="border-radius:50%"/> | **Febrian Valentino Nugroho** | `123140034` | Lead Developer, UI/UX Designer, Integrasi Gemini AI & Koin DI |
-| <img src="https://github.com/SinagaPande.png" width="80" style="border-radius:50%"/> | **Jonathan Pande Sinaga** | `123140153` | Database Engineer, Caching Lokal Room & Implementasi Repository |
+The focus of Sprint 2 shifted towards the presentation layer, complex navigation, state management, and robust local data persistence operations.
+
+| Component | Weight | Criteria | Status | Details |
+| :--- | :---: | :--- | :---: | :--- |
+| **UI Screens** | 25% | Minimum 3 working screens, proper layouts, Material 3. | **COMPLETED** | Implemented `HomeScreen`, `DetailScreen`, `BookmarkScreen` (List), and `AddEditScreen` using Scaffold and Material 3 components. |
+| **Navigation** | 20% | Working navigation, argument passing, back handling. | **COMPLETED** | Type-safe argument passing (`url`) for Detail and Add/Edit routes via `NavGraph`. Fully handles `popBackStack()`. |
+| **Data Layer** | 25% | Repository pattern, local storage, proper architecture. | **COMPLETED** | Implemented `NewsRepository` interfaces and `SQLDelight` queries (`Article.sq`) for robust local caching. |
+| **CRUD Operations** | 20% | Create, Read, Update, Delete functionality working. | **COMPLETED** | Full CRUD capabilities integrated into the `BookmarkScreen` and `AddEditScreen`. |
+| **Code Quality** | 10% | Clean code, proper Feature-based structure, CI passing. | **COMPLETED** | Refactored presentation layer into Feature-Based directory structure (`screens/home/`, `screens/detail/`, etc.). |
+| **Bonus (API Integration)** | +10% | External API integration. | **ACHIEVED** | Continued integration and data fetching from Ktor NewsApi. |
 
 ---
 
-## Struktur Folder Proyek (`app/`)
+## Development Team
 
-Aplikasi dikelompokkan secara logis sesuai arsitektur Clean Architecture:
+| Full Name | Student ID (NIM) | Primary Role |
+| :--- | :---: | :--- |
+| **Febrian Valentino Nugroho** | `123140034` | Lead Developer, UI/UX Designer, Gemini AI & Koin DI Integration |
+| **Jonathan Pande Sinaga** | `123140153` | Database Engineer, Local Caching (SQLDelight) & Repository Implementation |
 
-```
-app/src/main/java/com/itera/news/
+---
+
+## Project Structure (`composeApp/`)
+
+The application is logically grouped adhering to Clean Architecture principles, specifically optimized for Kotlin Multiplatform (KMP) and Feature-Based UI structure:
+
+```text
+composeApp/src/commonMain/kotlin/com/itera/news/
 ├── data/                         # DATA LAYER (Data source, networking, DB)
-│   ├── local/                    # Room Database, DAOs, Entities
-│   │   ├── NewsDatabase.kt
-│   │   └── entity/ArticleEntity.kt
-│   ├── remote/                   # Retrofit REST API & Gemini AI Service
-│   │   ├── NewsApi.kt
-│   │   ├── NewsResponse.kt
-│   │   └── GeminiService.kt
-│   └── repository/               # Implementasi repositori (Offline-first caching)
+│   ├── local/                    # SQLDelight Database generated interfaces
+│   ├── remote/                   # Ktor REST API & Gemini AI Service
+│   │   ├── api/
+│   │   └── dto/
+│   └── repository/               # Repository implementations (Offline-first caching)
 │       └── NewsRepositoryImpl.kt
 │
 ├── domain/                       # DOMAIN LAYER (Business logic, pure Kotlin)
-│   ├── model/                    # Data Model domain (Article)
-│   ├── repository/               # Interface repositori
-│   └── usecase/                  # Use case penanganan logika berita
-│       └── GetMbgNewsUseCase.kt
+│   ├── model/                    # Domain Data Models (Article)
+│   ├── repository/               # Repository Interfaces
+│   └── usecase/                  # Use cases encapsulating business logic
 │
 ├── presentation/                 # PRESENTATION LAYER (UI & State)
-│   ├── navigation/               # Setup routing dan Type-safe Navigation
+│   ├── navigation/               # Routing and Type-safe Navigation setup
 │   │   ├── NavGraph.kt
 │   │   └── Screen.kt
-│   ├── screen/                   # Halaman visual (Splash, Home, Detail, About, Bookmark)
-│   │   ├── HomeScreen.kt
-│   │   ├── DetailScreen.kt
-│   │   └── NewsScreens.kt
-│   └── viewmodel/                # State management menggunakan StateFlow
-│       ├── NewsUiState.kt
-│       └── NewsViewModel.kt
+│   └── screens/                  # FEATURE-BASED UI Screens and ViewModels
+│       ├── home/                 # HomeScreen, HomeViewModel, HomeUiState
+│       ├── detail/               # DetailScreen
+│       ├── add/                  # AddEditScreen, AddEditViewModel, AddEditUiState
+│       ├── bookmark/             # BookmarkScreen, BookmarkViewModel, BookmarkUiState
+│       └── shared/               # Shared UI Components
 │
-├── di/                           # DEPENDENCY INJECTION LAYER
-│   └── AppModule.kt              # Modul Koin (database, network, repository, viewmodel)
+├── core/                         # CORE PLATFORM LOGIC
+│   ├── di/                       # Dependency Injection Layer (AppModule.kt)
+│   ├── network/                  # HttpClient configuration
+│   └── util/                     # Platform-specific database drivers
 │
 ├── ui/                           # UI THEMING LAYER
 │   └── theme/                    # Material3 Theme & Custom Neumorphic shadow modifiers
-│       ├── Theme.kt
-│       ├── Color.kt
-│       └── NeumorphicModifier.kt
 │
-├── MainActivity.kt               # Entrypoint Utama Aplikasi Android
-└── NewsApplication.kt            # Inisialisasi awal (Koin DI container setup)
+└── App.kt                        # Primary Composable Entrypoint
 ```
 
 ---
 
-## Cara Menjalankan Aplikasi
+## Installation and Setup
 
-1.  **Kloning Repositori**:
-    ```bash
-    git clone https://github.com/Febvn/Proyek-Pengembangan-Aplikasi-Mobile.git
-    cd Proyek-Pengembangan-Aplikasi-Mobile
-    ```
-2.  **Buat Berkas local.properties**:
-    Salin template local.properties.example menjadi local.properties di folder root project:
-    ```bash
-    cp local.properties.example local.properties
-    ```
-3.  **Isi API Key Gemini**:
-    Buka local.properties dan isi API Key Gemini Anda:
-    ```properties
-    GEMINI_API_KEY=AIzaSy... (API Key Anda)
-    ```
-    *Catatan: Anda dapat memperoleh API Key gratis di Google AI Studio.*
-4.  **Buka di Android Studio**:
-    *   Gunakan versi Android Studio Ladybug (2024.2.1) atau lebih baru.
-    *   Lakukan Sync Project with Gradle Files dan biarkan dependencies terunduh otomatis.
-5.  **Jalankan di Device/Emulator**:
-    *   Pilih run configuration app.
-    *   Klik tombol Run (ikon putar hijau) untuk mengompilasi dan memasang aplikasi ke emulator/device aktif Anda.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Febvn/Proyek-Pengembangan-Aplikasi-Mobile.git
+   cd Proyek-Pengembangan-Aplikasi-Mobile
+   ```
 
----
+2. **Create local.properties**:
+   Duplicate the `local.properties.example` template to `local.properties` in the root directory:
+   ```bash
+   cp local.properties.example local.properties
+   ```
 
-## Dokumen Terkait
+3. **Configure Gemini API Key**:
+   Open `local.properties` and insert your Gemini API Key:
+   ```properties
+   GEMINI_API_KEY=AIzaSy...
+   ```
+   *Note: Free API Keys can be acquired from Google AI Studio.*
 
-*   [Panduan Lengkap Cara Menjalankan](./docs/CARA_MENJALANKAN.md)
-*   [Rencana Project & Sprints](./docs/PROJECT_PLAN.md)
-*   [Penjelasan Arsitektur & Kode](./docs/STRUKTUR_KODE.md)
-*   [Git Branching & Workflows](./docs/GIT_WORKFLOW.md)
-*   [Pemecahan Masalah (Troubleshooting)](./docs/TROUBLESHOOTING.md)
+4. **Open in Android Studio**:
+   * Ensure you are using Android Studio Ladybug (2024.2.1) or newer.
+   * Allow the project to complete the Gradle Sync process.
+
+5. **Build and Run**:
+   * Select the `app` or `composeApp` run configuration.
+   * Execute the application on an active emulator or physical device.
 
 ---
 
-## Dosen Pengampu
-*   Pak Habib (GitHub: mh4Scripts)
+## Related Documentation
 
-**Program Studi Teknik Informatika**  
+* [Comprehensive Run Guide](./docs/CARA_MENJALANKAN.md)
+* [Project Plan & Sprints](./docs/PROJECT_PLAN.md)
+* [Architecture & Code Explanation](./docs/STRUKTUR_KODE.md)
+* [Git Branching & Workflows](./docs/GIT_WORKFLOW.md)
+* [Troubleshooting Guide](./docs/TROUBLESHOOTING.md)
+
+---
+
+## Instructor
+* Bapak Habib (GitHub: mh4Scripts)
+
+**Informatics Engineering Program**
 Institut Teknologi Sumatera (ITERA)

@@ -22,10 +22,10 @@ Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
 ### 📦 Minimum Requirements
 - [x] **Setup & Configuration** — Repository setup, Clean Architecture structure, Koin DI integration, and GitHub Actions CI pipeline.
 - [ ] **Search Film & Series** — Pencarian film dan series secara real-time terintegrasi dengan TMDB API.
-- [ ] **Koleksi Pribadi (CRUD)** — Manajemen koleksi lokal untuk menyimpan tontonan dengan status *Want to Watch, Watching, Finished, Dropped*.
+- [x] **Koleksi Pribadi (CRUD)** — Manajemen koleksi lokal untuk menyimpan tontonan dengan status *Want to Watch, Watching, Finished, Dropped*.
 - [ ] **Rating & Review** — Pengguna dapat memberikan rating dan menyimpan catatan kesan singkat secara offline.
 - [ ] **State Management** — Implementasi UI State menggunakan `Sealed Interface` dan `StateFlow` untuk pembaruan data secara reaktif.
-- [ ] **Multi-screen Navigation** — Navigasi type-safe antar halaman (Home, Detail, Add/Edit) menggunakan argumen passing.
+- [x] **Multi-screen Navigation** — Navigasi type-safe antar halaman (Home, Detail, Add/Edit) menggunakan argumen passing.
 
 ### 🎁 Bonus Features
 - [ ] **AI Integration (+10%)** — Integrasi Google Gemini API sebagai asisten pintar untuk membantu menulis review dan memberikan rekomendasi film.
@@ -43,17 +43,56 @@ Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
 * **Testing:** kotlin.test, MockK, Turbine
 
 ## 📐 Architecture Overview
-Aplikasi ini menerapkan **Clean Architecture** dengan pemisahan komponen yang jelas guna memastikan kode dapat diuji (*testable*) dan dipelihara (*maintainable*):
-1. **Presentation Layer:** Berisi UI (Composables Component), `ViewModel`, dan `UiState` (menggunakan *Sealed Interface*). Layer ini mengamati data dari *Domain Layer* secara reaktif menggunakan `StateFlow`.
-2. **Domain Layer:** Inti bisnis aplikasi yang berisi *Domain Models*, *Repository Interfaces*, dan *Use Cases*. Layer ini murni Kotlin dan tidak bergantung pada *library* platform atau *Data Layer* (*Dependency Inversion Rule*).
-3. **Data Layer:** Implementasi dari *Repository Interfaces*, manajemen *Data Sources* lokal (SQLDelight & DataStore), serta *Data Transfer Objects* (DTOs).
+
+Aplikasi ini menerapkan **Clean Architecture** dengan pemisahan komponen yang jelas:
+
+```mermaid
+graph TD
+    subgraph Presentation["Presentation Layer"]
+        UI[Composables / Screen]
+        VM[ViewModel]
+        US[UiState - Sealed Interface]
+    end
+
+    subgraph Domain["Domain Layer (Pure Kotlin)"]
+        UC[Use Cases]
+        RI[Repository Interface]
+        DM[Domain Models]
+    end
+
+    subgraph Data["Data Layer"]
+        RI2[Repository Impl]
+        subgraph Local["Local"]
+            SQL[SQLDelight]
+            DS[DataStore]
+        end
+        subgraph Remote["Remote"]
+            TMDB[TMDB API - Ktor]
+            GEMINI[Gemini API]
+        end
+    end
+
+    UI -->|observes| US
+    US -->|driven by| VM
+    VM -->|calls| UC
+    UC -->|uses| RI
+    UC -->|returns| DM
+    RI -->|implemented by| RI2
+    RI2 --> SQL
+    RI2 --> DS
+    RI2 --> TMDB
+    RI2 --> GEMINI
+```
+## 🎬 Demo Video
+
+https://github.com/user-attachments/assets/f2e51409-5ccb-4ddc-a641-064c27d1e5c3
 
 ## 🚀 Setup & Installation
 1. **Clone Repository:**
    ```bash
    git clone [https://github.com/choirunnisasy/Proyek-Pengembangan-Aplikasi-Mobile.git](https://github.com/choirunnisasy/Proyek-Pengembangan-Aplikasi-Mobile.git)
    ### Open Project:
-2. * Buka **Android Studio** (versi terbaru direkomendasikan).
+2. Buka **Android Studio** (versi terbaru direkomendasikan).
 * Pilih **Open** dan arahkan ke folder hasil clone aplikasi.
 * Tunggu hingga proses *Gradle Synchronization* selesai.
 
@@ -61,7 +100,7 @@ Aplikasi ini menerapkan **Clean Architecture** dengan pemisahan komponen yang je
 * Pilih konfigurasi run target (`composeApp` untuk Android Emulator/Device atau Desktop).
 * Klik tombol **Run** (ikon segitiga hijau).
 
-> *Proyek ini masih dalam tahap awal pengembangan (Sprint 1).*
+> *Proyek ini masih dalam tahap awal pengembangan (Sprint 2).*
 
 ## 👨‍🏫 Dosen Pengampu
 ### Muhammad Habib Algifari, S.Kom., M.TI.

@@ -9,14 +9,6 @@ import androidx.compose.ui.graphics.Color
 
 // ==================== REWIND CINEMA PALETTE ====================
 
-// Core Brand Colors
-private val GoldAmber        = Color(0xFFE8A838) // Primary gold
-private val TheaterRed       = Color(0xFFC0392B) // Secondary red
-private val VelvetRed        = Color(0xFF8B1A1A) // Deep red accent
-private val BackgroundDark   = Color(0xFF1A0A0A) // Near-black warm dark
-private val SurfaceDark      = Color(0xFF2C0D0D) // Dark red-tinted surface
-private val TextWarm         = Color(0xFFFAD7A0) // Warm cream text
-
 // Derived Colors — Light Mode
 private val GoldAmberLight   = Color(0xFFF5C46A) // Lighter gold for containers
 private val CreamWarm        = Color(0xFFFFF8EE) // Off-white warm background

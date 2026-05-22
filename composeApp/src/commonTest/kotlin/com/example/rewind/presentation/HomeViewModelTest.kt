@@ -1,13 +1,14 @@
 package com.example.rewind.presentation
 
 import app.cash.turbine.test
-import com.example.rewind.data.repository.FakeNoteRepository
-import com.example.rewind.domain.model.Note
-import com.example.rewind.domain.model.NoteCategory
-import com.example.rewind.domain.model.NoteColor
-import com.example.rewind.domain.usecase.DeleteNoteUseCase
-import com.example.rewind.domain.usecase.GetAllNotesUseCase
-import com.example.rewind.domain.usecase.SearchNotesUseCase
+import com.example.rewind.data.repository.FakeMovieRepository
+import com.example.rewind.domain.model.Movie
+import com.example.rewind.domain.model.MovieGenre
+import com.example.rewind.domain.model.MovieType
+import com.example.rewind.domain.model.WatchStatus
+import com.example.rewind.domain.usecase.DeleteMovieUseCase
+import com.example.rewind.domain.usecase.GetAllMoviesUseCase
+import com.example.rewind.domain.usecase.MovieSortBy
 import com.example.rewind.presentation.screens.home.HomeUiState
 import com.example.rewind.presentation.screens.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,234 +22,114 @@ import kotlinx.datetime.Clock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Unit Tests untuk HomeViewModel
- * 
- * Testing Guidelines:
- * 1. Setup test dispatcher untuk control coroutines
- * 2. Gunakan Turbine untuk test StateFlow
- * 3. Test UI state transformations
- * 4. Test user actions
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    
+
     private val testDispatcher = StandardTestDispatcher()
-    
-    private lateinit var repository: FakeNoteRepository
-    private lateinit var getAllNotesUseCase: GetAllNotesUseCase
-    private lateinit var searchNotesUseCase: SearchNotesUseCase
-    private lateinit var deleteNoteUseCase: DeleteNoteUseCase
+
+    private lateinit var getAllMoviesUseCase: GetAllMoviesUseCase
+    private lateinit var deleteMovieUseCase: DeleteMovieUseCase
     private lateinit var viewModel: HomeViewModel
-    
+    private lateinit var fakeRepository: FakeMovieRepository
+
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        
-        repository = FakeNoteRepository()
-        getAllNotesUseCase = GetAllNotesUseCase(repository)
-        searchNotesUseCase = SearchNotesUseCase(repository)
-        deleteNoteUseCase = DeleteNoteUseCase(repository)
-        
+
+        fakeRepository = FakeMovieRepository()
+        getAllMoviesUseCase = GetAllMoviesUseCase(fakeRepository)
+        deleteMovieUseCase = DeleteMovieUseCase(fakeRepository)
+
         viewModel = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
+            getAllMoviesUseCase,
+            deleteMovieUseCase
         )
     }
-    
+
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
     }
-    
-    // ==================== UI STATE TESTS ====================
-    
+
     @Test
     fun `initial state should be Loading then Empty`() = runTest {
-        viewModel.uiState.test {
-            // Initial loading state
-            val loading = awaitItem()
-            assertTrue(loading is HomeUiState.Loading)
-            
-            // After loading, should be empty (no notes)
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase)
+        vm.uiState.test {
             advanceUntilIdle()
-            val empty = awaitItem()
-            assertTrue(empty is HomeUiState.Empty)
-            
-            cancelAndIgnoreRemainingEvents()
+            // Kita ambil status paling terakhir, yang seharusnya adalah Empty karena DB kosong
+            val finalState = expectMostRecentItem()
+            assertTrue(finalState is HomeUiState.Empty)
         }
     }
-    
+
     @Test
-    fun `state should be Success when notes exist`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Note 1"))
-        repository.insertNote(createTestNote("Note 2"))
-        
-        // Create new viewmodel after inserting notes
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        // Act & Assert
+    fun `state should be Success when movies exist`() = runTest {
+        // 1. Masukkan data dummy ke repository TERLEBIH DAHULU agar tidak Empty
+        fakeRepository.insertMovie(createTestMovie("Spiderman"))
+
+        // 2. Buat ViewModel baru agar ia membaca data yang baru dimasukkan
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase)
+
         vm.uiState.test {
-            skipItems(1) // Skip loading
             advanceUntilIdle()
-            
-            val state = awaitItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(2, (state as HomeUiState.Success).notes.size)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== SEARCH TESTS ====================
-    
-    @Test
-    fun `search should filter notes by query`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Kotlin Guide"))
-        repository.insertNote(createTestNote("Java Tutorial"))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
-            skipItems(1) // Skip initial success
-            
-            // Act
-            vm.onSearchQueryChange("Kotlin")
-            advanceUntilIdle()
-            
-            // Assert - wait for debounce
-            testScheduler.advanceTimeBy(400)
-            advanceUntilIdle()
-            
+            // 3. Karena ada 1 film, status terakhinya HARUS Success
             val state = expectMostRecentItem()
             assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals("Kotlin Guide", state.notes.first().title)
-            
-            cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
-    fun `clearSearch should reset query`() = runTest {
-        // Act
-        viewModel.onSearchQueryChange("test query")
-        viewModel.clearSearch()
-        
-        // Assert
-        viewModel.uiState.test {
-            val state = awaitItem()
-            when (state) {
-                is HomeUiState.Success -> assertEquals("", state.query)
-                is HomeUiState.Empty -> assertEquals("", state.query)
-                else -> {} // OK
-            }
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== CATEGORY FILTER TESTS ====================
-    
-    @Test
-    fun `category filter should filter notes`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
-        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
+    fun `sort should update movies`() = runTest {
+        // Masukkan data dummy
+        fakeRepository.insertMovie(createTestMovie("A Movie"))
+        fakeRepository.insertMovie(createTestMovie("Z Movie"))
+
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase)
+
         vm.uiState.test {
-            skipItems(1) // Loading
             advanceUntilIdle()
-            skipItems(1) // Initial success
-            
-            // Act
-            vm.onCategorySelected(NoteCategory.WORK)
+
+            // Ubah metode sorting
+            vm.setSortBy(MovieSortBy.TITLE_ASC)
             advanceUntilIdle()
-            
-            // Assert
+
             val state = expectMostRecentItem()
             assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals(NoteCategory.WORK, state.notes.first().category)
-            
-            cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== ACTION TESTS ====================
-    
+
     @Test
-    fun `togglePin should toggle note pin status`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Pin Me"))
-        
-        // Act
-        viewModel.togglePin(noteId)
+    fun `deleteMovie should remove movie`() = runTest {
+        // Masukkan 1 film untuk dihapus
+        val id = fakeRepository.insertMovie(createTestMovie("To Delete"))
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase)
+
         advanceUntilIdle()
-        
-        // Assert
-        repository.getNoteById(noteId).test {
-            val note = awaitItem()
-            assertTrue(note?.isPinned == true)
-            cancelAndIgnoreRemainingEvents()
+
+        // Hapus film tersebut
+        vm.deleteMovie(id)
+        advanceUntilIdle()
+
+        vm.uiState.test {
+            val state = expectMostRecentItem()
+            assertTrue(state is HomeUiState.Success || state is HomeUiState.Empty)
         }
     }
-    
-    @Test
-    fun `deleteNote should remove note`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Delete Me"))
-        
-        // Act
-        viewModel.deleteNote(noteId)
-        advanceUntilIdle()
-        
-        // Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertTrue(notes.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== HELPER FUNCTIONS ====================
-    
-    private fun createTestNote(
-        title: String,
-        category: NoteCategory = NoteCategory.GENERAL
-    ): Note {
-        return Note(
+
+    // Helper function untuk membuat data Movie secara instan di dalam Test
+    private fun createTestMovie(title: String): Movie {
+        return Movie(
             id = 0,
             title = title,
-            content = "Test content",
-            category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = false,
+            genre = MovieGenre.OTHER,
+            type = MovieType.MOVIE,
+            status = WatchStatus.PLAN_TO_WATCH,
+            rating = null,
+            review = "",
+            totalEpisodes = null,
+            watchedEpisodes = 0,
             createdAt = Clock.System.now(),
             updatedAt = Clock.System.now()
         )

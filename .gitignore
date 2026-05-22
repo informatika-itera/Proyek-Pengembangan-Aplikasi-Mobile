@@ -46,3 +46,8 @@ caches/
 daemon/
 kotlin-profile/
 native/
+
+# Node.js
+node_modules/
+package.json
+package-lock.json

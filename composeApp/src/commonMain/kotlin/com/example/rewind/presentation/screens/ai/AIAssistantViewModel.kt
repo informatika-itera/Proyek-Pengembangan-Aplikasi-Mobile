@@ -22,37 +22,37 @@ class AIAssistantViewModel(
     private val improveWritingUseCase: ImproveWritingUseCase,
     private val generateIdeasUseCase: GenerateIdeasUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(AIAssistantUiState())
     val uiState: StateFlow<AIAssistantUiState> = _uiState.asStateFlow()
-    
+
     private val _events = MutableSharedFlow<AIAssistantEvent>()
     val events: SharedFlow<AIAssistantEvent> = _events.asSharedFlow()
-    
+
     fun setInitialText(text: String?) {
         text?.let {
             _uiState.update { state -> state.copy(inputText = it) }
         }
     }
-    
+
     fun onInputTextChange(text: String) {
         _uiState.update { it.copy(inputText = text, error = null) }
     }
-    
+
     fun onActionSelected(action: AIAction) {
         _uiState.update { it.copy(selectedAction = action) }
     }
-    
+
     fun executeAction() {
         val state = _uiState.value
-        
+
         if (state.inputText.isBlank()) {
-            _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
+            _uiState.update { it.copy(error = "Please enter some text first") }
             return
         }
-        
+
         _uiState.update { it.copy(isLoading = true, error = null, result = null) }
-        
+
         viewModelScope.launch {
             val result = when (state.selectedAction) {
                 AIAction.SUMMARIZE -> summarize(state.inputText)
@@ -62,17 +62,17 @@ class AIAssistantViewModel(
                 AIAction.SUGGEST_TITLE -> suggestTitle(state.inputText)
                 AIAction.CHAT -> chat(state.inputText)
             }
-            
+
             result
                 .onSuccess { output ->
                     _uiState.update { it.copy(isLoading = false, result = output) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
+                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Something went wrong") }
                 }
         }
     }
-    
+
     fun copyResult() {
         val result = _uiState.value.result
         if (result != null) {
@@ -81,7 +81,7 @@ class AIAssistantViewModel(
             }
         }
     }
-    
+
     fun applyToNote() {
         val result = _uiState.value.result
         if (result != null) {
@@ -90,56 +90,54 @@ class AIAssistantViewModel(
             }
         }
     }
-    
+
     fun onWritingStyleChange(style: WritingStyle) {
         _uiState.update { it.copy(writingStyle = style) }
     }
-    
+
     fun onTargetLanguageChange(language: String) {
         _uiState.update { it.copy(targetLanguage = language) }
     }
-    
-    // ==================== AI OPERATIONS ====================
-    
+
     private suspend fun summarize(text: String): Result<String> {
         return summarizeUseCase(text)
     }
-    
+
     private suspend fun generateIdeas(topic: String): Result<String> {
         return generateIdeasUseCase(topic).map { ideas ->
             ideas.mapIndexed { index, idea -> "${index + 1}. $idea" }.joinToString("\n")
         }
     }
-    
+
     private suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
         return improveWritingUseCase(text, style)
     }
-    
+
     private suspend fun translate(text: String, targetLanguage: String): Result<String> {
         return aiRepository.translate(text, targetLanguage)
     }
-    
+
     private suspend fun suggestTitle(content: String): Result<String> {
         return aiRepository.suggestTitle(content)
     }
-    
+
     private suspend fun chat(message: String): Result<String> {
         return aiRepository.chat(message)
     }
 }
 
 enum class AIAction(val displayName: String, val description: String) {
-    SUMMARIZE("Ringkas", "Buat ringkasan dari teks"),
-    GENERATE_IDEAS("Ide", "Generate ide berdasarkan topik"),
-    IMPROVE_WRITING("Perbaiki", "Perbaiki tulisan"),
-    TRANSLATE("Terjemah", "Terjemahkan ke bahasa lain"),
-    SUGGEST_TITLE("Judul", "Sarankan judul"),
-    CHAT("Tanya", "Tanya AI tentang apapun")
+    SUMMARIZE("Summarize", "Generate a concise summary from your text"),
+    GENERATE_IDEAS("Ideas", "Brainstorm ideas based on a topic"),
+    IMPROVE_WRITING("Improve", "Polish and enhance your writing"),
+    TRANSLATE("Translate", "Translate text to another language"),
+    SUGGEST_TITLE("Title", "Suggest a fitting title for your content"),
+    CHAT("Ask AI", "Ask the Echo anything about movies or series")
 }
 
 data class AIAssistantUiState(
     val inputText: String = "",
-    val selectedAction: AIAction = AIAction.SUMMARIZE,
+    val selectedAction: AIAction = AIAction.CHAT,
     val writingStyle: WritingStyle = WritingStyle.NEUTRAL,
     val targetLanguage: String = "English",
     val isLoading: Boolean = false,

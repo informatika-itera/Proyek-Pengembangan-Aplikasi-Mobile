@@ -34,6 +34,8 @@ jobs:
         run: |
           # Buat folder sementara agar Gradle sistem tidak mencoba membaca build.gradle proyek
           mkdir temp_wrapper
+          # Buat settings file agar Gradle tidak menaiki ke folder proyek utama
+          echo 'rootProject.name = "temp_wrapper"' > temp_wrapper/settings.gradle.kts
           cd temp_wrapper
           gradle wrapper --gradle-version 8.7
           cd ..

@@ -2,9 +2,9 @@ package com.example.noteai.presentation
 
 import app.cash.turbine.test
 import com.example.noteai.data.repository.FakeNoteRepository
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.NoteColor
 import com.example.noteai.domain.repository.NoteRepository
 import com.example.noteai.domain.usecase.DeleteNoteUseCase
 import com.example.noteai.domain.usecase.GetAllNotesUseCase

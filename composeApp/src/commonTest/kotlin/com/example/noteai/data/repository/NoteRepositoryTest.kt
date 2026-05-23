@@ -1,9 +1,9 @@
 package com.example.noteai.data.repository
 
 import app.cash.turbine.test
-import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
-import com.example.noteai.domain.model.NoteColor
+import com.example.foodsaver.domain.model.Note
+import com.example.foodsaver.domain.model.NoteCategory
+import com.example.foodsaver.domain.model.NoteColor
 import com.example.noteai.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

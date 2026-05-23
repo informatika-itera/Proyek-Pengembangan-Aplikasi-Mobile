@@ -18,7 +18,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = KelazZzDatabase.Schema,
             context = context,
-            name = "kelazzz.db"
+            name = "kelazzz_v2.db"
         )
     }
 }

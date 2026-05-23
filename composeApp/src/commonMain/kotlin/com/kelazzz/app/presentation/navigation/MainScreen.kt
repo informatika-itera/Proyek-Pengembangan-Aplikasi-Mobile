@@ -55,7 +55,9 @@ import androidx.navigation.compose.rememberNavController
 import com.kelazzz.app.presentation.screens.ai.AIScreen
 import com.kelazzz.app.presentation.screens.home.HomeScreen
 import com.kelazzz.app.presentation.screens.home.HomeViewModel
-import com.kelazzz.app.presentation.screens.jadwal.JadwalScreen
+import com.kelazzz.app.presentation.screens.jadwal.JadwalListScreen
+import com.kelazzz.app.presentation.screens.jadwal.detail.JadwalDetailScreen
+import com.kelazzz.app.presentation.screens.jadwal.addedit.JadwalAddEditScreen
 import com.kelazzz.app.presentation.screens.kalender.KalenderScreen
 import com.kelazzz.app.presentation.screens.presensi.PresensiScreen
 import com.kelazzz.app.presentation.screens.profile.ProfileScreen
@@ -64,6 +66,7 @@ import kelazzz.composeapp.generated.resources.Res
 import kelazzz.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.navigation.toRoute
 
 // ==================== BOTTOM NAV ITEMS ====================
 
@@ -127,6 +130,11 @@ fun MainScreen(
     // Determine current tab title
     val currentTitle = when {
         isOnProfileScreen -> "Profil"
+        currentDestination?.hasRoute(Route.JadwalDetail::class) == true -> "Detail Jadwal"
+        currentDestination?.hasRoute(Route.JadwalAddEdit::class) == true -> {
+            val route = navBackStackEntry?.toRoute<Route.JadwalAddEdit>()
+            if (route?.id != null) "Edit Jadwal" else "Tambah Jadwal"
+        }
         else -> bottomNavItems.find { item ->
             currentDestination?.hasRoute(item.route::class) == true
         }?.label ?: "KelazZz"
@@ -136,8 +144,11 @@ fun MainScreen(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    if (isOnProfileScreen) {
-                        // Tombol back saat di Profile screen
+                    val showBackButton = isOnProfileScreen || 
+                            currentDestination?.hasRoute(Route.JadwalDetail::class) == true || 
+                            currentDestination?.hasRoute(Route.JadwalAddEdit::class) == true
+                    if (showBackButton) {
+                        // Tombol back saat di Profile / Detail / AddEdit screen
                         IconButton(onClick = { innerNavController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -195,9 +206,12 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            // Sembunyikan bottom bar saat di Profile screen
+            // Sembunyikan bottom bar saat di Profile screen atau sub-screen Jadwal
+            val isBottomBarVisible = !isOnProfileScreen && 
+                    currentDestination?.hasRoute(Route.JadwalDetail::class) != true && 
+                    currentDestination?.hasRoute(Route.JadwalAddEdit::class) != true
             AnimatedVisibility(
-                visible = !isOnProfileScreen,
+                visible = isBottomBarVisible,
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it })
             ) {
@@ -264,7 +278,31 @@ fun MainScreen(
                 AIScreen()
             }
             composable<Route.Kalender> {
-                JadwalScreen()
+                JadwalListScreen(
+                    onNavigateToDetail = { id ->
+                        innerNavController.navigate(Route.JadwalDetail(id))
+                    },
+                    onNavigateToAdd = {
+                        innerNavController.navigate(Route.JadwalAddEdit())
+                    }
+                )
+            }
+            composable<Route.JadwalDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.JadwalDetail>()
+                JadwalDetailScreen(
+                    id = route.id,
+                    onNavigateBack = { innerNavController.popBackStack() },
+                    onNavigateToEdit = { id ->
+                        innerNavController.navigate(Route.JadwalAddEdit(id))
+                    }
+                )
+            }
+            composable<Route.JadwalAddEdit> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.JadwalAddEdit>()
+                JadwalAddEditScreen(
+                    id = route.id,
+                    onNavigateBack = { innerNavController.popBackStack() }
+                )
             }
             composable<Route.Profile> {
                 ProfileScreen(

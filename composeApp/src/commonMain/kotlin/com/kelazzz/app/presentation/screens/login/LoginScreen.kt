@@ -59,6 +59,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.Image
+import kelazzz.composeapp.generated.resources.Res
+import kelazzz.composeapp.generated.resources.logo
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -101,31 +105,15 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(80.dp))
 
-            // ==================== LOGO & BRANDING ====================
-            Box(
+            Image(
+                painter = painterResource(Res.drawable.logo),
+                contentDescription = "Logo KelazZz",
                 modifier = Modifier
-                    .size(88.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.School,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "KelazZz",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                letterSpacing = 1.sp
+                    .size(180.dp)
+                    .clip(RoundedCornerShape(18.dp))
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Presensi Mahasiswa ITERA",

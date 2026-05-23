@@ -32,6 +32,12 @@ sealed interface Route {
     data object Kalender : Route
     
     @Serializable
+    data class JadwalDetail(val id: Long) : Route
+
+    @Serializable
+    data class JadwalAddEdit(val id: Long? = null) : Route
+    
+    @Serializable
     data object AIAsisten : Route
     
     @Serializable

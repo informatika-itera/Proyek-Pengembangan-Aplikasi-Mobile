@@ -11,6 +11,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
 import kotlinx.io.IOException
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -28,6 +29,47 @@ data class PocketMeta(
     val message: String,
     val status: Boolean,
     val code: Int
+)
+
+@Serializable
+data class KelasResponse(
+    val meta: PocketMeta,
+    val data: List<KelasData> = emptyList()
+)
+
+@Serializable
+data class TokenResponse(
+    val meta: PocketMeta
+)
+
+@Serializable
+data class KelasData(
+    @SerialName("nomor_mk") val nomorMk: String,
+    @SerialName("kode_mk") val kodeMk: String,
+    @SerialName("kode_kelas") val kodeKelas: String,
+    @SerialName("nama_kelas") val namaKelas: String,
+    val mode: String? = null,
+    @SerialName("nama_mk") val namaMk: String,
+    @SerialName("sks_mk") val sksMk: String,
+    @SerialName("nama_dosen_list") val namaDosenList: String,
+    @SerialName("jadwal_hari") val jadwalHari: String
+)
+
+@Serializable
+data class PresensiResponse(
+    val meta: PocketMeta,
+    val data: List<PresensiData> = emptyList()
+)
+
+@Serializable
+data class PresensiData(
+    @SerialName("no_pertemuan") val noPertemuan: Int,
+    @SerialName("pertemuan") val pertemuan: String? = null,
+    @SerialName("waktu_mulai") val waktuMulai: String? = null,
+    @SerialName("mhs_masuk") val mhsMasuk: String? = null,
+    @SerialName("mhs_tdkmasuk") val mhsTdkMasuk: String? = null,
+    @SerialName("mhs_jumlah") val mhsJumlah: String? = null,
+    @SerialName("absen_mahasiswa") val absenMahasiswa: String? = null
 )
 
 @Serializable
@@ -164,6 +206,148 @@ class PocketApiService(private val client: HttpClient) {
             Result.failure(
                 LoginException("Terjadi kesalahan: ${e.message ?: "Kesalahan tidak diketahui"}")
             )
+        }
+    }
+
+    /**
+     * Mengambil daftar kelas/mata kuliah aktif mahasiswa
+     *
+     * @param token Token auth dari Pocket
+     * @param deviceId Device ID untuk X-Device-Id header
+     * @param nim NIM mahasiswa
+     */
+    suspend fun getKelas(
+        token: String,
+        deviceId: String,
+        nim: String
+    ): Result<KelasResponse> {
+        return try {
+            val response = client.submitForm(
+                url = "$BASE_URL/mahasiswa/kelas",
+                formParameters = Parameters.build {
+                    append("nim", nim)
+                }
+            ) {
+                header("User-Agent", USER_AGENT)
+                header("Accept", "*/*")
+                header("Authorization", token)
+                header("X-Device-Id", deviceId)
+            }
+            Result.success(response.body<KelasResponse>())
+        } catch (e: HttpRequestTimeoutException) {
+            Result.failure(Exception("Koneksi timeout saat mengambil daftar kelas."))
+        } catch (e: ClientRequestException) {
+            val errorMessage = try {
+                val errorBody = e.response.body<KelasResponse>()
+                errorBody.meta.message
+            } catch (_: Exception) {
+                "Gagal mengambil kelas. Token tidak valid atau sesi kedaluwarsa."
+            }
+            Result.failure(Exception(errorMessage))
+        } catch (e: ServerResponseException) {
+            Result.failure(Exception("Server ITERA sedang gangguan (${e.response.status.value})."))
+        } catch (e: SerializationException) {
+            Result.failure(Exception("Server mengembalikan format kelas yang tidak valid."))
+        } catch (e: IOException) {
+            Result.failure(Exception("Tidak ada koneksi internet untuk memperbarui daftar kelas."))
+        } catch (e: Exception) {
+            Result.failure(Exception("Terjadi kesalahan: ${e.message ?: "Kesalahan tidak diketahui"}"))
+        }
+    }
+
+    /**
+     * Melakukan registrasi token untuk mengaktifkan sesi (sebelum memanggil getKelas/presensi)
+     *
+     * @param token Token auth dari Pocket
+     * @param deviceId Device ID untuk X-Device-Id header dan parameter device
+     * @param email Email mahasiswa
+     */
+    suspend fun registerToken(
+        token: String,
+        deviceId: String,
+        email: String
+    ): Result<TokenResponse> {
+        return try {
+            val response = client.submitForm(
+                url = "$BASE_URL/auth/token",
+                formParameters = Parameters.build {
+                    append("device", deviceId)
+                    append("email", email)
+                }
+            ) {
+                header("User-Agent", USER_AGENT)
+                header("Accept", "*/*")
+                header("Authorization", token)
+                header("X-Device-Id", deviceId)
+            }
+            Result.success(response.body<TokenResponse>())
+        } catch (e: HttpRequestTimeoutException) {
+            Result.failure(Exception("Koneksi timeout saat registrasi token."))
+        } catch (e: ClientRequestException) {
+            val errorMessage = try {
+                val errorBody = e.response.body<TokenResponse>()
+                errorBody.meta.message
+            } catch (_: Exception) {
+                "Gagal otorisasi token. Sesi tidak valid."
+            }
+            Result.failure(Exception(errorMessage))
+        } catch (e: ServerResponseException) {
+            Result.failure(Exception("Server ITERA sedang gangguan saat otorisasi (${e.response.status.value})."))
+        } catch (e: SerializationException) {
+            Result.failure(Exception("Server mengembalikan format otorisasi yang tidak valid."))
+        } catch (e: IOException) {
+            Result.failure(Exception("Tidak ada koneksi internet untuk otorisasi."))
+        } catch (e: Exception) {
+            Result.failure(Exception("Terjadi kesalahan otorisasi: ${e.message ?: "Kesalahan tidak diketahui"}"))
+        }
+    }
+
+    /**
+     * Mengambil riwayat detail kehadiran pertemuan per mata kuliah
+     *
+     * @param token Token auth dari Pocket
+     * @param deviceId Device ID
+     * @param nim NIM mahasiswa
+     * @param kelasKode Kode kelas (kode_kelas dari data kelas)
+     */
+    suspend fun getPresensiDetail(
+        token: String,
+        deviceId: String,
+        nim: String,
+        kelasKode: String
+    ): Result<PresensiResponse> {
+        return try {
+            val response = client.submitForm(
+                url = "$BASE_URL/presensi/data_mahasiswa",
+                formParameters = Parameters.build {
+                    append("nim", nim)
+                    append("kelas", kelasKode)
+                }
+            ) {
+                header("User-Agent", USER_AGENT)
+                header("Accept", "*/*")
+                header("Authorization", token)
+                header("X-Device-Id", deviceId)
+            }
+            Result.success(response.body<PresensiResponse>())
+        } catch (e: HttpRequestTimeoutException) {
+            Result.failure(Exception("Koneksi timeout saat mengambil detail presensi."))
+        } catch (e: ClientRequestException) {
+            val errorMessage = try {
+                val errorBody = e.response.body<PresensiResponse>()
+                errorBody.meta.message
+            } catch (_: Exception) {
+                "Gagal mengambil detail presensi. Sesi tidak valid."
+            }
+            Result.failure(Exception(errorMessage))
+        } catch (e: ServerResponseException) {
+            Result.failure(Exception("Server ITERA sedang gangguan saat mengambil presensi (${e.response.status.value})."))
+        } catch (e: SerializationException) {
+            Result.failure(Exception("Server mengembalikan format presensi yang tidak valid."))
+        } catch (e: IOException) {
+            Result.failure(Exception("Tidak ada koneksi internet untuk memperbarui detail presensi."))
+        } catch (e: Exception) {
+            Result.failure(Exception("Terjadi kesalahan: ${e.message ?: "Kesalahan tidak diketahui"}"))
         }
     }
 }

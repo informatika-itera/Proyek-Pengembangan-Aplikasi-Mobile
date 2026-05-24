@@ -14,7 +14,9 @@ import com.example.gamenews.domain.repository.AIRepository
 import com.example.gamenews.domain.repository.GameRepository
 import com.example.gamenews.presentation.screens.ai.AIAssistantViewModel
 import com.example.gamenews.presentation.screens.home.HomeViewModel
-import kotlinx.serialization.json.Json // Pastikan import ini ada
+import com.example.gamenews.presentation.screens.detail.GameDetailViewModel
+import com.example.gamenews.presentation.screens.wishlist.WishlistViewModel
+import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -23,7 +25,6 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-// ==================== NETWORK MODULE ====================
 val networkModule = module {
     single {
         Json {
@@ -39,7 +40,6 @@ val networkModule = module {
     singleOf(::GeminiService)
 }
 
-// ==================== DATABASE MODULE ====================
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
@@ -47,31 +47,26 @@ val databaseModule = module {
     }
 }
 
-// ==================== PREFERENCES MODULE ====================
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
 val repositoryModule = module {
-    // Sekarang GameRepositoryImpl bisa dibuat karena Json dan GameBrainService sudah ada
-    singleOf(::GameRepositoryImpl) bind GameRepository::class
+    single<GameRepository> { GameRepositoryImpl(get(), get()) }
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
-// ==================== USE CASE MODULE ====================
 val useCaseModule = module {
-    // Kosongkan sementara atau isi jika ada
 }
 
-// ==================== VIEWMODEL MODULE ====================
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::GameDetailViewModel)
+    viewModelOf(::WishlistViewModel)
 }
 
-// ==================== SHARED MODULES ====================
 val sharedModules = listOf(
     networkModule,
     databaseModule,
@@ -81,7 +76,6 @@ val sharedModules = listOf(
     viewModelModule
 )
 
-// ==================== INIT FUNCTION ====================
 fun initKoin(
     platformModules: List<Module> = emptyList(),
     config: KoinAppDeclaration? = null

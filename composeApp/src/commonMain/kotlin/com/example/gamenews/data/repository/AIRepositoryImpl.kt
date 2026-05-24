@@ -92,4 +92,30 @@ class AIRepositoryImpl(
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         ).map { it.trim().removeSurrounding("\"") }
     }
+
+    override suspend fun generateGameDescription(
+        title: String,
+        genre: String,
+        developer: String?,
+        year: Int?
+    ): Result<String> {
+        val devInfo = if (developer != null) "Developer: $developer" else ""
+        val yearInfo = if (year != null) "Tahun rilis: $year" else ""
+
+        val prompt = """
+        Tulis deskripsi informatif singkat (2-3 kalimat dalam Bahasa Indonesia) 
+        untuk game berikut:
+        
+        Judul: $title
+        Genre: $genre
+        $devInfo
+        $yearInfo
+        
+        Fokus pada: gameplay, setting cerita, dan keunggulan game ini.
+        JANGAN tulis informasi harga, pembelian, atau platform store.
+        Tulis seperti deskripsi di situs review game profesional.
+    """.trimIndent()
+
+        return geminiService.generateContent(prompt = prompt)
+    }
 }

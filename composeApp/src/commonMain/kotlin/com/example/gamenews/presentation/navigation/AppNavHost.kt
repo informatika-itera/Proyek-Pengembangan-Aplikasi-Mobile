@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.gamenews.presentation.screens.ai.AIAssistantScreen
-import com.example.gamenews.presentation.screens.home.HomeScreen
+import com.example.gamenews.presentation.screens.detail.GameDetailScreen
 
 @Composable
 fun AppNavHost(
@@ -23,9 +23,17 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable<Route.Home> {
-            HomeScreen(
+            MainScreen(
                 onNavigateToDetail = { gameId -> navigationActions.navigateToGameDetail(gameId) },
                 onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+            )
+        }
+
+        composable<Route.GameDetail> { backStackEntry ->
+            val route: Route.GameDetail = backStackEntry.toRoute()
+            GameDetailScreen(
+                gameId = route.gameId,
+                onNavigateBack = { navigationActions.navigateBack() }
             )
         }
 
@@ -44,15 +52,12 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
                 popUpTo(Route.Home) { inclusive = true }
             }
         }
-
         override fun navigateToGameDetail(gameId: Long) {
             navController.navigate(Route.GameDetail(gameId))
         }
-
         override fun navigateToAIAssistant() {
             navController.navigate(Route.AIAssistant)
         }
-
         override fun navigateBack() {
             navController.popBackStack()
         }

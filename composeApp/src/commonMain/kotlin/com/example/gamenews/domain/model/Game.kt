@@ -6,5 +6,7 @@ data class Game(
     val description: String,
     val genre: String,
     val rating: Double,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val developer: String? = null,
+    val releaseYear: Int? = null
 )

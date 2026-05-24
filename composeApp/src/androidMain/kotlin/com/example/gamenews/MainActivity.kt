@@ -4,16 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.gamenews.presentation.App // Pastikan import App sesuai lokasi di project Anda
+import androidx.activity.SystemBarStyle
+import com.example.gamenews.presentation.App
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(0, 0),
+            navigationBarStyle = SystemBarStyle.auto(0, 0)
+        )
 
         setContent {
-            App() // Entry point utama Composable
+            App()
         }
     }
 }

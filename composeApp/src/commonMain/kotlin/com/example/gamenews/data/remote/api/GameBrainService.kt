@@ -24,6 +24,10 @@ data class GameRemoteEntity(
     val image: String? = null,
     val rating: RatingDTO? = null,
     @SerialName("short_description") val shortDescription: String? = null,
+    val description: String? = null,
+    @SerialName("description_raw") val descriptionRaw: String? = null,
+    val summary: String? = null,
+    val about: String? = null,
     val developer: String? = null,
     val screenshots: List<String>? = emptyList(),
     val gameplay: String? = null

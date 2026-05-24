@@ -7,7 +7,7 @@ sealed interface Route {
     data object Home : Route
     
     @Serializable
-    data object AddMusic : Route
+    data class AddMusic(val musicId: Long? = null) : Route
     
     @Serializable
     data class MusicDetail(val musicId: Long) : Route

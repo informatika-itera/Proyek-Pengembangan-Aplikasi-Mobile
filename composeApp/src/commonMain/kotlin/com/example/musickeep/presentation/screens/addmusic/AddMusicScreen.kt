@@ -5,25 +5,32 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.musickeep.presentation.theme.MusicKeepTheme
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMusicScreen(
+    musicId: Long? = null,
     onBack: () -> Unit,
     viewModel: AddMusicViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(musicId) {
+        if (musicId != null) {
+            viewModel.loadMusic(musicId)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambah Lagu") },
+                title = { Text(if (musicId == null) "Tambah Lagu" else "Edit Lagu") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -77,7 +84,6 @@ fun AddMusicScreen(
             Button(
                 onClick = viewModel::saveMusic,
                 modifier = Modifier.fillMaxWidth(),
-                // Tombol di-disable jika field kosong (Sprint 2 goal)
                 enabled = uiState.title.isNotBlank() && uiState.artist.isNotBlank() && !uiState.isLoading
             ) {
                 if (uiState.isLoading) {
@@ -87,7 +93,7 @@ fun AddMusicScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Simpan ke Katalog")
+                    Text(if (musicId == null) "Simpan ke Katalog" else "Perbarui Katalog")
                 }
             }
         }

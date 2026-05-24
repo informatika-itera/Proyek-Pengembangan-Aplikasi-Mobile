@@ -6,7 +6,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.musickeep.presentation.screens.addmusic.AddMusicScreen
+import com.example.musickeep.presentation.screens.home.HomeScreen
+import com.example.musickeep.presentation.screens.detail.MusicDetailScreen
 
 @Composable
 fun AppNavHost(
@@ -15,15 +18,31 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Route.AddMusic, // Mulai dari AddMusic dulu untuk demo Sprint 2
+        startDestination = Route.Home,
         modifier = modifier
     ) {
-        composable<Route.AddMusic> {
+        composable<Route.Home> {
+            HomeScreen(
+                onNavigateToAddMusic = { navController.navigate(Route.AddMusic()) },
+                onNavigateToDetail = { id -> navController.navigate(Route.MusicDetail(id)) }
+            )
+        }
+
+        composable<Route.AddMusic> { backStackEntry ->
+            val route: Route.AddMusic = backStackEntry.toRoute()
             AddMusicScreen(
+                musicId = route.musicId,
                 onBack = { navController.popBackStack() }
             )
         }
-        
-        // Route.Home akan diimplementasikan nanti di Sprint 3
+
+        composable<Route.MusicDetail> { backStackEntry ->
+            val route: Route.MusicDetail = backStackEntry.toRoute()
+            MusicDetailScreen(
+                musicId = route.musicId,
+                onBack = { navController.popBackStack() },
+                onNavigateToEdit = { id -> navController.navigate(Route.AddMusic(id)) }
+            )
+        }
     }
 }

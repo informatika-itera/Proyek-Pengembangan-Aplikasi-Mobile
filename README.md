@@ -1,5 +1,7 @@
 # 🎵 MusicKeep - Smart Music Cataloging
 
+![CI](https://github.com/08-131-AndrePrasetyaDaely/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+
 Aplikasi **Smart Music Cataloging** (Katalog Musik Pribadi) yang dibangun menggunakan **Kotlin Multiplatform (KMP)** & **Compose Multiplatform**.
 
 Aplikasi ini dikembangkan sebagai Tugas Besar (Tubes) mata kuliah **Pengembangan Aplikasi Mobile**. MusicKeep membantu pengguna mengelola daftar musik favorit mereka dengan deteksi genre/mood berbasis AI (Planned).
@@ -20,8 +22,47 @@ Aplikasi ini dikembangkan sebagai Tugas Besar (Tubes) mata kuliah **Pengembangan
 
 ## 🏗️ Tech Stack & Arsitektur
 
-### Arsitektur: MVVM (Model-View-ViewModel)
-Aplikasi ini mengikuti pola arsitektur MVVM dengan State Management reaktif menggunakan StateFlow.
+### Arsitektur: MVVM (Model-View-ViewModel) + Clean Architecture
+
+Aplikasi ini mengikuti pola arsitektur MVVM dengan pemisahan layer yang jelas untuk memastikan kode yang mudah diuji dan dikelola:
+
+- **Presentation Layer**: UI (Compose Multiplatform) dan ViewModel (StateFlow).
+- **Domain Layer**: Business logic murni (Models, Repository Interfaces, UseCases).
+- **Data Layer**: Implementasi repository, SQLDelight (Local), dan Ktor (Remote).
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PRESENTATION LAYER                        │
+│  ┌───────────────┐        ┌───────────────┐                 │
+│  │    Screen     │◄──────►│   ViewModel   │                 │
+│  │  (Composable) │ State  │  (StateFlow)  │                 │
+│  └───────────────┘        └───────┬───────┘                 │
+└───────────────────────────────────┼─────────────────────────┘
+                                    │
+┌───────────────────────────────────┼─────────────────────────┐
+│                      DOMAIN LAYER │                          │
+│                    ┌──────────────▼──────────────┐          │
+│                    │         Use Cases           │          │
+│                    │    (Business Logic)         │          │
+│                    └──────────────┬──────────────┘          │
+│                    ┌──────────────▼──────────────┐          │
+│                    │    Repository Interface     │          │
+│                    └──────────────┬──────────────┘          │
+└───────────────────────────────────┼─────────────────────────┘
+                                    │
+┌───────────────────────────────────┼─────────────────────────┐
+│                       DATA LAYER  │                          │
+│                    ┌──────────────▼──────────────┐          │
+│                    │   Repository Implementation │          │
+│                    └──────────────┬──────────────┘          │
+│              ┌────────────────────┼────────────────────┐    │
+│              │                    │                    │    │
+│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
+│        │ SQLDelight│        │   Ktor    │       │ DataStore││
+│        │  (Local)  │        │ (Remote)  │       │  (Prefs) ││
+│        └───────────┘        └───────────┘       └──────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
 
 | Komponen | Teknologi |
 |----------|-----------|
@@ -57,9 +98,12 @@ composeApp/src/
 - [x] Modifikasi tema/warna
 
 ### Sprint 2: Core Features
-- [x] Tambahkan field baru (Judul Lagu & Artis)
-- [x] Implementasi fitur kategori/tags
-- [x] Tambahkan validasi input
+- [x] Minimal 3 working screens (Home, Detail, Add/Edit)
+- [x] Navigation between screens dengan arguments
+- [x] Data layer dengan Repository pattern
+- [x] Local storage menggunakan SQLDelight
+- [x] Basic CRUD operations working (Create, Read, Update, Delete)
+- [x] UI States (Loading, Success, Error) implemented
 
 ### Sprint 3: Advanced Features
 - [ ] Implementasi search dengan debounce

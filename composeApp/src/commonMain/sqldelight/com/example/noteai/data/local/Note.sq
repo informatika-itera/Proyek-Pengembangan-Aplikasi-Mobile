@@ -1,68 +1,76 @@
-﻿-- Note table schema for SQLDelight
+-- VulnLog table schema for SQLDelight
 -- File: Note.sq
 
 CREATE TABLE NoteEntity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    category TEXT NOT NULL DEFAULT 'GENERAL',
+    target_url TEXT NOT NULL DEFAULT '',
+    vuln_type TEXT NOT NULL DEFAULT 'OTHER',
     color TEXT NOT NULL DEFAULT 'DEFAULT',
     severity TEXT NOT NULL DEFAULT 'NONE',
+    status TEXT NOT NULL DEFAULT 'NEW',
     is_pinned INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );
 
--- Get all notes ordered by updated_at descending
+-- Get all logs ordered by updated_at descending
 getAllNotes:
 SELECT * FROM NoteEntity
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Get pinned notes
+-- Get pinned logs
 getPinnedNotes:
 SELECT * FROM NoteEntity
 WHERE is_pinned = 1
 ORDER BY updated_at DESC;
 
--- Get notes by category
-getNotesByCategory:
+-- Get logs by vulnerability type
+getNotesByVulnType:
 SELECT * FROM NoteEntity
-WHERE category = ?
+WHERE vuln_type = ?
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Get notes by severity
+-- Get logs by severity
 getNotesBySeverity:
 SELECT * FROM NoteEntity
 WHERE severity = ?
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Search notes by title or content
-searchNotes:
+-- Get logs by status
+getNotesByStatus:
 SELECT * FROM NoteEntity
-WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%'
+WHERE status = ?
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Get single note by ID
+-- Search logs by title, content, or target_url
+searchNotes:
+SELECT * FROM NoteEntity
+WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%' OR target_url LIKE '%' || ? || '%'
+ORDER BY is_pinned DESC, updated_at DESC;
+
+-- Get single log by ID
 getNoteById:
 SELECT * FROM NoteEntity
 WHERE id = ?;
 
--- Insert new note
+-- Insert new log
 insertNote:
-INSERT INTO NoteEntity (title, content, category, color, severity, is_pinned, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO NoteEntity (title, content, target_url, vuln_type, color, severity, status, is_pinned, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Get last inserted ID
 lastInsertId:
 SELECT last_insert_rowid();
 
--- Update existing note
+-- Update existing log
 updateNote:
 UPDATE NoteEntity
-SET title = ?, content = ?, category = ?, color = ?, severity = ?, is_pinned = ?, updated_at = ?
+SET title = ?, content = ?, target_url = ?, vuln_type = ?, color = ?, severity = ?, status = ?, is_pinned = ?, updated_at = ?
 WHERE id = ?;
 
--- Delete note by ID
+-- Delete log by ID
 deleteNoteById:
 DELETE FROM NoteEntity
 WHERE id = ?;
@@ -73,23 +81,23 @@ UPDATE NoteEntity
 SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END, updated_at = ?
 WHERE id = ?;
 
--- Delete multiple notes
+-- Delete multiple logs
 deleteNotesByIds:
 DELETE FROM NoteEntity
 WHERE id IN ?;
 
--- Count all notes
+-- Count all logs
 countNotes:
 SELECT COUNT(*) FROM NoteEntity;
 
--- Count notes by category
-countNotesByCategory:
-SELECT category, COUNT(*) AS total
-FROM NoteEntity
-GROUP BY category;
-
--- Count notes by severity
+-- Count logs by severity
 countNotesBySeverity:
 SELECT severity, COUNT(*) AS total
 FROM NoteEntity
 GROUP BY severity;
+
+-- Count logs by status
+countNotesByStatus:
+SELECT status, COUNT(*) AS total
+FROM NoteEntity
+GROUP BY status;

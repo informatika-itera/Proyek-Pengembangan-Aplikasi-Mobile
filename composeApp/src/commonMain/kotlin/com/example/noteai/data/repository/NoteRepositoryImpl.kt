@@ -1,4 +1,4 @@
-﻿package com.example.noteai.data.repository
+package com.example.noteai.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
@@ -8,7 +8,9 @@ import com.example.noteai.data.local.entity.toDomain
 import com.example.noteai.data.local.entity.toDomainList
 import com.example.noteai.data.local.entity.toEntityValues
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
+import com.example.noteai.domain.model.VulnSeverity
+import com.example.noteai.domain.model.VulnStatus
+import com.example.noteai.domain.model.VulnType
 import com.example.noteai.domain.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,15 +36,29 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             .map { entities -> entities.toDomainList() }
     }
     
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
-        return queries.getNotesByCategory(category.name)
+    override fun getNotesBySeverity(severity: VulnSeverity): Flow<List<Note>> {
+        return queries.getNotesBySeverity(severity.name)
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { entities -> entities.toDomainList() }
+    }
+    
+    override fun getNotesByStatus(status: VulnStatus): Flow<List<Note>> {
+        return queries.getNotesByStatus(status.name)
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { entities -> entities.toDomainList() }
+    }
+    
+    override fun getNotesByVulnType(vulnType: VulnType): Flow<List<Note>> {
+        return queries.getNotesByVulnType(vulnType.name)
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
     }
     
     override fun searchNotes(query: String): Flow<List<Note>> {
-        return queries.searchNotes(query, query)
+        return queries.searchNotes(query, query, query)
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }
@@ -60,9 +76,11 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
         queries.insertNote(
             title = values.title,
             content = values.content,
-            category = values.category,
+            target_url = values.targetUrl,
+            vuln_type = values.vulnType,
             color = values.color,
             severity = values.severity,
+            status = values.status,
             is_pinned = values.isPinned,
             created_at = values.createdAt,
             updated_at = values.updatedAt
@@ -76,9 +94,11 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             id = note.id,
             title = values.title,
             content = values.content,
-            category = values.category,
+            target_url = values.targetUrl,
+            vuln_type = values.vulnType,
             color = values.color,
             severity = values.severity,
+            status = values.status,
             is_pinned = values.isPinned,
             updated_at = Clock.System.now().toEpochMilliseconds()
         )

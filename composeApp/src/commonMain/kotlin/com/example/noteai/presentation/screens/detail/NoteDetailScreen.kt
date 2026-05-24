@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,9 +18,11 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,14 +38,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.noteai.core.util.formatToDisplay
-import com.example.noteai.presentation.components.CategoryBadge
 import com.example.noteai.presentation.components.EmptyState
 import com.example.noteai.presentation.components.LoadingIndicator
+import com.example.noteai.presentation.components.SeverityBadge
+import com.example.noteai.presentation.components.StatusBadge
+import com.example.noteai.presentation.components.CategoryBadge
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +93,7 @@ fun NoteDetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detail Catatan") },
+                title = { Text("Detail Temuan") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -135,6 +144,7 @@ fun NoteDetailScreen(
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
+                    // Title
                     if (state.note.title.isNotBlank()) {
                         Text(
                             text = state.note.title,
@@ -144,23 +154,63 @@ fun NoteDetailScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     
+                    // Badges row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CategoryBadge(category = state.note.category.displayName)
-                        
-                        Text(
-                            text = state.note.updatedAt.formatToDisplay(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        SeverityBadge(severity = state.note.severity)
+                        CategoryBadge(category = state.note.vulnType.displayName)
+                        StatusBadge(status = state.note.status)
                     }
                     
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // Target URL
+                    if (state.note.targetUrl.isNotBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Outlined.Language,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = state.note.targetUrl,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 13.sp
+                                ),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    
+                    // Timestamp
+                    Text(
+                        text = "Terakhir diupdate: ${state.note.updatedAt.formatToDisplay()}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider()
                     Spacer(modifier = Modifier.height(16.dp))
                     
+                    // Description / Steps to Reproduce
                     Text(
-                        text = state.note.content,
+                        text = "Deskripsi / Langkah Reproduksi",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = state.note.content.ifBlank { "Tidak ada deskripsi." },
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -168,8 +218,8 @@ fun NoteDetailScreen(
             
             is NoteDetailUiState.NotFound -> {
                 EmptyState(
-                    title = "Catatan Tidak Ditemukan",
-                    message = "Catatan mungkin sudah dihapus"
+                    title = "Temuan Tidak Ditemukan",
+                    message = "Data temuan mungkin sudah dihapus"
                 )
             }
         }
@@ -183,8 +233,8 @@ private fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Hapus Catatan") },
-        text = { Text("Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.") },
+        title = { Text("Hapus Temuan") },
+        text = { Text("Apakah Anda yakin ingin menghapus temuan ini? Tindakan ini tidak dapat dibatalkan.") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("Hapus", color = MaterialTheme.colorScheme.error)

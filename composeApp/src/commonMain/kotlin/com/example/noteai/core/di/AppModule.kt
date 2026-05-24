@@ -13,6 +13,7 @@ import com.example.noteai.domain.repository.AIRepository
 import com.example.noteai.domain.repository.NoteRepository
 import com.example.noteai.domain.usecase.DeleteNoteUseCase
 import com.example.noteai.domain.usecase.GenerateIdeasUseCase
+import com.example.noteai.domain.usecase.GenerateVDPReportUseCase
 import com.example.noteai.domain.usecase.GetAllNotesUseCase
 import com.example.noteai.domain.usecase.ImproveWritingUseCase
 import com.example.noteai.domain.usecase.SaveNoteUseCase
@@ -70,6 +71,7 @@ val useCaseModule = module {
     singleOf(::SummarizeNoteUseCase)
     singleOf(::ImproveWritingUseCase)
     singleOf(::GenerateIdeasUseCase)
+    singleOf(::GenerateVDPReportUseCase)
 }
 
 // ==================== VIEWMODEL MODULE ====================

@@ -3,8 +3,10 @@ package com.example.noteai.presentation.screens.addnote
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
 import com.example.noteai.domain.model.NoteColor
+import com.example.noteai.domain.model.VulnSeverity
+import com.example.noteai.domain.model.VulnStatus
+import com.example.noteai.domain.model.VulnType
 import com.example.noteai.domain.repository.NoteRepository
 import com.example.noteai.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,8 +44,10 @@ class AddNoteViewModel(
                         state.copy(
                             title = note.title,
                             content = note.content,
-                            category = note.category,
-                            color = note.color,
+                            targetUrl = note.targetUrl,
+                            vulnType = note.vulnType,
+                            severity = note.severity,
+                            status = note.status,
                             isLoading = false,
                             isEditMode = true,
                             createdAt = note.createdAt
@@ -64,19 +68,27 @@ class AddNoteViewModel(
         _uiState.update { it.copy(content = content) }
     }
     
-    fun onCategoryChange(category: NoteCategory) {
-        _uiState.update { it.copy(category = category) }
+    fun onTargetUrlChange(url: String) {
+        _uiState.update { it.copy(targetUrl = url) }
     }
     
-    fun onColorChange(color: NoteColor) {
-        _uiState.update { it.copy(color = color) }
+    fun onVulnTypeChange(vulnType: VulnType) {
+        _uiState.update { it.copy(vulnType = vulnType) }
+    }
+    
+    fun onSeverityChange(severity: VulnSeverity) {
+        _uiState.update { it.copy(severity = severity) }
+    }
+    
+    fun onStatusChange(status: VulnStatus) {
+        _uiState.update { it.copy(status = status) }
     }
     
     fun saveNote() {
         val state = _uiState.value
         
         if (state.title.isBlank() && state.content.isBlank()) {
-            _uiState.update { it.copy(titleError = "Judul atau konten harus diisi") }
+            _uiState.update { it.copy(titleError = "Judul atau deskripsi harus diisi") }
             return
         }
         
@@ -87,8 +99,10 @@ class AddNoteViewModel(
                 id = currentNoteId ?: 0,
                 title = state.title.trim(),
                 content = state.content.trim(),
-                category = state.category,
-                color = state.color,
+                targetUrl = state.targetUrl.trim(),
+                vulnType = state.vulnType,
+                severity = state.severity,
+                status = state.status,
                 createdAt = if (currentNoteId == null) Clock.System.now() else state.createdAt,
                 updatedAt = Clock.System.now()
             )
@@ -116,8 +130,10 @@ class AddNoteViewModel(
 data class AddNoteUiState(
     val title: String = "",
     val content: String = "",
-    val category: NoteCategory = NoteCategory.GENERAL,
-    val color: NoteColor = NoteColor.DEFAULT,
+    val targetUrl: String = "",
+    val vulnType: VulnType = VulnType.OTHER,
+    val severity: VulnSeverity = VulnSeverity.NONE,
+    val status: VulnStatus = VulnStatus.NEW,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,

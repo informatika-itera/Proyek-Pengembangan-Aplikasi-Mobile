@@ -92,4 +92,27 @@ class AIRepositoryImpl(
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         ).map { it.trim().removeSurrounding("\"") }
     }
+    
+    override suspend fun generateVDPReport(
+        title: String,
+        targetUrl: String,
+        vulnType: String,
+        severity: String,
+        description: String
+    ): Result<String> {
+        val prompt = """
+            Buatkan draft laporan VDP berdasarkan temuan berikut:
+            
+            Judul Temuan: $title
+            Target URL: $targetUrl
+            Jenis Kerentanan: $vulnType
+            Severity: $severity
+            Detail/Catatan Reproduksi: $description
+        """.trimIndent()
+        
+        return geminiService.generateContent(
+            prompt = prompt,
+            systemPrompt = SystemPrompts.VDP_GENERATOR
+        )
+    }
 }

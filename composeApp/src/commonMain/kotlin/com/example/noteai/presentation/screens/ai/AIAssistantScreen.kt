@@ -39,6 +39,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
@@ -67,7 +69,7 @@ fun AIAssistantScreen(
                 }
                 is AIAssistantEvent.ApplyToNote -> {
                     onApplyResult?.invoke(event.text)
-                    snackbarHostState.showSnackbar("Diterapkan ke catatan")
+                    snackbarHostState.showSnackbar("Diterapkan ke temuan")
                     onNavigateBack()
                 }
             }
@@ -78,7 +80,17 @@ fun AIAssistantScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("AI Assistant") },
+                title = { 
+                    Row {
+                        Text(
+                            text = "🤖 ",
+                        )
+                        Text(
+                            text = "AI Assistant",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -96,7 +108,8 @@ fun AIAssistantScreen(
         ) {
             Text(
                 text = "Pilih Aksi",
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -125,8 +138,22 @@ fun AIAssistantScreen(
             OutlinedTextField(
                 value = uiState.inputText,
                 onValueChange = viewModel::onInputTextChange,
-                label = { Text("Teks Input") },
-                placeholder = { Text("Masukkan teks di sini...") },
+                label = { 
+                    Text(
+                        if (uiState.selectedAction == AIAction.VDP_REPORT) 
+                            "Deskripsi temuan kasar" 
+                        else 
+                            "Teks Input"
+                    ) 
+                },
+                placeholder = { 
+                    Text(
+                        if (uiState.selectedAction == AIAction.VDP_REPORT)
+                            "e.g. nemu bug XSS di endpoint /api/comments, input ga di-sanitize..."
+                        else
+                            "Masukkan teks di sini..."
+                    )
+                },
                 minLines = 4,
                 maxLines = 8,
                 isError = uiState.error != null,
@@ -153,7 +180,12 @@ fun AIAssistantScreen(
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp)
                     )
-                    Text("Jalankan")
+                    Text(
+                        if (uiState.selectedAction == AIAction.VDP_REPORT)
+                            "Generate VDP Report"
+                        else
+                            "Jalankan"
+                    )
                 }
             }
             
@@ -162,8 +194,12 @@ fun AIAssistantScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     Text(
-                        text = "Hasil",
-                        style = MaterialTheme.typography.labelLarge
+                        text = if (uiState.selectedAction == AIAction.VDP_REPORT) 
+                            "📄 Draft Laporan VDP" 
+                        else 
+                            "Hasil",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))

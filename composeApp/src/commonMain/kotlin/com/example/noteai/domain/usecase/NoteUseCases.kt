@@ -1,7 +1,7 @@
 package com.example.noteai.domain.usecase
 
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
+import com.example.noteai.domain.model.VulnSeverity
 import com.example.noteai.domain.repository.AIRepository
 import com.example.noteai.domain.repository.NoteRepository
 import com.example.noteai.domain.repository.WritingStyle
@@ -28,6 +28,7 @@ class GetAllNotesUseCase(
             NoteSortBy.CREATED_DESC -> notes.sortedByDescending { it.createdAt }
             NoteSortBy.UPDATED_ASC -> notes.sortedBy { it.updatedAt }
             NoteSortBy.UPDATED_DESC -> notes.sortedByDescending { it.updatedAt }
+            NoteSortBy.SEVERITY_DESC -> notes.sortedByDescending { it.severity.ordinal }
         }
     }
 }
@@ -38,21 +39,22 @@ enum class NoteSortBy(val displayName: String) {
     CREATED_ASC("Dibuat (Lama)"),
     CREATED_DESC("Dibuat (Baru)"),
     UPDATED_ASC("Diupdate (Lama)"),
-    UPDATED_DESC("Diupdate (Baru)")
+    UPDATED_DESC("Diupdate (Baru)"),
+    SEVERITY_DESC("Severity (Tertinggi)")
 }
 
 class SearchNotesUseCase(
     private val repository: NoteRepository
 ) {
-    operator fun invoke(query: String, category: NoteCategory? = null): Flow<List<Note>> {
-        return if (query.isBlank() && category == null) {
+    operator fun invoke(query: String, severity: VulnSeverity? = null): Flow<List<Note>> {
+        return if (query.isBlank() && severity == null) {
             repository.getAllNotes()
         } else if (query.isBlank()) {
-            repository.getNotesByCategory(category!!)
+            repository.getNotesBySeverity(severity!!)
         } else {
             repository.searchNotes(query).map { notes ->
-                if (category != null) {
-                    notes.filter { it.category == category }
+                if (severity != null) {
+                    notes.filter { it.severity == severity }
                 } else {
                     notes
                 }
@@ -67,7 +69,7 @@ class SaveNoteUseCase(
     suspend operator fun invoke(note: Note): Result<Long> {
         return try {
             if (note.title.isBlank() && note.content.isBlank()) {
-                return Result.failure(IllegalArgumentException("Note tidak boleh kosong"))
+                return Result.failure(IllegalArgumentException("Log temuan tidak boleh kosong"))
             }
             
             val id = if (note.id == 0L) {
@@ -127,5 +129,22 @@ class GenerateIdeasUseCase(
             return Result.failure(IllegalArgumentException("Topik tidak boleh kosong"))
         }
         return aiRepository.generateIdeas(topic)
+    }
+}
+
+class GenerateVDPReportUseCase(
+    private val aiRepository: AIRepository
+) {
+    suspend operator fun invoke(
+        title: String,
+        targetUrl: String,
+        vulnType: String,
+        severity: String,
+        description: String
+    ): Result<String> {
+        if (description.isBlank()) {
+            return Result.failure(IllegalArgumentException("Deskripsi temuan tidak boleh kosong"))
+        }
+        return aiRepository.generateVDPReport(title, targetUrl, vulnType, severity, description)
     }
 }

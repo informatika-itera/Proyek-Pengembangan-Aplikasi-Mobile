@@ -7,6 +7,13 @@ interface AIRepository {
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
     suspend fun suggestTitle(content: String): Result<String>
+    suspend fun generateVDPReport(
+        title: String,
+        targetUrl: String,
+        vulnType: String,
+        severity: String,
+        description: String
+    ): Result<String>
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

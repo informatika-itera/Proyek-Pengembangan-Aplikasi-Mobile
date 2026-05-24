@@ -3,7 +3,7 @@ package com.example.noteai.presentation.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
+import com.example.noteai.domain.model.VulnSeverity
 import com.example.noteai.domain.repository.NoteRepository
 import com.example.noteai.domain.usecase.DeleteNoteUseCase
 import com.example.noteai.domain.usecase.GetAllNotesUseCase
@@ -30,7 +30,9 @@ class HomeViewModel(
 ) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
-    private val _selectedCategory = MutableStateFlow<NoteCategory?>(null)
+    val searchQuery: StateFlow<String> = _searchQuery
+    
+    private val _selectedSeverity = MutableStateFlow<VulnSeverity?>(null)
     private val _sortBy = MutableStateFlow(NoteSortBy.UPDATED_DESC)
     private val _isLoading = MutableStateFlow(false)
     
@@ -40,27 +42,27 @@ class HomeViewModel(
     
     val uiState: StateFlow<HomeUiState> = combine(
         debouncedSearchQuery,
-        _selectedCategory,
+        _selectedSeverity,
         _sortBy
-    ) { query, category, sortBy ->
-        Triple(query, category, sortBy)
-    }.flatMapLatest { (query, category, sortBy) ->
-        if (query.isBlank() && category == null) {
+    ) { query, severity, sortBy ->
+        Triple(query, severity, sortBy)
+    }.flatMapLatest { (query, severity, sortBy) ->
+        if (query.isBlank() && severity == null) {
             getAllNotesUseCase(sortBy)
         } else {
-            searchNotesUseCase(query, category)
+            searchNotesUseCase(query, severity)
         }
     }.combine(_isLoading) { notes, isLoading ->
         when {
             isLoading -> HomeUiState.Loading
             notes.isEmpty() -> HomeUiState.Empty(
                 query = _searchQuery.value,
-                category = _selectedCategory.value
+                severity = _selectedSeverity.value
             )
             else -> HomeUiState.Success(
                 notes = notes,
                 query = _searchQuery.value,
-                category = _selectedCategory.value,
+                severity = _selectedSeverity.value,
                 sortBy = _sortBy.value
             )
         }
@@ -82,8 +84,8 @@ class HomeViewModel(
         _searchQuery.value = ""
     }
     
-    fun onCategorySelected(category: NoteCategory?) {
-        _selectedCategory.value = category
+    fun onSeveritySelected(severity: VulnSeverity?) {
+        _selectedSeverity.value = severity
     }
     
     fun onSortByChanged(sortBy: NoteSortBy) {
@@ -115,13 +117,13 @@ sealed interface HomeUiState {
     data class Success(
         val notes: List<Note>,
         val query: String = "",
-        val category: NoteCategory? = null,
+        val severity: VulnSeverity? = null,
         val sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC
     ) : HomeUiState
     
     data class Empty(
         val query: String = "",
-        val category: NoteCategory? = null
+        val severity: VulnSeverity? = null
     ) : HomeUiState
     
     data class Error(val message: String) : HomeUiState

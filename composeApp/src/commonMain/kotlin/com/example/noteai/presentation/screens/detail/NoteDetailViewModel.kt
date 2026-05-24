@@ -65,11 +65,22 @@ class NoteDetailViewModel(
         return if (currentState is NoteDetailUiState.Success) {
             val note = currentState.note
             buildString {
+                appendLine("🔒 VulnLog Finding")
+                appendLine("═══════════════════")
                 if (note.title.isNotBlank()) {
-                    appendLine(note.title)
-                    appendLine()
+                    appendLine("Title: ${note.title}")
                 }
-                append(note.content)
+                if (note.targetUrl.isNotBlank()) {
+                    appendLine("Target: ${note.targetUrl}")
+                }
+                appendLine("Type: ${note.vulnType.displayName}")
+                appendLine("Severity: ${note.severity.displayName}")
+                appendLine("Status: ${note.status.displayName}")
+                appendLine("═══════════════════")
+                if (note.content.isNotBlank()) {
+                    appendLine()
+                    append(note.content)
+                }
             }
         } else null
     }

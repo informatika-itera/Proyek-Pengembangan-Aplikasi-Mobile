@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.noteai.domain.repository.AIRepository
 import com.example.noteai.domain.repository.WritingStyle
 import com.example.noteai.domain.usecase.GenerateIdeasUseCase
+import com.example.noteai.domain.usecase.GenerateVDPReportUseCase
 import com.example.noteai.domain.usecase.ImproveWritingUseCase
 import com.example.noteai.domain.usecase.SummarizeNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,7 +21,8 @@ class AIAssistantViewModel(
     private val aiRepository: AIRepository,
     private val summarizeUseCase: SummarizeNoteUseCase,
     private val improveWritingUseCase: ImproveWritingUseCase,
-    private val generateIdeasUseCase: GenerateIdeasUseCase
+    private val generateIdeasUseCase: GenerateIdeasUseCase,
+    private val generateVDPReportUseCase: GenerateVDPReportUseCase
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AIAssistantUiState())
@@ -55,6 +57,7 @@ class AIAssistantViewModel(
         
         viewModelScope.launch {
             val result = when (state.selectedAction) {
+                AIAction.VDP_REPORT -> generateVDPReport(state.inputText)
                 AIAction.SUMMARIZE -> summarize(state.inputText)
                 AIAction.GENERATE_IDEAS -> generateIdeas(state.inputText)
                 AIAction.IMPROVE_WRITING -> improveWriting(state.inputText, state.writingStyle)
@@ -101,6 +104,16 @@ class AIAssistantViewModel(
     
     // ==================== AI OPERATIONS ====================
     
+    private suspend fun generateVDPReport(text: String): Result<String> {
+        return generateVDPReportUseCase(
+            title = "",
+            targetUrl = "",
+            vulnType = "",
+            severity = "",
+            description = text
+        )
+    }
+    
     private suspend fun summarize(text: String): Result<String> {
         return summarizeUseCase(text)
     }
@@ -129,17 +142,18 @@ class AIAssistantViewModel(
 }
 
 enum class AIAction(val displayName: String, val description: String) {
+    VDP_REPORT("📄 VDP Report", "Generate laporan Vulnerability Disclosure Program dari temuan kasar"),
     SUMMARIZE("Ringkas", "Buat ringkasan dari teks"),
     GENERATE_IDEAS("Ide", "Generate ide berdasarkan topik"),
     IMPROVE_WRITING("Perbaiki", "Perbaiki tulisan"),
     TRANSLATE("Terjemah", "Terjemahkan ke bahasa lain"),
     SUGGEST_TITLE("Judul", "Sarankan judul"),
-    CHAT("Tanya", "Tanya AI tentang apapun")
+    CHAT("Tanya AI", "Tanya AI tentang apapun")
 }
 
 data class AIAssistantUiState(
     val inputText: String = "",
-    val selectedAction: AIAction = AIAction.SUMMARIZE,
+    val selectedAction: AIAction = AIAction.VDP_REPORT,
     val writingStyle: WritingStyle = WritingStyle.NEUTRAL,
     val targetLanguage: String = "English",
     val isLoading: Boolean = false,

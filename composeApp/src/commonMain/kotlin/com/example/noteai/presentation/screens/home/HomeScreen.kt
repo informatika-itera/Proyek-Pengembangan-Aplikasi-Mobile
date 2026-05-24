@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,16 +17,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.NoteAlt
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,10 +44,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
+import com.example.noteai.domain.model.VulnSeverity
 import com.example.noteai.domain.usecase.NoteSortBy
 import com.example.noteai.presentation.components.EmptyState
 import com.example.noteai.presentation.components.ErrorState
@@ -63,6 +67,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     var showSearch by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
@@ -73,19 +78,26 @@ fun HomeScreen(
                 title = { 
                     if (showSearch) {
                         SearchField(
-                            query = when (val state = uiState) {
-                                is HomeUiState.Success -> state.query
-                                is HomeUiState.Empty -> state.query
-                                else -> ""
-                            },
+                            query = searchQuery,
                             onQueryChange = viewModel::onSearchQueryChange,
-                            onClear = {
+                            onCancel = {
                                 viewModel.clearSearch()
                                 showSearch = false
                             }
                         )
                     } else {
-                        Text("NoteAI")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "> ",
+                                fontFamily = FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "VulnLog",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 },
                 actions = {
@@ -117,7 +129,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToAddNote) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+                Icon(Icons.Default.Add, contentDescription = "Tambah Temuan")
             }
         }
     ) { paddingValues ->
@@ -126,13 +138,14 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
+            // Severity filter row
+            SeverityFilterRow(
+                selectedSeverity = when (val state = uiState) {
+                    is HomeUiState.Success -> state.severity
+                    is HomeUiState.Empty -> state.severity
                     else -> null
                 },
-                onCategorySelected = viewModel::onCategorySelected
+                onSeveritySelected = viewModel::onSeveritySelected
             )
             
             when (val state = uiState) {
@@ -151,19 +164,19 @@ fun HomeScreen(
                 
                 is HomeUiState.Empty -> {
                     EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
+                        title = if (state.query.isNotBlank() || state.severity != null) {
                             "Tidak Ditemukan"
                         } else {
-                            "Belum Ada Catatan"
+                            "Belum Ada Temuan"
                         },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
+                        message = if (state.query.isNotBlank() || state.severity != null) {
+                            "Coba ubah kata kunci atau filter severity"
                         } else {
-                            "Tap + untuk membuat catatan baru"
+                            "Tap + untuk mencatat temuan vulnerability baru"
                         },
                         icon = {
                             Icon(
-                                Icons.Outlined.NoteAlt,
+                                Icons.Outlined.BugReport,
                                 contentDescription = null,
                                 modifier = Modifier.size(64.dp),
                                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -187,21 +200,26 @@ fun HomeScreen(
 private fun SearchField(
     query: String,
     onQueryChange: (String) -> Unit,
-    onClear: () -> Unit
+    onCancel: () -> Unit
 ) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Cari catatan...") },
+        placeholder = { Text("Cari temuan...") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
+        leadingIcon = {
+            IconButton(onClick = onCancel) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+            }
+        },
         trailingIcon = {
             AnimatedVisibility(
                 visible = query.isNotBlank(),
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                IconButton(onClick = onClear) {
+                IconButton(onClick = { onQueryChange("") }) {
                     Icon(Icons.Default.Close, contentDescription = "Hapus")
                 }
             }
@@ -240,9 +258,9 @@ private fun SortDropdownMenu(
 }
 
 @Composable
-private fun CategoryFilterRow(
-    selectedCategory: NoteCategory?,
-    onCategorySelected: (NoteCategory?) -> Unit
+private fun SeverityFilterRow(
+    selectedSeverity: VulnSeverity?,
+    onSeveritySelected: (VulnSeverity?) -> Unit
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -250,21 +268,26 @@ private fun CategoryFilterRow(
     ) {
         item {
             FilterChip(
-                selected = selectedCategory == null,
-                onClick = { onCategorySelected(null) },
+                selected = selectedSeverity == null,
+                onClick = { onSeveritySelected(null) },
                 label = { Text("Semua") }
             )
         }
         
-        items(NoteCategory.entries) { category ->
+        // Show severity filters (skip NONE)
+        items(VulnSeverity.entries.filter { it != VulnSeverity.NONE }) { severity ->
             FilterChip(
-                selected = selectedCategory == category,
+                selected = selectedSeverity == severity,
                 onClick = { 
-                    onCategorySelected(
-                        if (selectedCategory == category) null else category
+                    onSeveritySelected(
+                        if (selectedSeverity == severity) null else severity
                     )
                 },
-                label = { Text(category.displayName) }
+                label = { Text(severity.displayName) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = Color(severity.colorHex).copy(alpha = 0.2f),
+                    selectedLabelColor = Color(severity.colorHex)
+                )
             )
         }
     }

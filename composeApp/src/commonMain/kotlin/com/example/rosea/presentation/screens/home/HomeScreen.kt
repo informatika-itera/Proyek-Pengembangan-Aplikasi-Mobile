@@ -5,54 +5,30 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Sort
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.rosea.domain.model.Product
@@ -61,23 +37,19 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    // Param dibiarkan AddNote sementara agar file Navigasi tidak error, tapi iconnya sudah jadi Keranjang
-    onNavigateToAddNote: () -> Unit,
+    // Parameter navigasi lainnya DIBUANG karena sudah diurus oleh Bottom Navigation!
     onNavigateToDetail: (Long) -> Unit,
-    onNavigateToAI: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
-    val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
 
     var showSearch by remember { mutableStateOf(false) }
-    var showSortMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     if (showSearch) {
                         SearchField(
@@ -91,60 +63,34 @@ fun HomeScreen(
                     } else {
                         Text(
                             text = "ROSÉA",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = 4.sp
                         )
                     }
                 },
                 actions = {
                     if (!showSearch) {
+                        // Di Top Bar sekarang HANYA TERSISA tombol Cari. Sangat bersih!
                         IconButton(onClick = { showSearch = true }) {
-                            Icon(Icons.Default.Search, contentDescription = "Cari")
-                        }
-
-                        Box {
-                            IconButton(onClick = { showSortMenu = true }) {
-                                Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
-                            }
-                            SortDropdownMenu(
-                                expanded = showSortMenu,
-                                currentSortBy = sortOrder,
-                                onSortSelected = {
-                                    viewModel.onSortOrderChange(it)
-                                    showSortMenu = false
-                                },
-                                onDismiss = { showSortMenu = false }
-                            )
+                            Icon(Icons.Default.Search, contentDescription = "Cari", tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
-
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(
-                            Icons.Outlined.AutoAwesome,
-                            contentDescription = "AI Beauty Advisor",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToAddNote, // Nanti akan diarahkan ke Shopping Bag
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.ShoppingBag, contentDescription = "Tas Belanja")
-            }
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
-            // Kategori Skincare/Makeup
             val categories = listOf("Cleanser", "Toner", "Moisturizer", "Sunscreen", "Serum", "Mask")
+
             CategoryFilterRow(
                 categories = categories,
                 selectedCategory = selectedCategory,
@@ -153,16 +99,13 @@ fun HomeScreen(
 
             when (val state = uiState) {
                 is HomeUiState.Loading -> {
-                    CircularProgressIndicator()
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
                 }
                 is HomeUiState.Success -> {
                     if (state.products.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Produk tidak ditemukan.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
+                        EmptyPlaceholder()
                     } else {
                         ProductGrid(
                             products = state.products,
@@ -176,164 +119,138 @@ fun HomeScreen(
 }
 
 @Composable
-private fun SearchField(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onClear: () -> Unit
-) {
-    OutlinedTextField(
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
+    TextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Cari skincare atau brand...") },
+        placeholder = { Text("Cari produk kecantikan...") },
         singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(end = 8.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        modifier = Modifier.fillMaxWidth(),
         trailingIcon = {
-            AnimatedVisibility(
-                visible = query.isNotBlank(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Close, contentDescription = "Hapus")
-                }
+            IconButton(onClick = onClear) {
+                Icon(Icons.Default.Close, contentDescription = null)
             }
         }
     )
 }
 
 @Composable
-private fun SortDropdownMenu(
-    expanded: Boolean,
-    currentSortBy: SortOrder,
-    onSortSelected: (SortOrder) -> Unit,
-    onDismiss: () -> Unit
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss
-    ) {
-        DropdownMenuItem(
-            text = { Text("Relevansi", fontWeight = if (currentSortBy == SortOrder.NONE) FontWeight.Bold else FontWeight.Normal) },
-            onClick = { onSortSelected(SortOrder.NONE) }
-        )
-        DropdownMenuItem(
-            text = { Text("Harga: Rendah ke Tinggi", fontWeight = if (currentSortBy == SortOrder.PRICE_LOW_TO_HIGH) FontWeight.Bold else FontWeight.Normal) },
-            onClick = { onSortSelected(SortOrder.PRICE_LOW_TO_HIGH) }
-        )
-        DropdownMenuItem(
-            text = { Text("Harga: Tinggi ke Rendah", fontWeight = if (currentSortBy == SortOrder.PRICE_HIGH_TO_LOW) FontWeight.Bold else FontWeight.Normal) },
-            onClick = { onSortSelected(SortOrder.PRICE_HIGH_TO_LOW) }
-        )
-    }
-}
-
-@Composable
-private fun CategoryFilterRow(
-    categories: List<String>,
-    selectedCategory: String?,
-    onCategorySelected: (String?) -> Unit
-) {
+private fun CategoryFilterRow(categories: List<String>, selectedCategory: String?, onCategorySelected: (String?) -> Unit) {
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
             FilterChip(
                 selected = selectedCategory == null,
                 onClick = { onCategorySelected(null) },
-                label = { Text("Semua") }
+                label = { Text("Semua") },
+                shape = CircleShape,
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
         items(categories) { category ->
             FilterChip(
                 selected = selectedCategory == category,
-                onClick = {
-                    onCategorySelected(if (selectedCategory == category) null else category)
-                },
-                label = { Text(category) }
+                onClick = { onCategorySelected(if (selectedCategory == category) null else category) },
+                label = { Text(category) },
+                shape = CircleShape,
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     }
 }
 
 @Composable
-private fun ProductGrid(
-    products: List<Product>,
-    onProductClick: (Long) -> Unit
-) {
+private fun ProductGrid(products: List<Product>, onProductClick: (Long) -> Unit) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // Membuat 2 kolom sejajar
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 100.dp, top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         items(products, key = { it.id }) { product ->
-            ProductCard(
-                product = product,
-                onClick = { onProductClick(product.id) }
-            )
+            ProductCard(product = product, onClick = { onProductClick(product.id) })
         }
     }
 }
 
 @Composable
-private fun ProductCard(
-    product: Product,
-    onClick: () -> Unit
-) {
-    Card(
+private fun ProductCard(product: Product, onClick: () -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clickable { onClick() }
     ) {
-        Column {
-            // Gambar Produk dengan Placeholder abu-abu sementara gambar dimuat
+        Box(
+            modifier = Modifier
+                .aspectRatio(0.8f)
+                .shadow(8.dp, MaterialTheme.shapes.medium, spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            AsyncImage(
+                model = product.imageUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                AsyncImage(
-                    model = product.imageUrl,
-                    contentDescription = product.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = product.brand,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Format Harga ke Rupiah untuk Kotlin Multiplatform
-                val priceStr = product.price.toLong().toString()
-                val formattedPrice = priceStr.reversed().chunked(3).joinToString(".").reversed()
-
-                Text(
-                    text = "Rp $formattedPrice",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.05f))
+                        )
+                    )
+            )
         }
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = product.brand.uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+        Text(
+            text = product.name,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = "Rp ${formatRupiah(product.price.toLong())}",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
+}
+
+@Composable
+private fun EmptyPlaceholder() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Tidak ada produk.", color = MaterialTheme.colorScheme.outline)
+    }
+}
+
+private fun formatRupiah(amount: Long): String {
+    return amount.toString().reversed().chunked(3).joinToString(".").reversed()
 }

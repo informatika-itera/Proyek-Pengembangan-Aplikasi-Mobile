@@ -9,14 +9,20 @@ import com.example.rosea.data.local.datastore.create
 import com.example.rosea.data.remote.api.GeminiService
 import com.example.rosea.data.repository.AIRepositoryImpl
 import com.example.rosea.domain.repository.AIRepository
+import com.example.rosea.data.remote.api.ProductApiService
 
-// === IMPORT REPOSITORY BARU ===
+// IMPORT REPOSITORY LAMA
 import com.example.rosea.domain.repository.ProductRepository
 import com.example.rosea.data.repository.ProductRepositoryImpl
 import com.example.rosea.domain.repository.CartRepository
 import com.example.rosea.data.repository.CartRepositoryImpl
 
-// === IMPORT VIEWMODEL ===
+// === 🌟 IMPORT KELAS BARU UNTUK FITUR OFFLINE CHECKOUT ===
+import com.example.rosea.domain.repository.OrderRepository
+import com.example.rosea.data.repository.OrderRepositoryImpl
+import com.example.rosea.domain.usecase.OrderSyncManager
+
+// IMPORT VIEWMODEL
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
 import com.example.rosea.presentation.screens.home.HomeViewModel
 import com.example.rosea.presentation.screens.detail.DetailViewModel
@@ -30,46 +36,36 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-// ==================== NETWORK MODULE ====================
-
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
+    singleOf(::ProductApiService)
 }
-
-// ==================== DATABASE MODULE ====================
 
 val databaseModule = module {
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        // Nama instance database tetap NoteDatabase sesuai bawaan generator SQLDelight
         NoteDatabase(driverFactory.createDriver())
     }
 }
-
-// ==================== PREFERENCES MODULE ====================
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
-
 val repositoryModule = module {
-    // Injeksi antarmuka repository ROSÉA ke implementasinya
     singleOf(::ProductRepositoryImpl) bind ProductRepository::class
     singleOf(::CartRepositoryImpl) bind CartRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    // Daftarkan OrderRepository
+    singleOf(::OrderRepositoryImpl) bind OrderRepository::class
 }
-
-// ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
-    // KOSONG SEMENTARA
+    // Daftarkan Mesin Sinkronisasi
+    singleOf(::OrderSyncManager)
 }
-
-// ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
@@ -77,8 +73,6 @@ val viewModelModule = module {
     viewModelOf(::DetailViewModel)
     viewModelOf(::CartViewModel)
 }
-
-// ==================== SHARED MODULES ====================
 
 val sharedModules = listOf(
     networkModule,
@@ -88,8 +82,6 @@ val sharedModules = listOf(
     useCaseModule,
     viewModelModule
 )
-
-// ==================== INIT FUNCTION ====================
 
 fun initKoin(
     platformModules: List<Module> = emptyList(),

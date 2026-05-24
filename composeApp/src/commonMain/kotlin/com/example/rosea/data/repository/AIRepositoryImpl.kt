@@ -75,9 +75,13 @@ class AIRepositoryImpl(
             systemPrompt = SystemPrompts.TRANSLATOR
         )
     }
-    
+
+    // 👇 Ubah fungsi chat menjadi seperti ini untuk mengaktifkan Groq API secara nyata
     override suspend fun chat(message: String): Result<String> {
-        return geminiService.generateContent(prompt = message)
+        return geminiService.generateContent(
+            prompt = message,
+            systemPrompt = SystemPrompts.BEAUTY_ADVISOR
+        )
     }
     
     override suspend fun suggestTitle(content: String): Result<String> {

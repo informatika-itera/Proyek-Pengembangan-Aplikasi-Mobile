@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -62,24 +63,25 @@ fun DetailScreen(
             if (uiState is DetailUiState.Success) {
                 val product = (uiState as DetailUiState.Success).product
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shadowElevation = 16.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(16.dp),
                     color = MaterialTheme.colorScheme.surface
                 ) {
                     Button(
                         onClick = { viewModel.addToCart(product) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                            .padding(horizontal = 24.dp, vertical = 20.dp)
                             .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
-                        Icon(Icons.Default.ShoppingCart, contentDescription = "Keranjang")
+                        Icon(Icons.Default.ShoppingCart, contentDescription = null)
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("TAMBAH KE TAS BELANJA", fontWeight = FontWeight.Bold)
+                        Text("TAMBAH KE TAS BELANJA", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -89,11 +91,12 @@ fun DetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             when (val state = uiState) {
                 is DetailUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
                 }
                 is DetailUiState.Error -> {
                     Text(
@@ -111,67 +114,56 @@ fun DetailScreen(
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                     ) {
-                        // 1. Gambar Imersif di atas
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(420.dp)
-                                .background(Color.LightGray)
+                                .height(460.dp)
                         ) {
                             AsyncImage(
                                 model = product.imageUrl,
-                                contentDescription = product.name,
+                                contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
                         }
 
-                        // 2. Lembaran Informasi Produk (Floating Sheet Layout)
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(y = (-32).dp), // Menarik wadah putih ke atas menimpa gambar
+                                .offset(y = (-32).dp),
                             shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                             color = MaterialTheme.colorScheme.surface
                         ) {
-                            Column(modifier = Modifier.padding(24.dp)) {
-                                // Nama Merek (Brand)
+                            Column(modifier = Modifier.padding(28.dp)) {
                                 Text(
                                     text = product.brand.uppercase(),
-                                    style = MaterialTheme.typography.labelLarge,
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    letterSpacing = 1.5.sp
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 2.sp
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                // Nama Produk
                                 Text(
                                     text = product.name,
                                     style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    lineHeight = MaterialTheme.typography.headlineMedium.lineHeight
+                                    fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                // Harga Produk
                                 val priceStr = product.price.toLong().toString()
                                 val formattedPrice = priceStr.reversed().chunked(3).joinToString(".").reversed()
                                 Text(
                                     text = "Rp $formattedPrice",
                                     style = MaterialTheme.typography.headlineSmall,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Black
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Bold
                                 )
 
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 24.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                Spacer(modifier = Modifier.height(32.dp))
 
-                                // Deskripsi
                                 Text(
-                                    text = "Tentang Produk",
+                                    text = "Deskripsi Produk",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -179,29 +171,29 @@ fun DetailScreen(
                                 Text(
                                     text = product.description,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                    lineHeight = 26.sp
                                 )
 
-                                Spacer(modifier = Modifier.height(40.dp)) // Ruang ekstra di bawah
+                                Spacer(modifier = Modifier.height(100.dp))
                             }
                         }
                     }
 
-                    // 3. Tombol Back Mengambang (Floating Back Button)
-                    // Diletakkan di luar Column agar tidak ikut ter-scroll
                     IconButton(
                         onClick = onNavigateBack,
                         modifier = Modifier
-                            .padding(top = 48.dp, start = 16.dp)
-                            .size(48.dp)
+                            .statusBarsPadding()
+                            .padding(16.dp)
+                            .size(44.dp)
+                            .shadow(4.dp, CircleShape)
                             .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.surface)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Kembali",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }

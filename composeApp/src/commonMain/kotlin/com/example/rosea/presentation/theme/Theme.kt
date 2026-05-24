@@ -1,106 +1,90 @@
 package com.example.rosea.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-// ==================== COLORS ====================
+// ==================== MODERN SOFT PINK PALETTE ====================
 
-private val Primary = Color(0xFF6750A4)
-private val OnPrimary = Color(0xFFFFFFFF)
-private val PrimaryContainer = Color(0xFFEADDFF)
-private val OnPrimaryContainer = Color(0xFF21005D)
+// Light Colors - Soft, Airy, Professional
+private val RosePrimary = Color(0xFFE91E63) // Pink yang berwibawa
+private val RoseOnPrimary = Color(0xFFFFFFFF)
+private val RosePrimaryContainer = Color(0xFFFCE4EC) // Sangat lembut
+private val RoseOnPrimaryContainer = Color(0xFF880E4F)
 
-private val Secondary = Color(0xFF625B71)
-private val OnSecondary = Color(0xFFFFFFFF)
-private val SecondaryContainer = Color(0xFFE8DEF8)
-private val OnSecondaryContainer = Color(0xFF1D192B)
+private val RoseSecondary = Color(0xFF9C27B0) // Ungu lembut sebagai aksen
+private val RoseBackground = Color(0xFFFFFAFB) // Putih dengan semburat pink
+private val RoseSurface = Color(0xFFFFFFFF)
+private val RoseOutline = Color(0xFFE0B0B6)
 
-private val Tertiary = Color(0xFF7D5260)
-private val OnTertiary = Color(0xFFFFFFFF)
-private val TertiaryContainer = Color(0xFFFFD8E4)
-private val OnTertiaryContainer = Color(0xFF31111D)
-
-private val Error = Color(0xFFB3261E)
-private val OnError = Color(0xFFFFFFFF)
-private val ErrorContainer = Color(0xFFF9DEDC)
-private val OnErrorContainer = Color(0xFF410E0B)
-
-private val BackgroundLight = Color(0xFFFFFBFE)
-private val OnBackgroundLight = Color(0xFF1C1B1F)
-private val SurfaceLight = Color(0xFFFFFBFE)
-private val OnSurfaceLight = Color(0xFF1C1B1F)
-private val SurfaceVariantLight = Color(0xFFE7E0EC)
-private val OnSurfaceVariantLight = Color(0xFF49454F)
-
-private val BackgroundDark = Color(0xFF1C1B1F)
-private val OnBackgroundDark = Color(0xFFE6E1E5)
-private val SurfaceDark = Color(0xFF1C1B1F)
-private val OnSurfaceDark = Color(0xFFE6E1E5)
-private val SurfaceVariantDark = Color(0xFF49454F)
-private val OnSurfaceVariantDark = Color(0xFFCAC4D0)
-
-private val OutlineLight = Color(0xFF79747E)
-private val OutlineDark = Color(0xFF938F99)
+// Dark Colors - Elegant Dark Rose
+private val RosePrimaryDark = Color(0xFFF48FB1)
+private val RoseOnPrimaryDark = Color(0xFF4A0021)
+private val RoseBackgroundDark = Color(0xFF1A1114)
+private val RoseSurfaceDark = Color(0xFF251A1D)
 
 // ==================== COLOR SCHEMES ====================
 
 private val LightColorScheme = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
-    background = BackgroundLight,
-    onBackground = OnBackgroundLight,
-    surface = SurfaceLight,
-    onSurface = OnSurfaceLight,
-    surfaceVariant = SurfaceVariantLight,
-    onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight
+    primary = RosePrimary,
+    onPrimary = RoseOnPrimary,
+    primaryContainer = RosePrimaryContainer,
+    onPrimaryContainer = RoseOnPrimaryContainer,
+    secondary = RoseSecondary,
+    background = RoseBackground,
+    surface = RoseSurface,
+    onSurface = Color(0xFF352F30),
+    outline = RoseOutline,
+    surfaceVariant = Color(0xFFF5E9EB)
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF492532),
-    tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = Color(0xFFFFD8E4),
-    error = Color(0xFFF2B8B5),
-    onError = Color(0xFF601410),
-    errorContainer = Color(0xFF8C1D18),
-    onErrorContainer = Color(0xFFF9DEDC),
-    background = BackgroundDark,
-    onBackground = OnBackgroundDark,
-    surface = SurfaceDark,
-    onSurface = OnSurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+    primary = RosePrimaryDark,
+    onPrimary = RoseOnPrimaryDark,
+    background = RoseBackgroundDark,
+    surface = RoseSurfaceDark,
+    onSurface = Color(0xFFECE0E1)
 )
 
-// ==================== THEME ====================
+// ==================== TYPOGRAPHY ====================
+
+private val RoseTypography = Typography(
+    headlineLarge = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 30.sp,
+        letterSpacing = (-0.5).sp
+    ),
+    titleLarge = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp
+    ),
+    bodyLarge = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 24.sp
+    ),
+    labelMedium = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        color = RosePrimary
+    )
+)
+
+private val RoseShapes = Shapes(
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(20.dp), // Lebih bulat, lebih modern
+    large = RoundedCornerShape(28.dp)
+)
 
 @Composable
 fun RoseaTheme(
@@ -108,9 +92,10 @@ fun RoseaTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    
     MaterialTheme(
         colorScheme = colorScheme,
+        typography = RoseTypography,
+        shapes = RoseShapes,
         content = content
     )
 }

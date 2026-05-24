@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,25 +40,28 @@ fun CartScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text("Tas Belanja Anda", fontWeight = FontWeight.Bold) },
+            CenterAlignedTopAppBar(
+                title = { Text("TAS BELANJA", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, letterSpacing = 2.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         bottomBar = {
             if (uiState is CartUiState.Success) {
                 val items = (uiState as CartUiState.Success).items
                 if (items.isNotEmpty()) {
-                    // Hitung total belanja otomatis
                     val totalPrice = items.sumOf { it.price * it.quantity }
                     CartBottomBar(totalPrice = totalPrice, onCheckoutClick = {
-                        viewModel.checkout()
+                        // 🌟 PERUBAHAN ADA DI SINI: Kirim items dan totalPrice ke ViewModel
+                        viewModel.checkout(items, totalPrice)
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Checkout Sukses! Terima kasih sudah berbelanja ✨")
+                            snackbarHostState.showSnackbar("Berhasil masuk antrean! Barangmu segera diproses ✨")
                         }
                     })
                 }
@@ -69,26 +75,24 @@ fun CartScreen(
                 .padding(paddingValues)
         ) {
             when (val state = uiState) {
-                is CartUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                is CartUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
+                }
                 is CartUiState.Success -> {
                     if (state.items.isEmpty()) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("Tas belanja Anda masih kosong", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
+                        EmptyCartView()
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(state.items, key = { it.productId }) { item ->
-                                CartItemCard(
+                                ModernCartItemCard(
                                     item = item,
-                                    onQuantityChange = { isIncrease -> viewModel.updateQuantity(item.productId, item.quantity, isIncrease) },
+                                    onQuantityChange = { isIncrease -> 
+                                        viewModel.updateQuantity(item.productId, item.quantity, isIncrease) 
+                                    },
                                     onRemoveClick = { viewModel.removeItem(item.productId) }
                                 )
                             }
@@ -101,74 +105,152 @@ fun CartScreen(
 }
 
 @Composable
-fun CartItemCard(
+fun ModernCartItemCard(
     item: CartItem,
     onQuantityChange: (Boolean) -> Unit,
     onRemoveClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 2.dp
     ) {
-        Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AsyncImage(
                 model = item.imageUrl,
-                contentDescription = item.productName,
-                modifier = Modifier.size(80.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.brand.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                Text(text = item.productName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    text = item.brand.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = item.productName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = "Rp ${formatRupiah((item.price * item.quantity).toLong())}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
 
-                val itemTotalPrice = item.price * item.quantity
-                Text(text = "Rp ${formatRupiah(itemTotalPrice.toLong())}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
-
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Tombol Minus
-                    OutlinedButton(
-                        onClick = { onQuantityChange(false) },
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(32.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) { Text("-", fontWeight = FontWeight.Bold) }
-
-                    Text(text = item.quantity.toString(), modifier = Modifier.padding(horizontal = 16.dp), fontWeight = FontWeight.Bold)
-
-                    // Tombol Plus
-                    OutlinedButton(
-                        onClick = { onQuantityChange(true) },
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(32.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) { Text("+", fontWeight = FontWeight.Bold) }
+                    QuantityButton(text = "−", onClick = { onQuantityChange(false) })
+                    Text(
+                        text = item.quantity.toString(),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    QuantityButton(text = "+", onClick = { onQuantityChange(true) })
                 }
             }
-            IconButton(onClick = onRemoveClick) {
-                Icon(Icons.Default.DeleteOutline, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
+            
+            IconButton(
+                onClick = onRemoveClick,
+                modifier = Modifier.align(Alignment.Top)
+            ) {
+                Icon(
+                    Icons.Default.DeleteOutline,
+                    contentDescription = "Hapus",
+                    tint = MaterialTheme.colorScheme.outline
+                )
             }
         }
     }
 }
 
 @Composable
+fun QuantityButton(text: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.size(32.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(text = text, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        }
+    }
+}
+
+@Composable
 fun CartBottomBar(totalPrice: Double, onCheckoutClick: () -> Unit) {
-    Surface(modifier = Modifier.fillMaxWidth(), shadowElevation = 16.dp, color = MaterialTheme.colorScheme.surface) {
-        Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shadowElevation = 24.dp,
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Column {
-                Text("Total Harga", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(text = "Rp ${formatRupiah(totalPrice.toLong())}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    "Total Belanja",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = "Rp ${formatRupiah(totalPrice.toLong())}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-            Button(onClick = onCheckoutClick, modifier = Modifier.height(50.dp).width(160.dp), shape = RoundedCornerShape(12.dp)) {
+            Button(
+                onClick = onCheckoutClick,
+                modifier = Modifier.height(54.dp).width(160.dp),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
                 Text("CHECKOUT", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
         }
     }
 }
 
-fun formatRupiah(amount: Long): String {
+@Composable
+private fun EmptyCartView() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Tas belanja Anda kosong.",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.outline
+        )
+    }
+}
+
+private fun formatRupiah(amount: Long): String {
     return amount.toString().reversed().chunked(3).joinToString(".").reversed()
 }

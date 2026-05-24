@@ -1,0 +1,24 @@
+CREATE TABLE PendingOrderEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    total_price REAL NOT NULL,
+    items_summary TEXT NOT NULL, -- Menyimpan ringkasan nama barang (misal: "Mascara x1, Toner x2")
+    created_at INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'PENDING' -- Status: PENDING atau SYNCED
+);
+
+-- Mengambil antrean pesanan yang belum terkirim
+getPendingOrders:
+SELECT * FROM PendingOrderEntity
+WHERE status = 'PENDING'
+ORDER BY created_at ASC;
+
+-- Memasukkan pesanan baru ke antrean
+insertPendingOrder:
+INSERT INTO PendingOrderEntity (total_price, items_summary, created_at, status)
+VALUES (?, ?, ?, 'PENDING');
+
+-- Menandai pesanan sudah berhasil dikirim ke API
+markOrderAsSynced:
+UPDATE PendingOrderEntity
+SET status = 'SYNCED'
+WHERE id = ?;

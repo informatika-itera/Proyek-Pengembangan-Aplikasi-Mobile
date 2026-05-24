@@ -6,7 +6,6 @@ import com.example.rosea.domain.model.Product
 import com.example.rosea.domain.repository.ProductRepository
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
 class HomeViewModel(
@@ -52,11 +51,6 @@ class HomeViewModel(
         initialValue = HomeUiState.Loading
     )
 
-    init {
-        // Otomatis mengisi database lokal dengan dummy data kosmetik saat pertama kali aplikasi dibuka
-        prepopulateDummyProducts()
-    }
-
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
@@ -67,22 +61,6 @@ class HomeViewModel(
 
     fun onSortOrderChange(order: SortOrder) {
         _sortOrder.value = order
-    }
-
-    private fun prepopulateDummyProducts() {
-        viewModelScope.launch {
-            productRepository.getAllProducts().first().let { currentList ->
-                if (currentList.isEmpty()) {
-                    val dummyData = listOf(
-                        Product(1, "Low pH Good Morning Gel Cleanser", "COSRX", "Pembersih wajah lembut dengan kadar pH rendah yang aman untuk kulit sensitif.", 145000.0, "Cleanser", "https://example.com/cosrx.jpg", 0, 0),
-                        Product(2, "Supple Preparation Unscented Toner", "Klairs", "Toner esensial berhidrasi tinggi tanpa kandungan wewangian atau alkohol.", 290000.0, "Toner", "https://example.com/klairs.jpg", 0, 0),
-                        Product(3, "Centella Calming Gel Cream", "iUNIK", "Pelembab bertekstur gel ringan yang sangat efektif menenangkan kulit berjerawat.", 195000.0, "Moisturizer", "https://example.com/iunik.jpg", 0, 0),
-                        Product(4, "Daily UV Defense Sunscreen SPF 36", "Innisfree", "Sunscreen berbasis air yang memberikan proteksi harian tanpa efek white-cast.", 160000.0, "Sunscreen", "https://example.com/innisfree.jpg", 0, 0)
-                    )
-                    dummyData.forEach { productRepository.insertProduct(it) }
-                }
-            }
-        }
     }
 }
 

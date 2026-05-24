@@ -1,4 +1,4 @@
-rootProject.name = "NoteAI"
+rootProject.name = "NeuroDeck"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

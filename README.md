@@ -62,9 +62,10 @@ Mahasiswa dan pelajar yang ingin belajar dengan metode spaced repetition tanpa h
 
 ### 🟡 Pro Upgrades (Sprint 3, Target Bintang 5)
 
-- [ ] **AI Tutor Mode** — Tombol "Explain More" pada kartu sulit → AI menjelaskan konsep dengan analogi yang dipersonalisasi
-- [ ] **Advanced Statistics** — Visualisasi forgetting curve dan predicted retention per kartu
-- [ ] **Animations Polish** — Transisi halus antar screen, micro-interactions
+- [x] **AI Tutor Mode** — Full conversational chat dengan Gemini di tab "AI Chat" (5 tab: Home/Decks/AIChat/Stats/Profile), multi-turn history, persistent SQLDelight
+- [x] **Advanced Statistics** — Stats Tab dengan period filter, BigStatCards, Activity 7-day bar chart, Card Status breakdown, **Forgetting Curve chart** (Compose Canvas dengan formula Ebbinghaus `R(t) = e^(-t/S)`)
+- [x] **Dark Mode** — Theme selector Light/Dark/System di Profile Tab, persisted di DataStore
+- [ ] **Animations Polish** — Transisi halus antar screen, micro-interactions (Sprint 3 fokus)
 
 ### 🔵 Stretch Goals (Opsional, jika waktu memungkinkan)
 
@@ -184,9 +185,9 @@ composeApp/src/
 
 | Sprint | Minggu | Fokus | Status |
 |--------|--------|-------|--------|
-| **Sprint 1** | W11 | Foundation: Setup, Architecture, CI/CD, Deck CRUD | 🟢 In Progress |
-| **Sprint 2** | W12–W13 | Core Features: SM-2, AI Generation, Study Session | ⚪ Planned |
-| **Sprint 3** | W14–W15 | Pro Upgrades + Polish + Testing | ⚪ Planned |
+| **Sprint 1** | W11 | Foundation: Setup, Architecture, CI/CD, Deck CRUD | ✅ Done |
+| **Sprint 2** | W12–W13 | Core Features: SM-2, AI Generation, 5-Tab Navigation, AI Chat, Stats | ✅ Done |
+| **Sprint 3** | W14–W15 | Pro Upgrades + Polish + Testing | 🟡 Cicilan ~80% |
 | **UAS** | W16 | Final Demo Day | ⚪ Planned |
 
 ### 📌 Sprint 1: Foundation (Minggu 11)
@@ -201,16 +202,16 @@ composeApp/src/
 | GitHub Actions CI workflow (build + APK artifact) | NIM 123140167 | ✅ Done |
 | SQLDelight schema awal: `decks`, `cards`, `review_records` | NIM 123140050 | 🟡 In Progress |
 | Domain models: `Deck`, `Flashcard`, `ReviewRecord` | NIM 123140050 | 🟡 In Progress |
-| Navigation skeleton untuk 5 screens | NIM 123140167 | 🟡 In Progress |
+| Navigation skeleton untuk 5 screens | NIM 123140167 | ✅ Done |
 | Deck Library Screen + ViewModel (CRUD deck) | NIM 123140167 | ⚪ Todo |
-| README lengkap (dokumen ini) | NIM 123140050 | 🟡 In Progress |
+| README lengkap  | NIM 123140050 | ✅ Done |
 
 **Deliverables Sprint 1:**
 - ✅ GitHub repository dengan semua collaborator
 - ✅ KMP project structure dengan Clean Architecture folders
 - ✅ GitHub Actions CI passing (badge `passing` di atas)
-- 🟡 README lengkap dengan team info, deskripsi, fitur, tech stack, arsitektur
-- 🟡 Project plan dengan task assignment (dokumen ini bagian "Project Plan")
+- ✅ README lengkap dengan team info, deskripsi, fitur, tech stack, arsitektur
+- ✅ Project plan dengan task assignment
 
 ### 📌 Sprint 2: Core Features (Minggu 12–13)
 
@@ -233,6 +234,78 @@ composeApp/src/
 - SM-2 algorithm fully tested
 - Study session bisa dijalankan end-to-end
 - Statistics dasar tampil
+
+---
+
+### ✅ Sprint 2 Delivery Report (Selesai)
+
+> **Status:** 🎉 Selesai 100% — semua target Sprint 2 tercapai PLUS sebagian besar cicilan Sprint 3.
+
+#### 📦 Yang Dikirimkan
+
+**5 Tab Utama (Bottom Navigation):**
+
+| Tab | Fitur Utama |
+|-----|-------------|
+| 🏠 **Home** | Greeting dinamis (pagi/siang/sore/malam), 3 stat mini (Due/Streak/Hari Ini), Quick Actions, Continue Learning (recent 3 decks), Tips of the Day |
+| 📚 **Decks** | Search bar real-time, AI Generate banner, FAB Create Deck, edit/delete dengan dialog konfirmasi |
+| 💬 **AI Chat** | Multi-turn conversation dengan Gemini, persisten SQLDelight, suggestion chips, typing indicator animasi, clear history |
+| 📊 **Stats** | Period filter (7/30/90 hari/All), 4 BigStatCard, Activity bar chart 7 hari (Canvas), Card Status breakdown, **Forgetting Curve chart** (formula Ebbinghaus) |
+| 👤 **Profile** | User info editable, achievement stats, theme selector (Light/Dark/System), reset data dengan double-confirm |
+
+**Sub-Screens (Stack Navigation):**
+
+- `CreateDeckScreen` — Form 2-step (nama+desc → pilih Manual/AI Generate)
+- `ImportGenerateScreen` — State machine 6-phase: Input → Generating → Preview (editable) → Saving → Done → Error
+- `EditProfileScreen` — Form edit dengan character counter
+- `AboutScreen` — App version, team info, tech stack, GitHub branch
+- `CardListScreen`, `EditCardScreen`, `StudySessionScreen` (existing dari Sprint 1)
+
+**Komponen Reusable:**
+
+- `AppNavHost` — ModalNavigationDrawer + Scaffold(TopBar + BottomNav) + NavHost (proper popUpTo/saveState pattern)
+- `AppTopBar`, `BottomNavBar`, `AppDrawer`, `BottomNavItem`
+- `ConfirmDialog`, `SectionTitle`, `LoadingIndicator`, `EmptyState`, `ErrorMessage`
+
+#### 🏗️ Tambahan Data Layer
+
+- `ReviewRecordRepository` — query stats: total reviews, daily activity, accuracy, streak (timezone-aware)
+- `UserPreferencesRepository` — DataStore-backed (profile + theme), expect/actual cross-platform
+- `ChatRepository` — chat history SQLDelight + composite send (persist user msg → AI call → persist reply)
+- `AIRepository.chatWithHistory()` — multi-turn Gemini API integration
+
+#### 🧠 Highlight Teknis
+
+1. **Algoritma SM-2 implementasi penuh** — `CalculateNextReviewUseCase` dengan unit test
+2. **Gemini API 2 use case** — structured JSON output (flashcards) + plain text streaming (chat)
+3. **Clean Architecture konsisten** — domain interface terpisah dari data implementation
+4. **Reactive UI** — Flow + StateFlow + `combine()` untuk derived UI state
+5. **Forgetting Curve visualization** — Compose Canvas drawing 3 kurva overlay dengan formula `R(t) = e^(-t/S)`, sweet spot SM-2 85% retention dashed line
+
+#### 📊 Statistik Code
+
+- **~50+ file baru** dibuat di Sprint 2 (UI screens, components, ViewModels, repositories)
+- **5 tab utama** + **8 sub-screens** (jauh melebihi minimum 3 screen rubrik)
+- **3 SQL table baru** (`ReviewRecordEntity` extended, `ChatMessageEntity` baru)
+- **2 DataStore preferences** (profile + theme)
+
+#### 🎯 Cicilan Sprint 3 yang Sudah Tercicil di Sprint 2
+
+| Fitur | Status | Lokasi |
+|-------|--------|--------|
+| Search/Filter (25%) | ✅ Done | Decks SearchBar + Stats PeriodFilter |
+| Additional Screen (15%) | ✅ Done | Home + Profile + AIChat + Stats (4 tambahan) |
+| API Integration (25%) | ✅ Done | Gemini API 2 use case (generate + chat) |
+| Offline Support (20%) | ✅ Done | SQLDelight source of truth |
+| Bonus Dark Mode (+5%) | ✅ Done | Theme selector di Profile, DataStore persistence |
+| Bonus AI Tutor Mode (+10%) | ✅ Done | AI Chat tab full conversational |
+| Bonus Forgetting Curve (+5%) | ✅ Done | Stats tab section "Sains di Balik NeuroDeck" |
+
+#### 🐛 Issues yang Di-Resolve
+
+- SQLDelight cache bug saat tambah `.sq` file baru → solved dengan rename DB file (`neurodeck.db` → `neurodeck_v2.db`)
+- MIUI aggressive caching (uninstall app tidak hapus DB file) → solved dengan force fresh DB via filename change
+- Gemini v1beta tidak support `role=system` di multi-turn → solved dengan prepend system prompt sebagai `role=user`
 
 ### 📌 Sprint 3: Pro Upgrades + Polish (Minggu 14–15)
 
@@ -323,7 +396,7 @@ composeApp/src/
 2. Sign in dengan Google account
 3. Klik **"Get API key"** → **"Create API key"**
 4. Salin key dan paste ke `local.properties`
-5. **Free tier:** 1.000 request/hari untuk Gemini 2.5 Flash-Lite 
+5. **Free tier:** 1.000 request/hari untuk Gemini 2.5 Flash-Lite
 
 > ⚠️ **Jangan commit `local.properties` ke Git!** File ini sudah ada di `.gitignore`.
 
@@ -415,7 +488,7 @@ Mengikuti [Conventional Commits](https://www.conventionalcommits.org/):
 ## ⚠️ Disclaimer
 
 - Project ini dibuat untuk **tugas akhir mata kuliah** Pengembangan Aplikasi Mobile, bukan produk komersial.
-- **Algoritma SM-2** mengadopsi metode SuperMemo SM-2 oleh Piotr Wozniak (referensi: [super-memory.com](https://www.super-memory.com/english/ol/sm2.htm)). 
+- **Algoritma SM-2** mengadopsi metode SuperMemo SM-2 oleh Piotr Wozniak (referensi: [super-memory.com](https://www.super-memory.com/english/ol/sm2.htm)).
 - **Gemini API** digunakan dengan free tier; tim tidak bertanggung jawab atas perubahan kebijakan dari Google.
 - Setiap baris kode original atau dengan attribution yang jelas. **Tidak ada plagiarisme** dari project lain.
 

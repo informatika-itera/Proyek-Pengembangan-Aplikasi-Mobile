@@ -1,0 +1,98 @@
+-- ========================================
+-- CARD TABLE
+-- ========================================
+-- Sebuah card = 1 flashcard di dalam deck.
+-- Punya front (pertanyaan), back (jawaban), plus state SM-2 inline.
+--
+-- Kenapa state SM-2 inline (bukan tabel terpisah)?
+-- Karena per kartu cuma ada 1 "current state" aktif. Tabel terpisah hanya
+-- berguna kalau simpan history per state — itu sudah di review_records.
+
+CREATE TABLE CardEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    deckId INTEGER NOT NULL,
+    front TEXT NOT NULL,
+    back TEXT NOT NULL,
+    -- SM-2 state
+    easeFactor REAL NOT NULL DEFAULT 2.5,
+    intervalDays INTEGER NOT NULL DEFAULT 0,
+    repetitions INTEGER NOT NULL DEFAULT 0,
+    lastReviewedAt INTEGER,                              -- nullable: null = belum pernah
+    dueAt INTEGER NOT NULL,                              -- epoch millis
+    -- Metadata
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY (deckId) REFERENCES DeckEntity(id) ON DELETE CASCADE
+);
+
+-- Index untuk filter "due cards" di Study Session (per deck)
+CREATE INDEX card_deck_due_idx ON CardEntity(deckId, dueAt);
+
+-- ========================================
+-- QUERIES
+-- ========================================
+
+selectByDeck:
+SELECT *
+FROM CardEntity
+WHERE deckId = :deckId
+ORDER BY createdAt ASC;
+
+selectById:
+SELECT *
+FROM CardEntity
+WHERE id = :id;
+
+-- Kartu yang due untuk review (dueAt <= now)
+selectDueByDeck:
+SELECT *
+FROM CardEntity
+WHERE deckId = :deckId
+  AND dueAt <= :now
+ORDER BY dueAt ASC;
+
+-- Untuk Statistics: total semua kartu due hari ini (across all decks)
+countAllDue:
+SELECT COUNT(*)
+FROM CardEntity
+WHERE dueAt <= :now;
+
+countByDeck:
+SELECT COUNT(*)
+FROM CardEntity
+WHERE deckId = :deckId;
+
+insert:
+INSERT INTO CardEntity (
+    deckId, front, back,
+    easeFactor, intervalDays, repetitions,
+    lastReviewedAt, dueAt, createdAt
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+-- Update content saja (untuk edit card)
+updateContent:
+UPDATE CardEntity
+SET front = :front,
+    back = :back
+WHERE id = :id;
+
+-- Update SM-2 state (dipanggil setelah user rating di Study Session)
+updateReviewState:
+UPDATE CardEntity
+SET easeFactor = :easeFactor,
+    intervalDays = :intervalDays,
+    repetitions = :repetitions,
+    lastReviewedAt = :lastReviewedAt,
+    dueAt = :dueAt
+WHERE id = :id;
+
+deleteById:
+DELETE FROM CardEntity
+WHERE id = :id;
+
+deleteByDeck:
+DELETE FROM CardEntity
+WHERE deckId = :deckId;

@@ -1,0 +1,66 @@
+-- ========================================
+-- REVIEW RECORD TABLE
+-- ========================================
+-- Setiap kali user menjawab kartu di Study Session, satu row direkam di sini.
+-- Dipakai untuk:
+-- - Statistics screen (retention rate, total reviews hari ini, streak)
+-- - Sprint 3 Pro: AI Tutor mode (data training untuk smart hints)
+
+CREATE TABLE ReviewRecordEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    cardId INTEGER NOT NULL,
+    rating INTEGER NOT NULL,                            -- 0=AGAIN, 3=HARD, 4=GOOD, 5=EASY (quality score)
+    reviewedAt INTEGER NOT NULL,                        -- epoch millis
+    FOREIGN KEY (cardId) REFERENCES CardEntity(id) ON DELETE CASCADE
+);
+
+-- Index untuk query Statistics by tanggal
+CREATE INDEX review_reviewedAt_idx ON ReviewRecordEntity(reviewedAt DESC);
+
+-- ========================================
+-- QUERIES
+-- ========================================
+
+insert:
+INSERT INTO ReviewRecordEntity (cardId, rating, reviewedAt)
+VALUES (?, ?, ?);
+
+-- Untuk Statistics: total review dalam range waktu
+countReviewsBetween:
+SELECT COUNT(*)
+FROM ReviewRecordEntity
+WHERE reviewedAt >= :fromMillis
+  AND reviewedAt < :toMillis;
+
+-- Retention rate: % review yang passing (rating >= 3) dalam range
+countPassingBetween:
+SELECT COUNT(*)
+FROM ReviewRecordEntity
+WHERE reviewedAt >= :fromMillis
+  AND reviewedAt < :toMillis
+  AND rating >= 3;
+
+-- Tanggal terakhir user melakukan review (untuk hitung streak)
+selectLastReviewedAt:
+SELECT MAX(reviewedAt)
+FROM ReviewRecordEntity;
+
+-- Untuk Sprint 3 AI Tutor: ambil semua review untuk kartu tertentu
+selectByCard:
+SELECT *
+FROM ReviewRecordEntity
+WHERE cardId = :cardId
+ORDER BY reviewedAt DESC;
+
+-- Untuk hitung streak: ambil SEMUA timestamp review (descending).
+-- Repository akan group by hari (local time) lalu count consecutive days.
+-- Lebih akurat daripada hanya pakai selectLastReviewedAt yang miss
+-- detail antar-tanggal.
+selectAllReviewedAt:
+SELECT reviewedAt
+FROM ReviewRecordEntity
+ORDER BY reviewedAt DESC;
+
+-- Total lifetime reviews (untuk Profile achievement stats).
+countAll:
+SELECT COUNT(*) FROM ReviewRecordEntity;

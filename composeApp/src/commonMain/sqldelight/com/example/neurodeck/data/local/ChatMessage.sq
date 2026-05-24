@@ -1,0 +1,54 @@
+-- ChatMessage.sq — Persistent storage untuk riwayat AI Chat tab
+--
+-- Sprint 2 P3f — table baru untuk simpan multi-turn conversation
+-- dengan AI Tutor. Tidak terikat ke deck/card spesifik (general purpose).
+--
+-- Schema:
+--   id          PRIMARY KEY autoincrement
+--   role        'user' atau 'assistant' (TEXT untuk readability di DB browser)
+--   content     teks pesan (bisa panjang — markdown supported)
+--   timestamp   epoch millis untuk ordering
+--   isError     1 kalau pesan dari assistant gagal di-fetch (untuk UI hint retry)
+
+CREATE TABLE ChatMessageEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    isError INTEGER NOT NULL DEFAULT 0
+);
+
+-- Index untuk fast ordering (paling sering query: ORDER BY timestamp ASC)
+CREATE INDEX idx_chat_timestamp ON ChatMessageEntity(timestamp);
+
+-- ════════════════════════════════════════════════════════════════════════
+-- QUERIES
+-- ════════════════════════════════════════════════════════════════════════
+
+selectAll:
+SELECT *
+FROM ChatMessageEntity
+ORDER BY timestamp ASC;
+
+-- Untuk preview last N messages (dipakai kalau perlu limit context window
+-- ke Gemini API supaya tidak overflow token limit).
+selectRecent:
+SELECT *
+FROM ChatMessageEntity
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+insert:
+INSERT INTO ChatMessageEntity(role, content, timestamp, isError)
+VALUES (?, ?, ?, ?);
+
+-- Untuk dapat ID setelah insert (LAST_INSERT_ROWID = standard SQLite).
+lastInsertedId:
+SELECT last_insert_rowid();
+
+-- Clear all chat history — dipakai di tombol "Clear chat" di AppBar action.
+deleteAll:
+DELETE FROM ChatMessageEntity;
+
+countAll:
+SELECT COUNT(*) FROM ChatMessageEntity;

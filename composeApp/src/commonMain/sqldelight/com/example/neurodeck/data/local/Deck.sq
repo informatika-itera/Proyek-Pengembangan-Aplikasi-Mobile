@@ -1,0 +1,69 @@
+-- ========================================
+-- DECK TABLE
+-- ========================================
+-- Sebuah deck = kumpulan kartu flashcard yang terkait satu topik.
+-- Contoh: "Kalkulus Bab 3", "Bahasa Inggris TOEFL", "Pemrograman Mobile UTS".
+
+CREATE TABLE DeckEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+-- Index untuk sorting di Deck Library (terbaru di atas)
+CREATE INDEX deck_updatedAt_idx ON DeckEntity(updatedAt DESC);
+
+-- ========================================
+-- QUERIES
+-- ========================================
+
+selectAll:
+SELECT *
+FROM DeckEntity
+ORDER BY updatedAt DESC;
+
+selectById:
+SELECT *
+FROM DeckEntity
+WHERE id = :id;
+
+insert:
+INSERT INTO DeckEntity (title, description, createdAt, updatedAt)
+VALUES (?, ?, ?, ?);
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+update:
+UPDATE DeckEntity
+SET title = :title,
+    description = :description,
+    updatedAt = :updatedAt
+WHERE id = :id;
+
+deleteById:
+DELETE FROM DeckEntity
+WHERE id = :id;
+
+-- ========================================
+-- AGGREGATE QUERIES (untuk Statistics screen)
+-- ========================================
+
+countAll:
+SELECT COUNT(*) FROM DeckEntity;
+
+-- Jumlah card per deck (LEFT JOIN supaya deck kosong tetap muncul dengan count=0)
+selectAllWithCardCount:
+SELECT
+    d.id,
+    d.title,
+    d.description,
+    d.createdAt,
+    d.updatedAt,
+    COUNT(c.id) AS cardCount
+FROM DeckEntity d
+LEFT JOIN CardEntity c ON c.deckId = d.id
+GROUP BY d.id
+ORDER BY d.updatedAt DESC;

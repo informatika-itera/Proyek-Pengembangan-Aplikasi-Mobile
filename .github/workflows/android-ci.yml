@@ -3,9 +3,7 @@ name: Android CI
 on:
   push:
     branches:
-      - main
-      - master
-      - develop
+      - project/123140182-123140192-EduMate
 
   pull_request:
     branches:

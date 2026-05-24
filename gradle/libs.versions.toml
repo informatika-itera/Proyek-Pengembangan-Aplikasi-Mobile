@@ -1,11 +1,11 @@
 [versions]
-agp = "8.5.2"
+agp = "8.13.2"
 kotlin = "2.0.21"
 compose-multiplatform = "1.7.0"
 kotlinx-coroutines = "1.9.0"
-kotlinx-serialization = "1.7.3"
+kotlinx-serialization = "1.6.3"
 kotlinx-datetime = "0.6.1"
-ktor = "3.0.1"
+ktor = "2.3.12"
 koin = "4.0.0"
 sqldelight = "2.0.2"
 datastore = "1.1.1"
@@ -13,8 +13,6 @@ okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
-
-# Testing
 turbine = "1.2.0"
 
 [libraries]
@@ -46,8 +44,6 @@ sqldelight-native-driver = { group = "app.cash.sqldelight", name = "native-drive
 
 # DataStore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
-
-# Okio (dipakai bersama DataStore untuk path penyimpanan)
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 
 # Lifecycle & ViewModel
@@ -59,7 +55,7 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 
 # Coil (Image Loading)
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor2", version.ref = "coil" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }

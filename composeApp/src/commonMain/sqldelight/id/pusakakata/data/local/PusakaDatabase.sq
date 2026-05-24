@@ -3,6 +3,7 @@ CREATE TABLE WordEntity (
     term TEXT NOT NULL,
     definition TEXT NOT NULL,
     category TEXT NOT NULL,
+    example TEXT NOT NULL DEFAULT '',
     createdAt INTEGER NOT NULL,
     -- SRS Fields
     intervalDays INTEGER NOT NULL DEFAULT 0,
@@ -11,15 +12,27 @@ CREATE TABLE WordEntity (
     level INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE UserStats (
+    id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    tokens INTEGER NOT NULL DEFAULT 0
+);
+
+-- Init user stats if not exists
+INSERT OR IGNORE INTO UserStats(id, tokens) VALUES (1, 0);
+
+-- Word Queries
 getAllWords:
 SELECT * FROM WordEntity ORDER BY createdAt DESC;
 
 getWordById:
 SELECT * FROM WordEntity WHERE id = ?;
 
+getRandomWords:
+SELECT * FROM WordEntity ORDER BY RANDOM() LIMIT ?;
+
 insertWord:
-INSERT OR REPLACE INTO WordEntity(id, term, definition, category, createdAt, intervalDays, easeFactor, nextReview, level)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO WordEntity(id, term, definition, category, example, createdAt, intervalDays, easeFactor, nextReview, level)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteWord:
 DELETE FROM WordEntity WHERE id = ?;
@@ -29,8 +42,19 @@ UPDATE WordEntity
 SET term = ?,
     definition = ?,
     category = ?,
+    example = ?,
     intervalDays = ?,
     easeFactor = ?,
     nextReview = ?,
     level = ?
 WHERE id = ?;
+
+-- Token Queries
+getTokens:
+SELECT tokens FROM UserStats WHERE id = 1;
+
+addTokens:
+UPDATE UserStats SET tokens = tokens + ? WHERE id = 1;
+
+useToken:
+UPDATE UserStats SET tokens = tokens - 1 WHERE id = 1;

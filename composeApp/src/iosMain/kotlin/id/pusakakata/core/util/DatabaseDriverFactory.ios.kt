@@ -8,7 +8,7 @@ actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
             schema = PusakaDatabase.Schema,
-            name = "pusaka.db"
+            name = "pusakakata_v2.db"
         )
     }
 }

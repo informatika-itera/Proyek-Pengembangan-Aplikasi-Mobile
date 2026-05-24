@@ -116,7 +116,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         
-        // Inject API key from local.properties
+        // Inject API key from local.properties for Android specifically
         buildConfigField(
             "String",
             "GEMINI_API_KEY",

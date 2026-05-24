@@ -2,20 +2,13 @@ package id.pusakakata.ui.screens.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import id.pusakakata.domain.model.Word
-import id.pusakakata.domain.repository.WordRepository
+import id.pusakakata.domain.repository.ItemRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-sealed class DetailUiState {
-    object Loading : DetailUiState()
-    data class Success(val word: Word) : DetailUiState()
-    data class Error(val message: String) : DetailUiState()
-}
-
 class DetailViewModel(
-    private val repository: WordRepository,
+    private val repository: ItemRepository,
     private val wordId: String
 ) : ViewModel() {
 

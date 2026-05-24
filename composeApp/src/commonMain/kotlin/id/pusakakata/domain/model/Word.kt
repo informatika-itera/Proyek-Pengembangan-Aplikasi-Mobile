@@ -7,14 +7,16 @@ data class Word(
     val term: String,
     val definition: String,
     val category: String, // Misal: Sastra, Arkais, Umum
+    val example: String = "", // Contoh penggunaan kalimat
     val srsData: SRSData = SRSData()
 ) {
     fun copy(
         term: String = this.term,
         definition: String = this.definition,
         category: String = this.category,
+        example: String = this.example,
         srsData: SRSData = this.srsData
-    ) = Word(id, term, definition, category, srsData)
+    ) = Word(id, term, definition, category, example, srsData)
 }
 
 data class SRSData(

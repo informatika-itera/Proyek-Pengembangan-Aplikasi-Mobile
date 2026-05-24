@@ -3,7 +3,7 @@ package id.pusakakata.ui.screens.addedit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.pusakakata.domain.model.Word
-import id.pusakakata.domain.repository.WordRepository
+import id.pusakakata.domain.repository.ItemRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,20 +12,14 @@ import kotlinx.coroutines.launch
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-data class AddEditUiState(
-    val wordId: String? = null,
-    val term: String = "",
-    val definition: String = "",
-    val category: String = "Umum",
-    val isSuccess: Boolean = false,
-    val isLoading: Boolean = false,
-    val error: String? = null
-) {
-    val canSave: Boolean get() = term.isNotBlank() && definition.isNotBlank()
-}
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class AiResponse(val definition: String, val category: String, val example: String = "")
 
 class AddEditViewModel(
-    private val repository: WordRepository,
+    private val repository: ItemRepository,
     private val wordId: String?
 ) : ViewModel() {
 
@@ -47,6 +41,7 @@ class AddEditViewModel(
                         term = word.term,
                         definition = word.definition,
                         category = word.category,
+                        example = word.example,
                         isLoading = false
                     )
                 }
@@ -62,8 +57,45 @@ class AddEditViewModel(
         _uiState.update { it.copy(definition = newDef) }
     }
 
+    fun onExampleChange(newExample: String) {
+        _uiState.update { it.copy(example = newExample) }
+    }
+
     fun onCategoryChange(newCat: String) {
         _uiState.update { it.copy(category = newCat) }
+    }
+
+    fun searchOnline() {
+        val term = _uiState.value.term
+        if (term.isBlank()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            repository.getAiDefinition(term)
+                .onSuccess { rawResponse ->
+                    try {
+                        val parsed = Json { ignoreUnknownKeys = true }.decodeFromString<AiResponse>(rawResponse)
+                        _uiState.update { 
+                            it.copy(
+                                definition = parsed.definition,
+                                category = if (parsed.category in listOf("Umum", "Sastra", "Arkais")) parsed.category else "Umum",
+                                example = parsed.example,
+                                isLoading = false
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _uiState.update { 
+                            it.copy(
+                                definition = rawResponse,
+                                isLoading = false
+                            )
+                        }
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+        }
     }
 
     @OptIn(ExperimentalUuidApi::class)
@@ -76,7 +108,8 @@ class AddEditViewModel(
                 id = wordId ?: Uuid.random().toString(),
                 term = currentState.term.trim(),
                 definition = currentState.definition.trim(),
-                category = currentState.category.trim()
+                category = currentState.category.trim(),
+                example = currentState.example.trim()
             )
             try {
                 if (wordId == null) {

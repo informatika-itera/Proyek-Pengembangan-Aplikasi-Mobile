@@ -1,25 +1,35 @@
-name: KMP CI
+name: PusakaKata CI
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "project/123140045-123140028-PusakaKata" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: set up JDK 17
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Base Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant execute permission for gradlew
+      - name: Create Mock local.properties for Build
+        run: |
+          echo "GEMINI_API_KEY=dummy_key" > local.properties
+
+      - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
+      - name: Run All Unit Tests
+        run: ./gradlew test
+
+      - name: Compile and Build Debug APK
         run: ./gradlew assembleDebug

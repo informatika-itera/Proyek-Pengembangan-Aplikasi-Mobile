@@ -2,7 +2,7 @@
 
 ![KMP CI](https://github.com/MuharyanSyaifullah/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
-**Pusaka Kata** adalah aplikasi edukasi interaktif berbasis **Kotlin Multiplatform (KMP)** yang dirancang untuk memperkaya penguasaan kosakata baku, peribahasa, dan kesusastraan Indonesia bagi pengguna Android dan iOS.
+**Pusaka Kata** adalah aplikasi edukasi interaktif berbasis **Kotlin Multiplatform (KMP)** yang dirancang untuk memperkaya penguasaan kosakata baku, puitis, dan arkais Indonesia melalui bantuan AI dan gamifikasi mitologi Nusantara.
 
 ---
 
@@ -12,52 +12,58 @@
 
 ---
 
-## ✨ Fitur Utama
-1. 🧠 **Smart Flashcard (SRS):** Hafalan kosakata dengan algoritma pengulangan adaptif.
-2. 📸 **OCR Scanner:** Ekstraksi kosakata langsung dari buku menggunakan kamera (Google ML Kit & Apple Vision).
-3. 🎲 **Gacha Reward:** Koleksi kartu karakter mitologi Nusantara (Tuyul, Barong, Garuda) setiap selesai belajar.
-4. 📚 **Galeri Nusantara:** Ensiklopedia digital karakter mitologi yang telah dikoleksi.
+## ✨ Fitur Utama (Update Minggu 13)
+1. 🧠 **Smart Flashcard (SRS):** Hafalan kosakata menggunakan **Algoritma SM-2 (SuperMemo-2)** yang menghitung jadwal review secara adaptif berdasarkan kualitas jawaban pengguna.
+2. ✨ **Asisten AI (Gemini Flash 2.5):** Integrasi kecerdasan buatan untuk otomatisasi:
+    - **Definisi Otomatis:** Memberikan makna kata yang akurat.
+    - **Klasifikasi Kategori:** Mengelompokkan kata ke dalam *Umum, Sastra,* atau *Arkais*.
+    - **Generator Kalimat:** Membuat contoh penggunaan kalimat yang puitis dan formal secara otomatis.
+3. 🎲 **Sistem Gacha Kartu Pusaka:** Kumpulkan kartu karakter legendaris Nusantara (Gajah Mada, Nyi Roro Kidul, dll) menggunakan token yang didapat dari kuis.
+4. 📝 **Kuis Pintar:** Tantangan menebak definisi kata untuk melatih ingatan dan mendapatkan reward token.
+5. 📴 **Dukungan Offline:** Database lokal SQLDelight yang sudah terisi dengan **15 Kosakata Pusaka Awal** (Sasmita, Renjana, dll) agar aplikasi bisa langsung digunakan tanpa internet.
 
 ---
 
 ## 🛠️ Tech Stack & Arsitektur
 Aplikasi ini menggunakan standar **Modern Android & iOS Development**:
-* **Language:** Kotlin
+* **Language:** Kotlin 2.0+
 * **Framework:** Compose Multiplatform (UI Lintas Platform)
 * **Architecture:** Clean Architecture (Domain, Data, UI)
-* **DI:** Koin (Dependency Injection) - *Bonus 10% Implemented*
-* **Local DB:** SQLDelight / Room KMP
-* **Concurrency:** Kotlin Coroutines & Flow
-* **CI/CD:** GitHub Actions
+* **DI:** Koin (Dependency Injection)
+* **Networking:** Ktor Client 2.3.12 (with Content Negotiation & Logging)
+* **Serialization:** Kotlinx Serialization 1.6.3
+* **Local DB:** SQLDelight 2.0.2
+* **Time:** Kotlinx Datetime
+* **AI Engine:** Google Gemini AI (v1beta API)
 
 ---
 
 ## 📂 Struktur Proyek (Clean Architecture)
 ```text
 composeApp/src/commonMain/kotlin/id/pusakakata/
-├── data/           # Repository implementations & Data Sources
-├── domain/         # Business Logic (Model, UseCase, Repository Interface)
-├── di/             # Dependency Injection (Koin Modules)
-└── ui/             # Presentation layer (Compose UI)
+├── core/           # Utility, Networking, & DI Base Setup
+├── data/           # Repository implementations, Mappers, & Remote/Local Sources
+├── domain/         # Business Logic (Model, Repository Interface)
+├── di/             # Koin Dependency Injection Modules
+└── ui/             # Presentation layer (Compose UI, ViewModels, Components)
 ```
 
 ---
 
-## 📅 Rencana Proyek (Project Plan)
+## 📅 Progres Proyek (Week 13 Completion)
 
-| Sprint | Fokus | Target Fitur |
+| Fitur | Status | Detail |
 | :--- | :--- | :--- |
-| **Sprint 1** | Setup | Initial KMP Setup, Clean Architecture, CI/CD, Koin DI |
-| **Sprint 2** | Database | SQLDelight Setup, Word Entity, Collection Entity |
-| **Sprint 3** | Core Logic | Algoritma SRS & Weighted RNG Gacha |
-| **Sprint 4** | UI/UX | Home Screen & Flashcard UI |
-| **Sprint 5** | OCR & Camera | Integrasi ML Kit (Android) & Apple Vision (iOS) |
-| **Sprint 6** | Finalization | Polishing, Bug Fixing, & Documentation |
+| **REST API & AI** | ✅ Selesai | Integrasi Gemini AI & Unofficial KBBI API |
+| **Database Lokal** | ✅ Selesai | SQLDelight dengan Auto-populate 15 data awal |
+| **SRS Algorithm** | ✅ Selesai | Implementasi Algoritma SM-2 fungsional |
+| **Gamification** | ✅ Selesai | Sistem Gacha & Manajemen Token |
+| **UI/UX Polish** | ✅ Selesai | Pop-up AI terpadu & Layar Detail Lengkap |
 
 ---
 
 ## 🚀 Cara Menjalankan
-1. Clone repository.
-2. Buka di Android Studio (Koala/Ladybug terbaru).
-3. Pastikan sudah ada JDK 17.
+1. Clone repository ini.
+2. Masukkan `GEMINI_API_KEY` Anda ke dalam file `local.properties`.
+3. Buka di Android Studio (Ladybug atau terbaru).
 4. Run `composeApp` di emulator Android atau simulator iOS.

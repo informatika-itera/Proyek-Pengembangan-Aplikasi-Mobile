@@ -3,64 +3,69 @@ package id.pusakakata.ui.screens.flashcard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.pusakakata.domain.model.Word
-import id.pusakakata.domain.repository.WordRepository
-import kotlinx.coroutines.flow.*
+import id.pusakakata.domain.repository.ItemRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
-data class FlashcardUiState(
-    val wordsToReview: List<Word> = emptyList(),
-    val currentIndex: Int = 0,
-    val isFlipped: Boolean = false,
-    val isLoading: Boolean = true,
-    val isFinished: Boolean = false
-)
+sealed interface FlashcardUiState {
+    object Loading : FlashcardUiState
+    data class Success(
+        val words: List<Word>,
+        val currentIndex: Int = 0,
+        val isFlipped: Boolean = false,
+        val isFinished: Boolean = false
+    ) : FlashcardUiState {
+        val currentWord: Word? get() = if (words.isNotEmpty() && currentIndex < words.size) words[currentIndex] else null
+    }
+    object Empty : FlashcardUiState
+}
 
-class FlashcardViewModel(private val repository: WordRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(FlashcardUiState())
-    val uiState = _uiState.asStateFlow()
+class FlashcardViewModel(private val repository: ItemRepository) : ViewModel() {
+    private val _uiState = MutableStateFlow<FlashcardUiState>(FlashcardUiState.Loading)
+    val uiState: StateFlow<FlashcardUiState> = _uiState
 
     init {
-        loadWords()
+        loadFlashcards()
     }
 
-    private fun loadWords() {
+    private fun loadFlashcards() {
         viewModelScope.launch {
-            repository.getAllWords().first().let { allWords ->
-                val now = Clock.System.now()
-                val toReview = allWords.filter { 
-                    it.srsData.nextReview == null || it.srsData.nextReview!! <= now 
-                }.shuffled()
-                
-                _uiState.update { it.copy(wordsToReview = toReview, isLoading = false) }
-            }
+            val allWords = repository.getAllWords().first()
+            val dueWords = allWords.filter { 
+                val nextReview = it.srsData.nextReview?.toEpochMilliseconds() ?: 0L
+                nextReview <= Clock.System.now().toEpochMilliseconds()
+            }.shuffled()
+
+            _uiState.value = if (dueWords.isEmpty()) FlashcardUiState.Empty else FlashcardUiState.Success(dueWords)
         }
     }
 
     fun flipCard() {
-        _uiState.update { it.copy(isFlipped = !it.isFlipped) }
-    }
-
-    fun submitReview(quality: Int) {
-        val currentWord = _uiState.value.wordsToReview.getOrNull(_uiState.value.currentIndex) ?: return
-        
-        viewModelScope.launch {
-            val newSrsData = currentWord.srsData.copy(
-                level = (currentWord.srsData.level + 1).coerceAtMost(5),
-                intervalDays = (currentWord.srsData.intervalDays + quality).coerceAtLeast(1)
-            )
-            repository.updateWord(currentWord.copy(srsData = newSrsData))
-            moveToNext()
+        val state = _uiState.value
+        if (state is FlashcardUiState.Success) {
+            _uiState.value = state.copy(isFlipped = !state.isFlipped)
         }
     }
 
-    private fun moveToNext() {
-        _uiState.update { state ->
-            val nextIndex = state.currentIndex + 1
-            if (nextIndex >= state.wordsToReview.size) {
-                state.copy(isFinished = true)
-            } else {
-                state.copy(currentIndex = nextIndex, isFlipped = false)
+    fun nextCard(quality: Int) {
+        val state = _uiState.value
+        if (state is FlashcardUiState.Success) {
+            viewModelScope.launch {
+                val currentWord = state.currentWord ?: return@launch
+                // Implementasi SM-2 Algorithm via Repository
+                repository.updateSrs(currentWord.id, quality)
+                
+                if (state.currentIndex + 1 < state.words.size) {
+                    _uiState.value = state.copy(
+                        currentIndex = state.currentIndex + 1,
+                        isFlipped = false
+                    )
+                } else {
+                    _uiState.value = state.copy(isFinished = true)
+                }
             }
         }
     }

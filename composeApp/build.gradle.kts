@@ -106,11 +106,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.example.tripmate"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.example.tripmate"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -152,8 +152,8 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+        create("TripDatabase") {
+            packageName.set("com.example.tripmate.data.local")
         }
     }
 }

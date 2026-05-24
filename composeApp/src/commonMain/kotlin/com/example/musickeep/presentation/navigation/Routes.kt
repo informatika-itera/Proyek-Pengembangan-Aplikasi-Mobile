@@ -11,4 +11,7 @@ sealed interface Route {
     
     @Serializable
     data class MusicDetail(val musicId: Long) : Route
+
+    @Serializable
+    data object Settings : Route
 }

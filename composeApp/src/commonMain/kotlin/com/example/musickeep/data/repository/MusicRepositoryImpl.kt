@@ -2,6 +2,8 @@ package com.example.musickeep.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.example.musickeep.data.local.MusicDatabase
 import com.example.musickeep.data.mapper.toDomain
 import com.example.musickeep.domain.model.Music
@@ -58,5 +60,14 @@ class MusicRepositoryImpl(
 
     override suspend fun deleteMusic(id: Long) {
         queries.deleteMusicById(id)
+    }
+
+    override fun getTotalCount(): Flow<Long> {
+        return queries.getTotalCount().asFlow().mapToOne(Dispatchers.IO)
+    }
+
+    override fun getMostCommonGenre(): Flow<String?> {
+        return queries.getMostCommonGenre().asFlow().mapToOneOrNull(Dispatchers.IO)
+            .map { it?.genre }
     }
 }

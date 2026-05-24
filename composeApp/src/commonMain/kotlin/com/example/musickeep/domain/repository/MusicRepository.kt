@@ -10,4 +10,6 @@ interface MusicRepository {
     suspend fun insertMusic(music: Music)
     suspend fun updateMusic(music: Music)
     suspend fun deleteMusic(id: Long)
+    fun getTotalCount(): Flow<Long>
+    fun getMostCommonGenre(): Flow<String?>
 }

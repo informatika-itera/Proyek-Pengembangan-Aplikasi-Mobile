@@ -106,9 +106,12 @@ composeApp/src/
 - [x] UI States (Loading, Success, Error) implemented
 
 ### Sprint 3: Advanced Features
-- [ ] Implementasi search dengan debounce
-- [ ] Tambahkan filter dan sort
-- [ ] Implementasi offline-first
+- [x] Search/filter functionality working (Debounce + Genre Chips)
+- [x] API integration atau enhanced local features (Auto-Statistics)
+- [x] At least 1 additional screen (Settings/Profile)
+- [x] Offline support (SQLDelight + DataStore)
+- [x] At least 1 bonus feature implemented (Share Music Progress)
+- [x] All core features dari Sprint 2 tetap working
 
 ### Sprint 4: AI & Polish
 - [ ] Integrasikan fitur AI baru

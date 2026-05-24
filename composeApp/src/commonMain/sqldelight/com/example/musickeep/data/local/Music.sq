@@ -42,3 +42,14 @@ WHERE id = ?;
 deleteMusicById:
 DELETE FROM MusicEntity
 WHERE id = ?;
+
+-- Get total count of music
+getTotalCount:
+SELECT COUNT(*) FROM MusicEntity;
+
+-- Get most common genre
+getMostCommonGenre:
+SELECT genre FROM MusicEntity
+GROUP BY genre
+ORDER BY COUNT(*) DESC
+LIMIT 1;

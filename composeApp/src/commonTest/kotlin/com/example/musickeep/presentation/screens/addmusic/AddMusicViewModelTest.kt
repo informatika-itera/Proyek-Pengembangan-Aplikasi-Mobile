@@ -14,6 +14,8 @@ class FakeMusicRepository : MusicRepository {
     override suspend fun insertMusic(music: Music) {}
     override suspend fun updateMusic(music: Music) {}
     override suspend fun deleteMusic(id: Long) {}
+    override fun getTotalCount(): Flow<Long> = flowOf(0L)
+    override fun getMostCommonGenre(): Flow<String?> = flowOf(null)
 }
 
 class AddMusicViewModelTest {

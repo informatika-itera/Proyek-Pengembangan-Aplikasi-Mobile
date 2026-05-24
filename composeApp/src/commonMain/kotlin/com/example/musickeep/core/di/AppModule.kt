@@ -10,6 +10,7 @@ import com.example.musickeep.domain.repository.MusicRepository
 import com.example.musickeep.presentation.screens.addmusic.AddMusicViewModel
 import com.example.musickeep.presentation.screens.detail.MusicDetailViewModel
 import com.example.musickeep.presentation.screens.home.HomeViewModel
+import com.example.musickeep.presentation.screens.settings.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -52,6 +53,7 @@ val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddMusicViewModel)
     viewModelOf(::MusicDetailViewModel)
+    viewModelOf(::SettingsViewModel)
 }
 
 // ==================== SHARED MODULES ====================

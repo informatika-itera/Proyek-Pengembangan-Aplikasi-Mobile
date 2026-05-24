@@ -3,11 +3,13 @@ package com.example.musickeep.presentation.screens.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,13 +25,21 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToAddMusic: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Katalog Musik") })
+            TopAppBar(
+                title = { Text("Katalog Musik") },
+                actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToAddMusic) {
@@ -38,13 +48,30 @@ fun HomeScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            // Search Bar
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = viewModel::onSearchQueryChange,
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 placeholder = { Text("Cari lagu atau artis...") },
-                singleLine = true
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium
             )
+
+            // Filter Chips (Genre)
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(uiState.genres) { genre ->
+                    FilterChip(
+                        selected = uiState.selectedGenre == genre,
+                        onClick = { viewModel.onGenreSelect(genre) },
+                        label = { Text(genre) }
+                    )
+                }
+            }
 
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -52,7 +79,10 @@ fun HomeScreen(
                 }
             } else if (uiState.musicList.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Belum ada koleksi musik")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Tidak ada musik ditemukan", style = MaterialTheme.typography.bodyLarge)
+                        Text("Coba ubah filter atau tambah lagu baru", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                    }
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {

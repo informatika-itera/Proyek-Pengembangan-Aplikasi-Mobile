@@ -29,12 +29,11 @@
     <string name="sort_updated_desc">Diupdate (Baru)</string>
     
     <!-- Note Categories -->
-    <string name="category_general">Umum</string>
-    <string name="category_work">Pekerjaan</string>
-    <string name="category_personal">Pribadi</string>
-    <string name="category_ideas">Ide</string>
-    <string name="category_todo">Tugas</string>
-    <string name="category_study">Belajar</string>
+    <string name="category_food">Makanan</string>
+    <string name="category_drink">Minuman</string>
+    <string name="category_clothes">Pakaian</string>
+    <string name="category_electronic">Elektronik</string>
+    <string name="category_other">Lainnya</string>
     
     <!-- Note Colors -->
     <string name="color_default">Default</string>

@@ -128,7 +128,7 @@ class HomeViewModelTest {
         content: String = "Content",
         price: Double = 0.0,
         stock: Int = 0,
-        category: NoteCategory = NoteCategory.GENERAL,
+        category: NoteCategory = NoteCategory.FOOD,
         isPinned: Boolean = false
     ): Note {
         return Note(

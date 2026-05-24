@@ -17,7 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mapenumkm.domain.model.Transaction
 import com.example.mapenumkm.presentation.screens.home.DashboardBottomNavigation
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,11 +29,20 @@ fun HistoryScreen(
     onNavigateBack: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToProduct: () -> Unit,
-    onNavigateToTransaksi: () -> Unit,
-    onNavigateToLaporan: () -> Unit,
+    onNavigateToTransaction: () -> Unit,
+    onNavigateToReport: () -> Unit,
+    viewModel: HistoryViewModel = koinViewModel()
 ) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    val uiState by viewModel.uiState.collectAsState()
     val tabs = listOf("Semua", "Hari ini", "Minggu ini", "Bulan ini")
+    
+    val selectedTabIndex = when ((uiState as? HistoryUiState.Success)?.selectedFilter) {
+        HistoryFilter.ALL -> 0
+        HistoryFilter.TODAY -> 1
+        HistoryFilter.THIS_WEEK -> 2
+        HistoryFilter.THIS_MONTH -> 3
+        else -> 0
+    }
     
     val greenPrimary = Color(0xFF16A34A)
     val greenStatus = Color(0xFF16A34A)
@@ -37,47 +50,42 @@ fun HistoryScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Riwayat Transaksi",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(greenPrimary)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onNavigateBack
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali",
                             tint = Color.White
                         )
                     }
-                },
-                actions = {
-                    IconButton(onClick = { /* Filter action */ }) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter",
-                            tint = Color.White
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Riwayat Transaksi",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = greenPrimary
-                )
-            )
+                    )
+                }
+            }
         },
         bottomBar = {
             DashboardBottomNavigation(
                 selectedItem = 3,
                 onDashboardClick = onNavigateToDashboard,
                 onProdukClick = onNavigateToProduct,
-                onTransaksiClick = onNavigateToTransaksi,
+                onTransaksiClick = onNavigateToTransaction,
                 onRiwayatClick = {},
-                onLaporanClick = onNavigateToLaporan
+                onLaporanClick = onNavigateToReport
             )
         }
     ) { paddingValues ->
@@ -100,11 +108,20 @@ fun HistoryScreen(
                 },
                 divider = {}
             ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = {
+                                val filter = when (index) {
+                                    0 -> HistoryFilter.ALL
+                                    1 -> HistoryFilter.TODAY
+                                    2 -> HistoryFilter.THIS_WEEK
+                                    3 -> HistoryFilter.THIS_MONTH
+                                    else -> HistoryFilter.ALL
+                                }
+                                viewModel.onFilterSelected(filter)
+                            },
+                            text = {
                             Text(
                                 text = title,
                                 style = MaterialTheme.typography.labelLarge.copy(
@@ -117,40 +134,44 @@ fun HistoryScreen(
                 }
             }
 
-            // Transaction List
-            val transactions = remember {
-                listOf(
-                    TransactionItemData("INV-20250520-001", "20 Mei 2025 • 10:30", 3, "Selesai", 28000.0),
-                    TransactionItemData("INV-20250520-002", "20 Mei 2025 • 11:15", 2, "Selesai", 16000.0),
-                    TransactionItemData("INV-20250520-003", "20 Mei 2025 • 12:45", 4, "Selesai", 42000.0),
-                    TransactionItemData("INV-20250520-004", "20 Mei 2025 • 13:30", 1, "Selesai", 8000.0),
-                    TransactionItemData("INV-20250520-005", "20 Mei 2025 • 14:20", 5, "Selesai", 55000.0)
-                )
-            }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(transactions) { transaction ->
-                    TransactionCard(transaction, greenStatus)
+            when (val state = uiState) {
+                is HistoryUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = greenPrimary)
+                    }
+                }
+                is HistoryUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = state.message, color = Color.Red)
+                    }
+                }
+                is HistoryUiState.Success -> {
+                    if (state.transactions.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = "Belum ada transaksi", color = Color.Gray)
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(state.transactions) { transaction ->
+                                TransactionCard(transaction, greenStatus)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-data class TransactionItemData(
-    val id: String,
-    val dateTime: String,
-    val itemCount: Int,
-    val status: String,
-    val amount: Double
-)
-
 @Composable
-fun TransactionCard(transaction: TransactionItemData, statusColor: Color) {
+fun TransactionCard(transaction: Transaction, statusColor: Color) {
+    val dateTime = transaction.createdAt.toLocalDateTime(TimeZone.currentSystemDefault())
+    val dateStr = "${dateTime.dayOfMonth} ${getMonthName(dateTime.monthNumber)} ${dateTime.year} • ${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -166,14 +187,14 @@ fun TransactionCard(transaction: TransactionItemData, statusColor: Color) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = transaction.id,
+                    text = "INV-${transaction.id.toString().padStart(6, '0')}",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp
                     )
                 )
                 Text(
-                    text = transaction.status,
+                    text = "Selesai",
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = statusColor,
                         fontWeight = FontWeight.Bold
@@ -184,7 +205,7 @@ fun TransactionCard(transaction: TransactionItemData, statusColor: Color) {
             Spacer(modifier = Modifier.height(4.dp))
             
             Text(
-                text = transaction.dateTime,
+                text = dateStr,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -197,18 +218,36 @@ fun TransactionCard(transaction: TransactionItemData, statusColor: Color) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${transaction.itemCount} item",
+                    text = "${transaction.items.sumOf { it.quantity }} item",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
                 Text(
-                    text = "Rp ${formatAmount(transaction.amount)}",
+                    text = "Rp ${formatAmount(transaction.total)}",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     )
                 )
             }
         }
+    }
+}
+
+fun getMonthName(month: Int): String {
+    return when (month) {
+        1 -> "Jan"
+        2 -> "Feb"
+        3 -> "Mar"
+        4 -> "Apr"
+        5 -> "Mei"
+        6 -> "Jun"
+        7 -> "Jul"
+        8 -> "Agu"
+        9 -> "Sep"
+        10 -> "Okt"
+        11 -> "Nov"
+        12 -> "Des"
+        else -> ""
     }
 }
 

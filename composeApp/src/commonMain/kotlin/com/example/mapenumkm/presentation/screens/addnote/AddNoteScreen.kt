@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -59,7 +60,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.mapenumkm.domain.model.NoteCategory
-import com.example.mapenumkm.presentation.components.ColorPickerRow
 import com.example.mapenumkm.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -79,6 +79,8 @@ fun AddNoteScreen(
         viewModel.onImageChange(uri)
     }
     
+    val greenPrimary = Color(0xFF16A34A)
+    
     LaunchedEffect(noteId) {
         noteId?.let { viewModel.loadNote(it) }
     }
@@ -95,27 +97,36 @@ fun AddNoteScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        if (uiState.isEditMode) "Edit Produk" else "Produk Baru",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { onNavigateToAI(uiState.content) },
-                        enabled = uiState.content.isNotBlank()
-                    ) {
-                        Icon(
-                            Icons.Outlined.AutoAwesome, 
-                            contentDescription = "Asisten AI",
-                            tint = if (uiState.content.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(greenPrimary)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Kembali",
+                                tint = Color.White
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = if (uiState.isEditMode) "Edit Produk" else "Produk Baru",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
                     }
                     
@@ -124,16 +135,14 @@ fun AddNoteScreen(
                         enabled = uiState.canSave
                     ) {
                         Icon(
-                            Icons.Default.Check, 
+                            imageVector = Icons.Default.Check,
                             contentDescription = "Simpan",
-                            tint = if (uiState.canSave) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            tint = if (uiState.canSave) Color.White else Color.White.copy(alpha = 0.5f),
+                            modifier = Modifier.size(28.dp)
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
+                }
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -143,7 +152,7 @@ fun AddNoteScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(Color(0xFFFBFBFF))
                     .verticalScroll(rememberScrollState())
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -222,24 +231,10 @@ fun AddNoteScreen(
                 }
                 
                 // Category Group
-                FormGroup(title = "Kategori & Label") {
+                FormGroup(title = "Kategori") {
                     CategoryDropdown(
                         selectedCategory = uiState.category,
                         onCategorySelected = viewModel::onCategoryChange
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Warna Label",
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    ColorPickerRow(
-                        selectedColor = uiState.color,
-                        onColorSelected = viewModel::onColorChange
                     )
                 }
                 

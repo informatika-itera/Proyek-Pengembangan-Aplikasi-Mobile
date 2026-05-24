@@ -2,8 +2,10 @@ package com.example.mapenumkm.presentation.screens.ai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mapenumkm.domain.model.Note
 import com.example.mapenumkm.domain.repository.AIRepository
-import com.example.mapenumkm.domain.repository.WritingStyle
+import com.example.mapenumkm.domain.repository.NoteRepository
+import com.example.mapenumkm.domain.repository.TransactionRepository
 import com.example.mapenumkm.domain.usecase.GenerateIdeasUseCase
 import com.example.mapenumkm.domain.usecase.ImproveWritingUseCase
 import com.example.mapenumkm.domain.usecase.SummarizeNoteUseCase
@@ -13,14 +15,36 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
+data class ChatMessage(
+    val text: String,
+    val isUser: Boolean,
+    val isSummary: Boolean = false,
+    val summaryData: BusinessSummary? = null
+)
+
+data class BusinessSummary(
+    val totalSales: Double,
+    val transactionCount: Int,
+    val topProduct: String,
+    val topProductSales: Int,
+    val lowStockProducts: List<Note>,
+    val peakHours: String
+)
 
 class AIAssistantViewModel(
     private val aiRepository: AIRepository,
     private val summarizeUseCase: SummarizeNoteUseCase,
     private val improveWritingUseCase: ImproveWritingUseCase,
-    private val generateIdeasUseCase: GenerateIdeasUseCase
+    private val generateIdeasUseCase: GenerateIdeasUseCase,
+    private val transactionRepository: TransactionRepository,
+    private val noteRepository: NoteRepository
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AIAssistantUiState())
@@ -29,9 +53,74 @@ class AIAssistantViewModel(
     private val _events = MutableSharedFlow<AIAssistantEvent>()
     val events: SharedFlow<AIAssistantEvent> = _events.asSharedFlow()
     
-    fun setInitialText(text: String?) {
-        text?.let {
-            _uiState.update { state -> state.copy(inputText = it) }
+    init {
+        generateInitialSummary()
+    }
+
+    private fun generateInitialSummary() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            
+            val transactions = transactionRepository.getAllTransactions().first()
+            val notes = noteRepository.getAllNotes().first()
+            
+            val systemTZ = TimeZone.currentSystemDefault()
+            val today = Clock.System.now().toLocalDateTime(systemTZ).date
+            
+            val todayTransactions = transactions.filter {
+                it.createdAt.toLocalDateTime(systemTZ).date == today
+            }
+            
+            val totalSales = todayTransactions.sumOf { it.total }
+            val transactionCount = todayTransactions.size
+            
+            // Calculate top product
+            val productSales = mutableMapOf<String, Int>()
+            todayTransactions.forEach { t ->
+                t.items.forEach { item ->
+                    productSales[item.productName] = (productSales[item.productName] ?: 0) + item.quantity
+                }
+            }
+            val topProductEntry = productSales.maxByOrNull { it.value }
+            
+            // Low stock
+            val lowStock = notes.filter { it.stock <= 5 }
+            
+            // Peak hours
+            val hourlySales = IntArray(24)
+            todayTransactions.forEach {
+                hourlySales[it.createdAt.toLocalDateTime(systemTZ).hour]++
+            }
+            val peakHourStart = hourlySales.indices.maxByOrNull { hourlySales[it] } ?: 0
+            val peakHoursStr = "${peakHourStart.toString().padStart(2, '0')}:00 - ${(peakHourStart + 2).toString().padStart(2, '0')}:00"
+
+            val summary = BusinessSummary(
+                totalSales = totalSales,
+                transactionCount = transactionCount,
+                topProduct = topProductEntry?.key ?: "-",
+                topProductSales = topProductEntry?.value ?: 0,
+                lowStockProducts = lowStock,
+                peakHours = peakHoursStr
+            )
+
+            val welcomeMsg = ChatMessage(
+                text = "Halo Owner! 👋\nBerikut ringkasan bisnis kamu hari ini.",
+                isUser = false
+            )
+            
+            val summaryMsg = ChatMessage(
+                text = "",
+                isUser = false,
+                isSummary = true,
+                summaryData = summary
+            )
+
+            _uiState.update { 
+                it.copy(
+                    messages = listOf(welcomeMsg, summaryMsg),
+                    isLoading = false
+                )
+            }
         }
     }
     
@@ -39,116 +128,79 @@ class AIAssistantViewModel(
         _uiState.update { it.copy(inputText = text, error = null) }
     }
     
-    fun onActionSelected(action: AIAction) {
-        _uiState.update { it.copy(selectedAction = action) }
-    }
-    
-    fun executeAction() {
-        val state = _uiState.value
+    fun sendMessage() {
+        val text = _uiState.value.inputText
+        if (text.isBlank()) return
         
-        if (state.inputText.isBlank()) {
-            _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
-            return
+        val userMsg = ChatMessage(text, true)
+        _uiState.update { 
+            it.copy(
+                messages = it.messages + userMsg,
+                inputText = "",
+                isLoading = true
+            )
         }
-        
-        _uiState.update { it.copy(isLoading = true, error = null, result = null) }
         
         viewModelScope.launch {
-            val result = when (state.selectedAction) {
-                AIAction.SUMMARIZE -> summarize(state.inputText)
-                AIAction.GENERATE_IDEAS -> generateIdeas(state.inputText)
-                AIAction.IMPROVE_WRITING -> improveWriting(state.inputText, state.writingStyle)
-                AIAction.TRANSLATE -> translate(state.inputText, state.targetLanguage)
-                AIAction.SUGGEST_TITLE -> suggestTitle(state.inputText)
-                AIAction.CHAT -> chat(state.inputText)
+            val transactions = transactionRepository.getAllTransactions().first()
+            val notes = noteRepository.getAllNotes().first()
+            
+            val systemTZ = TimeZone.currentSystemDefault()
+            val today = Clock.System.now().toLocalDateTime(systemTZ).date
+            
+            val todayTransactions = transactions.filter {
+                it.createdAt.toLocalDateTime(systemTZ).date == today
             }
             
-            result
-                .onSuccess { output ->
-                    _uiState.update { it.copy(isLoading = false, result = output) }
+            val totalSales = todayTransactions.sumOf { it.total }
+            val lowStock = notes.filter { it.stock <= 5 }
+            
+            // Calculate top product
+            val productSales = mutableMapOf<String, Int>()
+            todayTransactions.forEach { t ->
+                t.items.forEach { item ->
+                    productSales[item.productName] = (productSales[item.productName] ?: 0) + item.quantity
                 }
-                .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
-                }
-        }
-    }
-    
-    fun copyResult() {
-        val result = _uiState.value.result
-        if (result != null) {
-            viewModelScope.launch {
-                _events.emit(AIAssistantEvent.CopyToClipboard(result))
             }
-        }
-    }
-    
-    fun applyToNote() {
-        val result = _uiState.value.result
-        if (result != null) {
-            viewModelScope.launch {
-                _events.emit(AIAssistantEvent.ApplyToNote(result))
-            }
-        }
-    }
-    
-    fun onWritingStyleChange(style: WritingStyle) {
-        _uiState.update { it.copy(writingStyle = style) }
-    }
-    
-    fun onTargetLanguageChange(language: String) {
-        _uiState.update { it.copy(targetLanguage = language) }
-    }
-    
-    // ==================== AI OPERATIONS ====================
-    
-    private suspend fun summarize(text: String): Result<String> {
-        return summarizeUseCase(text)
-    }
-    
-    private suspend fun generateIdeas(topic: String): Result<String> {
-        return generateIdeasUseCase(topic).map { ideas ->
-            ideas.mapIndexed { index, idea -> "${index + 1}. $idea" }.joinToString("\n")
-        }
-    }
-    
-    private suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
-        return improveWritingUseCase(text, style)
-    }
-    
-    private suspend fun translate(text: String, targetLanguage: String): Result<String> {
-        return aiRepository.translate(text, targetLanguage)
-    }
-    
-    private suspend fun suggestTitle(content: String): Result<String> {
-        return aiRepository.suggestTitle(content)
-    }
-    
-    private suspend fun chat(message: String): Result<String> {
-        return aiRepository.chat(message)
-    }
-}
+            val topProductEntry = productSales.maxByOrNull { it.value }
+            
+            val businessContext = """
+                Ringkasan Bisnis Hari Ini (${today}):
+                - Total Pendapatan: Rp${totalSales}
+                - Jumlah Transaksi: ${todayTransactions.size}
+                - Produk Terlaris: ${topProductEntry?.key ?: "Belum ada"} (${topProductEntry?.value ?: 0} terjual)
+                - Produk Stok Menipis: ${lowStock.joinToString { "${it.title} (Sisa ${it.stock})" }.ifEmpty { "Semua stok aman" }}
+                
+                Fitur Aplikasi MaPen UMKM:
+                1. Dashboard: Ringkasan performa bisnis.
+                2. Manajemen Produk: Tambah/Edit/Hapus produk dan stok.
+                3. Transaksi: Pencatatan penjualan dan hitung kembalian.
+                4. Riwayat: Daftar transaksi terdahulu.
+                5. Laporan: Statistik harian, mingguan, bulanan.
+            """.trimIndent()
 
-enum class AIAction(val displayName: String, val description: String) {
-    SUMMARIZE("Ringkas", "Buat ringkasan deskripsi produk"),
-    GENERATE_IDEAS("Ide Konten", "Generate ide promosi untuk produk"),
-    IMPROVE_WRITING("Perbaiki", "Perbaiki gaya bahasa deskripsi"),
-    TRANSLATE("Terjemah", "Terjemahkan deskripsi produk"),
-    SUGGEST_TITLE("Nama Produk", "Sarankan nama produk yang menarik"),
-    CHAT("Tanya AI", "Tanya AI tentang strategi penjualan")
+            val result = aiRepository.businessChat(text, businessContext)
+            result.onSuccess { response ->
+                val aiMsg = ChatMessage(response, false)
+                _uiState.update { it.copy(messages = it.messages + aiMsg, isLoading = false) }
+            }.onFailure { err ->
+                _uiState.update { it.copy(isLoading = false, error = err.message) }
+            }
+        }
+    }
+
+    fun onQuickAction(action: String) {
+        _uiState.update { it.copy(inputText = action) }
+        sendMessage()
+    }
 }
 
 data class AIAssistantUiState(
     val inputText: String = "",
-    val selectedAction: AIAction = AIAction.SUMMARIZE,
-    val writingStyle: WritingStyle = WritingStyle.NEUTRAL,
-    val targetLanguage: String = "English",
+    val messages: List<ChatMessage> = emptyList(),
     val isLoading: Boolean = false,
-    val result: String? = null,
     val error: String? = null
-) {
-    val canExecute: Boolean
-        get() = inputText.isNotBlank() && !isLoading
-}
+)
 
 sealed interface AIAssistantEvent {
     data class CopyToClipboard(val text: String) : AIAssistantEvent

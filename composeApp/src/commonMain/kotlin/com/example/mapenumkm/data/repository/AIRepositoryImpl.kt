@@ -79,6 +79,21 @@ class AIRepositoryImpl(
     override suspend fun chat(message: String): Result<String> {
         return geminiService.generateContent(prompt = message)
     }
+
+    override suspend fun businessChat(message: String, context: String): Result<String> {
+        val prompt = """
+            Konteks Bisnis Saat Ini:
+            $context
+            
+            Pertanyaan/Pesan User:
+            $message
+        """.trimIndent()
+
+        return geminiService.generateContent(
+            prompt = prompt,
+            systemPrompt = SystemPrompts.SMART_BUSINESS_ASSISTANT
+        )
+    }
     
     override suspend fun suggestTitle(content: String): Result<String> {
         val prompt = """

@@ -9,7 +9,19 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kover)
 }
+
+kover {
+    reports {
+        verify {
+            rule {
+                minBound(50)
+            }
+        }
+    }
+}
+
 
 // Load local.properties for API keys
 val localProperties = Properties().apply {
@@ -96,6 +108,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.androidx.core.splashscreen)
         }
         
         iosMain.dependencies {

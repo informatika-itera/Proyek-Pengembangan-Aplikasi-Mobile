@@ -9,7 +9,7 @@ data class Note(
     val content: String, // Deskripsi
     val price: Double = 0.0, // Harga Produk
     val stock: Int = 0, // Stok Produk
-    val category: NoteCategory = NoteCategory.GENERAL,
+    val category: NoteCategory = NoteCategory.FOOD,
     val color: NoteColor = NoteColor.DEFAULT,
     val imageUri: String? = null,
     val isPinned: Boolean = false,
@@ -24,7 +24,6 @@ data class Note(
 }
 
 enum class NoteCategory(val displayName: String) {
-    GENERAL("Umum"),
     FOOD("Makanan"),
     DRINK("Minuman"),
     CLOTHES("Pakaian"),
@@ -33,7 +32,7 @@ enum class NoteCategory(val displayName: String) {
     
     companion object {
         fun fromString(value: String): NoteCategory {
-            return entries.find { it.name == value } ?: GENERAL
+            return entries.find { it.name == value } ?: OTHER
         }
     }
 }

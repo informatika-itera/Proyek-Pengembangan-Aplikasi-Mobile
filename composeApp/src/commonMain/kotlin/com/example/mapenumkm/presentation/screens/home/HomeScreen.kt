@@ -1,5 +1,6 @@
 package com.example.mapenumkm.presentation.screens.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -34,11 +36,22 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToProductList: () -> Unit,
+    onNavigateToTransaction: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToReport: () -> Unit,
+    onNavigateToAI: () -> Unit,
+    onLoggedOut: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                HomeEvent.LoggedOut -> onLoggedOut()
+            }
+        }
+    }
     
     val greenPrimary = Color(0xFF16A34A)
     val greenLight = Color(0xFFDCFCE7)
@@ -67,12 +80,23 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Icon(
-                        imageVector = Icons.Default.NotificationsNone,
-                        contentDescription = "Notifikasi",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
+                    Row {
+                        IconButton(onClick = onNavigateToAI) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "Smart Assistant",
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                        IconButton(onClick = { viewModel.logout() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Logout",
+                                tint = Color.White
+                            )
+                        }
+                    }
                 }
             }
         },
@@ -81,12 +105,13 @@ fun HomeScreen(
                 selectedItem = 0,
                 onDashboardClick = {},
                 onProdukClick = onNavigateToProductList,
-                onTransaksiClick = {},
+                onTransaksiClick = onNavigateToTransaction,
                 onRiwayatClick = onNavigateToHistory,
                 onLaporanClick = onNavigateToReport
             )
         }
-    ) { paddingValues ->
+    ) {
+paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -99,7 +124,6 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 24.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
@@ -119,20 +143,6 @@ fun HomeScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Gray
                         )
-                    }
-                    
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f)),
-                        color = Color.White
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Hari ini", style = MaterialTheme.typography.labelLarge)
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, modifier = Modifier.size(18.dp))
-                        }
                     }
                 }
             }
@@ -189,7 +199,9 @@ fun HomeScreen(
             when (val state = uiState) {
                 is HomeUiState.Loading -> item { LoadingIndicator() }
                 is HomeUiState.Success -> {
-                    val topProducts = state.notes.sortedByDescending { it.id }.take(3) // Placeholder sorting for "best selling"
+                    val topProducts = state.notes
+                        .sortedByDescending { state.soldCounts[it.id] ?: 0 }
+                        .take(3)
                     if (topProducts.isEmpty()) {
                         item {
                             Text("Belum ada data produk", modifier = Modifier.padding(horizontal = 20.dp), color = Color.Gray)
@@ -198,7 +210,7 @@ fun HomeScreen(
                         items(topProducts) { product ->
                             ProductItem(
                                 name = product.title,
-                                soldCount = 25, 
+                                soldCount = state.soldCounts[product.id] ?: 0,
                                 price = product.price,
                                 imageUri = product.imageUri,
                                 onClick = { onNavigateToDetail(product.id) }
@@ -301,12 +313,6 @@ fun SectionHeader(title: String, onLihatSemua: () -> Unit) {
 
 @Composable
 fun ProductItem(name: String, soldCount: Int, price: Double, imageUri: String?, onClick: () -> Unit) {
-    val imageRes = when {
-        name.contains("Nasi goreng", ignoreCase = true) -> Res.drawable.nasi_goreng
-        name.contains("Es teler", ignoreCase = true) -> Res.drawable.Es_teler
-        name.contains("Es teh", ignoreCase = true) -> Res.drawable.Es_teh
-        else -> null
-    }
 
     Surface(
         modifier = Modifier
@@ -330,13 +336,6 @@ fun ProductItem(name: String, soldCount: Int, price: Double, imageUri: String?, 
                     if (imageUri != null) {
                         AsyncImage(
                             model = imageUri,
-                            contentDescription = name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else if (imageRes != null) {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(imageRes),
                             contentDescription = name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop

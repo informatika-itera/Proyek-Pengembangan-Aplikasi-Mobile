@@ -181,7 +181,7 @@ class NoteRepositoryTest {
         id: Long = 0,
         title: String = "Test",
         content: String = "Content",
-        category: NoteCategory = NoteCategory.GENERAL
+        category: NoteCategory = NoteCategory.FOOD
     ): Note {
         return Note(
             id = id,

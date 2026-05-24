@@ -29,8 +29,40 @@ class UserPreferences(
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val USER_IDENTIFIER = stringPreferencesKey("user_identifier")
     }
     
+    // ==================== AUTHENTICATION ====================
+
+    /**
+     * Check if user is logged in
+     */
+    val isLoggedIn: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.IS_LOGGED_IN] ?: false
+    }
+
+    /**
+     * Set login status
+     */
+    suspend fun setLoggedIn(isLoggedIn: Boolean, identifier: String? = null) {
+        dataStore.edit { prefs ->
+            prefs[Keys.IS_LOGGED_IN] = isLoggedIn
+            if (identifier != null) {
+                prefs[Keys.USER_IDENTIFIER] = identifier
+            } else if (!isLoggedIn) {
+                prefs.remove(Keys.USER_IDENTIFIER)
+            }
+        }
+    }
+
+    /**
+     * Get logged in user identifier
+     */
+    val userIdentifier: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_IDENTIFIER]
+    }
+
     // ==================== DARK MODE ====================
     
     /**
@@ -73,7 +105,7 @@ class UserPreferences(
      * Observe default category
      */
     val defaultCategory: Flow<String> = dataStore.data.map { prefs ->
-        prefs[Keys.DEFAULT_CATEGORY] ?: "GENERAL"
+        prefs[Keys.DEFAULT_CATEGORY] ?: "FOOD"
     }
     
     /**

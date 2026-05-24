@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bingkai transparan untuk memberikan padding agar tidak terpotong -->
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="288dp" android:height="288dp"/>
+            <solid android:color="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- Logo utama yang dikecilkan ukurannya agar masuk ke safe zone -->
+    <item
+        android:drawable="@drawable/app_icon"
+        android:gravity="center"
+        android:width="120dp"
+        android:height="120dp" />
+</layer-list>

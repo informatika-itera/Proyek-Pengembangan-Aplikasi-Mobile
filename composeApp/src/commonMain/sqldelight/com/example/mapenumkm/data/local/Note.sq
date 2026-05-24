@@ -1,3 +1,27 @@
+-- User Table
+CREATE TABLE UserEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    phone TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+-- User Queries
+insertUser:
+INSERT INTO UserEntity (name, email, phone, password, created_at)
+VALUES (?, ?, ?, ?, ?);
+
+getUserByEmailOrPhone:
+SELECT * FROM UserEntity
+WHERE email = ? OR phone = ?;
+
+updatePassword:
+UPDATE UserEntity
+SET password = ?
+WHERE email = ? OR phone = ?;
+
 -- Note table schema for SQLDelight
 -- File: Note.sq
 
@@ -7,7 +31,7 @@ CREATE TABLE NoteEntity (
     content TEXT NOT NULL,
     price REAL NOT NULL DEFAULT 0.0,
     stock INTEGER NOT NULL DEFAULT 0,
-    category TEXT NOT NULL DEFAULT 'GENERAL',
+    category TEXT NOT NULL DEFAULT 'FOOD',
     color TEXT NOT NULL DEFAULT 'DEFAULT',
     image_uri TEXT,
     is_pinned INTEGER NOT NULL DEFAULT 0,
@@ -58,6 +82,12 @@ UPDATE NoteEntity
 SET title = ?, content = ?, price = ?, stock = ?, category = ?, color = ?, image_uri = ?, is_pinned = ?, updated_at = ?
 WHERE id = ?;
 
+-- Update stock
+reduceStock:
+UPDATE NoteEntity
+SET stock = stock - :stockReduction, updated_at = :updatedAt
+WHERE id = :id;
+
 -- Delete note by ID
 deleteNoteById:
 DELETE FROM NoteEntity
@@ -83,3 +113,54 @@ countNotesByCategory:
 SELECT category, COUNT(*) AS total
 FROM NoteEntity
 GROUP BY category;
+
+-- Transaction Table
+CREATE TABLE TransactionEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subtotal REAL NOT NULL,
+    discount REAL NOT NULL DEFAULT 0.0,
+    total REAL NOT NULL,
+    payment_amount REAL NOT NULL,
+    change_amount REAL NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+-- Transaction Item Table
+CREATE TABLE TransactionItemEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transaction_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    product_name TEXT NOT NULL,
+    product_price REAL NOT NULL,
+    quantity INTEGER NOT NULL,
+    product_image_url TEXT,
+    FOREIGN KEY (transaction_id) REFERENCES TransactionEntity(id) ON DELETE CASCADE
+);
+
+-- Queries for Transactions
+insertTransaction:
+INSERT INTO TransactionEntity (subtotal, discount, total, payment_amount, change_amount, created_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+insertTransactionItem:
+INSERT INTO TransactionItemEntity (transaction_id, product_id, product_name, product_price, quantity, product_image_url)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getAllTransactions:
+SELECT * FROM TransactionEntity ORDER BY created_at DESC;
+
+getTransactionItems:
+SELECT
+    T.id,
+    T.transaction_id,
+    T.product_id,
+    T.product_name,
+    T.product_price,
+    T.quantity,
+    COALESCE(T.product_image_url, N.image_uri) AS product_image_url
+FROM TransactionItemEntity T
+LEFT JOIN NoteEntity N ON T.product_id = N.id
+WHERE T.transaction_id = ?;
+
+deleteTransaction:
+DELETE FROM TransactionEntity WHERE id = ?;

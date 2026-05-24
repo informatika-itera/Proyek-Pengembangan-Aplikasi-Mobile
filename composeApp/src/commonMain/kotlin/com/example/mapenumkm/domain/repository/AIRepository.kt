@@ -6,6 +6,7 @@ interface AIRepository {
     suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
+    suspend fun businessChat(message: String, context: String): Result<String>
     suspend fun suggestTitle(content: String): Result<String>
 }
 

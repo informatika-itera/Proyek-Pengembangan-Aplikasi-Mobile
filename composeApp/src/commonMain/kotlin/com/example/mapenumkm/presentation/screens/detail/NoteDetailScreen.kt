@@ -2,6 +2,7 @@ package com.example.mapenumkm.presentation.screens.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +68,8 @@ fun NoteDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val greenPrimary = MaterialTheme.colorScheme.primary
     
     LaunchedEffect(noteId) {
         viewModel.loadNote(noteId)
@@ -90,52 +97,68 @@ fun NoteDetailScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        "Detail Produk",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(greenPrimary)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Kembali",
+                                tint = Color.White
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Detail Produk",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
                     }
-                },
-                actions = {
+
                     val currentState = uiState
                     if (currentState is NoteDetailUiState.Success) {
-                        IconButton(onClick = { viewModel.togglePin() }) {
-                            Icon(
-                                imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
-                                contentDescription = if (currentState.note.isPinned) "Lepas Pin" else "Pin",
-                                tint = if (currentState.note.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        
-                        IconButton(onClick = { 
-                            viewModel.getShareContent()?.let { onShare(it) }
-                        }) {
-                            Icon(Icons.Outlined.Share, contentDescription = "Bagikan")
-                        }
-                        
-                        IconButton(onClick = { onNavigateToEdit(noteId) }) {
-                            Icon(Icons.Outlined.Edit, contentDescription = "Edit")
-                        }
-                        
-                        IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                Icons.Outlined.DeleteOutline, 
-                                contentDescription = "Hapus",
-                                tint = MaterialTheme.colorScheme.error
-                            )
+                        Row {
+                            IconButton(onClick = { viewModel.togglePin() }) {
+                                Icon(
+                                    imageVector = if (currentState.note.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                                    contentDescription = if (currentState.note.isPinned) "Lepas Pin" else "Pin",
+                                    tint = Color.White
+                                )
+                            }
+
+                            IconButton(onClick = {
+                                viewModel.getShareContent()?.let { onShare(it) }
+                            }) {
+                                Icon(Icons.Outlined.Share, contentDescription = "Bagikan", tint = Color.White)
+                            }
+
+                            IconButton(onClick = { onNavigateToEdit(noteId) }) {
+                                Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = Color.White)
+                            }
+
+                            IconButton(onClick = { showDeleteDialog = true }) {
+                                Icon(
+                                    Icons.Outlined.DeleteOutline,
+                                    contentDescription = "Hapus",
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
+                }
+            }
         }
     ) { paddingValues ->
         when (val state = uiState) {
@@ -148,7 +171,7 @@ fun NoteDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(Color(0xFFFBFBFF))
                         .verticalScroll(rememberScrollState())
                         .padding(20.dp)
                 ) {

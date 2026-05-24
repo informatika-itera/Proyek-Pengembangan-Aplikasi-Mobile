@@ -15,6 +15,7 @@ import com.example.todomaster.domain.repository.AIRepository
 import com.example.todomaster.domain.repository.TaskRepository
 import com.example.todomaster.domain.usecase.AddTaskUseCase
 import com.example.todomaster.presentation.screens.addtask.AddTaskViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -24,14 +25,12 @@ import org.koin.dsl.module
 import com.example.todomaster.presentation.screens.detail.TaskDetailViewModel
 import com.example.todomaster.presentation.screens.quadrantdetail.QuadrantDetailViewModel
 
-// ==================== NETWORK MODULE ====================
 
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
 }
 
-// ==================== DATABASE MODULE ====================
 
 val databaseModule = module {
     single {
@@ -40,36 +39,30 @@ val databaseModule = module {
     }
 }
 
-// ==================== PREFERENCES MODULE ====================
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
     singleOf(::TaskRepositoryImpl) bind TaskRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
-// ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
     singleOf(::AddTaskUseCase)
 }
 
-// ==================== VIEWMODEL MODULE ====================
-
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
-    viewModelOf(::AddTaskViewModel)
+    viewModel { AddTaskViewModel(get(), get(), get()) }
     viewModelOf(::TaskDetailViewModel)
     viewModelOf(::QuadrantDetailViewModel)
 }
 
-// ==================== SHARED MODULES ====================
 
 val sharedModules = listOf(
     networkModule,
@@ -80,7 +73,6 @@ val sharedModules = listOf(
     viewModelModule
 )
 
-// ==================== INIT FUNCTION ====================
 
 fun initKoin(
     platformModules: List<Module> = emptyList(),

@@ -8,12 +8,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +25,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.todomaster.presentation.components.TaskItem
 import com.example.todomaster.presentation.theme.ColorDelegate
 import com.example.todomaster.presentation.theme.ColorDoFirst
@@ -41,7 +43,10 @@ fun HomeScreen(
     onNavigateToQuadrantDetail: (Long) -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsState()
+    val currentTab by viewModel.currentTab.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredTasks by viewModel.filteredTasks.collectAsState()
 
     val maxDoFirstQuota = 5
     val currentDoFirstCount = uiState.doFirstTasks.filter { !it.isCompleted }.size
@@ -52,13 +57,15 @@ fun HomeScreen(
 
     Scaffold(
         floatingActionButton = {
-            LargeFloatingActionButton(
-                onClick = onNavigateToAddTask,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(50)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Tugas", modifier = Modifier.size(32.dp))
+            if (currentTab != 2) {
+                LargeFloatingActionButton(
+                    onClick = onNavigateToAddTask,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah Tugas", modifier = Modifier.size(32.dp))
+                }
             }
         },
         bottomBar = {
@@ -67,139 +74,275 @@ fun HomeScreen(
                 tonalElevation = 8.dp
             ) {
                 NavigationBarItem(
-                    selected = true,
-                    onClick = { /* Aktif */ },
+                    selected = (currentTab == 0),
+                    onClick = { viewModel.changeTab(0) },
                     icon = { Icon(Icons.Default.GridView, contentDescription = "Matriks") },
                     label = { Text("Matriks") }
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { /* TODO: Pindah ke Layar Semua (Sprint Berikutnya) */ },
+                    selected = (currentTab == 1),
+                    onClick = { viewModel.changeTab(1) },
                     icon = { Icon(Icons.Default.List, contentDescription = "Semua") },
                     label = { Text("Semua") }
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { /* TODO: Pindah ke Layar Pengaturan */ },
+                    selected = (currentTab == 2),
+                    onClick = { viewModel.changeTab(2) },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Pengaturan") },
                     label = { Text("Pengaturan") }
                 )
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 24.dp, bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+
+        when (currentTab) {
+            0 -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 20.dp),
+                    contentPadding = PaddingValues(top = 24.dp, bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = "TodoMaster",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = dateString,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "TodoMaster",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                                Text(
+                                    text = dateString,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            IconButton(onClick = { /* TODO: Notifikasi */ }) {
+                                Icon(Icons.Default.Notifications, contentDescription = "Notifikasi")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Kuota Do first", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                            Text("$currentDoFirstCount / $maxDoFirstQuota", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LinearProgressIndicator(
+                            progress = { quotaProgress },
+                            modifier = Modifier.fillMaxWidth().height(6.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeCap = StrokeCap.Round
                         )
                     }
-                    IconButton(onClick = { /* TODO: Notifikasi */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifikasi")
+
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                QuadrantCard(
+                                    modifier = Modifier.weight(1f),
+                                    title = "Do first",
+                                    count = uiState.doFirstTasks.size,
+                                    color = ColorDoFirst,
+                                    onClick = { onNavigateToQuadrantDetail(1L) }
+                                )
+                                QuadrantCard(
+                                    modifier = Modifier.weight(1f),
+                                    title = "Schedule",
+                                    count = uiState.scheduleTasks.size,
+                                    color = ColorSchedule,
+                                    onClick = { onNavigateToQuadrantDetail(2L) }
+                                )
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                QuadrantCard(
+                                    modifier = Modifier.weight(1f),
+                                    title = "Delegate",
+                                    count = uiState.delegateTasks.size,
+                                    color = ColorDelegate,
+                                    onClick = { onNavigateToQuadrantDetail(3L) }
+                                )
+                                QuadrantCard(
+                                    modifier = Modifier.weight(1f),
+                                    title = "Don't do",
+                                    count = uiState.dontDoTasks.size,
+                                    color = ColorDontDo,
+                                    onClick = { onNavigateToQuadrantDetail(4L) }
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Text(
+                            text = "Hari ini",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+
+                    items(uiState.doFirstTasks) { task ->
+                        TaskItem(
+                            task = task,
+                            onClick = { onNavigateToTaskDetail(task.id) },
+                            onToggleComplete = { viewModel.toggleTaskCompletion(task) }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    item {
+                        if (uiState.doFirstTasks.isEmpty()) {
+                            Text(
+                                text = "Belum ada tugas prioritas hari ini.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                            )
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+            }
+            1 -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 24.dp)
                 ) {
-                    Text("Kuota Do first", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
-                    Text("$currentDoFirstCount / $maxDoFirstQuota", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = { quotaProgress },
-                    modifier = Modifier.fillMaxWidth().height(6.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    strokeCap = StrokeCap.Round
-                )
-            }
-
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        QuadrantCard(
-                            modifier = Modifier.weight(1f),
-                            title = "Do first",
-                            count = uiState.doFirstTasks.size,
-                            color = ColorDoFirst,
-                            onClick = { onNavigateToQuadrantDetail(1L) }
-                        )
-                        QuadrantCard(
-                            modifier = Modifier.weight(1f),
-                            title = "Schedule",
-                            count = uiState.scheduleTasks.size,
-                            color = ColorSchedule,
-                            onClick = { onNavigateToQuadrantDetail(2L) }
-                        )
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        QuadrantCard(
-                            modifier = Modifier.weight(1f),
-                            title = "Delegate",
-                            count = uiState.delegateTasks.size,
-                            color = ColorDelegate,
-                            onClick = { onNavigateToQuadrantDetail(3L) }
-                        )
-                        QuadrantCard(
-                            modifier = Modifier.weight(1f),
-                            title = "Don't do",
-                            count = uiState.dontDoTasks.size,
-                            color = ColorDontDo,
-                            onClick = { onNavigateToQuadrantDetail(4L) }
-                        )
-                    }
-                }
-            }
-
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = "Hari ini",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-
-            items(uiState.doFirstTasks) { task ->
-                TaskItem(
-                    task = task,
-                    onClick = { onNavigateToTaskDetail(task.id) },
-                    onToggleComplete = { viewModel.toggleTaskCompletion(task) }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            item {
-                if (uiState.doFirstTasks.isEmpty()) {
                     Text(
-                        text = "Belum ada tugas prioritas hari ini.",
+                        text = "Semua Tugas Kuliah",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChange(it) },
+                        placeholder = { Text("Cari tugas berdasarkan judul/deskripsi...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Cari") },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Hapus")
+                                }
+                            }
+                        },
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (filteredTasks.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize().weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (searchQuery.isBlank()) "Belum ada tugas yang dicatat." else "Tidak ada tugas kuliah yang cocok.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize().weight(1f),
+                            contentPadding = PaddingValues(bottom = 80.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(filteredTasks) { task ->
+                                TaskItem(
+                                    task = task,
+                                    onClick = { onNavigateToTaskDetail(task.id) },
+                                    onToggleComplete = { viewModel.toggleTaskCompletion(task) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            2 -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Pengaturan Profil",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // ==================== TOMBOL SAKLAR DARK THEME MANUAL M3 ====================
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Mode Gelap (Dark Theme)",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "Ubah tema aplikasi secara manual",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // Menghubungkan saklar geser ke objek ThemeConfig di App.kt
+                            Switch(
+                                checked = com.example.todomaster.ThemeConfig.isDarkTheme,
+                                onCheckedChange = { isChecked ->
+                                    com.example.todomaster.ThemeConfig.isDarkTheme = isChecked
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = "Aplikasi Dikembangkan Oleh Kelompok:",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Cikal (123140109) & Ragil (123140128)",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }

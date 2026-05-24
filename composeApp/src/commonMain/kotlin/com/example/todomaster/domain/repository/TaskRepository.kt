@@ -5,7 +5,6 @@ import com.example.todomaster.domain.model.Task
 import kotlinx.coroutines.flow.Flow
 
 interface TaskRepository {
-
     fun getAllTasks(): Flow<List<Task>>
     fun getTasksByPriority(priority: Quadrant): Flow<List<Task>>
     suspend fun getTaskById(id: Long): Task?

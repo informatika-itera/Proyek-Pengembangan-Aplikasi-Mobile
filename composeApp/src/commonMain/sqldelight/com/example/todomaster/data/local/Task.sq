@@ -11,16 +11,19 @@ CREATE TABLE TaskEntity (
 );
 
 selectAllTasks:
-SELECT * FROM TaskEntity ORDER BY is_completed ASC, due_date ASC;
+SELECT * FROM TaskEntity
+ORDER BY is_completed ASC, priority_type ASC, due_date ASC;
 
 selectTasksByPriority:
-SELECT * FROM TaskEntity WHERE priority_type = ? ORDER BY is_completed ASC, due_date ASC;
+SELECT * FROM TaskEntity
+WHERE priority_type = ?
+ORDER BY is_completed ASC, due_date ASC;
 
 selectTaskById:
 SELECT * FROM TaskEntity WHERE id = ?;
 
 selectTodayDoFirstCount:
-SELECT COUNT(*) FROM TaskEntity 
+SELECT COUNT(*) FROM TaskEntity
 WHERE priority_type = 1 AND is_completed = 0 AND created_at >= ?;
 
 insertTask:
@@ -28,8 +31,8 @@ INSERT INTO TaskEntity(title, description, priority_type, due_date, is_completed
 VALUES(?, ?, ?, ?, ?, ?, ?, ?);
 
 updateTask:
-UPDATE TaskEntity SET 
-    title = ?, description = ?, priority_type = ?, due_date = ?, 
+UPDATE TaskEntity SET
+    title = ?, description = ?, priority_type = ?, due_date = ?,
     is_completed = ?, is_pinned = ?, sub_tasks = ?
 WHERE id = ?;
 

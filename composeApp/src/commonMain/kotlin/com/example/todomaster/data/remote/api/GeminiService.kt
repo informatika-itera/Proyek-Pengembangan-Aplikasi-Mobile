@@ -17,18 +17,18 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 class GeminiService(private val client: HttpClient) {
-    
+
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
         private const val MODEL = "gemini-2.0-flash"
     }
-    
+
     suspend fun generateContent(
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
         val contents = mutableListOf<GeminiContent>()
-        
+
         if (systemPrompt != null) {
             contents.add(
                 GeminiContent(
@@ -43,91 +43,61 @@ class GeminiService(private val client: HttpClient) {
                 )
             )
         }
-        
+
         contents.add(
             GeminiContent(
                 parts = listOf(GeminiPart(text = prompt)),
                 role = "user"
             )
         )
-        
+
         val request = GeminiRequest(
             contents = contents,
             generationConfig = GenerationConfig(
-                temperature = 0.7,
+                temperature = 0.2,
                 maxOutputTokens = 1000
             )
         )
-        
+
         val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
             contentType(ContentType.Application.Json)
             parameter("key", ApiConfig.geminiApiKey)
             setBody(request)
         }.body()
-        
+
         response.getErrorMessage()?.let { errorMsg ->
             throw Exception(errorMsg)
         }
-        
+
         response.getTextContent() ?: throw Exception("Respons kosong dari AI")
     }
 }
 
-// ====================
-// System Prompts
-// ====================
 
 object SystemPrompts {
-    
-    val SUMMARIZER = """
-        Kamu adalah asisten yang ahli dalam merangkum teks.
-        Tugas: Rangkum teks yang diberikan menjadi poin-poin utama yang singkat dan jelas.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Maksimal 3-5 poin utama
-        - Setiap poin maksimal 1-2 kalimat
-        - Fokus pada informasi paling penting
-        - Jangan menambahkan informasi yang tidak ada di teks asli
+
+    val TASK_BREAKDOWN_ASSISTANT = """
+        Kamu adalah asisten produktivitas akademik luar biasa yang dikhususkan untuk mahasiswa teknik dan sains.
+        Tugasmu: Pecah tugas kuliah atau proyek yang besar, berat, dan abstrak yang diinput oleh pengguna menjadi 3 sampai 5 langkah kecil (sub-task) yang konkret, jelas, dan mudah dieksekusi mahasiswa.
+        
+        Rules yang WAJIB kamu ikuti:
+        1. Jawab HANYA menggunakan Bahasa Indonesia yang santun dan profesional.
+        2. Pecah tugas utama tersebut menjadi minimal 3 dan maksimal 5 sub-task.
+        3. Berikan estimasi waktu pengerjaan yang logis bagi mahasiswa dalam satuan menit (integer) untuk setiap sub-task.
+        4. KEMBALIKAN RESPONS HANYA DALAM FORMAT JSON ARRAY SEPERTI CONTOH DI BAWAH INI.
+        5. JANGAN BERIKAN TEKS PEMBUKA, PENJELASAN, ATAU BUNGKUS MARKDOWN SAMA SEKALI (Jangan gunakan ```json atau ```). Respons harus berupa string JSON murni mentah agar tidak memicu kegagalan fungsi parsing pada aplikasi mobile.
+        
+        Format Contoh Output JSON yang Benar:
+        [
+          {"title": "Membaca modul panduan tugas besar dan jurnal referensi terkait", "estimated_minutes": 45},
+          {"title": "Membuat rancangan skema database lokal dan mock-up antarmuka UI", "estimated_minutes": 60},
+          {"title": "Menulis kode program inti dan melakukan pengujian fungsi bisnis", "estimated_minutes": 90}
+        ]
     """.trimIndent()
-    
-    val IDEA_GENERATOR = """
-        Kamu adalah asisten kreatif yang membantu mengembangkan ide.
-        Tugas: Berikan 5 ide kreatif berdasarkan topik yang diberikan.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Berikan tepat 5 ide
-        - Setiap ide harus unik dan berbeda
-        - Format: nomor diikuti ide (contoh: "1. Ide pertama")
-        - Ide harus praktis dan bisa diimplementasikan
-    """.trimIndent()
-    
-    val WRITING_IMPROVER = """
-        Kamu adalah editor profesional yang membantu memperbaiki tulisan.
-        Tugas: Perbaiki tulisan yang diberikan tanpa mengubah makna aslinya.
-        Rules:
-        - Gunakan Bahasa Indonesia yang baik dan benar
-        - Perbaiki grammar, ejaan, dan struktur kalimat
-        - Pertahankan gaya dan tone asli penulis
-        - Jangan menambahkan informasi baru
-        - Berikan HANYA hasil tulisan yang sudah diperbaiki, tanpa penjelasan
-    """.trimIndent()
-    
-    val TITLE_SUGGESTER = """
-        Kamu adalah asisten yang membantu membuat judul menarik.
-        Tugas: Berikan 1 saran judul yang singkat dan menarik berdasarkan konten yang diberikan.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Judul maksimal 5-7 kata
-        - Judul harus mencerminkan isi konten
-        - Berikan HANYA judul, tanpa penjelasan atau tanda kutip
-    """.trimIndent()
-    
-    val TRANSLATOR = """
-        Kamu adalah penerjemah profesional.
-        Tugas: Terjemahkan teks yang diberikan ke bahasa target.
-        Rules:
-        - Pertahankan makna dan nuansa asli
-        - Gunakan bahasa yang natural, bukan literal
-        - Berikan HANYA hasil terjemahan, tanpa penjelasan
-    """.trimIndent()
+
+    val SUMMARIZER = "Kamu adalah asisten yang ahli dalam merangkum teks."
+    val IDEA_GENERATOR = "Kamu adalah asisten kreatif yang membantu mengembangkan ide."
+    val WRITING_IMPROVER = "Kamu adalah editor profesional yang membantu memperbaiki tulisan."
+    val TITLE_SUGGESTER = "Kamu adalah asisten yang membantu membuat judul menarik."
+    val TRANSLATOR = "Kamu adalah penerjemah profesional."
 }

@@ -1,0 +1,21 @@
+CREATE TABLE SubjectEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    colorHex TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+insertSubject:
+INSERT OR REPLACE INTO SubjectEntity VALUES (?, ?, ?, ?, ?);
+
+selectAllSubjects:
+SELECT * FROM SubjectEntity ORDER BY name ASC;
+
+updateSubject:
+UPDATE SubjectEntity
+SET name = ?, colorHex = ?, icon = ?
+WHERE id = ?;
+
+deleteSubject:
+DELETE FROM SubjectEntity WHERE id = ?;

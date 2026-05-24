@@ -1,13 +1,13 @@
 [versions]
 agp = "8.5.2"
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 compose-multiplatform = "1.7.0"
 kotlinx-coroutines = "1.9.0"
 kotlinx-serialization = "1.7.3"
 kotlinx-datetime = "0.6.1"
 ktor = "3.0.1"
 koin = "4.0.0"
-sqldelight = "2.0.2"
+sqldelight = "2.0.1"
 datastore = "1.1.1"
 okio = "3.9.1"
 lifecycle = "2.8.3"
@@ -46,9 +46,10 @@ sqldelight-android-driver = { group = "app.cash.sqldelight", name = "android-dri
 sqldelight-native-driver = { group = "app.cash.sqldelight", name = "native-driver", version.ref = "sqldelight" }
 
 # DataStore
-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
+datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
-# Okio (dipakai bersama DataStore untuk path penyimpanan)
+# Okio
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 
 # Lifecycle & ViewModel
@@ -58,6 +59,7 @@ lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name =
 # Navigation
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.8.3" }
+accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version = "0.32.0" }
 
 # Compose BOM
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidx-compose-bom" }

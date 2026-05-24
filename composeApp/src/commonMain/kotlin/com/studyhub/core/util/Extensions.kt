@@ -2,10 +2,26 @@ package com.studyhub.core.util
 
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
 // ==================== DATE/TIME EXTENSIONS ====================
+
+fun LocalDate.atStartOfDayMillis(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
+    return this.atStartOfDayIn(timeZone).toEpochMilliseconds()
+}
+
+fun LocalDate.atEndOfDayMillis(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
+    return this.atStartOfDayIn(timeZone)
+        .toEpochMilliseconds() + 86_399_999L
+}
+
+fun Long.toLocalDate(timeZone: TimeZone = TimeZone.currentSystemDefault()): LocalDate {
+    return Instant.fromEpochMilliseconds(this).toLocalDateTime(timeZone).date
+}
 
 fun Instant.formatToDisplay(): String {
     val dateTime = this.toLocalDateTime(TimeZone.currentSystemDefault())

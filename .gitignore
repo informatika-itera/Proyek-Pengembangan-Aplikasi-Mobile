@@ -14,6 +14,9 @@ out/
 # Kotlin
 .kotlin/
 
+# Local configuration (secrets, machine-specific paths)
+local.properties
+
 # Android
 captures/
 .externalNativeBuild/

@@ -70,7 +70,7 @@ kotlin {
             implementation(libs.sqldelight.coroutines)
             
             // DataStore + Okio
-            implementation(libs.datastore.preferences)
+            implementation(libs.datastore.preferences.core)
             implementation(libs.okio)
             
             // Lifecycle & ViewModel
@@ -96,6 +96,8 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.datastore.preferences)
+            implementation(libs.accompanist.systemuicontroller)
         }
         
         iosMain.dependencies {
@@ -149,7 +151,7 @@ android {
 sqldelight {
     databases {
         create("StudyHubDatabase") {
-            packageName.set("com.studyhub.data.local")
+            packageName.set("com.studyhub.database")
         }
     }
 }

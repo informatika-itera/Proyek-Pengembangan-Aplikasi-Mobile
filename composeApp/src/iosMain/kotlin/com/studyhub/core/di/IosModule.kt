@@ -1,17 +1,13 @@
 package com.studyhub.core.di
 
-import com.studyhub.core.util.DatabaseDriverFactory
-import com.studyhub.data.local.datastore.DataStoreFactory
+import com.studyhub.data.local.DatabaseDriverFactory
+import com.studyhub.core.util.createDataStore
 import org.koin.dsl.module
 
-/**
- * iOS-specific Koin module.
- *
- * Menyediakan dependencies platform yang dipakai di shared modules.
- */
+
 val iosModule = module {
     single { DatabaseDriverFactory() }
-    single { DataStoreFactory() }
+    single { createDataStore() }
 }
 
 /** Helper untuk dipanggil dari Swift code. */

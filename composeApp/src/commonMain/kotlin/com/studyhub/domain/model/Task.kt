@@ -1,17 +1,33 @@
 package com.studyhub.domain.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Task(
-    val id: Long? = null,
+    val id: String,
     val title: String,
     val description: String,
-    val category: String, // e.g., "Mobile App", "Website"
-    val priority: String, // e.g., "High", "Strategic"
-    val progress: Int = 0, // 0 to 100
-    val dueDate: String, // Simplified as String for now
-    val startTime: String,
-    val endTime: String,
-    val colorHex: Long
+    val subject: String,
+    val priority: Priority,
+    val status: TaskStatus,
+    val dueDate: Long,
+    val dueTime: String?,
+    val tags: List<String>,
+    val estimatedMinutes: Int,
+    val isDeleted: Boolean,
+    val completedAt: Long?,
+    val createdAt: Long,
+    val updatedAt: Long
 )
+
+enum class Priority { HIGH, MEDIUM, LOW }
+
+enum class TaskStatus(val value: String) {
+    TODO("todo"),
+    IN_PROGRESS("in_progress"),
+    DONE("done");
+
+    companion object {
+        fun fromString(value: String): TaskStatus =
+            entries.firstOrNull { it.value == value } ?: TODO
+    }
+}
+
+enum class SortBy { DUE_DATE, PRIORITY, SUBJECT, TITLE }

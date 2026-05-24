@@ -1,12 +1,21 @@
 package com.studyhub.domain.repository
 
 import com.studyhub.domain.model.Task
-import kotlinx.coroutines.flow.Flow
+import com.studyhub.domain.model.TaskStatus
+import kotlinx.datetime.LocalDate
 
 interface TaskRepository {
-    fun getAllTasks(): Flow<List<Task>>
-    fun getTaskById(id: Long): Flow<Task?>
-    suspend fun insertTask(task: Task)
+    suspend fun addTask(task: Task)
+    suspend fun getTaskById(taskId: String): Task?
+    suspend fun getAllTasks(): List<Task>
+    suspend fun getActiveTasks(): List<Task>
+    suspend fun getCompletedTasks(): List<Task>
+    suspend fun getTasksByDate(date: LocalDate): List<Task>
+    suspend fun getTasksBySubject(subject: String): List<Task>
+    suspend fun getOverdueCount(now: Long): Int
+    suspend fun getCompletedCountInRange(start: Long, end: Long): Int
     suspend fun updateTask(task: Task)
-    suspend fun deleteTask(id: Long)
+    suspend fun updateTaskStatus(taskId: String, status: TaskStatus, now: Long)
+    suspend fun softDeleteTask(taskId: String, now: Long)
+    suspend fun markAsCompleted(taskId: String, now: Long)
 }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 sealed class TaskDetailUiState {
@@ -32,21 +31,10 @@ class TaskDetailViewModel(
     private val _eventFlow = MutableSharedFlow<TaskDetailEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun loadTask(id: Long) {
-        viewModelScope.launch {
-            repository.getTaskById(id).collectLatest { task ->
-                if (task != null) {
-                    _uiState.value = TaskDetailUiState.Success(task)
-                } else {
-                    _uiState.value = TaskDetailUiState.Error("Task not found")
-                }
-            }
-        }
-    }
+    fun loadTask(id: Long) {}
 
     fun deleteTask(id: Long) {
         viewModelScope.launch {
-            repository.deleteTask(id)
             _eventFlow.emit(TaskDetailEvent.TaskDeleted)
         }
     }

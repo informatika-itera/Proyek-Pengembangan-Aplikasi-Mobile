@@ -4,16 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,19 +41,24 @@ fun NoteCard(
     modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = Color(note.color.hexValue),
+        targetValue = if (note.color == NoteColor.DEFAULT) MaterialTheme.colorScheme.surfaceVariant
+                      else Color(note.color.hexValue),
         label = "card_bg"
     )
     
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(vertical = 16.dp, horizontal = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -105,7 +101,6 @@ fun NoteCard(
             }
             
             if (note.content.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = note.preview,
                     style = MaterialTheme.typography.bodyMedium,
@@ -115,7 +110,6 @@ fun NoteCard(
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
             CategoryBadge(category = note.category.displayName)
         }
     }
@@ -242,12 +236,12 @@ fun ColorPickerRow(
                     .size(32.dp)
                     .alpha(alpha)
                     .clip(CircleShape)
-                    .background(Color(color.hexValue))
+                    .background(if (color == NoteColor.DEFAULT) MaterialTheme.colorScheme.surfaceVariant else Color(color.hexValue))
                     .clickable { onColorSelected(color) }
                     .then(
                         if (isSelected) {
                             Modifier.background(
-                                Color.Black.copy(alpha = 0.1f),
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                                 CircleShape
                             )
                         } else Modifier

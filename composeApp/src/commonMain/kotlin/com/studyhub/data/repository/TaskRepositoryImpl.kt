@@ -1,88 +1,37 @@
 package com.studyhub.data.repository
 
-import com.studyhub.data.local.StudyHubDatabase
+import com.studyhub.core.util.atEndOfDayMillis
+import com.studyhub.core.util.atStartOfDayMillis
+import com.studyhub.data.local.LocalTaskDataSource
 import com.studyhub.domain.model.Task
+import com.studyhub.domain.model.TaskStatus
 import com.studyhub.domain.repository.TaskRepository
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.coroutines.mapToOneOrNull
-import com.studyhub.data.local.TaskEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 
 class TaskRepositoryImpl(
-    private val db: StudyHubDatabase
+    private val localDataSource: LocalTaskDataSource
 ) : TaskRepository {
-
-    private val queries = db.taskQueries
-
-    override fun getAllTasks(): Flow<List<Task>> {
-        return queries.getAllTasks()
-            .asFlow()
-            .mapToList(Dispatchers.IO)
-            .map { entities -> entities.map { it.toTask() } }
-    }
-
-    override fun getTaskById(id: Long): Flow<Task?> {
-        return queries.getTaskById(id)
-            .asFlow()
-            .mapToOneOrNull(Dispatchers.IO)
-            .map { it?.toTask() }
-    }
-
-    override suspend fun insertTask(task: Task) {
-        val now = Clock.System.now().toEpochMilliseconds()
-        queries.insertTask(
-            title = task.title,
-            description = task.description,
-            category = task.category,
-            priority = task.priority,
-            progress = task.progress.toLong(),
-            dueDate = task.dueDate,
-            startTime = task.startTime,
-            endTime = task.endTime,
-            colorHex = task.colorHex,
-            created_at = now,
-            updated_at = now
+    override suspend fun addTask(task: Task) = localDataSource.insertTask(task)
+    override suspend fun getTaskById(taskId: String) = localDataSource.selectById(taskId)
+    override suspend fun getAllTasks() = localDataSource.selectAllTasks()
+    override suspend fun getActiveTasks() = localDataSource.selectActiveTasks()
+    override suspend fun getCompletedTasks() = localDataSource.selectCompletedTasks()
+    override suspend fun getTasksByDate(date: LocalDate) =
+        localDataSource.selectByDate(date.atStartOfDayMillis(), date.atEndOfDayMillis() + 1)
+    override suspend fun getTasksBySubject(subject: String) =
+        localDataSource.selectBySubject(subject)
+    override suspend fun getOverdueCount(now: Long) =
+        localDataSource.selectOverdueCount(now).toInt()
+    override suspend fun getCompletedCountInRange(start: Long, end: Long) =
+        localDataSource.selectCompletedCountInRange(start, end).toInt()
+    override suspend fun updateTask(task: Task) = localDataSource.updateTask(task)
+    override suspend fun updateTaskStatus(taskId: String, status: TaskStatus, now: Long) =
+        localDataSource.updateStatus(
+            taskId, status.value, now,
+            if (status == TaskStatus.DONE) now else null
         )
-    }
-
-    override suspend fun updateTask(task: Task) {
-        val now = Clock.System.now().toEpochMilliseconds()
-        queries.updateTask(
-            title = task.title,
-            description = task.description,
-            category = task.category,
-            priority = task.priority,
-            progress = task.progress.toLong(),
-            dueDate = task.dueDate,
-            startTime = task.startTime,
-            endTime = task.endTime,
-            colorHex = task.colorHex,
-            updated_at = now,
-            id = task.id ?: 0L
-        )
-    }
-
-    override suspend fun deleteTask(id: Long) {
-        queries.deleteTaskById(id)
-    }
-
-    private fun TaskEntity.toTask(): Task {
-        return Task(
-            id = id,
-            title = title,
-            description = description,
-            category = category,
-            priority = priority,
-            progress = progress.toInt(),
-            dueDate = dueDate,
-            startTime = startTime,
-            endTime = endTime,
-            colorHex = colorHex
-        )
-    }
+    override suspend fun softDeleteTask(taskId: String, now: Long) =
+        localDataSource.softDelete(taskId, now)
+    override suspend fun markAsCompleted(taskId: String, now: Long) =
+        localDataSource.updateStatus(taskId, TaskStatus.DONE.value, now, now)
 }

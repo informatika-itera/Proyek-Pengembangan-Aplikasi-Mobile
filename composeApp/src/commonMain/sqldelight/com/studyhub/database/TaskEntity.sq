@@ -1,0 +1,75 @@
+CREATE TABLE TaskEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    priority TEXT NOT NULL,
+    status TEXT NOT NULL,
+    dueDate INTEGER NOT NULL,
+    dueTime TEXT,
+    tags TEXT NOT NULL DEFAULT '[]',
+    estimatedMinutes INTEGER NOT NULL DEFAULT 0,
+    isDeleted INTEGER NOT NULL DEFAULT 0,
+    completedAt INTEGER,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+insertTask:
+INSERT OR REPLACE INTO TaskEntity
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllTasks:
+SELECT * FROM TaskEntity
+WHERE isDeleted = 0
+ORDER BY dueDate ASC;
+
+selectActiveTasks:
+SELECT * FROM TaskEntity
+WHERE isDeleted = 0 AND status != 'done'
+ORDER BY dueDate ASC;
+
+selectCompletedTasks:
+SELECT * FROM TaskEntity
+WHERE isDeleted = 0 AND status = 'done'
+ORDER BY dueDate ASC;
+
+selectById:
+SELECT * FROM TaskEntity WHERE id = ? AND isDeleted = 0;
+
+selectByDate:
+SELECT * FROM TaskEntity
+WHERE dueDate >= ? AND dueDate < ?
+AND isDeleted = 0;
+
+selectBySubject:
+SELECT * FROM TaskEntity
+WHERE subject = ? AND isDeleted = 0;
+
+selectOverdueCount:
+SELECT COUNT(*) FROM TaskEntity
+WHERE dueDate < ? AND status != 'done'
+AND isDeleted = 0;
+
+selectCompletedCountInRange:
+SELECT COUNT(*) FROM TaskEntity
+WHERE completedAt >= ? AND completedAt < ?
+AND isDeleted = 0;
+
+updateTask:
+UPDATE TaskEntity SET
+    title = ?, description = ?, subject = ?,
+    priority = ?, status = ?, dueDate = ?,
+    dueTime = ?, tags = ?, estimatedMinutes = ?,
+    updatedAt = ?
+WHERE id = ?;
+
+updateStatus:
+UPDATE TaskEntity
+SET status = ?, updatedAt = ?, completedAt = ?
+WHERE id = ?;
+
+softDelete:
+UPDATE TaskEntity
+SET isDeleted = 1, updatedAt = ?
+WHERE id = ?;

@@ -1,6 +1,6 @@
 # 📚 StudyHub
 
-> Aplikasi Manajemen Tugas Mahasiswa dengan integrasi AI
+> Aplikasi Manajemen Tugas Mahasiswa dengan integrasi AI untuk optimalisasi produktivitas akademik.
 
 ---
 
@@ -15,53 +15,54 @@
 
 ## 📖 Tentang StudyHub
 
-**StudyHub** adalah aplikasi manajemen tugas yang dirancang khusus untuk meningkatkan produktivitas mahasiswa. StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta mengintegrasikan **Groq AI** untuk menghadirkan fitur-fitur cerdas yang membantu mahasiswa mengelola waktu dan prioritas belajar mereka.
-
-### Tujuan Aplikasi
-
-- Membantu mahasiswa melacak tugas dan deadline secara terorganisir
-- Mengurangi keterlambatan pengumpulan tugas dengan sistem reminder otomatis
-- Memberikan rekomendasi prioritas tugas yang cerdas berbasis AI
-- Menyediakan tampilan kalender terintegrasi untuk perencanaan akademik
+**StudyHub** adalah aplikasi manajemen tugas lintas platform (Android & iOS) yang dirancang khusus untuk meningkatkan produktivitas mahasiswa. StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta direncanakan untuk memanfaatkan potensi AI guna membantu mahasiswa mengelola waktu dan prioritas belajar mereka secara cerdas.
 
 ---
 
-## ✨ Fitur Aplikasi
+## 🛠️ Tech Stack
 
-### 🔐 Autentikasi
+Aplikasi ini dibangun menggunakan teknologi modern dalam ekosistem Kotlin Multiplatform (KMP):
 
-- **Login** — Masuk ke akun menggunakan email dan password via Firebase Authentication.
-- **Register** — Pendaftaran akun baru dengan validasi data pengguna. Sesi pengguna tersimpan otomatis sehingga tidak perlu login ulang setiap saat.
-
-### ✅ Manajemen Tugas
-
-- **Tambah Tugas** — Menambahkan tugas baru lengkap dengan judul, mata kuliah, deskripsi, dan tingkat kesulitan.
-- **Edit & Hapus Tugas** — Mengubah detail tugas atau menghapus tugas yang sudah tidak relevan.
-- **Status Selesai / Belum** — Menandai tugas sebagai selesai dengan satu klik. Tugas yang sudah selesai akan diarsipkan secara otomatis.
-
-### 📅 Deadline & Kalender
-
-- **Deadline Tugas** — Setiap tugas memiliki tanggal dan waktu deadline yang wajib diisi sebagai acuan pengerjaan.
-- **Kalender Tugas** — Tampilan kalender bulanan yang menampilkan semua tugas berdasarkan tanggal deadline, memudahkan mahasiswa dalam merencanakan jadwal belajar mingguan maupun bulanan.
-
-### 🔔 Reminder Notifikasi
-
-Notifikasi push otomatis dikirimkan sebelum deadline tugas tiba. Pengingat dapat dikustomisasi sesuai preferensi pengguna, misalnya H-1 hari atau H-3 jam sebelum deadline. Fitur ini bekerja di Android maupun iOS.
+- **Core Framework**: [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) & [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
+- **Dependency Injection**: [Koin](https://insert-koin.io/)
+- **Database Local**: [SQLDelight](https://cashapp.github.io/sqldelight/)
+- **Local Storage**: [Jetpack DataStore](https://developer.android.com/jetpack/androidx/releases/datastore)
+- **Networking**: [Ktor Client](https://ktor.io/)
+- **Image Loading**: [Coil3](https://coil-kt.github.io/coil/)
 
 ---
 
-## 🤖 Fitur AI — Powered by Gemini
+## 🚀 Update Terbaru (Recent Update)
 
-### 🎯 Smart Priority
+Berikut adalah fondasi teknis yang telah diimplementasikan dalam pengembangan saat ini:
 
-Fitur **Smart Priority** memanfaatkan groq AI untuk menganalisis seluruh daftar tugas mahasiswa dan menghasilkan urutan prioritas pengerjaan yang optimal.
+- **Implementasi Clean Architecture**: Pemisahan layer Data, Domain, dan Presentation untuk kode yang lebih terstruktur, skalabel, dan mudah diuji.
+- **Local Persistence & Settings**: Penggunaan **SQLDelight** untuk penyimpanan database tugas offline dan **Jetpack DataStore** untuk manajemen preferensi tema.
+- **Dependency Injection**: Konfigurasi modul Koin (`AppModule`) untuk manajemen dependensi yang efisien di seluruh platform.
+- **Multi-platform Theming**: Sistem tema Dark/Light mode yang adaptif secara native di Android dan iOS.
 
-groq menganalisis deadline, estimasi waktu pengerjaan, dan distribusi tugas per mata kuliah agar tidak menumpuk di hari yang sama. Hasilnya berupa rekomendasi urutan tugas beserta alasan singkat mengapa tugas tersebut perlu didahulukan, sehingga mahasiswa tidak perlu lagi bingung harus mulai dari mana.
+---
 
-### ⏰ Smart Reminder
+## ✨ Fitur Saat Ini
 
-Fitur **Smart Reminder** menggunakan groq AI untuk menentukan waktu pengingat yang adaptif dan dipersonalisasi, bukan sekadar interval waktu tetap.
+- **Manajemen Tugas**: CRUD (Create, Read, Update, Delete) tugas lengkap dengan kategori, deskripsi, dan tingkat kesulitan.
+- **Visualisasi Kalender**: Tampilan kalender bulanan terintegrasi untuk melacak deadline tugas secara visual.
+- **Offline Support**: Akses data tugas yang tersimpan secara lokal tanpa koneksi internet.
 
-AI menganalisis riwayat penyelesaian tugas mahasiswa — apakah cenderung mengerjakan jauh-jauh hari atau mendekati deadline — lalu mempertimbangkan kompleksitas tugas untuk menghasilkan jadwal reminder yang paling efektif bagi masing-masing pengguna. Dengan cara ini, reminder yang diterima terasa lebih relevan dan tepat waktu.
+---
+
+## 🤖 Rencana Selanjutnya (AI Integration Roadmap)
+
+### 1. Domain AI & Analisis Prioritas
+Pengembangan layer domain khusus AI yang mampu menganalisis daftar tugas berdasarkan deadline, estimasi beban kerja, dan tingkat kesulitan untuk memberikan rekomendasi urutan pengerjaan yang paling optimal.
+
+### 2. Jadwal Reminder Adaptif
+Sistem pengingat yang mempelajari pola produktivitas pengguna. AI akan menentukan waktu terbaik untuk mengirimkan pengingat agar tidak mengganggu waktu fokus pengerjaan.
+
+### 3. Notification Reminder via AI
+Implementasi notifikasi pengingat yang dihasilkan secara dinamis oleh AI (menggunakan model seperti Groq/Gemini). Pesan pengingat akan bersifat persuasif dan motivasional, disesuaikan dengan konteks tugas.
+
+### 4. Tampilan Rekomendasi Prioritas
+Penambahan dashboard khusus atau komponen UI yang secara visual menonjolkan "Rekomendasi Utama" hasil analisis AI, membantu mahasiswa fokus pada tugas terpenting setiap harinya.
 
 ---

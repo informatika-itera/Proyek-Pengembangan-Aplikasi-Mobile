@@ -1,4 +1,5 @@
 # MoveIn
+[![CI](https://github.com/Kaizenix/123140169-123140186-MoveIn/actions/workflows/ci.yml/badge.svg)](https://github.com/Kaizenix/123140169-123140186-MoveIn/actions/workflows/ci.yml)  
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-purple)
 ![Compose](https://img.shields.io/badge/Compose-Multiplatform-blue)
@@ -90,7 +91,7 @@ Reward:
 * Badge
 * Poin
 
-## ❤avorite Activity
+## Favorite Activity
 
 * Menyimpan aktivitas favorit
 * Melihat kembali aktivitas yang disukai
@@ -222,7 +223,7 @@ git clone https://github.com/Kaizenix/123140169-123140186-MoveIn.git
 
 # Status Project
 
-🚧 Currently in Development — Sprint 1 Planning & Setup
+Currently in Development — Sprint 1 Planning & Setup
 
 ---
 

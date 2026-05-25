@@ -1,97 +1,62 @@
 package com.example.sholatyuk.data.repository
 
+import com.example.sholatyuk.data.local.SholatYukDatabase
+import com.example.sholatyuk.data.local.entity.toDomainList
+import com.example.sholatyuk.data.local.entity.roleKey
+import com.example.sholatyuk.data.local.entity.timestampMillis
+import com.example.sholatyuk.data.local.entity.isErrorAsLong
 import com.example.sholatyuk.data.remote.api.GeminiService
-import com.example.sholatyuk.data.remote.api.SystemPrompts
+import com.example.sholatyuk.domain.model.ChatMessage
 import com.example.sholatyuk.domain.repository.AIRepository
-import com.example.sholatyuk.domain.repository.WritingStyle
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class AIRepositoryImpl(
+    private val database: SholatYukDatabase,
     private val geminiService: GeminiService
 ) : AIRepository {
-    
-    override suspend fun summarize(text: String): Result<String> {
-        val prompt = """
-            Rangkum teks berikut:
-            
-            $text
+
+    private val queries = database.chatHistoryQueries
+
+    // ── Read ──────────────────────────────────────────────────────
+
+    override fun getChatHistory(): Flow<List<ChatMessage>> =
+        queries.getChatHistory()
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { it.toDomainList() }
+
+    // ── AI Call ───────────────────────────────────────────────────
+
+    override suspend fun askIslamAI(question: String): Result<String> {
+        val systemPrompt = """
+            Kamu adalah asisten Islam yang berpengetahuan luas.
+            Jawab pertanyaan seputar Islam dengan sopan, akurat, dan sesuai Al-Quran & Hadits.
+            Gunakan Bahasa Indonesia yang baik dan mudah dipahami.
+            Jika pertanyaan di luar topik Islam, arahkan kembali ke topik Islam dengan baik.
         """.trimIndent()
-        
+
         return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.SUMMARIZER
+            prompt = question,
+            systemPrompt = systemPrompt
         )
     }
-    
-    override suspend fun generateIdeas(topic: String): Result<List<String>> {
-        val prompt = """
-            Berikan 5 ide kreatif untuk topik: $topic
-        """.trimIndent()
-        
-        return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.IDEA_GENERATOR
-        ).map { response ->
-            response.lines()
-                .filter { it.isNotBlank() }
-                .map { line ->
-                    line.replace(Regex("^\\d+\\.\\s*"), "").trim()
-                }
-                .filter { it.isNotBlank() }
-        }
-    }
-    
-    override suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
-        val styleInstruction = when (style) {
-            WritingStyle.FORMAL -> "Gunakan gaya formal dan profesional."
-            WritingStyle.CASUAL -> "Gunakan gaya santai dan friendly."
-            WritingStyle.ACADEMIC -> "Gunakan gaya akademik dan ilmiah."
-            WritingStyle.CREATIVE -> "Gunakan gaya kreatif dan menarik."
-            WritingStyle.NEUTRAL -> "Gunakan gaya netral."
-        }
-        
-        val prompt = """
-            $styleInstruction
-            
-            Perbaiki tulisan berikut:
-            
-            $text
-        """.trimIndent()
-        
-        return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.WRITING_IMPROVER
+
+    // ── Write ─────────────────────────────────────────────────────
+
+    override suspend fun saveMessage(message: ChatMessage) {
+        queries.insertMessage(
+            content   = message.content,
+            role      = message.roleKey(),
+            timestamp = message.timestampMillis(),
+            is_error  = message.isErrorAsLong()
         )
     }
-    
-    override suspend fun translate(text: String, targetLanguage: String): Result<String> {
-        val prompt = """
-            Terjemahkan ke bahasa $targetLanguage:
-            
-            $text
-        """.trimIndent()
-        
-        return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.TRANSLATOR
-        )
-    }
-    
-    override suspend fun chat(message: String): Result<String> {
-        return geminiService.generateContent(prompt = message)
-    }
-    
-    override suspend fun suggestTitle(content: String): Result<String> {
-        val prompt = """
-            Berikan saran judul untuk konten berikut:
-            
-            $content
-        """.trimIndent()
-        
-        return geminiService.generateContent(
-            prompt = prompt,
-            systemPrompt = SystemPrompts.TITLE_SUGGESTER
-        ).map { it.trim().removeSurrounding("\"") }
+
+    override suspend fun clearHistory() {
+        queries.clearHistory()
     }
 }
-
-

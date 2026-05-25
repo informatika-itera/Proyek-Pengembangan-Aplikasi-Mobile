@@ -30,13 +30,13 @@ fun HomeScreen(
     onNavigateToIslamAI: () -> Unit = {}
 ) {
     Scaffold(
-        bottomBar = { 
+        bottomBar = {
             BottomNavigationBar(
                 currentRoute = "home",
                 onHomeClick = {},
                 onShalatClick = onNavigateToShalat,
                 onIslamAIClick = onNavigateToIslamAI
-            ) 
+            )
         },
         containerColor = DeepBlue
     ) { paddingValues ->

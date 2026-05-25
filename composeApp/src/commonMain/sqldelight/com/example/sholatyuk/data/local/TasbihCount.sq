@@ -1,13 +1,10 @@
--- TasbihCount.sq
--- Schema untuk menyimpan sesi tasbih aktif
-
 CREATE TABLE TasbihCountEntity (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    dzikir_id    INTEGER NOT NULL,
-    target_count INTEGER NOT NULL DEFAULT 33,
+    id            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    dzikir_id     INTEGER NOT NULL,
+    target_count  INTEGER NOT NULL DEFAULT 33,
     current_count INTEGER NOT NULL DEFAULT 0,
-    is_completed INTEGER NOT NULL DEFAULT 0,
-    created_at   INTEGER NOT NULL
+    is_completed  INTEGER NOT NULL DEFAULT 0,
+    created_at    INTEGER NOT NULL
 );
 
 -- Ambil sesi tasbih aktif
@@ -32,5 +29,6 @@ WHERE id = ?;
 -- Reset sesi
 resetSession:
 UPDATE TasbihCountEntity
-SET current_count = 0, is_completed = 0
+SET current_count = 0,
+    is_completed = 0
 WHERE id = ?;

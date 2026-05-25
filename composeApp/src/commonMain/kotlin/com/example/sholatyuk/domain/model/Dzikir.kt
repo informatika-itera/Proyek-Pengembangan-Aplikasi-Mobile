@@ -7,8 +7,8 @@ data class Dzikir(
     val latin: String,
     val translation: String,
     val benefit: String,
-    val count: Int,             // Jumlah pengulangan yang dianjurkan
-    val currentCount: Int = 0,  // Hitungan tasbih saat ini
+    val count: Int,
+    val currentCount: Int = 0,
     val category: DzikirCategory
 )
 

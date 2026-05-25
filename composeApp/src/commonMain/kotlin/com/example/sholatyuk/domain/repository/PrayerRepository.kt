@@ -1,4 +1,3 @@
-// ── PrayerRepository.kt ──────────────────────────────────
 package com.example.sholatyuk.domain.repository
 
 import com.example.sholatyuk.domain.model.PrayerTime

@@ -1,8 +1,5 @@
--- Doa.sq
--- Schema untuk menyimpan kumpulan doa
-
 CREATE TABLE DoaEntity (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title       TEXT    NOT NULL,
     arabic      TEXT    NOT NULL,
     latin       TEXT    NOT NULL,

@@ -48,7 +48,6 @@ fun KajianScreen(
                 .background(DeepBlue)
         ) {
             KajianHeader()
-            
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(16.dp),
@@ -59,7 +58,6 @@ fun KajianScreen(
                 item(span = { GridItemSpan(2) }) {
                     FeaturedKajianCard()
                 }
-                
                 items(kajianItems) { item ->
                     KajianGridItem(item)
                 }
@@ -81,9 +79,7 @@ fun KajianHeader() {
             .padding(top = 48.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Dzikir & Doa",
                 color = TextWhite,
@@ -180,12 +176,12 @@ data class KajianItem(
 val kajianItems = listOf(
     KajianItem("Dzikir\nPagi", Icons.Default.WbSunny),
     KajianItem("Dzikir\nPetang", Icons.Default.NightsStay),
-    KajianItem("Kegiatan\nSehari-\nhari", Icons.Default.Restaurant),
-    KajianItem("Ketika\nHaji &\nUmrah", Icons.Default.LocationCity),
-    KajianItem("Dzikir &\nDoa\nShalat", Icons.Default.Mosque),
+    KajianItem("Kegiatan\nSehari-hari", Icons.Default.Restaurant),
+    KajianItem("Ketika\nHaji & Umrah", Icons.Default.LocationCity),
+    KajianItem("Dzikir & Doa\nShalat", Icons.Default.Mosque),
     KajianItem("Bacaan\nRuqyah", Icons.AutoMirrored.Filled.MenuBook),
-    KajianItem("Doa\nKarena\nSebab", Icons.Default.PanTool),
-    KajianItem("Dzikir\nSetiap\nSaat", Icons.Default.AccessTime),
-    KajianItem("Dzikir\nSetelah\nShalat", Icons.Default.AutoAwesome),
-    KajianItem("Dzikir\nyang\nDianjurka", Icons.Default.ThumbUp)
+    KajianItem("Doa\nKarena Sebab", Icons.Default.PanTool),
+    KajianItem("Dzikir\nSetiap Saat", Icons.Default.AccessTime),
+    KajianItem("Dzikir\nSetelah Shalat", Icons.Default.AutoAwesome),
+    KajianItem("Dzikir\nyang Dianjurkan", Icons.Default.ThumbUp)
 )

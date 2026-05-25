@@ -79,7 +79,7 @@ Database version mismatch
 val driver = AndroidSqliteDriver(
     schema = NoteDatabase.Schema,
     context = context,
-    name = "noteai.db",
+    name = "StudyMate.db",
     callback = object : AndroidSqliteDriver.Callback(NoteDatabase.Schema) {
         override fun onUpgrade(
             db: SupportSQLiteDatabase,
@@ -110,7 +110,7 @@ Preview tidak muncul
 @Preview
 @Composable
 fun NoteCardPreview() {
-    NoteAITheme {
+    StudyMateTheme {
         NoteCard(
             note = Note(title = "Preview", content = "Test"),
             onClick = {},
@@ -159,7 +159,7 @@ val sharedModules = listOf(
 override fun onCreate() {
     super.onCreate()
     initKoin(platformModules = listOf(androidModule)) {
-        androidContext(this@NoteAIApplication)
+        androidContext(this@StudyMateApplication)
     }
 }
 ```
@@ -423,3 +423,4 @@ fun MyScreen() {
 ---
 
 *Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+

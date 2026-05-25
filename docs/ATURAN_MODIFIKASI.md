@@ -21,7 +21,7 @@ Bagian-bagian ini **HARUS** diubah sesuai project Anda:
 
 ```kotlin
 // SEBELUM (Template)
-package com.example.noteai
+package com.example.StudyMate
 
 // SESUDAH (Project Anda)
 package com.example.todomaster    // Sesuaikan dengan nama app
@@ -121,7 +121,7 @@ interface TaskRepository {
 Buat screens sesuai kebutuhan aplikasi:
 
 ```
-SEBELUM (NoteAI):
+SEBELUM (StudyMate):
 ├── screens/
 │   ├── home/
 │   ├── addnote/
@@ -382,13 +382,13 @@ Sebelum mengubah template, pastikan:
 
 ## 🔍 Contoh Modifikasi yang Benar
 
-### Mengubah dari NoteAI ke TodoMaster
+### Mengubah dari StudyMate ke TodoMaster
 
 #### Step 1: Rename Package
 ```bash
 # Di Android Studio:
 # Right-click package > Refactor > Rename
-# com.example.noteai → com.example.todomaster
+# com.example.StudyMate → com.example.todomaster
 ```
 
 #### Step 2: Update Model
@@ -481,3 +481,4 @@ val repositoryModule = module {
 ---
 
 *Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+

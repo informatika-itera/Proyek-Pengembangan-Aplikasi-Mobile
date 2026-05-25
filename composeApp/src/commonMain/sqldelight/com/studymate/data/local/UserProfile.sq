@@ -1,0 +1,21 @@
+CREATE TABLE UserProfileEntity (
+    id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,
+    name TEXT NOT NULL,
+    nim TEXT NOT NULL,
+    currentStreak INTEGER NOT NULL DEFAULT 0,
+    lastStudyDate INTEGER,
+    dailyMantra TEXT NOT NULL DEFAULT 'Jangan pernah berhenti belajar, karena hidup tidak pernah berhenti mengajar.'
+);
+
+insertProfile:
+INSERT OR REPLACE INTO UserProfileEntity(id, name, nim, currentStreak, lastStudyDate, dailyMantra)
+VALUES (1, ?, ?, ?, ?, ?);
+
+getProfile:
+SELECT * FROM UserProfileEntity WHERE id = 1;
+
+updateStreak:
+UPDATE UserProfileEntity SET currentStreak = ?, lastStudyDate = ? WHERE id = 1;
+
+updateMantra:
+UPDATE UserProfileEntity SET dailyMantra = ? WHERE id = 1;

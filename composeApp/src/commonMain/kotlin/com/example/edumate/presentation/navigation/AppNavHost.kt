@@ -10,6 +10,7 @@ import com.example.edumate.presentation.screens.add.AddEditScreen
 import com.example.edumate.presentation.screens.ai.AIAssistantScreen
 import com.example.edumate.presentation.screens.detail.DetailScreen
 import com.example.edumate.presentation.screens.home.HomeScreen
+import com.example.edumate.presentation.screens.timer.TimerScreen
 
 @Composable
 fun AppNavHost(
@@ -25,7 +26,8 @@ fun AppNavHost(
             HomeScreen(
                 onNavigateToAdd = { navController.navigate(Route.AddEditTask()) },
                 onNavigateToDetail = { taskId -> navController.navigate(Route.TaskDetail(taskId)) },
-                onNavigateToAIAssistant = { navController.navigate(Route.AIAssistant()) }
+                onNavigateToAIAssistant = { navController.navigate(Route.AIAssistant()) },
+                onNavigateToTimer = { navController.navigate(Route.FocusTimer) }
             )
         }
 
@@ -57,6 +59,13 @@ fun AppNavHost(
             AIAssistantScreen(
                 noteId = route.taskId,
                 initialText = route.initialText,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Tambahan Rute Timer
+        composable<Route.FocusTimer> {
+            TimerScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

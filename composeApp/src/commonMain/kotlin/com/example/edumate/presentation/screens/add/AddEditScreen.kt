@@ -1,5 +1,7 @@
 package com.example.edumate.presentation.screens.add
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,8 +14,11 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,15 +31,21 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.edumate.domain.model.TaskPriority
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -49,6 +60,10 @@ fun AddEditScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // State untuk kontrol kalender (DatePicker)
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onNavigateBack()
@@ -58,6 +73,41 @@ fun AddEditScreen(
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
+        }
+    }
+
+    // Menangani aksi tap pada kolom teks tanggal untuk membuka kalender
+    val dateInteractionSource = remember { MutableInteractionSource() }
+    LaunchedEffect(dateInteractionSource) {
+        dateInteractionSource.interactions.collect { interaction ->
+            if (interaction is PressInteraction.Release) {
+                showDatePicker = true
+            }
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        // Konversi millis dari DatePicker (UTC) ke YYYY-MM-DD
+                        val date = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
+                        viewModel.onEvent(AddEditEvent.EnteredDeadline(date.toString()))
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("Pilih")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Batal")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 
@@ -112,10 +162,16 @@ fun AddEditScreen(
 
             OutlinedTextField(
                 value = uiState.deadlineText,
-                onValueChange = { viewModel.onEvent(AddEditEvent.EnteredDeadline(it)) },
-                label = { Text("Deadline (YYYY-MM-DD)") },
+                onValueChange = { }, // Menggunakan kalender, bukan pengetikan manual
+                label = { Text("Deadline") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
+                readOnly = true,
+                interactionSource = dateInteractionSource,
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Buka Kalender")
+                    }
+                },
                 supportingText = { Text("Opsional, agar tugas tersusun berdasarkan tenggat terdekat.") }
             )
 
@@ -153,7 +209,8 @@ fun AddEditScreen(
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.width(18.dp).height(18.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }

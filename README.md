@@ -99,12 +99,15 @@ composeApp/src/
 │       │   ├── add_edit/                  # AddEditTargetScreen + ViewModel
 │       │   ├── riwayat/                   # RiwayatScreen + ViewModel
 │       │   └── settings/                  # SettingsScreen + ViewModel
+│       │   └── ai/                        # ai + ViewModel
+│       │   └── statistics/                # StatisticsScreen + ViewModel
 │       ├── components/                    # Reusable UI components
 │       └── theme/                         # Material theme + Dark Mode
 │
 ├── commonMain/sqldelight/                 # SQLDelight schema
 │   └── com/example/tabungin/data/local/
-│       └── Note.sq                        # Target & Setoran schema + queries
+│       └── Setoran.sq                     # Setoran schema + queries
+│       └── Target.sq                      # Target schema + queries
 │
 ├── commonTest/kotlin/                     # Shared tests
 │   └── com/example/tabungin/

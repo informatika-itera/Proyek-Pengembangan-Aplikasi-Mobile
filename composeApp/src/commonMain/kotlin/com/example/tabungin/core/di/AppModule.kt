@@ -15,6 +15,7 @@ import com.example.tabungin.presentation.screens.detail.DetailViewModel
 import com.example.tabungin.presentation.screens.home.HomeViewModel
 import com.example.tabungin.presentation.screens.riwayat.RiwayatViewModel
 import com.example.tabungin.presentation.screens.settings.SettingsViewModel
+import com.example.tabungin.presentation.screens.statistics.StatisticsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.koin.core.context.startKoin
@@ -73,7 +74,8 @@ val viewModelModule = module {
     viewModel { (id: Long) -> DetailViewModel(id, get(), get(), get(), get()) }
     viewModel { params -> AddEditViewModel(params.getOrNull<Long>(), get(), get(), get()) }
     viewModel { RiwayatViewModel(get()) }
-    viewModel { SettingsViewModel() }
+    viewModel { SettingsViewModel(get()) }
+    viewModel { StatisticsViewModel(get(), get()) }
 }
 
 

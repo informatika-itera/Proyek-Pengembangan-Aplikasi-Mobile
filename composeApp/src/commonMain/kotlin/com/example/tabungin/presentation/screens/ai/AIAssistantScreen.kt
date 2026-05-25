@@ -46,8 +46,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIAssistantScreen(
-    noteId: Long?,
-    initialText: String?,
+    noteId: Long? = null,
+    initialText: String? = null,
     onNavigateBack: () -> Unit,
     onApplyResult: ((String) -> Unit)? = null,
     viewModel: AIAssistantViewModel = koinViewModel()

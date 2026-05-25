@@ -12,13 +12,24 @@ class UserPreferences(
     private val dataStore: DataStore<Preferences>
 ) {
 
-    
     private object Keys {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val SORT_BY = stringPreferencesKey("sort_by")
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+
+        val NAMA_USER = stringPreferencesKey("nama_user")
+    }
+
+    val namaUser: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.NAMA_USER] ?: "" // Default string kosong jika belum diisi
+    }
+
+    suspend fun setNamaUser(name: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NAMA_USER] = name
+        }
     }
 
     val isDarkMode: Flow<Boolean> = dataStore.data.map { prefs ->
@@ -50,24 +61,20 @@ class UserPreferences(
             prefs[Keys.DEFAULT_CATEGORY] = category
         }
     }
-    
 
     val showPreview: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.SHOW_PREVIEW] ?: true
     }
-    
 
     suspend fun setShowPreview(show: Boolean) {
         dataStore.edit { prefs ->
             prefs[Keys.SHOW_PREVIEW] = show
         }
     }
-    
 
     val isOnboardingCompleted: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.ONBOARDING_COMPLETED] ?: false
     }
-
 
     suspend fun setOnboardingCompleted() {
         dataStore.edit { prefs ->

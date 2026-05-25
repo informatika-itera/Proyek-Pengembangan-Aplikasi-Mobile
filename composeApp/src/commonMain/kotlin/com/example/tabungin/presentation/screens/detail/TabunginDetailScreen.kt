@@ -1,57 +1,36 @@
 package com.example.tabungin.presentation.screens.detail
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.tabungin.core.util.formatToDisplay
-import com.example.tabungin.presentation.components.ProgressCard
-import com.example.tabungin.presentation.components.SetoranItem
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.example.tabungin.presentation.components.ProgressCard
+import com.example.tabungin.presentation.components.SetoranItem
+import com.example.tabungin.presentation.components.parseHexColor
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,8 +41,8 @@ fun DetailScreen(
     onNavigateToEdit: (Long) -> Unit,
     viewModel: DetailViewModel = koinViewModel(parameters = { parametersOf(targetId) })
 ) {
-    val uiState           by viewModel.uiState.collectAsState()
-    val snackbarHostState  = remember { SnackbarHostState() }
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -76,70 +55,160 @@ fun DetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(uiState.target?.nama ?: "Detail", fontWeight = FontWeight.Bold) },
+                title = {
+                    Column {
+                        Text(
+                            "Detail Target",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            uiState.target?.nama ?: "",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Kembali")
+                    Surface(
+                        onClick = onNavigateBack,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = "Kembali",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 },
                 actions = {
-                    IconButton(onClick = { uiState.target?.id?.let(onNavigateToEdit) }) {
-                        Icon(Icons.Default.Edit, "Edit")
+                    Surface(
+                        onClick = { uiState.target?.id?.let(onNavigateToEdit) },
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
-                }
+                    Spacer(Modifier.width(8.dp))
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = viewModel::showSetoranDialog,
-                icon    = { Icon(Icons.Default.Add, null) },
-                text    = { Text("Tambah Setoran") }
-            )
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Setoran Baru")
+            }
         }
     ) { padding ->
         if (uiState.isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
             return@Scaffold
         }
 
         val target = uiState.target ?: return@Scaffold
+        val accentColor = parseHexColor(target.warna)
 
         LazyColumn(
-            modifier            = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding      = PaddingValues(top = 16.dp, bottom = 80.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            item { ProgressCard(target = target) }
+            item {
+                Box(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    ProgressCard(target = target)
+                }
+            }
 
             item {
-                Text(
-                    "Riwayat Setoran",
-                    style      = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.History,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Riwayat Setoran",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    if (uiState.setoranList.isNotEmpty()) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Text(
+                                "${uiState.setoranList.size} transaksi",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
             }
 
             if (uiState.setoranList.isEmpty()) {
                 item {
-                    Box(
-                        Modifier.fillMaxWidth().height(100.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "Belum ada setoran. Ayo mulai menabung! 💪",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    EmptySetoranState(accentColor = accentColor)
                 }
             } else {
-                items(uiState.setoranList, key = { it.id }) { setoran ->
-                    SetoranItem(
-                        setoran  = setoran,
-                        onDelete = { viewModel.deleteSetoran(setoran.id) }
-                    )
+                items(
+                    uiState.setoranList,
+                    key = { it.id }
+                ) { setoran ->
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(tween(300)) + slideInHorizontally(
+                            initialOffsetX = { it / 4 },
+                            animationSpec = tween(300)
+                        ),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        SetoranItem(
+                            setoran = setoran,
+                            onDelete = { viewModel.deleteSetoran(setoran.id) }
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
                 }
             }
         }
@@ -157,44 +226,131 @@ fun DetailScreen(
 }
 
 @Composable
+private fun EmptySetoranState(accentColor: Color) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.height(16.dp))
+
+        Surface(
+            shape = CircleShape,
+            color = accentColor.copy(alpha = 0.1f),
+            modifier = Modifier.size(80.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text("💪", style = MaterialTheme.typography.displayMedium)
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            "Belum Ada Setoran",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            "Mulai setor sekarang dan wujudkan targetmu!",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun SetoranInputDialog(
     onDismiss: () -> Unit,
     onConfirm: (Double, String) -> Unit
 ) {
     var amountText by remember { mutableStateOf("") }
-    var catatan    by remember { mutableStateOf("") }
-    val isValid    = amountText.toDoubleOrNull()?.let { it > 0 } == true
+    var catatan by remember { mutableStateOf("") }
+    val isValid = amountText.toDoubleOrNull()?.let { it > 0 } == true
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title  = { Text("Tambah Setoran") },
-        text   = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value           = amountText,
-                    onValueChange   = { amountText = it },
-                    label           = { Text("Jumlah (Rp)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine      = true,
-                    isError         = amountText.isNotEmpty() && !isValid,
-                    modifier        = Modifier.fillMaxWidth()
+        shape = RoundedCornerShape(20.dp),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("💰", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    "Tambah Setoran",
+                    fontWeight = FontWeight.Bold
                 )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
-                    value         = catatan,
+                    value = amountText,
+                    onValueChange = { amountText = it },
+                    label = { Text("Jumlah (Rp)") },
+                    placeholder = { Text("Contoh: 50000") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    isError = amountText.isNotEmpty() && !isValid,
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Text(
+                            "Rp",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                )
+
+                if (amountText.isNotEmpty() && !isValid) {
+                    Text(
+                        "Masukkan jumlah yang valid (> 0)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+
+                OutlinedTextField(
+                    value = catatan,
                     onValueChange = { catatan = it },
-                    label         = { Text("Catatan (opsional)") },
-                    singleLine    = true,
-                    modifier      = Modifier.fillMaxWidth()
+                    label = { Text("Catatan (opsional)") },
+                    placeholder = { Text("Contoh: Bonus dari kantor") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(Icons.Default.Notes, contentDescription = null)
+                    }
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(amountText.toDouble(), catatan) }, enabled = isValid) {
+            Button(
+                onClick = { onConfirm(amountText.toDouble(), catatan) },
+                enabled = isValid,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
                 Text("Simpan")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Batal") }
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
         }
     )
 }

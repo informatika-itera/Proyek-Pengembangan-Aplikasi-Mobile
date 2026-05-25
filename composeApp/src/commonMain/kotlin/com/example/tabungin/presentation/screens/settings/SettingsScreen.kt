@@ -1,14 +1,26 @@
 package com.example.tabungin.presentation.screens.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,95 +29,361 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pengaturan", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Kembali")
+                title = {
+                    Column {
+                        Text(
+                            "Konfigurasi",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "Pengaturan",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                }
+                },
+                navigationIcon = {
+                    Surface(
+                        onClick = onNavigateBack,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = "Kembali",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
     ) { padding ->
         Column(
-            modifier            = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(scrollState)
         ) {
-            Spacer(Modifier.height(8.dp))
+            // Profile Header Card
+            Box(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                        ),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.tertiary
+                                    )
+                                )
+                            )
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color.White.copy(alpha = 0.2f),
+                                modifier = Modifier.size(64.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text("🏦", style = MaterialTheme.typography.headlineMedium)
+                                }
+                            }
+                            Column {
+                                Text(
+                                    "TabungIn",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    "Wujudkan Impianmu",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White.copy(alpha = 0.85f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
-            SectionLabel("Profil")
-            OutlinedTextField(
-                value         = uiState.namaUser,
-                onValueChange = viewModel::onNamaUserChange,
-                label         = { Text("Nama") },
-                leadingIcon   = { Icon(Icons.Default.Person, null) },
-                singleLine    = true,
-                modifier      = Modifier.fillMaxWidth()
+            // Profile Section
+            SettingsSection(title = "Profil") {
+                OutlinedTextField(
+                    value = state.namaUser,
+                    onValueChange = { newName ->
+                        viewModel.onNamaUserChange(newName)
+                    },
+                    label = { Text("Nama Pengguna") },
+                    placeholder = { Text("Masukkan nama kamu") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Person, contentDescription = null)
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+
+            // Appearance Section
+            SettingsSection(title = "Tampilan") {
+                SettingsToggleCard(
+                    icon = Icons.Default.DarkMode,
+                    title = "Mode Gelap",
+                    subtitle = "Aktifkan tema gelap untuk nyaman di mata",
+                    checked = uiState.isDarkMode,
+                    onToggle = viewModel::toggleDarkMode
+                )
+            }
+
+            // Notifications Section
+            SettingsSection(title = "Notifikasi") {
+                SettingsToggleCard(
+                    icon = Icons.Default.Notifications,
+                    title = "Pengingat Menabung",
+                    subtitle = "Dapatkan notifikasi harian untuk menabung",
+                    checked = uiState.notifikasiAktif,
+                    onToggle = viewModel::toggleNotifikasi
+                )
+            }
+
+            // About Section
+            SettingsSection(title = "Tentang Aplikasi") {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text("🏦", style = MaterialTheme.typography.titleLarge)
+                                }
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "TabungIn",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Versi 1.0.0",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                        HorizontalDivider()
+                        Spacer(Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            InfoItem(
+                                icon = Icons.Default.Code,
+                                label = "Sprint",
+                                value = "2"
+                            )
+                            InfoItem(
+                                icon = Icons.Default.School,
+                                label = "Mata Kuliah",
+                                value = "PAM"
+                            )
+                            InfoItem(
+                                icon = Icons.Default.Business,
+                                label = "Kampus",
+                                value = "ITERA"
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+
+@Composable
+private fun SettingsSection(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                when (title) {
+                    "Profil" -> Icons.Default.Person
+                    "Tampilan" -> Icons.Default.Palette
+                    "Notifikasi" -> Icons.Default.Notifications
+                    else -> Icons.Default.Info
+                },
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
             )
-
-            Spacer(Modifier.height(8.dp))
-            HorizontalDivider()
-
-            SectionLabel("Tampilan")
-            SettingsToggleRow(
-                icon     = Icons.Default.DarkMode,
-                label    = "Mode Gelap",
-                subtitle = "Aktifkan tema gelap",
-                checked  = uiState.isDarkMode,
-                onToggle = viewModel::toggleDarkMode
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
-            HorizontalDivider()
+        }
 
-            SectionLabel("Notifikasi")
-            SettingsToggleRow(
-                icon     = Icons.Default.Notifications,
-                label    = "Pengingat Menabung",
-                subtitle = "Notifikasi harian untuk menabung",
-                checked  = uiState.notifikasiAktif,
-                onToggle = viewModel::toggleNotifikasi
-            )
-            HorizontalDivider()
+        Spacer(Modifier.height(12.dp))
 
-            SectionLabel("Tentang Aplikasi")
-            ListItem(
-                headlineContent   = { Text("TabungIn") },
-                supportingContent = { Text("Versi 1.0.0 · Sprint 2") },
-                leadingContent    = { Text("🏦", style = MaterialTheme.typography.titleLarge) }
-            )
-            ListItem(
-                headlineContent   = { Text("Dikembangkan untuk") },
-                supportingContent = { Text("Pengembangan Aplikasi Mobile · ITERA") },
-                leadingContent    = { Icon(Icons.Default.School, null) }
+        content()
+    }
+}
+
+
+@Composable
+private fun SettingsToggleCard(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = if (checked) 4.dp else 0.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = if (checked) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent
+            ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (checked)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = if (checked) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = if (checked) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Switch(
+                checked = checked,
+                onCheckedChange = { onToggle() },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             )
         }
     }
 }
 
-@Composable
-private fun SectionLabel(label: String) {
-    Text(
-        text     = label,
-        style    = MaterialTheme.typography.labelLarge,
-        color    = MaterialTheme.colorScheme.primary,
-        modifier = androidx.compose.ui.Modifier.padding(top = 16.dp, bottom = 4.dp)
-    )
-}
 
 @Composable
-private fun SettingsToggleRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+private fun InfoItem(
+    icon: ImageVector,
     label: String,
-    subtitle: String,
-    checked: Boolean,
-    onToggle: () -> Unit
+    value: String
 ) {
-    ListItem(
-        headlineContent   = { Text(label) },
-        supportingContent = { Text(subtitle) },
-        leadingContent    = { Icon(icon, null) },
-        trailingContent   = { Switch(checked = checked, onCheckedChange = { onToggle() }) }
-    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            value,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }

@@ -60,6 +60,7 @@ fun HomeScreen(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAIAssistant: () -> Unit,
     onNavigateToTimer: () -> Unit,
+    onNavigateToStatistics: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,10 +75,13 @@ fun HomeScreen(
                     IconButton(onClick = onNavigateToTimer) {
                         Icon(Icons.Default.Timer, contentDescription = "Fokus Belajar", tint = MaterialTheme.colorScheme.primary)
                     }
+                    TextButton(onClick = onNavigateToStatistics) {
+                        Text("Statistik", color = MaterialTheme.colorScheme.primary)
+                    }
                     TextButton(onClick = onNavigateToAIAssistant) {
-                        Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("AI")
+                        Text("AI", color = MaterialTheme.colorScheme.primary)
                     }
                 }
             )
@@ -93,7 +97,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Komponen Kolom Pencarian
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.updateSearchQuery(it) },
@@ -117,7 +120,6 @@ fun HomeScreen(
                 )
             )
 
-            // Komponen Chip Filter
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -133,7 +135,6 @@ fun HomeScreen(
                 }
             }
 
-            // Area Konten Daftar Tugas
             Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 when (val state = uiState) {
                     is HomeUiState.Loading -> {

@@ -18,9 +18,11 @@ sealed interface Route {
         val initialText: String? = null
     ) : Route
 
-    // Rute baru untuk fitur Fokus Belajar
     @Serializable
     data object FocusTimer : Route
+
+    @Serializable
+    data object Statistics : Route
 }
 
 interface NavigationActions {
@@ -29,5 +31,6 @@ interface NavigationActions {
     fun navigateToTaskDetail(taskId: Long)
     fun navigateToAIAssistant(taskId: Long? = null, initialText: String? = null)
     fun navigateToFocusTimer()
+    fun navigateToStatistics()
     fun navigateBack()
 }

@@ -10,6 +10,7 @@ import com.example.edumate.data.repository.AIRepositoryImpl
 import com.example.edumate.domain.repository.AIRepository
 import com.example.edumate.presentation.screens.ai.AIAssistantViewModel
 import com.example.edumate.presentation.screens.timer.TimerViewModel
+import com.example.edumate.presentation.screens.statistics.StatisticsViewModel
 
 import com.example.edumate.core.network.HttpClientFactory
 import com.example.edumate.core.util.DatabaseDriverFactory
@@ -52,7 +53,8 @@ val viewModelModule = module {
     factory { (taskId: Long?) -> AddEditViewModel(get(), taskId) }
     factory { (taskId: Long) -> DetailViewModel(get(), taskId) }
     factory { AIAssistantViewModel(get()) }
-    factory { TimerViewModel() } // Injeksi TimerViewModel
+    factory { TimerViewModel() }
+    factory { StatisticsViewModel(get()) }
 }
 
 val sharedModules = listOf(networkModule, databaseModule, preferencesModule, repositoryModule, viewModelModule)

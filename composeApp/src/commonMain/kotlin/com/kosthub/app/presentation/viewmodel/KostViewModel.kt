@@ -1,6 +1,5 @@
 package com.kosthub.app.presentation.viewmodel
 
-import com.kosthub.app.data.DummyKostData
 import com.kosthub.app.domain.model.Kost
 import com.kosthub.app.domain.repository.KostRepository
 import com.kosthub.app.presentation.state.OperationState
@@ -29,7 +28,7 @@ class KostViewModel(
     init {
         scope.launch {
             try {
-                repository.seedIfEmpty(DummyKostData.seedData())
+                repository.syncRemote()
                 refresh()
             } catch (error: Exception) {
                 _uiState.value = UiState.Error(error.message ?: "Gagal memuat data")

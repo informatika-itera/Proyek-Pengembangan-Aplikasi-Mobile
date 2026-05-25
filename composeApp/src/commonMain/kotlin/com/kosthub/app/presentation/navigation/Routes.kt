@@ -8,6 +8,7 @@ object Routes {
     const val ContributeEdit = "contribute/edit/{id}"
     const val ContributeDelete = "contribute/delete/{id}"
     const val Profile = "profile"
+    const val Settings = "settings"
     const val Detail = "detail/{id}"
 
     fun detail(id: Long): String = "detail/$id"

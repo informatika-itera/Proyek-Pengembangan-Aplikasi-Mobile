@@ -35,7 +35,10 @@ import com.kosthub.app.presentation.viewmodel.ProfileViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun ProfileScreen(profileViewModel: ProfileViewModel) {
+fun ProfileScreen(
+    profileViewModel: ProfileViewModel,
+    onNavigateSettings: () -> Unit
+) {
     val uiState by profileViewModel.uiState.collectAsState()
     val operationState by profileViewModel.operationState.collectAsState()
 
@@ -53,7 +56,8 @@ fun ProfileScreen(profileViewModel: ProfileViewModel) {
         is UiState.Success -> ProfileForm(
             profile = state.data,
             operationState = operationState,
-            onSave = { profileViewModel.saveProfile(it) }
+            onSave = { profileViewModel.saveProfile(it) },
+            onNavigateSettings = onNavigateSettings
         )
     }
 }
@@ -62,7 +66,8 @@ fun ProfileScreen(profileViewModel: ProfileViewModel) {
 private fun ProfileForm(
     profile: Profile,
     operationState: OperationState,
-    onSave: (Profile) -> Unit
+    onSave: (Profile) -> Unit,
+    onNavigateSettings: () -> Unit
 ) {
     var name by remember { mutableStateOf(profile.name) }
     var email by remember { mutableStateOf(profile.email) }
@@ -118,16 +123,24 @@ private fun ProfileForm(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
-            onSave(
-                profile.copy(
-                    name = name,
-                    email = email
+                onSave(
+                    profile.copy(
+                        name = name,
+                        email = email
+                    )
                 )
-            )
-        },
-            enabled = operationState !is OperationState.Loading
+            },
+            enabled = operationState !is OperationState.Loading,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Simpan Profil")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        androidx.compose.material3.OutlinedButton(
+            onClick = onNavigateSettings,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Pengaturan Tema")
         }
     }
 }

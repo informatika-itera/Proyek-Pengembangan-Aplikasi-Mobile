@@ -48,22 +48,6 @@ fun SplashScreen(onNavigateToHome: () -> Unit) {
 }
 
 @Composable
-fun BookmarkScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Berita Tersimpan",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@Composable
 fun AboutScreen() {
     Box(
         modifier = Modifier

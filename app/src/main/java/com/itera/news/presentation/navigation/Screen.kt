@@ -8,6 +8,7 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Bookmark : Screen("bookmark")
     object About : Screen("about")
+    object Settings : Screen("settings")
     
     // Argument passing: URL artikel
     object Detail : Screen("detail/{articleUrl}") {

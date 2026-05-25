@@ -10,6 +10,7 @@ import com.itera.news.presentation.screen.AboutScreen
 import com.itera.news.presentation.screen.BookmarkScreen
 import com.itera.news.presentation.screen.DetailScreen
 import com.itera.news.presentation.screen.HomeScreen
+import com.itera.news.presentation.screen.SettingsScreen
 import com.itera.news.presentation.screen.SplashScreen
 
 @Composable
@@ -46,10 +47,17 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.Bookmark.route) {
-            BookmarkScreen()
+            BookmarkScreen(
+                navigateToDetail = { url ->
+                    navController.navigate(Screen.Detail.createRoute(url))
+                }
+            )
         }
         composable(Screen.About.route) {
             AboutScreen()
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen()
         }
     }
 }

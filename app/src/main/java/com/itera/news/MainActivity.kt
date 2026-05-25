@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -40,7 +41,8 @@ class MainActivity : ComponentActivity() {
                 val showBottomBar = currentDestination?.route in listOf(
                     Screen.Home.route,
                     Screen.Bookmark.route,
-                    Screen.About.route
+                    Screen.About.route,
+                    Screen.Settings.route
                 )
 
                 Scaffold(
@@ -81,6 +83,7 @@ fun BottomNavigationBar(
     val items = listOf(
         Triple(Screen.Home, "Beranda", Icons.Outlined.Home),
         Triple(Screen.Bookmark, "Simpan", Icons.Outlined.Star),
+        Triple(Screen.Settings, "Pengaturan", Icons.Outlined.Settings),
         Triple(Screen.About, "Profil", Icons.Outlined.Person)
     )
 

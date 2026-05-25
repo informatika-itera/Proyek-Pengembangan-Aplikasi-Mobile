@@ -11,4 +11,8 @@ interface NewsRepository {
     fun isArticleBookmarked(url: String): Flow<Boolean>
     suspend fun saveArticle(article: Article)
     suspend fun deleteArticle(article: Article)
+    
+    // Offline Support
+    fun getCachedArticles(): Flow<List<Article>>
+    suspend fun clearCache()
 }

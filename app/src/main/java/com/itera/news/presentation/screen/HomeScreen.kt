@@ -10,7 +10,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +44,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     Scaffold(
         topBar = {
@@ -50,20 +54,47 @@ fun HomeScreen(
                     .padding(vertical = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Symmetric Header
-                Text(
-                    text = "NEWS MBG AI",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 2.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // Header with refresh button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "NEWS MBG AI",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 2.sp,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    // Refresh button
+                    IconButton(
+                        onClick = { viewModel.refreshNews() },
+                        enabled = !isRefreshing
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.then(
+                                if (isRefreshing) {
+                                    Modifier.size(24.dp)
+                                } else {
+                                    Modifier.size(24.dp)
+                                }
+                            )
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Symmetric Neumorphic Search Bar
+                // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -86,7 +117,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Symmetric Category Tabs
+                // Category Tabs
                 val categories = listOf("Semua", "Pro", "Kontra", "Netral")
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 24.dp),
@@ -140,18 +171,35 @@ fun HomeScreen(
                 is NewsUiState.Success -> {
                     val articles = (uiState as NewsUiState.Success).articles
                     if (articles.isEmpty()) {
-                        Text(
-                            text = "Tidak ada berita ditemukan",
-                            modifier = Modifier.align(Alignment.Center),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "📰",
+                                style = MaterialTheme.typography.displayLarge
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Tidak ada berita ditemukan",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     } else {
                         LazyColumn(
                             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(28.dp)
                         ) {
-                            items(articles) { article ->
-                                ArticleCard(article = article, onClick = { navigateToDetail(article.url) })
+                            items(articles, key = { it.url }) { article ->
+                                ArticleCard(
+                                    article = article,
+                                    onClick = { navigateToDetail(article.url) },
+                                    viewModel = viewModel
+                                )
                             }
                         }
                     }
@@ -159,12 +207,28 @@ fun HomeScreen(
                 is NewsUiState.Error -> {
                     val errorMsg = (uiState as NewsUiState.Error).message
                     Column(
-                        modifier = Modifier.align(Alignment.Center).padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(text = "Ups! Terjadi kendala", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(
+                            text = "⚠️",
+                            style = MaterialTheme.typography.displayLarge
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Ups! Terjadi kendala", 
+                            fontWeight = FontWeight.Bold, 
+                            fontSize = 18.sp
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = errorMsg, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                        Text(
+                            text = errorMsg, 
+                            color = MaterialTheme.colorScheme.error, 
+                            textAlign = TextAlign.Center
+                        )
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
                             onClick = { viewModel.fetchNews() },
@@ -175,20 +239,29 @@ fun HomeScreen(
                     }
                 }
             }
+            
+            // Loading indicator overlay when refreshing
+            if (isRefreshing && uiState is NewsUiState.Success) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                )
+            }
         }
     }
 }
 
 @Composable
 fun ShimmerItem() {
-    val transition = rememberInfiniteTransition()
+    val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1200, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
-        )
+        ), label = "shimmer"
     )
 
     val shimmerColors = listOf(
@@ -214,7 +287,13 @@ fun ShimmerItem() {
 }
 
 @Composable
-fun ArticleCard(article: Article, onClick: () -> Unit) {
+fun ArticleCard(
+    article: Article,
+    onClick: () -> Unit,
+    viewModel: NewsViewModel
+) {
+    val isBookmarked by viewModel.isArticleBookmarked(article.url).collectAsState()
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -229,14 +308,36 @@ fun ArticleCard(article: Article, onClick: () -> Unit) {
     ) {
         Column {
             if (article.imageUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = article.imageUrl,
-                    contentDescription = "Gambar Berita",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                )
+                Box {
+                    AsyncImage(
+                        model = article.imageUrl,
+                        contentDescription = "Gambar Berita",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    )
+                    
+                    // Bookmark button overlay
+                    IconButton(
+                        onClick = { 
+                            viewModel.toggleBookmark(article, isBookmarked)
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = if (isBookmarked) Icons.Filled.Star else Icons.Outlined.Star,
+                            contentDescription = if (isBookmarked) "Hapus bookmark" else "Simpan bookmark",
+                            tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             }
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(

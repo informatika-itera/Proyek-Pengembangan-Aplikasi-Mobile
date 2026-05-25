@@ -29,6 +29,9 @@ class NewsViewModel(
     val selectedCategory = _selectedCategory.asStateFlow()
 
     private val _allArticles = MutableStateFlow<List<Article>>(emptyList())
+    
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
 
     val uiState: StateFlow<NewsUiState> = combine(_uiState, _selectedCategory) { state, category ->
         if (state is NewsUiState.Success) {
@@ -79,11 +82,45 @@ class NewsViewModel(
             }
         }
     }
+    
+    fun refreshNews() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            getMbgNewsUseCase(_searchQuery.value.ifEmpty { null }).collect { result ->
+                result.fold(
+                    onSuccess = { articles -> 
+                        _allArticles.value = articles
+                        _uiState.value = NewsUiState.Success(articles) 
+                    },
+                    onFailure = { error -> _uiState.value = NewsUiState.Error(error.message ?: "Error") }
+                )
+            }
+            _isRefreshing.value = false
+        }
+    }
 
     fun saveArticle(article: Article) = viewModelScope.launch { repository.saveArticle(article) }
+    
     fun deleteArticle(article: Article) = viewModelScope.launch { repository.deleteArticle(article) }
+    
+    fun toggleBookmark(article: Article, isBookmarked: Boolean) {
+        viewModelScope.launch {
+            if (isBookmarked) {
+                deleteArticle(article)
+            } else {
+                saveArticle(article)
+            }
+        }
+    }
+    
     fun isArticleBookmarked(url: String): StateFlow<Boolean> {
         return repository.isArticleBookmarked(url)
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
+    }
+    
+    fun clearCache() {
+        viewModelScope.launch {
+            repository.clearCache()
+        }
     }
 }

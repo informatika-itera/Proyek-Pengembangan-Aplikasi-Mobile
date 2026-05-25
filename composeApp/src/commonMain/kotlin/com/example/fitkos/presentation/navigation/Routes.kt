@@ -1,0 +1,44 @@
+package com.example.fitkos.presentation.navigation
+
+import kotlinx.serialization.Serializable
+
+sealed interface Route {
+
+    @Serializable
+    data object Splash : Route
+
+    @Serializable
+    data object Dashboard : Route
+
+    @Serializable
+    data object Home : Route
+
+    @Serializable
+    data class AddNote(val noteId: Long? = null) : Route
+
+    @Serializable
+    data class NoteDetail(val noteId: Long) : Route
+
+    @Serializable
+    data class AIAssistant(
+        val noteId: Long? = null,
+        val initialText: String? = null
+    ) : Route
+
+    @Serializable
+    data object WaterTracker : Route
+
+    @Serializable
+    data object Settings : Route
+}
+
+interface NavigationActions {
+    fun navigateToDashboard()
+    fun navigateToHome()
+    fun navigateToAddNote(noteId: Long? = null)
+    fun navigateToNoteDetail(noteId: Long)
+    fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
+    fun navigateToWaterTracker()
+    fun navigateToSettings()
+    fun navigateBack()
+}

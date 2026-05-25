@@ -26,7 +26,7 @@ import kotlin.test.assertTrue
 
 /**
  * Unit Tests untuk HomeViewModel
- * 
+ *
  * Testing Guidelines:
  * 1. Setup test dispatcher untuk control coroutines
  * 2. Gunakan Turbine untuk test StateFlow
@@ -65,9 +65,9 @@ class HomeViewModelTest {
     fun tearDown() {
         Dispatchers.resetMain()
     }
-    
+
     // ==================== UI STATE TESTS ====================
-    
+
     @Test
     fun `initial state should be Loading then Empty`() = runTest {
         viewModel.uiState.test {
@@ -89,7 +89,7 @@ class HomeViewModelTest {
         // Arrange
         repository.insertNote(createTestNote("Note 1"))
         repository.insertNote(createTestNote("Note 2"))
-        
+
         // Create new viewmodel after inserting notes
         val vm = HomeViewModel(
             getAllNotesUseCase = getAllNotesUseCase,
@@ -110,15 +110,15 @@ class HomeViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== SEARCH TESTS ====================
-    
+
     @Test
     fun `search should filter notes by query`() = runTest {
         // Arrange
         repository.insertNote(createTestNote("Kotlin Guide"))
         repository.insertNote(createTestNote("Java Tutorial"))
-        
+
         val vm = HomeViewModel(
             getAllNotesUseCase = getAllNotesUseCase,
             searchNotesUseCase = searchNotesUseCase,
@@ -130,11 +130,11 @@ class HomeViewModelTest {
             skipItems(1) // Skip loading
             advanceUntilIdle()
             skipItems(1) // Skip initial success
-            
+
             // Act
             vm.onSearchQueryChange("Kotlin")
             advanceUntilIdle()
-            
+
             // Assert - wait for debounce
             testScheduler.advanceTimeBy(400)
             advanceUntilIdle()
@@ -147,7 +147,7 @@ class HomeViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
     fun `clearSearch should reset query`() = runTest {
         // Act
@@ -165,22 +165,22 @@ class HomeViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== CATEGORY FILTER TESTS ====================
-    
+
     @Test
     fun `category filter should filter notes`() = runTest {
         // Arrange
         repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
         repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
-        
+
         val vm = HomeViewModel(
             getAllNotesUseCase = getAllNotesUseCase,
             searchNotesUseCase = searchNotesUseCase,
             deleteNoteUseCase = deleteNoteUseCase,
             repository = repository
         )
-        
+
         vm.uiState.test {
             skipItems(1) // Loading
             advanceUntilIdle()
@@ -199,18 +199,18 @@ class HomeViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== ACTION TESTS ====================
-    
+
     @Test
     fun `togglePin should toggle note pin status`() = runTest {
         // Arrange
         val noteId = repository.insertNote(createTestNote("Pin Me"))
-        
+
         // Act
         viewModel.togglePin(noteId)
         advanceUntilIdle()
-        
+
         // Assert
         repository.getNoteById(noteId).test {
             val note = awaitItem()
@@ -218,16 +218,16 @@ class HomeViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
     fun `deleteNote should remove note`() = runTest {
         // Arrange
         val noteId = repository.insertNote(createTestNote("Delete Me"))
-        
+
         // Act
         viewModel.deleteNote(noteId)
         advanceUntilIdle()
-        
+
         // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
@@ -235,9 +235,9 @@ class HomeViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== HELPER FUNCTIONS ====================
-    
+
     private fun createTestNote(
         title: String,
         category: NoteCategory = NoteCategory.GENERAL

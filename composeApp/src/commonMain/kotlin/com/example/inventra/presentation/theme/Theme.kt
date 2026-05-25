@@ -8,37 +8,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // ==================== COLORS ====================
-//
-//private val Primary = Color(0xFF6750A4)
-//private val OnPrimary = Color(0xFFFFFFFF)
-//private val PrimaryContainer = Color(0xFFEADDFF)
-//private val OnPrimaryContainer = Color(0xFF21005D)
-//
-//private val Secondary = Color(0xFF625B71)
-//private val OnSecondary = Color(0xFFFFFFFF)
-//private val SecondaryContainer = Color(0xFFE8DEF8)
-//private val OnSecondaryContainer = Color(0xFF1D192B)
-//
-//private val Tertiary = Color(0xFF7D5260)
-//private val OnTertiary = Color(0xFFFFFFFF)
-//private val TertiaryContainer = Color(0xFFFFD8E4)
-//private val OnTertiaryContainer = Color(0xFF31111D)
 
-// InventRa Custom Color Palette
-private val Primary        = Color(0xFF4D5B37)   // Hijau
-private val OnPrimary      = Color(0xFFFFFFFF)
-private val PrimaryContainer    = Color(0xFFCBD9AA)
-private val OnPrimaryContainer  = Color(0xFF111E00)
+// InventRa Custom Color Palette based on PRD
+private val Primary        = Color(0xFFCBCF1A)   // Kuning HMIF
+private val OnPrimary      = Color(0xFF313300)
+private val PrimaryContainer    = Color(0xFFEEF284)
+private val OnPrimaryContainer  = Color(0xFF1F2100)
 
-private val Secondary      = Color(0xFF17579F)   // Biru
+private val Secondary      = Color(0xFF17579F)   // Biru HMIF
 private val OnSecondary    = Color(0xFFFFFFFF)
 private val SecondaryContainer  = Color(0xFFD2E4FF)
 private val OnSecondaryContainer = Color(0xFF001B3E)
 
-private val Tertiary       = Color(0xFFCBCF1A)   // Kuning
-private val OnTertiary     = Color(0xFF313300)
-private val TertiaryContainer   = Color(0xFFEEF284)
-private val OnTertiaryContainer = Color(0xFF1F2100)
+private val Tertiary       = Color(0xFF4D5B37)   // Hijau HMIF
+private val OnTertiary     = Color(0xFFFFFFFF)
+private val TertiaryContainer   = Color(0xFFCBD9AA)
+private val OnTertiaryContainer = Color(0xFF111E00)
 
 private val Error = Color(0xFFB3261E)
 private val OnError = Color(0xFFFFFFFF)
@@ -91,18 +76,18 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF492532),
-    tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = Color(0xFFFFD8E4),
+    primary = Color(0xFFEEF284),
+    onPrimary = Color(0xFF313300),
+    primaryContainer = Color(0xFF484A00),
+    onPrimaryContainer = Color(0xFFEEF284),
+    secondary = Color(0xFFADC6FF),
+    onSecondary = Color(0xFF002E69),
+    secondaryContainer = Color(0xFF004494),
+    onSecondaryContainer = Color(0xFFD2E4FF),
+    tertiary = Color(0xFFB0CD81),
+    onTertiary = Color(0xFF1F3700),
+    tertiaryContainer = Color(0xFF354E0B),
+    onTertiaryContainer = Color(0xFFB0CD81),
     error = Color(0xFFF2B8B5),
     onError = Color(0xFF601410),
     errorContainer = Color(0xFF8C1D18),

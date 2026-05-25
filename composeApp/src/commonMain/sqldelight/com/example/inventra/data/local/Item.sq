@@ -1,0 +1,53 @@
+CREATE TABLE ItemEntity (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT    NOT NULL,
+    description   TEXT    NOT NULL DEFAULT '',
+    category      TEXT    NOT NULL DEFAULT 'OTHER',
+    location      TEXT    NOT NULL DEFAULT '',
+    total_stock   INTEGER NOT NULL DEFAULT 1,
+    available_stock INTEGER NOT NULL DEFAULT 1,
+    condition     TEXT    NOT NULL DEFAULT 'GOOD',
+    pic_name      TEXT    NOT NULL DEFAULT '',
+    image_url     TEXT,
+    created_at    INTEGER NOT NULL,
+    updated_at    INTEGER NOT NULL
+);
+
+getAllItems:
+SELECT * FROM ItemEntity ORDER BY updated_at DESC;
+
+getItemsByCategory:
+SELECT * FROM ItemEntity WHERE category = ? ORDER BY updated_at DESC;
+
+searchItems:
+SELECT * FROM ItemEntity
+WHERE name LIKE '%' || ? || '%' OR description LIKE '%' || ? || '%'
+ORDER BY updated_at DESC;
+
+getItemById:
+SELECT * FROM ItemEntity WHERE id = ?;
+
+insertItem:
+INSERT INTO ItemEntity (name, description, category, location,
+    total_stock, available_stock, condition, pic_name, image_url,
+    created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+updateItem:
+UPDATE ItemEntity
+SET name = ?, description = ?, category = ?, location = ?,
+    total_stock = ?, available_stock = ?, condition = ?,
+    pic_name = ?, image_url = ?, updated_at = ?
+WHERE id = ?;
+
+deleteItem:
+DELETE FROM ItemEntity WHERE id = ?;
+
+countAll:
+SELECT COUNT(*) FROM ItemEntity;
+
+countAvailable:
+SELECT COUNT(*) FROM ItemEntity WHERE available_stock > 0;

@@ -152,7 +152,7 @@ android {
 
 sqldelight {
     databases {
-        create("NoteDatabase") {
+        create("InventRaDatabase") {
             packageName.set("com.example.inventra.data.local")
         }
     }

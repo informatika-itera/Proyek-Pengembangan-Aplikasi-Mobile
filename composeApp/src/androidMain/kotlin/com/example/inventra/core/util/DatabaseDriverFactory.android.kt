@@ -3,7 +3,7 @@ package com.example.inventra.core.util
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.example.inventra.data.local.NoteDatabase
+import com.example.inventra.data.local.InventRaDatabase
 
 /**
  * Android implementation of DatabaseDriverFactory
@@ -16,9 +16,9 @@ actual class DatabaseDriverFactory(
 ) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(
-            schema = NoteDatabase.Schema,
+            schema = InventRaDatabase.Schema,
             context = context,
-            name = "InventRa.db"
+            name = "Inventra.db"
         )
     }
 }

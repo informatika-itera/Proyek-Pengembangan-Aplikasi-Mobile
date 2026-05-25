@@ -1,0 +1,31 @@
+CREATE TABLE BorrowRecordEntity (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id       INTEGER NOT NULL,
+    item_name     TEXT    NOT NULL,
+    borrower_name TEXT    NOT NULL,
+    borrow_date   INTEGER NOT NULL,
+    due_date      INTEGER NOT NULL,
+    return_date   INTEGER,
+    status        TEXT    NOT NULL DEFAULT 'ACTIVE',
+    fine_amount   INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (item_id) REFERENCES ItemEntity(id) ON DELETE CASCADE
+);
+
+getAllRecords:
+SELECT * FROM BorrowRecordEntity ORDER BY borrow_date DESC;
+
+getActiveRecords:
+SELECT * FROM BorrowRecordEntity WHERE status = 'ACTIVE' OR status = 'OVERDUE' ORDER BY due_date ASC;
+
+insertRecord:
+INSERT INTO BorrowRecordEntity (item_id, item_name, borrower_name, borrow_date, due_date, return_date, status, fine_amount)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+updateRecordStatus:
+UPDATE BorrowRecordEntity SET status = ?, return_date = ?, fine_amount = ? WHERE id = ?;
+
+deleteRecord:
+DELETE FROM BorrowRecordEntity WHERE id = ?;

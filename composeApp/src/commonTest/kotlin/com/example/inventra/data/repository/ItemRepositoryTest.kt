@@ -4,7 +4,6 @@ import app.cash.turbine.test
 import com.example.inventra.domain.model.Note
 import com.example.inventra.domain.model.NoteCategory
 import com.example.inventra.domain.model.NoteColor
-import com.example.inventra.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -19,7 +18,7 @@ import kotlin.test.assertTrue
 
 /**
  * Unit Tests untuk NoteRepository
- * 
+ *
  * Testing Guidelines:
  * 1. Gunakan FakeRepository untuk isolasi
  * 2. Test satu behavior per test
@@ -34,29 +33,29 @@ class NoteRepositoryTest {
     fun setup() {
         repository = FakeNoteRepository()
     }
-    
+
     // ==================== INSERT TESTS ====================
-    
+
     @Test
     fun `insertNote should return new note id`() = runTest {
         // Arrange
         val note = createTestNote(title = "Test Note")
-        
+
         // Act
         val id = repository.insertNote(note)
-        
+
         // Assert
         assertTrue(id > 0)
     }
-    
+
     @Test
     fun `insertNote should add note to list`() = runTest {
         // Arrange
         val note = createTestNote(title = "New Note")
-        
+
         // Act
         repository.insertNote(note)
-        
+
         // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
@@ -65,15 +64,15 @@ class NoteRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== GET TESTS ====================
-    
+
     @Test
     fun `getAllNotes should return all notes`() = runTest {
         // Arrange
         repository.insertNote(createTestNote(title = "Note 1"))
         repository.insertNote(createTestNote(title = "Note 2"))
-        
+
         // Act & Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
@@ -95,7 +94,7 @@ class NoteRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
     fun `getNoteById should return null for non-existent id`() = runTest {
         // Act & Assert
@@ -105,9 +104,9 @@ class NoteRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== SEARCH TESTS ====================
-    
+
     @Test
     fun `searchNotes should find notes by title`() = runTest {
         // Arrange
@@ -137,14 +136,14 @@ class NoteRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== DELETE TESTS ====================
-    
+
     @Test
     fun `deleteNote should remove note from list`() = runTest {
         // Arrange
         val id = repository.insertNote(createTestNote(title = "To Delete"))
-        
+
         // Act
         repository.deleteNote(id)
         
@@ -155,14 +154,14 @@ class NoteRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== UPDATE TESTS ====================
-    
+
     @Test
     fun `updateNote should modify existing note`() = runTest {
         // Arrange
         val id = repository.insertNote(createTestNote(title = "Original"))
-        
+
         // Act
         val updatedNote = createTestNote(id = id, title = "Updated")
         repository.updateNote(updatedNote)
@@ -174,9 +173,9 @@ class NoteRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     // ==================== HELPER FUNCTIONS ====================
-    
+
     private fun createTestNote(
         id: Long = 0,
         title: String = "Test",
@@ -198,17 +197,17 @@ class NoteRepositoryTest {
 
 /**
  * Fake Repository untuk Testing
- * 
+ *
  * In-memory implementation yang tidak bergantung pada database.
  * Digunakan untuk unit testing tanpa side effects.
  */
 class FakeNoteRepository : NoteRepository {
-    
+
     private val notes = MutableStateFlow<List<Note>>(emptyList())
     private var nextId = 1L
-    
+
     override fun getAllNotes(): Flow<List<Note>> = notes
-    
+
     override fun getPinnedNotes(): Flow<List<Note>> {
         return notes.map { list -> list.filter { it.isPinned } }
     }
@@ -236,21 +235,21 @@ class FakeNoteRepository : NoteRepository {
         notes.update { it + newNote }
         return id
     }
-    
+
     override suspend fun updateNote(note: Note) {
         notes.update { list ->
             list.map { if (it.id == note.id) note else it }
         }
     }
-    
+
     override suspend fun deleteNote(id: Long) {
         notes.update { list -> list.filter { it.id != id } }
     }
     
     override suspend fun togglePinNote(id: Long) {
         notes.update { list ->
-            list.map { 
-                if (it.id == id) it.copy(isPinned = !it.isPinned) else it 
+            list.map {
+                if (it.id == id) it.copy(isPinned = !it.isPinned) else it
             }
         }
     }

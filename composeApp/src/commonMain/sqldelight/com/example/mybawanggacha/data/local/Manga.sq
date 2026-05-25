@@ -1,0 +1,18 @@
+CREATE TABLE MangaDetailCache (
+    manga_id INTEGER NOT NULL PRIMARY KEY,
+    detail_json TEXT NOT NULL,
+    cached_at INTEGER NOT NULL
+);
+
+getMangaDetailCache:
+SELECT *
+FROM MangaDetailCache
+WHERE manga_id = ?;
+
+upsertMangaDetailCache:
+INSERT OR REPLACE INTO MangaDetailCache(
+    manga_id,
+    detail_json,
+    cached_at
+)
+VALUES (?, ?, ?);

@@ -1,5 +1,6 @@
 package com.example.mybawanggacha.presentation.screens.anime.detail.components
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Info
@@ -9,10 +10,12 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Theaters
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.mybawanggacha.domain.anime.model.AnimeDetail
 import com.example.mybawanggacha.domain.anime.model.AnimeEpisode
 import com.example.mybawanggacha.domain.anime.model.AnimeRelationEntry
+import com.example.mybawanggacha.presentation.components.AnimatedSectionContent
 import com.example.mybawanggacha.presentation.components.MBGSideRailItem
 
 internal enum class AnimeDetailSection(
@@ -45,20 +48,27 @@ internal fun AnimeDetailContent(
     onEpisodeWatchedChange: (Int, Boolean) -> Unit,
     onRelationEntryClick: (AnimeRelationEntry) -> Unit
 ) {
-    when (selectedSection) {
-        AnimeDetailSection.Overview -> AnimeOverviewSection(anime)
-        AnimeDetailSection.Synopsis -> AnimeSynopsisSection(anime)
-        AnimeDetailSection.Episodes -> AnimeEpisodeListSection(
-            anime = anime,
-            episodes = episodes,
-            onEpisodeWatchedChange = onEpisodeWatchedChange
-        )
-        AnimeDetailSection.Info -> AnimeInfoSection(anime)
-        AnimeDetailSection.Media -> AnimeMediaSection(anime)
-        AnimeDetailSection.Relations -> AnimeRelationsSection(
-            anime = anime,
-            onEntryClick = onRelationEntryClick
-        )
-        AnimeDetailSection.ThemeSongs -> AnimeThemeSongsSection(anime)
+    AnimatedSectionContent(
+        targetState = selectedSection,
+        indexOf = { it.ordinal },
+        modifier = Modifier.fillMaxSize(),
+        label = "AnimeDetailSectionTransition"
+    ) { section ->
+        when (section) {
+            AnimeDetailSection.Overview -> AnimeOverviewSection(anime)
+            AnimeDetailSection.Synopsis -> AnimeSynopsisSection(anime)
+            AnimeDetailSection.Episodes -> AnimeEpisodeListSection(
+                anime = anime,
+                episodes = episodes,
+                onEpisodeWatchedChange = onEpisodeWatchedChange
+            )
+            AnimeDetailSection.Info -> AnimeInfoSection(anime)
+            AnimeDetailSection.Media -> AnimeMediaSection(anime)
+            AnimeDetailSection.Relations -> AnimeRelationsSection(
+                anime = anime,
+                onEntryClick = onRelationEntryClick
+            )
+            AnimeDetailSection.ThemeSongs -> AnimeThemeSongsSection(anime)
+        }
     }
 }

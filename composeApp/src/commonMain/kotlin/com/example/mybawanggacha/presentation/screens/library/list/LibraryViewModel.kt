@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class LibraryViewModel(
     private val libraryRepository: LibraryRepository
@@ -21,6 +22,9 @@ class LibraryViewModel(
 
     private val _selectedStatus = MutableStateFlow<LibraryStatus?>(null)
     val selectedStatus: StateFlow<LibraryStatus?> = _selectedStatus.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     val uiState: StateFlow<LibraryUiState> = combine(
         libraryRepository.observeEntries(),
@@ -50,6 +54,15 @@ class LibraryViewModel(
 
     fun selectStatus(status: LibraryStatus?) {
         _selectedStatus.value = status
+    }
+
+    fun refresh() {
+        if (_isRefreshing.value) return
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            delay(300)
+            _isRefreshing.value = false
+        }
     }
 
     fun deleteEntry(entry: LibraryEntry) {

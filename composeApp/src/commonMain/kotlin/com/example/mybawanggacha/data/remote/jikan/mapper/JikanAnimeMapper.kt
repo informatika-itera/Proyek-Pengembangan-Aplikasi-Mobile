@@ -7,6 +7,7 @@ import com.example.mybawanggacha.data.remote.jikan.dto.AnimeExternalLinkDto
 import com.example.mybawanggacha.data.remote.jikan.dto.AnimeRelationEntryDto
 import com.example.mybawanggacha.data.remote.jikan.dto.JikanAnimeListResponse
 import com.example.mybawanggacha.data.remote.jikan.dto.RelationEntryPreviewDto
+import com.example.mybawanggacha.data.remote.jikan.dto.WatchEpisodeData
 import com.example.mybawanggacha.domain.anime.model.AnimeDetail
 import com.example.mybawanggacha.domain.anime.model.AnimeEpisode
 import com.example.mybawanggacha.domain.anime.model.AnimeLink
@@ -16,6 +17,7 @@ import com.example.mybawanggacha.domain.anime.model.AnimeRelationEntry
 import com.example.mybawanggacha.domain.anime.model.AnimeRelationPreview
 import com.example.mybawanggacha.domain.anime.model.AnimeSummary
 import com.example.mybawanggacha.domain.anime.model.AnimeThemeSongs
+import com.example.mybawanggacha.domain.anime.model.RecentAnimeEpisode
 
 internal fun JikanAnimeListResponse.toDomainPage(requestedPage: Int): AnimePage {
     val hasNextPage = pagination?.has_next_page == true
@@ -39,6 +41,30 @@ internal fun List<AnimeCatalogItemDto>.toSummaryList(): List<AnimeSummary> {
                 rating = item.rating
             )
         }
+}
+
+internal fun AnimeDetailData.toSummary(): AnimeSummary {
+    return AnimeSummary(
+        malId = mal_id,
+        title = title_english?.takeIf { it.isNotBlank() } ?: title,
+        imageUrl = images.jpg.large_image_url ?: images.jpg.image_url,
+        rank = rank,
+        score = score,
+        rating = rating
+    )
+}
+
+internal fun WatchEpisodeData.toDomainRecentEpisode(): RecentAnimeEpisode? {
+    val episode = episodes.firstOrNull()
+    return RecentAnimeEpisode(
+        animeMalId = entry.mal_id,
+        animeTitle = entry.title,
+        animeImageUrl = entry.images.jpg.large_image_url ?: entry.images.jpg.image_url,
+        episodeMalId = episode?.mal_id,
+        episodeTitle = episode?.title,
+        episodeUrl = episode?.url,
+        premium = episode?.premium == true
+    )
 }
 
 internal fun AnimeDetailData.toDomain(

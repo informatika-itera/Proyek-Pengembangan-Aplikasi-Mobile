@@ -8,7 +8,7 @@
         android:allowBackup="true"
         android:label="MyBawangGacha"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@style/Theme.MyBawangGacha">
 
         <activity
             android:name=".MainActivity"

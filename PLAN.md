@@ -1,16 +1,36 @@
 # Project Plan — My Bawang Gacha
 
-**Tim:** Varasina Farmadani (123140107) · Faiq Ghozy Erlangga (123140139)
+## TIM
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/sinavarasina">
+        <img src="https://github.com/sinavarasina.png" width="100px;" alt="Varasina Farmadani" style="border-radius:50%;"/><br />
+        <sub><b>Varasina Farmadani</b></sub>
+      </a><br />
+      <sub>NIM. 123140107</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Faiq1818">
+        <img src="https://github.com/Faiq1818.png" width="100px;" alt="Faiq Ghozy Erlangga" style="border-radius:50%;"/><br />
+        <sub><b>Faiq Ghozy Erlangga</b></sub>
+      </a><br />
+      <sub>NIM. 123140139</sub>
+    </td>
+  </tr>
+</table>
+
 
 ## Deskripsi Singkat
 
 My Bawang Gacha adalah aplikasi Kotlin Multiplatform untuk menemukan, menyimpan, dan mengatur anime/manga.
 
-Pengguna dapat membuat daftar anime/manga pribadi, melacak status tontonan/bacaan, melihat detail dari Jikan API, dan menggunakan fitur gacha untuk mendapatkan rekomendasi acak berdasarkan preferensi seperti genre, type, score, status, serta aturan apakah item yang sudah watched/read boleh muncul kembali.
+Pengguna dapat membuat daftar anime/manga pribadi, melacak status tontonan/bacaan, melihat detail dari Jikan API, mencari anime/manga, menyimpan item ke library lokal, serta menggunakan fitur gacha untuk mendapatkan rekomendasi acak berdasarkan preferensi seperti genre, type, score, status, serta aturan apakah item yang sudah watched/read boleh muncul kembali.
 
 ---
 
 ## Sprint 1 — Planning & Setup
+
 **Referensi:** [Materi 11 — Project Sprint 1: Planning](https://kuliah2.itera.ac.id/pluginfile.php/78212/mod_resource/content/1/Materi_11_Project_Sprint1_Planning.pdf)
 
 - [x] Pembentukan tim dan pembagian role
@@ -39,6 +59,7 @@ Pengguna dapat membuat daftar anime/manga pribadi, melacak status tontonan/bacaa
 ---
 
 ## Sprint 2 — Core Features
+
 **Referensi:** [Materi 12 — Project Sprint 2: Core Features](https://kuliah2.itera.ac.id/pluginfile.php/78227/mod_resource/content/1/Materi_12_Project_Sprint2_Core_Features.pdf)
 
 Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitektur yang rapi.
@@ -50,14 +71,26 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
 - [x] AnimeDetailScreen
   - menampilkan detail anime
   - menerima argument ID dari navigation
-- [X] MyListScreen
+- [x] MangaDetailScreen
+  - menampilkan detail manga
+  - menerima argument ID dari navigation
+- [x] AnimeListScreen
+  - menampilkan daftar anime berdasarkan tab/kategori
+  - mendukung pagination/load more
+- [x] MangaListScreen
+  - menampilkan daftar manga berdasarkan tab/kategori
+  - mendukung pagination/load more
+- [x] SearchScreen
+  - mencari anime dan manga
+  - menampilkan hasil search gabungan berdasarkan tipe media
+- [x] MyListScreen / MyLibraryScreen
   - tab/list status:
     - Plan to Watch / Plan to Read
     - Watching / Reading
     - Completed / Watched
     - On Hold
     - Dropped
-- [X] ListEntryEditor
+- [x] ListEntryEditor
   - form tambah/edit item ke daftar pribadi
   - edit status
   - edit progress episode/chapter
@@ -67,6 +100,7 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
   - Routes
   - argument passing by ID
   - back navigation
+  - navigasi Home, Anime, Manga, Search, Library, Settings, dan Detail
 
 ### Domain & Data Layer
 
@@ -75,7 +109,10 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
   - `AnimeDetail`
   - `AnimeEpisode`
   - `AnimeRelation`
-- [X] Domain model list management:
+  - `MangaSummary`
+  - `MangaDetail`
+  - `MangaRelation`
+- [x] Domain model list management:
   - `LibraryEntry`
   - `MediaType`
   - `LibraryStatus`
@@ -84,18 +121,25 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
 - [x] Repository pattern untuk anime detail/recommendation:
   - `AnimeRepository`
   - `AnimeRepositoryImpl`
-- [X] Repository untuk list lokal pengguna:
+- [x] Repository pattern untuk manga detail/list:
+  - `MangaRepository`
+  - `MangaRepositoryImpl`
+- [x] Repository pattern untuk search:
+  - `SearchRepository`
+  - `SearchRepositoryImpl`
+- [x] Repository untuk list lokal pengguna:
   - `LibraryRepository`
   - `LibraryRepositoryImpl`
 - [x] SQLDelight database setup
-- [X] SQLDelight table untuk library:
+- [x] SQLDelight table untuk library:
   - saved anime/manga
   - status
   - progress episode/chapter
   - user score
   - updated timestamp
 - [x] SQLDelight table untuk episode progress anime
-- [X] CRUD library:
+- [x] SQLDelight table/cache untuk anime detail, manga detail, relation preview, dan media page
+- [x] CRUD library:
   - Create: tambah anime/manga ke list
   - Read: tampilkan list berdasarkan status
   - Update: ubah status/progress/rating
@@ -108,16 +152,19 @@ Fokus Sprint 2: fitur dasar aplikasi harus berjalan secara lokal dengan arsitekt
   - Success
   - Error
   - Empty
+  - Refreshing
 - [x] ViewModel menggunakan repository, bukan langsung service API
 - [x] DTO Jikan tidak dibawa langsung ke UI detail
 - [x] Koin modules untuk data + ViewModel
-- [X] Basic validation untuk form list entry
-- [X] Confirm dialog saat delete item dari list
-- [X] Basic manual test untuk flow CRUD
+- [x] Koin network module memakai satu shared `HttpClient` binding
+- [x] Basic validation untuk form list entry
+- [x] Confirm dialog saat delete item dari list
+- [x] Basic manual test untuk flow CRUD
 
 ---
 
 ## Sprint 3 — Advanced Features
+
 **Referensi:** [Materi 13 — Project Sprint 3: Advanced Features](https://kuliah2.itera.ac.id/pluginfile.php/78217/mod_resource/content/1/Materi_13_Project_Sprint3_Advanced_Features.pdf)
 
 Fokus Sprint 3: fitur pencarian, integrasi API yang lebih lengkap, gacha, cache/offline, dan screen tambahan.
@@ -129,19 +176,23 @@ Fokus Sprint 3: fitur pencarian, integrasi API yang lebih lengkap, gacha, cache/
 - [x] Fetch anime full detail
 - [x] Fetch anime episodes
 - [x] Fetch relation preview
-- [ ] Search anime via Jikan
-- [ ] Search manga via Jikan
-- [ ] Fetch manga detail
-- [ ] DTO mapping lengkap:
+- [x] Search anime via Jikan
+- [x] Search manga via Jikan
+- [x] Fetch manga detail
+- [x] Fetch manga list/top manga
+- [x] Fetch current season, upcoming season, top anime, dan season archive
+- [x] DTO mapping lengkap untuk fitur yang dipakai:
   - Anime DTO → domain model
   - Manga DTO → domain model
   - Search DTO → domain model
-- [ ] Error handling Jikan:
-  - network error
+  - Relation preview DTO → domain model
+- [x] Error handling Jikan dasar:
+  - network/server error
   - empty result
   - rate limit
-  - unavailable server
-- [ ] Debounce search query agar tidak spam request API
+  - unavailable server / HTTP error
+- [x] Rate limiter untuk Jikan API
+- [x] Debounce search query agar tidak spam request API
 
 ### Gacha Feature
 
@@ -167,31 +218,39 @@ Fokus Sprint 3: fitur pencarian, integrasi API yang lebih lengkap, gacha, cache/
 
 ### Offline & Cache
 
-- [ ] Cache anime/manga detail ke SQLDelight
-- [ ] Cache search result/recommendation seperlunya
-- [ ] Offline fallback:
-  - tampilkan data cache saat tidak ada internet
-  - tampilkan pesan error yang jelas saat data belum pernah dicache
-- [ ] Pull-to-refresh di Home/Discover atau MyList
-- [ ] Refresh state:
+- [x] Cache anime/manga detail ke SQLDelight
+- [x] Cache relation preview ke SQLDelight
+- [x] Cache media page/list ke SQLDelight
+- [x] Pull-to-refresh di Home/Discover
+- [x] Pull-to-refresh di AnimeList
+- [x] Pull-to-refresh di MangaList
+- [x] Pull-to-refresh di Search
+- [x] Pull-to-refresh di MyLibrary
+- [x] Pull-to-refresh di AnimeDetail
+- [x] Pull-to-refresh di MangaDetail
+- [x] Refresh state:
   - idle
   - refreshing
   - success
-  - failed but cache available
+  - failed but cache/content available
+- [x] Stale-while-revalidate untuk refresh list/detail agar konten lama tetap tampil saat refresh
+- [x] Force refresh untuk detail screen agar pull-refresh bisa bypass cache lama
+- [ ] Offline mode final untuk seluruh screen saat tidak ada koneksi
 
 ### Additional Screen
 
-- [ ] SettingsScreen
+- [x] SettingsScreen
   - theme mode: system/light/dark
   - clear cache
   - app info/about
-- [ ] About/Info section
+- [x] About/Info section
   - sumber data: Jikan API
   - keterangan bahwa list user disimpan lokal
 
 ---
 
 ## Sprint 4 — Polish & Testing
+
 **Referensi:** [Materi 14 — Project Sprint 4: Polish & Testing](https://kuliah2.itera.ac.id/pluginfile.php/78218/mod_resource/content/1/Materi_14_Project_Sprint4_Polish_Testing.pdf)
 
 Fokus Sprint 4: stabilitas, konsistensi UI, edge case, performa, dan test.
@@ -203,6 +262,9 @@ Fokus Sprint 4: stabilitas, konsistensi UI, edge case, performa, dan test.
   - P0: crash / data loss / fitur utama rusak
   - P1: flow penting terganggu
   - P2: minor UI/UX
+- [x] Fix bug duplicate/single `HttpClient` binding di network module
+- [x] Fix compile error `AnimatedContent` content lambda pada `AnimatedSectionContent`
+- [x] Fix blink putih awal navigasi dengan root surface/background
 - [ ] Fix semua P0 bugs
 - [ ] Fix semua broken navigation
 - [ ] Pastikan semua fitur Sprint 2 dan Sprint 3 tetap berjalan
@@ -212,18 +274,23 @@ Fokus Sprint 4: stabilitas, konsistensi UI, edge case, performa, dan test.
 - [ ] Konsistensi spacing berbasis 8dp grid
 - [ ] Konsistensi typography
 - [ ] Konsistensi warna Material 3
-- [ ] Empty state yang jelas untuk:
+- [x] Empty state yang jelas untuk:
   - list kosong
   - search no result
   - cache kosong saat offline
-- [ ] Error state yang ramah + retry button
-- [ ] Loading state/skeleton untuk screen yang mengambil API
+- [x] Error state yang ramah + retry button
+- [x] Loading state/skeleton untuk screen yang mengambil API
+  - anime list skeleton
+  - manga list skeleton
+  - library list skeleton
 - [ ] Image placeholder/error placeholder
 - [ ] Perbaiki long text overflow
-- [ ] Animasi ringan:
-  - list item animation
-  - screen transition
-  - button/card feedback
+- [x] Animasi ringan:
+  - section transition di AnimeDetail
+  - section transition di MangaDetail
+  - pull-refresh indicator
+  - button/card feedback dasar
+- [x] UI refresh tidak mengosongkan konten lama saat refresh berjalan
 
 ### Testing
 
@@ -232,6 +299,11 @@ Fokus Sprint 4: stabilitas, konsistensi UI, edge case, performa, dan test.
   - ViewModel tests
   - Mapper tests
   - Gacha filter/random logic tests
+- [x] Mapper tests untuk Jikan anime/manga dasar
+- [x] Service tests untuk endpoint Jikan dasar
+- [x] Repository/search tests dasar
+- [ ] ViewModel tests untuk screen utama
+- [ ] Gacha filter/random logic tests
 - [ ] UI tests minimal 3 critical journey:
   - buka Home → Detail
   - tambah item ke MyList → muncul di list
@@ -247,15 +319,24 @@ Fokus Sprint 4: stabilitas, konsistensi UI, edge case, performa, dan test.
 
 ### Performance
 
-- [ ] Gunakan key di LazyColumn/LazyVerticalGrid
-- [ ] Hindari request API berlebihan
-- [ ] Pastikan search memakai debounce
-- [ ] Pastikan screen detail tidak terasa jank
+- [x] Gunakan key di LazyColumn/LazyVerticalGrid
+- [x] Tambahkan `contentType` di LazyColumn/LazyVerticalGrid untuk item sejenis
+- [x] Hindari request API berlebihan
+  - Jikan rate limiter
+  - cache detail/list
+  - debounce search
+- [x] Pastikan search memakai debounce
+- [x] Pastikan screen detail tidak terasa jank
+  - animated section transition
+  - pull-refresh tanpa blank state
+  - stale-while-revalidate
+- [x] Kurangi blink putih saat navigasi dengan root background yang stabil
 - [ ] Review recomposition berat di UI besar
 
 ---
 
 ## Sprint 5 — Final Preparation
+
 **Referensi:** [Materi 15 — Project Sprint 5: Final Preparation](https://kuliah2.itera.ac.id/pluginfile.php/78229/mod_resource/content/1/Materi_15_Project_Sprint5_Final_Preparation.pdf)
 
 Fokus Sprint 5: finalisasi, demo, release build, dokumentasi, dan presentasi.
@@ -267,6 +348,8 @@ Fokus Sprint 5: finalisasi, demo, release build, dokumentasi, dan presentasi.
 - [ ] App bisa dijalankan di device/emulator demo
 - [ ] Data demo realistis sudah disiapkan
 - [ ] Offline/error path sudah diuji
+- [ ] Pull-refresh dan cache behavior sudah diuji pada device/emulator
+- [ ] Flow Home → Detail → Add/Edit Library → Search sudah diuji ulang
 
 ### Documentation
 
@@ -287,6 +370,8 @@ Fokus Sprint 5: finalisasi, demo, release build, dokumentasi, dan presentasi.
   - Local SQLDelight
   - Remote Jikan API
 - [ ] Catatan endpoint Jikan yang dipakai
+- [ ] Dokumentasi cache/offline behavior
+- [ ] Dokumentasi pull-refresh dan stale-while-revalidate behavior
 - [ ] Known limitations / future improvements
 
 ### Release & Submission
@@ -334,6 +419,7 @@ Fokus Sprint 5: finalisasi, demo, release build, dokumentasi, dan presentasi.
 ---
 
 ## UAS — Final Demo Day
+
 **Referensi:** [Materi 16 — UAS Final Demo Day](https://kuliah2.itera.ac.id/pluginfile.php/78228/mod_resource/content/1/Materi_16_UAS_Final_Demo_Day.pdf)
 
 Fokus UAS: presentasi akhir, live demo, technical explanation, code review, dan Q&A.
@@ -357,6 +443,7 @@ Target durasi: 10–15 menit.
   - repository pattern
   - local storage
   - Jikan API integration
+  - cache + pull-refresh
   - gacha logic
   - error/offline handling
 - [ ] Q&A, 2–3 menit:
@@ -390,12 +477,14 @@ Target durasi: 10–15 menit.
 
 ### UAS Demo Flow
 
-- [ ] Buka Home/Discover
-- [ ] Tampilkan anime/manga recommendation
-- [ ] Buka detail anime
-- [ ] Tambahkan item ke MyList
-- [ ] Ubah status/progress item
-- [ ] Search anime/manga
+- [x] Buka Home/Discover
+- [x] Tampilkan anime/manga recommendation
+- [x] Buka detail anime
+- [x] Buka detail manga
+- [x] Tambahkan item ke MyList
+- [x] Ubah status/progress item
+- [x] Search anime/manga
+- [x] Tunjukkan pull-refresh di list/detail
 - [ ] Jalankan gacha dengan preferensi:
   - genre tertentu
   - minimum score
@@ -403,7 +492,7 @@ Target durasi: 10–15 menit.
   - include/exclude watched/read
 - [ ] Buka hasil gacha ke detail
 - [ ] Tunjukkan error/offline handling atau fallback cache
-- [ ] Tunjukkan Settings/About jika tersedia
+- [x] Tunjukkan Settings/About jika tersedia
 
 ### Expected Q&A Preparation
 
@@ -412,6 +501,7 @@ Target durasi: 10–15 menit.
 - [ ] Bagaimana data user disimpan?
 - [ ] Bagaimana aplikasi handle Jikan API rate limit?
 - [ ] Bagaimana aplikasi handle offline mode?
+- [ ] Bagaimana pull-refresh tetap mempertahankan konten lama?
 - [ ] Bagaimana gacha memilih hasil?
 - [ ] Bagaimana mencegah item watched/read muncul lagi jika user tidak ingin?
 - [ ] Bagaimana pembagian kerja tim?

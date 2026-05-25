@@ -1,5 +1,8 @@
 package com.example.mybawanggacha.presentation.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -15,7 +18,9 @@ import com.example.mybawanggacha.presentation.screens.notes.detail.NoteDetailScr
 import com.example.mybawanggacha.presentation.screens.discover.HomeScreen
 import com.example.mybawanggacha.presentation.screens.library.editor.LibraryEntryEditorScreen
 import com.example.mybawanggacha.presentation.screens.library.list.MyListScreen
-import com.example.mybawanggacha.presentation.screens.manga.MangaListScreen
+import com.example.mybawanggacha.presentation.screens.manga.detail.MangaDetailScreen
+import com.example.mybawanggacha.presentation.screens.manga.list.MangaListScreen
+import com.example.mybawanggacha.presentation.screens.search.SearchScreen
 import com.example.mybawanggacha.presentation.screens.settings.SettingsScreen
 import com.example.mybawanggacha.domain.library.model.MediaType
 
@@ -30,14 +35,30 @@ fun AppNavHost(
         navController = navController,
         startDestination = Route.Home,
         modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         composable<Route.Home> {
             HomeScreen(
                 onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) },
+                onNavigateToMangaDetail = { malId -> navigationActions.navigateToMangaDetail(malId) },
                 onNavigateToMyLibrary = { navigationActions.navigateToMyLibrary() },
                 onNavigateToAnimeList = { navigationActions.navigateToAnimeList() },
                 onNavigateToMangaList = { navigationActions.navigateToMangaList() },
+                onNavigateToSearch = { navigationActions.navigateToSearch() },
                 onNavigateToSettings = { navigationActions.navigateToSettings() }
+            )
+        }
+
+        composable<Route.Search> {
+            SearchScreen(
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateHome = { navigationActions.navigateToHome() },
+                onNavigateToMyLibrary = { navigationActions.navigateToMyLibrary() },
+                onNavigateToAnimeList = { navigationActions.navigateToAnimeList() },
+                onNavigateToMangaList = { navigationActions.navigateToMangaList() },
+                onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) },
+                onNavigateToMangaDetail = { malId -> navigationActions.navigateToMangaDetail(malId) }
             )
         }
 
@@ -47,10 +68,11 @@ fun AppNavHost(
                 onNavigateHome = { navigationActions.navigateToHome() },
                 onNavigateToAnimeList = { navigationActions.navigateToAnimeList() },
                 onNavigateToMangaList = { navigationActions.navigateToMangaList() },
+                onNavigateToSearch = { navigationActions.navigateToSearch() },
                 onNavigateToDetail = { mediaId, mediaType ->
                     when (mediaType) {
                         MediaType.Anime -> navigationActions.navigateToAnimeDetail(mediaId)
-                        MediaType.Manga -> Unit
+                        MediaType.Manga -> navigationActions.navigateToMangaDetail(mediaId)
                     }
                 },
                 onEditEntry = { entry ->
@@ -72,6 +94,7 @@ fun AppNavHost(
                 onNavigateHome = { navigationActions.navigateToHome() },
                 onNavigateToMyLibrary = { navigationActions.navigateToMyLibrary() },
                 onNavigateToMangaList = { navigationActions.navigateToMangaList() },
+                onNavigateToSearch = { navigationActions.navigateToSearch() },
                 onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) }
             )
         }
@@ -81,7 +104,29 @@ fun AppNavHost(
                 onNavigateBack = { navigationActions.navigateBack() },
                 onNavigateHome = { navigationActions.navigateToHome() },
                 onNavigateToMyLibrary = { navigationActions.navigateToMyLibrary() },
-                onNavigateToAnimeList = { navigationActions.navigateToAnimeList() }
+                onNavigateToAnimeList = { navigationActions.navigateToAnimeList() },
+                onNavigateToSearch = { navigationActions.navigateToSearch() },
+                onNavigateToMangaDetail = { malId -> navigationActions.navigateToMangaDetail(malId) }
+            )
+        }
+
+        composable<Route.MangaDetail> { backStackEntry ->
+            val route: Route.MangaDetail = backStackEntry.toRoute()
+            MangaDetailScreen(
+                malId = route.malId,
+                onNavigateBack = { navigationActions.navigateBack() },
+                onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) },
+                onNavigateToMangaDetail = { malId -> navigationActions.navigateToMangaDetail(malId) },
+                onNavigateToLibraryEditor = { manga, entryId ->
+                    navigationActions.navigateToLibraryEntryEditor(
+                        mediaId = manga.malId,
+                        mediaType = MediaType.Manga.storageKey,
+                        title = manga.title,
+                        imageUrl = manga.imageUrl,
+                        totalCount = manga.chapters,
+                        entryId = entryId
+                    )
+                }
             )
         }
 
@@ -104,7 +149,8 @@ fun AppNavHost(
                 onNavigateHome = { navigationActions.navigateToHome() },
                 onNavigateToMyLibrary = { navigationActions.navigateToMyLibrary() },
                 onNavigateToAnimeList = { navigationActions.navigateToAnimeList() },
-                onNavigateToMangaList = { navigationActions.navigateToMangaList() }
+                onNavigateToMangaList = { navigationActions.navigateToMangaList() },
+                onNavigateToSearch = { navigationActions.navigateToSearch() }
             )
         }
         
@@ -148,6 +194,7 @@ fun AppNavHost(
                 malId = route.malId,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onNavigateToAnimeDetail = { malId -> navigationActions.navigateToAnimeDetail(malId) },
+                onNavigateToMangaDetail = { malId -> navigationActions.navigateToMangaDetail(malId) },
                 onNavigateToLibraryEditor = { anime, entryId ->
                     navigationActions.navigateToLibraryEntryEditor(
                         mediaId = anime.malId,
@@ -169,6 +216,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             navController.navigate(Route.Home) {
                 popUpTo(Route.Home) { inclusive = true }
             }
+        }
+
+        override fun navigateToSearch() {
+            navController.navigate(Route.Search)
         }
 
         override fun navigateToMyLibrary() {
@@ -221,6 +272,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
 
         override fun navigateToAnimeDetail(malId: Int) {
             navController.navigate(Route.AnimeDetail(malId))
+        }
+
+        override fun navigateToMangaDetail(malId: Int) {
+            navController.navigate(Route.MangaDetail(malId))
         }
 
         override fun navigateBack() {

@@ -10,7 +10,8 @@ sealed interface AnimeListUiState {
         val subtitle: String,
         val anime: List<AnimeSummary>,
         val canLoadMore: Boolean = false,
-        val isLoadingMore: Boolean = false
+        val isLoadingMore: Boolean = false,
+        val isRefreshing: Boolean = false
     ) : AnimeListUiState
 
     data class Error(val message: String) : AnimeListUiState

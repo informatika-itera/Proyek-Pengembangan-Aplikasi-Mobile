@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS RelationPreviewCache (
+    cache_key TEXT NOT NULL PRIMARY KEY,
+    preview_json TEXT NOT NULL,
+    cached_at INTEGER NOT NULL
+);

@@ -122,22 +122,40 @@ class AnimeListViewModel(
         loadJob?.cancel()
         loadMoreJob?.cancel()
         loadJob = viewModelScope.launch {
-            _uiState.value = AnimeListUiState.Loading
             val key = cacheKey(tab)
+            val cachedEntry = if (!forceRefresh) cache.get(key) else null
+            if (cachedEntry != null) {
+                showSuccess(tab = tab, entry = cachedEntry)
+                return@launch
+            }
+
+            val previousState = _uiState.value as? AnimeListUiState.Success
+            val canKeepPreviousContent = forceRefresh && previousState != null
+            if (canKeepPreviousContent) {
+                _uiState.value = previousState.copy(
+                    isRefreshing = true,
+                    isLoadingMore = false
+                )
+            } else {
+                _uiState.value = AnimeListUiState.Loading
+            }
 
             runCatching {
-                if (!forceRefresh && cache.contains(key)) {
-                    cache.get(key) ?: fetchAnimePage(tab = tab, page = FIRST_PAGE).toCacheEntry()
-                } else {
-                    fetchAnimePage(tab = tab, page = FIRST_PAGE).toCacheEntry()
-                        .also { entry -> cache.put(key, entry) }
-                }
+                fetchAnimePage(tab = tab, page = FIRST_PAGE).toCacheEntry()
+                    .also { entry -> cache.put(key, entry) }
             }.onSuccess { entry ->
                 showSuccess(tab = tab, entry = entry)
             }.onFailure { error ->
-                _uiState.value = AnimeListUiState.Error(
-                    error.message ?: "Gagal memuat katalog anime"
-                )
+                _uiState.value = if (canKeepPreviousContent) {
+                    previousState.copy(
+                        isRefreshing = false,
+                        isLoadingMore = false
+                    )
+                } else {
+                    AnimeListUiState.Error(
+                        error.message ?: "Gagal memuat katalog anime"
+                    )
+                }
             }
         }
     }
@@ -172,7 +190,8 @@ class AnimeListViewModel(
             ),
             anime = entry.anime,
             canLoadMore = entry.canLoadMore,
-            isLoadingMore = false
+            isLoadingMore = false,
+            isRefreshing = false
         )
     }
 

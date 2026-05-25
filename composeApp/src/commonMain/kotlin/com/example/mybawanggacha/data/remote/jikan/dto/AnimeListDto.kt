@@ -24,6 +24,8 @@ data class AnimeCatalogItemDto(
     val title_english: String? = null,
     val type: String? = null,
     val episodes: Int? = null,
+    val chapters: Int? = null,
+    val volumes: Int? = null,
     val status: String? = null,
     val score: Double? = null,
     val rank: Int? = null,

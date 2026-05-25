@@ -8,6 +8,7 @@ import com.example.mybawanggacha.data.remote.jikan.dto.JikanAnimeListResponse
 import com.example.mybawanggacha.data.remote.jikan.dto.JikanRecommendationsResponse
 import com.example.mybawanggacha.data.remote.jikan.dto.JikanSeasonArchiveResponse
 import com.example.mybawanggacha.data.remote.jikan.dto.RelationEntryPreviewResponse
+import com.example.mybawanggacha.data.remote.jikan.dto.WatchEpisodesResponse
 import kotlinx.coroutines.withContext
 
 class JikanAnimeRemoteDataSource(
@@ -18,6 +19,14 @@ class JikanAnimeRemoteDataSource(
         withContext(dispatchers.io) {
             service.fetchAnimeRecommendations()
         }
+
+    suspend fun fetchRandomAnime(): AnimeDetailResponse = withContext(dispatchers.io) {
+        service.fetchRandomAnime()
+    }
+
+    suspend fun fetchRecentWatchEpisodes(page: Int): WatchEpisodesResponse = withContext(dispatchers.io) {
+        service.fetchRecentWatchEpisodes(page = page)
+    }
 
     suspend fun fetchCurrentSeasonAnime(page: Int): JikanAnimeListResponse =
         withContext(dispatchers.io) {

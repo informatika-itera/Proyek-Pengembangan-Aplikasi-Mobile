@@ -8,6 +8,9 @@ sealed interface Route {
     data object Home : Route
 
     @Serializable
+    data object Search : Route
+
+    @Serializable
     data object MyLibrary : Route
 
     @Serializable
@@ -43,10 +46,14 @@ sealed interface Route {
 
     @Serializable
     data class AnimeDetail(val malId: Int) : Route
+
+    @Serializable
+    data class MangaDetail(val malId: Int) : Route
 }
 
 interface NavigationActions {
     fun navigateToHome()
+    fun navigateToSearch()
     fun navigateToMyLibrary()
     fun navigateToAnimeList()
     fun navigateToMangaList()
@@ -63,5 +70,6 @@ interface NavigationActions {
     fun navigateToNoteDetail(noteId: Long)
     fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
     fun navigateToAnimeDetail(malId: Int)
+    fun navigateToMangaDetail(malId: Int)
     fun navigateBack()
 }

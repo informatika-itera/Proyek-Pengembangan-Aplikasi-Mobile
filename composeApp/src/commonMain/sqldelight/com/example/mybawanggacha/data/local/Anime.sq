@@ -12,6 +12,13 @@ CREATE TABLE AnimeEpisodeProgress (
     PRIMARY KEY(anime_id, episode_number)
 );
 
+CREATE TABLE AnimeDetailCache (
+    anime_id INTEGER NOT NULL PRIMARY KEY,
+    detail_json TEXT NOT NULL,
+    episodes_json TEXT NOT NULL,
+    cached_at INTEGER NOT NULL
+);
+
 getWatchedEpisodeNumbers:
 SELECT episode_number
 FROM AnimeEpisodeProgress
@@ -24,5 +31,19 @@ INSERT OR REPLACE INTO AnimeEpisodeProgress(
     episode_number,
     watched,
     updated_at
+)
+VALUES (?, ?, ?, ?);
+
+getAnimeDetailCache:
+SELECT *
+FROM AnimeDetailCache
+WHERE anime_id = ?;
+
+upsertAnimeDetailCache:
+INSERT OR REPLACE INTO AnimeDetailCache(
+    anime_id,
+    detail_json,
+    episodes_json,
+    cached_at
 )
 VALUES (?, ?, ?, ?);

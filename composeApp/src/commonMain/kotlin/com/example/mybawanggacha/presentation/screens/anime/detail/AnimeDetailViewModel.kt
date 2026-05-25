@@ -3,11 +3,11 @@ package com.example.mybawanggacha.presentation.screens.anime.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mybawanggacha.domain.anime.model.AnimeDetail
+import com.example.mybawanggacha.domain.anime.repository.AnimeRepository
 import com.example.mybawanggacha.domain.library.model.LibraryEntry
 import com.example.mybawanggacha.domain.library.model.LibraryStatus
 import com.example.mybawanggacha.domain.library.model.MediaType
 import com.example.mybawanggacha.domain.library.model.UserProgress
-import com.example.mybawanggacha.domain.anime.repository.AnimeRepository
 import com.example.mybawanggacha.domain.library.repository.LibraryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,11 +23,46 @@ class AnimeDetailViewModel(
     val uiState: StateFlow<AnimeDetailUiState> = _uiState.asStateFlow()
 
     fun fetchAnimeDetail(malId: Int) {
+        loadAnimeDetail(
+            malId = malId,
+            keepCurrentContent = false,
+            forceRefresh = false
+        )
+    }
+
+    fun refreshAnimeDetail(malId: Int) {
+        loadAnimeDetail(
+            malId = malId,
+            keepCurrentContent = true,
+            forceRefresh = true
+        )
+    }
+
+    private fun loadAnimeDetail(
+        malId: Int,
+        keepCurrentContent: Boolean,
+        forceRefresh: Boolean
+    ) {
+        val currentSuccess = _uiState.value as? AnimeDetailUiState.Success
+        val canKeepContent = keepCurrentContent && currentSuccess?.anime?.malId == malId
+
+        if (canKeepContent && currentSuccess?.isRefreshing == true) return
+
         viewModelScope.launch {
-            _uiState.value = AnimeDetailUiState.Loading
+            val staleState = _uiState.value as? AnimeDetailUiState.Success
+            val shouldKeepStaleState = keepCurrentContent && staleState?.anime?.malId == malId
+
+            if (shouldKeepStaleState && staleState != null) {
+                _uiState.value = staleState.copy(isRefreshing = true)
+            } else {
+                _uiState.value = AnimeDetailUiState.Loading
+            }
 
             runCatching {
-                val detail = animeRepository.getAnimeDetail(malId)
+                val detail = animeRepository.getAnimeDetail(
+                    malId = malId,
+                    forceRefresh = forceRefresh
+                )
                 val existingEntry = libraryRepository.getEntry(
                     mediaId = detail.anime.malId,
                     mediaType = MediaType.Anime
@@ -41,9 +76,14 @@ class AnimeDetailViewModel(
                     libraryEntryId = existingEntry?.id
                 )
             }.onFailure { error ->
-                _uiState.value = AnimeDetailUiState.Error(
-                    error.message ?: "Unknown error occurred"
-                )
+                val latestState = _uiState.value as? AnimeDetailUiState.Success
+                if (shouldKeepStaleState && latestState != null) {
+                    _uiState.value = latestState.copy(isRefreshing = false)
+                } else {
+                    _uiState.value = AnimeDetailUiState.Error(
+                        error.message ?: "Unknown error occurred"
+                    )
+                }
             }
         }
     }

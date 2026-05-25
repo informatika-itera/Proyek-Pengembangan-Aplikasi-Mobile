@@ -18,7 +18,8 @@ class MBGApplication : Application() {
         ApiConfig.initialize(BuildConfig.GEMINI_API_KEY)
 
         initKoin(
-            platformModules = listOf(androidModule)
+            platformModules = listOf(androidModule),
+            enableNetworkLogging = BuildConfig.DEBUG
         ) {
             androidLogger()
             androidContext(this@MBGApplication)

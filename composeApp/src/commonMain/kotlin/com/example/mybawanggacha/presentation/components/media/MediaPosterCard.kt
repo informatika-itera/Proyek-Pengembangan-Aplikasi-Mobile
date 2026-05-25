@@ -34,7 +34,7 @@ fun AnimeRecommendationCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AnimePosterCard(
+    MediaPosterCard(
         title = anime.title,
         imageUrl = anime.imageUrl.orEmpty(),
         onClick = onClick,
@@ -43,7 +43,7 @@ fun AnimeRecommendationCard(
 }
 
 @Composable
-fun AnimePosterCard(
+fun MediaPosterCard(
     title: String,
     imageUrl: String,
     onClick: () -> Unit,
@@ -87,9 +87,9 @@ fun AnimePosterCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        leadingBadge?.let { AnimePosterBadge(text = it) }
+                        leadingBadge?.let { MediaPosterBadge(text = it) }
                         Spacer(modifier = Modifier.weight(1f))
-                        trailingBadge?.let { AnimePosterBadge(text = it) }
+                        trailingBadge?.let { MediaPosterBadge(text = it) }
                     }
                 }
             }
@@ -109,8 +109,48 @@ fun AnimePosterCard(
 }
 
 
+
 @Composable
-private fun AnimePosterBadge(text: String) {
+fun MediaPosterSkeletonCard(
+    modifier: Modifier = Modifier,
+    posterWidth: Dp = 132.dp,
+    posterHeight: Dp = 188.dp
+) {
+    Column(
+        modifier = modifier.width(posterWidth)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(posterHeight)
+                .clip(RoundedCornerShape(18.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f))
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.86f)
+                .height(12.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.68f))
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.62f)
+                .height(12.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.46f))
+        )
+    }
+}
+
+@Composable
+private fun MediaPosterBadge(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelSmall,

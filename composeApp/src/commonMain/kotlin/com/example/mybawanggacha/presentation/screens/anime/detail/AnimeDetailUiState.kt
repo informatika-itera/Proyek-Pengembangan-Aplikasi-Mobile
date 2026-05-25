@@ -8,7 +8,8 @@ sealed interface AnimeDetailUiState {
     data class Success(
         val anime: AnimeDetail,
         val episodes: List<AnimeEpisode> = emptyList(),
-        val libraryEntryId: Long? = null
+        val libraryEntryId: Long? = null,
+        val isRefreshing: Boolean = false
     ) : AnimeDetailUiState
     data class Error(val message: String) : AnimeDetailUiState
 }

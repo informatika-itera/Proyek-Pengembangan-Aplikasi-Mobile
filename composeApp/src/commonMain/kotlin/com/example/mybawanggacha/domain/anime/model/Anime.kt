@@ -15,6 +15,16 @@ data class AnimePage(
     val hasNextPage: Boolean
 )
 
+data class RecentAnimeEpisode(
+    val animeMalId: Int,
+    val animeTitle: String,
+    val animeImageUrl: String?,
+    val episodeMalId: Int?,
+    val episodeTitle: String?,
+    val episodeUrl: String?,
+    val premium: Boolean
+)
+
 data class AnimeDetail(
     val malId: Int,
     val url: String?,

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +53,7 @@ import com.example.mybawanggacha.presentation.components.LoadingIndicator
 import com.example.mybawanggacha.presentation.components.MBGMainRailKey
 import com.example.mybawanggacha.presentation.components.MBGRailBackButton
 import com.example.mybawanggacha.presentation.components.MBGSideRailScaffold
+import com.example.mybawanggacha.presentation.components.PullRefreshContainer
 import com.example.mybawanggacha.presentation.screens.library.LibraryUiState
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -60,12 +63,14 @@ fun MyListScreen(
     onNavigateHome: () -> Unit,
     onNavigateToAnimeList: () -> Unit,
     onNavigateToMangaList: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     onNavigateToDetail: (Int, MediaType) -> Unit,
     onEditEntry: (LibraryEntry) -> Unit,
     viewModel: LibraryViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedStatus by viewModel.selectedStatus.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var deleteTarget by remember { mutableStateOf<LibraryEntry?>(null) }
 
     deleteTarget?.let { entry ->
@@ -87,6 +92,7 @@ fun MyListScreen(
         onRailItemClick = { key ->
             when (key) {
                 MBGMainRailKey.Home -> onNavigateHome()
+                MBGMainRailKey.Search -> onNavigateToSearch()
                 MBGMainRailKey.MyLibrary -> Unit
                 MBGMainRailKey.AnimeList -> onNavigateToAnimeList()
                 MBGMainRailKey.MangaList -> onNavigateToMangaList()
@@ -96,47 +102,53 @@ fun MyListScreen(
             MBGRailBackButton(onClick = onNavigateBack)
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 4.dp, top = 32.dp, end = 18.dp)
+        PullRefreshContainer(
+            isRefreshing = isRefreshing,
+            onRefresh = viewModel::refresh,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = "My Library",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontWeight = FontWeight.Bold
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 4.dp, top = 32.dp, end = 18.dp)
+            ) {
+                Text(
+                    text = "My Library",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
 
-            Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = "Daftar yang kamu simpan",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.SemiBold
-            )
+                Text(
+                    text = "Daftar yang kamu simpan",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-            Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-            LibraryStatusFilterRow(
-                selectedStatus = selectedStatus,
-                onStatusSelected = viewModel::selectStatus
-            )
+                LibraryStatusFilterRow(
+                    selectedStatus = selectedStatus,
+                    onStatusSelected = viewModel::selectStatus
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (val state = uiState) {
-                    LibraryUiState.Loading -> LoadingIndicator()
-                    is LibraryUiState.Empty -> LibraryEmptyState(selectedStatus = state.selectedStatus)
-                    is LibraryUiState.Error -> ErrorState(message = state.message)
-                    is LibraryUiState.Success -> LibraryEntryList(
-                        entries = state.entries,
-                        onOpenEntry = onNavigateToDetail,
-                        onEditEntry = onEditEntry,
-                        onDeleteEntry = { deleteTarget = it }
-                    )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    when (val state = uiState) {
+                        LibraryUiState.Loading -> LibraryListSkeleton()
+                        is LibraryUiState.Empty -> LibraryEmptyState(selectedStatus = state.selectedStatus)
+                        is LibraryUiState.Error -> ErrorState(message = state.message)
+                        is LibraryUiState.Success -> LibraryEntryList(
+                            entries = state.entries,
+                            onOpenEntry = onNavigateToDetail,
+                            onEditEntry = onEditEntry,
+                            onDeleteEntry = { deleteTarget = it }
+                        )
+                    }
                 }
             }
         }
@@ -148,7 +160,17 @@ private fun LibraryStatusFilterRow(
     selectedStatus: LibraryStatus?,
     onStatusSelected: (LibraryStatus?) -> Unit
 ) {
+    val listState = rememberLazyListState()
+    val selectedIndex = selectedStatus
+        ?.let { LibraryStatus.entries.indexOf(it) + 1 }
+        ?: 0
+
+    LaunchedEffect(selectedIndex) {
+        listState.animateScrollToItem(selectedIndex.coerceAtLeast(0))
+    }
+
     LazyRow(
+        state = listState,
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(end = 20.dp)
@@ -182,6 +204,75 @@ private fun LibraryEmptyState(selectedStatus: LibraryStatus?) {
     )
 }
 
+
+@Composable
+private fun LibraryListSkeleton() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(
+            count = 6,
+            key = { index -> "library_skeleton_$index" },
+            contentType = { "library_entry_skeleton" }
+        ) {
+            LibraryEntrySkeletonCard()
+        }
+    }
+}
+
+@Composable
+private fun LibraryEntrySkeletonCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(64.dp)
+                    .height(92.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f))
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                LibrarySkeletonLine(widthFraction = 0.82f, height = 16.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+                LibrarySkeletonLine(widthFraction = 0.48f, height = 12.dp)
+                Spacer(modifier = Modifier.height(10.dp))
+                LibrarySkeletonLine(widthFraction = 0.68f, height = 12.dp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun LibrarySkeletonLine(
+    widthFraction: Float,
+    height: androidx.compose.ui.unit.Dp
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(widthFraction)
+            .height(height)
+            .clip(RoundedCornerShape(999.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.78f))
+    )
+}
+
 @Composable
 private fun LibraryEntryList(
     entries: List<LibraryEntry>,
@@ -196,7 +287,8 @@ private fun LibraryEntryList(
     ) {
         items(
             items = entries,
-            key = { it.id }
+            key = { it.id },
+            contentType = { "library_entry" }
         ) { entry ->
             LibraryEntryCard(
                 entry = entry,

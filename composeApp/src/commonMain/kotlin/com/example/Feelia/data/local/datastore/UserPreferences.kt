@@ -8,116 +8,64 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * User Preferences menggunakan DataStore
- * 
- * DataStore adalah pengganti SharedPreferences yang lebih modern:
- * - Asynchronous dengan Coroutines dan Flow
- * - Type-safe dengan Preferences Keys
- * - Tidak blocking main thread
- * 
- * @param dataStore Instance DataStore dari platform
- */
-class UserPreferences(
-    private val dataStore: DataStore<Preferences>
-) {
-    // ==================== PREFERENCE KEYS ====================
-    
+class UserPreferences(private val dataStore: DataStore<Preferences>) {
+
     private object Keys {
-        val DARK_MODE = booleanPreferencesKey("dark_mode")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
         val SORT_BY = stringPreferencesKey("sort_by")
-        val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val NOTIFICATION_ENABLED = booleanPreferencesKey("notification_enabled")
     }
-    
-    // ==================== DARK MODE ====================
-    
-    /**
-     * Observe dark mode setting
-     */
-    val isDarkMode: Flow<Boolean> = dataStore.data.map { prefs ->
-        prefs[Keys.DARK_MODE] ?: false
+
+    // Theme
+    val themeMode: Flow<ThemeMode> = dataStore.data.map { prefs ->
+        ThemeMode.valueOf(prefs[Keys.THEME_MODE] ?: ThemeMode.SYSTEM.name)
     }
-    
-    /**
-     * Set dark mode
-     */
-    suspend fun setDarkMode(enabled: Boolean) {
-        dataStore.edit { prefs ->
-            prefs[Keys.DARK_MODE] = enabled
-        }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { it[Keys.THEME_MODE] = mode.name }
     }
-    
-    // ==================== SORT BY ====================
-    
-    /**
-     * Observe sort preference
-     */
+
+    // Sort
     val sortBy: Flow<String> = dataStore.data.map { prefs ->
         prefs[Keys.SORT_BY] ?: "UPDATED_DESC"
     }
-    
-    /**
-     * Set sort preference
-     */
+
     suspend fun setSortBy(sortBy: String) {
-        dataStore.edit { prefs ->
-            prefs[Keys.SORT_BY] = sortBy
-        }
+        dataStore.edit { it[Keys.SORT_BY] = sortBy }
     }
-    
-    // ==================== DEFAULT CATEGORY ====================
-    
-    /**
-     * Observe default category
-     */
-    val defaultCategory: Flow<String> = dataStore.data.map { prefs ->
-        prefs[Keys.DEFAULT_CATEGORY] ?: "GENERAL"
-    }
-    
-    /**
-     * Set default category
-     */
-    suspend fun setDefaultCategory(category: String) {
-        dataStore.edit { prefs ->
-            prefs[Keys.DEFAULT_CATEGORY] = category
-        }
-    }
-    
-    // ==================== SHOW PREVIEW ====================
-    
-    /**
-     * Observe show preview setting
-     */
+
+    // Show Preview
     val showPreview: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.SHOW_PREVIEW] ?: true
     }
-    
-    /**
-     * Set show preview
-     */
+
     suspend fun setShowPreview(show: Boolean) {
-        dataStore.edit { prefs ->
-            prefs[Keys.SHOW_PREVIEW] = show
-        }
+        dataStore.edit { it[Keys.SHOW_PREVIEW] = show }
     }
-    
-    // ==================== ONBOARDING ====================
-    
-    /**
-     * Check if onboarding completed
-     */
+
+    // Onboarding
     val isOnboardingCompleted: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.ONBOARDING_COMPLETED] ?: false
     }
-    
-    /**
-     * Set onboarding completed
-     */
+
     suspend fun setOnboardingCompleted() {
-        dataStore.edit { prefs ->
-            prefs[Keys.ONBOARDING_COMPLETED] = true
-        }
+        dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = true }
     }
+
+    // Notification
+    val isNotificationEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFICATION_ENABLED] ?: true
+    }
+
+    suspend fun setNotificationEnabled(enabled: Boolean) {
+        dataStore.edit { it[Keys.NOTIFICATION_ENABLED] = enabled }
+    }
+}
+
+enum class ThemeMode(val displayName: String) {
+    LIGHT("Terang"),
+    DARK("Gelap"),
+    SYSTEM("Ikuti Sistem")
 }

@@ -1,6 +1,8 @@
 package com.example.Feelia.domain.repository
 
 interface AIRepository {
+    suspend fun detectEmotion(text: String): Result<String>
+    suspend fun getEmotionInsight(content: String, emotion: String): Result<String>
     suspend fun summarize(text: String): Result<String>
     suspend fun generateIdeas(topic: String): Result<List<String>>
     suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>

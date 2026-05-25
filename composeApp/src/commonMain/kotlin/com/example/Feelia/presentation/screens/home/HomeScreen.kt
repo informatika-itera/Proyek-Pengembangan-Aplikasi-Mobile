@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.NoteAlt
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -60,6 +61,7 @@ fun HomeScreen(
     onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAI: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -112,6 +114,10 @@ fun HomeScreen(
                     IconButton(onClick = onNavigateToAI) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
                     }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Outlined.Settings, contentDescription = "Pengaturan")
+                    }
+
                 }
             )
         },
@@ -286,7 +292,8 @@ private fun NotesList(
                 note = note,
                 onClick = { onNoteClick(note.id) },
                 onPinClick = { onPinClick(note.id) },
-                onDeleteClick = { onDeleteClick(note.id) }
+                onDeleteClick = { onDeleteClick(note.id) },
+                modifier = Modifier.animateItem()
             )
         }
     }

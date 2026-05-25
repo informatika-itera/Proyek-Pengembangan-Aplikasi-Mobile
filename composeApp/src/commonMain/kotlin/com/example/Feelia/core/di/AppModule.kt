@@ -22,6 +22,9 @@ import com.example.Feelia.presentation.screens.addnote.AddNoteViewModel
 import com.example.Feelia.presentation.screens.ai.AIAssistantViewModel
 import com.example.Feelia.presentation.screens.detail.NoteDetailViewModel
 import com.example.Feelia.presentation.screens.home.HomeViewModel
+import com.example.Feelia.domain.usecase.DetectEmotionUseCase
+import com.example.Feelia.domain.usecase.GetEmotionInsightUseCase
+import com.example.Feelia.presentation.screens.settings.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -70,6 +73,8 @@ val useCaseModule = module {
     singleOf(::SummarizeNoteUseCase)
     singleOf(::ImproveWritingUseCase)
     singleOf(::GenerateIdeasUseCase)
+    singleOf(::DetectEmotionUseCase)
+    singleOf(::GetEmotionInsightUseCase)
 }
 
 // ==================== VIEWMODEL MODULE ====================
@@ -79,6 +84,7 @@ val viewModelModule = module {
     viewModelOf(::AddNoteViewModel)
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::SettingsViewModel)
 }
 
 // ==================== SHARED MODULES ====================

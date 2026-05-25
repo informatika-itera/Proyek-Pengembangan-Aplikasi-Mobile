@@ -98,3 +98,19 @@ class GenerateIdeasUseCase(private val aiRepository: AIRepository) {
         return aiRepository.generateIdeas(topic)
     }
 }
+
+class DetectEmotionUseCase(private val aiRepository: AIRepository) {
+    suspend operator fun invoke(content: String): Result<Emotion> {
+        if (content.trim().length < 5)
+            return Result.failure(IllegalArgumentException("Teks terlalu pendek"))
+        return aiRepository.detectEmotion(content).map { raw ->
+            Emotion.fromString(raw)
+        }
+    }
+}
+
+class GetEmotionInsightUseCase(private val aiRepository: AIRepository) {
+    suspend operator fun invoke(content: String, emotion: Emotion): Result<String> {
+        return aiRepository.getEmotionInsight(content, emotion.displayName)
+    }
+}

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.fitgen.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,12 @@ class UserPreferences(
         val USER_HEIGHT = doublePreferencesKey("user_height")
         val USER_WEIGHT = doublePreferencesKey("user_weight")
         val USER_GOAL = stringPreferencesKey("user_goal")
+        
+        // --- Sprint 4: Streak & Hydration ---
+        val LAST_LOGIN_DATE = longPreferencesKey("last_login_date")
+        val CURRENT_STREAK = intPreferencesKey("current_streak")
+        val LAST_HYDRATION_DATE = longPreferencesKey("last_hydration_date")
+        val WATER_GLASSES = intPreferencesKey("water_glasses")
     }
     
     // ==================== DARK MODE ====================
@@ -156,6 +163,28 @@ class UserPreferences(
             prefs[Keys.USER_HEIGHT] = profile.heightCm
             prefs[Keys.USER_WEIGHT] = profile.weightKg
             prefs[Keys.USER_GOAL] = profile.goal
+        }
+    }
+    
+    // ==================== STREAK & HYDRATION ====================
+    
+    val lastLoginDate: Flow<Long> = dataStore.data.map { prefs -> prefs[Keys.LAST_LOGIN_DATE] ?: 0L }
+    val currentStreak: Flow<Int> = dataStore.data.map { prefs -> prefs[Keys.CURRENT_STREAK] ?: 0 }
+    
+    suspend fun setLoginStreak(lastDate: Long, streak: Int) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LAST_LOGIN_DATE] = lastDate
+            prefs[Keys.CURRENT_STREAK] = streak
+        }
+    }
+    
+    val lastHydrationDate: Flow<Long> = dataStore.data.map { prefs -> prefs[Keys.LAST_HYDRATION_DATE] ?: 0L }
+    val waterGlasses: Flow<Int> = dataStore.data.map { prefs -> prefs[Keys.WATER_GLASSES] ?: 0 }
+    
+    suspend fun setHydration(lastDate: Long, glasses: Int) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LAST_HYDRATION_DATE] = lastDate
+            prefs[Keys.WATER_GLASSES] = glasses
         }
     }
 }

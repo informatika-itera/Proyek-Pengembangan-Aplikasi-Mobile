@@ -65,9 +65,9 @@ fun AIAssistantScreen(
                 is AIAssistantEvent.CopyToClipboard -> {
                     snackbarHostState.showSnackbar("Disalin ke clipboard")
                 }
-                is AIAssistantEvent.ApplyToNote -> {
+                is AIAssistantEvent.ApplyResult -> {
                     onApplyResult?.invoke(event.text)
-                    snackbarHostState.showSnackbar("Diterapkan ke catatan")
+                    snackbarHostState.showSnackbar("Diterapkan")
                     onNavigateBack()
                 }
             }
@@ -200,7 +200,7 @@ fun AIAssistantScreen(
                                 
                                 if (noteId != null) {
                                     Button(
-                                        onClick = { viewModel.applyToNote() },
+                                        onClick = { viewModel.applyResult() },
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         Icon(

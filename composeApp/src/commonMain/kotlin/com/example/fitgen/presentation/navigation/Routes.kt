@@ -3,41 +3,51 @@ package com.example.fitgen.presentation.navigation
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
-    
+
     @Serializable
     data object Home : Route
-    
-    @Serializable
-    data class AddNote(val noteId: Long? = null) : Route
-    
-    @Serializable
-    data class NoteDetail(val noteId: Long) : Route
-    
+
     @Serializable
     data class AIAssistant(
-        val noteId: Long? = null,
         val initialText: String? = null
     ) : Route
 
-    // ── Sprint 2: Workout routes ──
+    // Workout
     @Serializable
     data object WorkoutList : Route
 
     @Serializable
     data object AddWorkout : Route
 
-    // ── Sprint 3: Profile route ──
+    // Nutrition
+    @Serializable
+    data object Nutrition : Route
+
+    @Serializable
+    data object AddMeal : Route
+
+    // Dashboard
+    @Serializable
+    data object Dashboard : Route
+
+    // Profile
     @Serializable
     data object Profile : Route
+
+    // AI Dynamic Workout
+    @Serializable
+    data object DynamicWorkout : Route
 }
 
 interface NavigationActions {
     fun navigateToHome()
-    fun navigateToAddNote(noteId: Long? = null)
-    fun navigateToNoteDetail(noteId: Long)
-    fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
+    fun navigateToDashboard()
+    fun navigateToAIAssistant(initialText: String? = null)
+    fun navigateToDynamicWorkout()
     fun navigateToWorkoutList()
     fun navigateToAddWorkout()
+    fun navigateToNutrition()
+    fun navigateToAddMeal()
     fun navigateToProfile()
     fun navigateBack()
 }

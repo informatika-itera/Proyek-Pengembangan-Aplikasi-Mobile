@@ -28,7 +28,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.FitnessCenter
-import androidx.compose.material.icons.outlined.Sort
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.SportsGymnastics
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -92,7 +92,7 @@ fun WorkoutListScreen(
                 actions = {
                     IconButton(onClick = { showSortMenu = true }) {
                         Icon(
-                            Icons.Outlined.Sort,
+                            Icons.AutoMirrored.Outlined.Sort,
                             contentDescription = "Urutkan"
                         )
                     }

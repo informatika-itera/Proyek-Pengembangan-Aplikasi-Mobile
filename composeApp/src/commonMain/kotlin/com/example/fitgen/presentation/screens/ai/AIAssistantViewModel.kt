@@ -4,9 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitgen.domain.repository.AIRepository
 import com.example.fitgen.domain.repository.WritingStyle
-import com.example.fitgen.domain.usecase.GenerateIdeasUseCase
-import com.example.fitgen.domain.usecase.ImproveWritingUseCase
-import com.example.fitgen.domain.usecase.SummarizeNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -15,117 +12,44 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
 class AIAssistantViewModel(
-    private val aiRepository: AIRepository,
-    private val summarizeUseCase: SummarizeNoteUseCase,
-    private val improveWritingUseCase: ImproveWritingUseCase,
-    private val generateIdeasUseCase: GenerateIdeasUseCase
+    private val aiRepository: AIRepository
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(AIAssistantUiState())
     val uiState: StateFlow<AIAssistantUiState> = _uiState.asStateFlow()
-    
+
     private val _events = MutableSharedFlow<AIAssistantEvent>()
     val events: SharedFlow<AIAssistantEvent> = _events.asSharedFlow()
-    
+
     fun setInitialText(text: String?) {
-        text?.let {
-            _uiState.update { state -> state.copy(inputText = it) }
-        }
+        text?.let { _uiState.update { state -> state.copy(inputText = it) } }
     }
-    
-    fun onInputTextChange(text: String) {
-        _uiState.update { it.copy(inputText = text, error = null) }
-    }
-    
-    fun onActionSelected(action: AIAction) {
-        _uiState.update { it.copy(selectedAction = action) }
-    }
-    
+    fun onInputTextChange(text: String) { _uiState.update { it.copy(inputText = text, error = null) } }
+    fun onActionSelected(action: AIAction) { _uiState.update { it.copy(selectedAction = action) } }
+
     fun executeAction() {
         val state = _uiState.value
-        
-        if (state.inputText.isBlank()) {
-            _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
-            return
-        }
-        
+        if (state.inputText.isBlank()) { _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }; return }
         _uiState.update { it.copy(isLoading = true, error = null, result = null) }
-        
         viewModelScope.launch {
             val result = when (state.selectedAction) {
-                AIAction.SUMMARIZE -> summarize(state.inputText)
-                AIAction.GENERATE_IDEAS -> generateIdeas(state.inputText)
-                AIAction.IMPROVE_WRITING -> improveWriting(state.inputText, state.writingStyle)
-                AIAction.TRANSLATE -> translate(state.inputText, state.targetLanguage)
-                AIAction.SUGGEST_TITLE -> suggestTitle(state.inputText)
-                AIAction.CHAT -> chat(state.inputText)
+                AIAction.SUMMARIZE       -> aiRepository.summarize(state.inputText)
+                AIAction.GENERATE_IDEAS  -> aiRepository.generateIdeas(state.inputText).map { list -> list.mapIndexed { i, s -> "${i+1}. $s" }.joinToString("\n") }
+                AIAction.IMPROVE_WRITING -> aiRepository.improveWriting(state.inputText, state.writingStyle)
+                AIAction.TRANSLATE       -> aiRepository.translate(state.inputText, state.targetLanguage)
+                AIAction.SUGGEST_TITLE   -> aiRepository.suggestTitle(state.inputText)
+                AIAction.CHAT            -> aiRepository.chat(state.inputText)
             }
-            
-            result
-                .onSuccess { output ->
-                    _uiState.update { it.copy(isLoading = false, result = output) }
-                }
-                .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
-                }
+            result.onSuccess { output -> _uiState.update { it.copy(isLoading = false, result = output) } }
+                  .onFailure { error  -> _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") } }
         }
     }
-    
-    fun copyResult() {
-        val result = _uiState.value.result
-        if (result != null) {
-            viewModelScope.launch {
-                _events.emit(AIAssistantEvent.CopyToClipboard(result))
-            }
-        }
-    }
-    
-    fun applyToNote() {
-        val result = _uiState.value.result
-        if (result != null) {
-            viewModelScope.launch {
-                _events.emit(AIAssistantEvent.ApplyToNote(result))
-            }
-        }
-    }
-    
-    fun onWritingStyleChange(style: WritingStyle) {
-        _uiState.update { it.copy(writingStyle = style) }
-    }
-    
-    fun onTargetLanguageChange(language: String) {
-        _uiState.update { it.copy(targetLanguage = language) }
-    }
-    
-    // ==================== AI OPERATIONS ====================
-    
-    private suspend fun summarize(text: String): Result<String> {
-        return summarizeUseCase(text)
-    }
-    
-    private suspend fun generateIdeas(topic: String): Result<String> {
-        return generateIdeasUseCase(topic).map { ideas ->
-            ideas.mapIndexed { index, idea -> "${index + 1}. $idea" }.joinToString("\n")
-        }
-    }
-    
-    private suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
-        return improveWritingUseCase(text, style)
-    }
-    
-    private suspend fun translate(text: String, targetLanguage: String): Result<String> {
-        return aiRepository.translate(text, targetLanguage)
-    }
-    
-    private suspend fun suggestTitle(content: String): Result<String> {
-        return aiRepository.suggestTitle(content)
-    }
-    
-    private suspend fun chat(message: String): Result<String> {
-        return aiRepository.chat(message)
-    }
+
+    fun copyResult() { val r = _uiState.value.result; if (r != null) viewModelScope.launch { _events.emit(AIAssistantEvent.CopyToClipboard(r)) } }
+    fun applyResult() { val r = _uiState.value.result; if (r != null) viewModelScope.launch { _events.emit(AIAssistantEvent.ApplyResult(r)) } }
+    fun onWritingStyleChange(style: WritingStyle) { _uiState.update { it.copy(writingStyle = style) } }
+    fun onTargetLanguageChange(language: String)  { _uiState.update { it.copy(targetLanguage = language) } }
 }
 
 enum class AIAction(val displayName: String, val description: String) {
@@ -146,11 +70,10 @@ data class AIAssistantUiState(
     val result: String? = null,
     val error: String? = null
 ) {
-    val canExecute: Boolean
-        get() = inputText.isNotBlank() && !isLoading
+    val canExecute: Boolean get() = inputText.isNotBlank() && !isLoading
 }
 
 sealed interface AIAssistantEvent {
     data class CopyToClipboard(val text: String) : AIAssistantEvent
-    data class ApplyToNote(val text: String) : AIAssistantEvent
+    data class ApplyResult(val text: String) : AIAssistantEvent
 }

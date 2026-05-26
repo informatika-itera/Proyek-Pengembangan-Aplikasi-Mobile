@@ -7,6 +7,7 @@ interface AIRepository {
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
     suspend fun suggestTitle(content: String): Result<String>
+    suspend fun analyzeImage(prompt: String, imageBytes: ByteArray): String
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

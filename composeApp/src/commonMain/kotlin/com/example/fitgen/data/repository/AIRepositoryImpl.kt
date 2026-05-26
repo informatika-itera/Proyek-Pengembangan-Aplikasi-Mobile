@@ -1,33 +1,35 @@
 package com.example.fitgen.data.repository
 
 import com.example.fitgen.data.remote.api.GeminiService
+import com.example.fitgen.data.remote.api.GroqService
 import com.example.fitgen.data.remote.api.SystemPrompts
 import com.example.fitgen.domain.repository.AIRepository
 import com.example.fitgen.domain.repository.WritingStyle
 
 class AIRepositoryImpl(
-    private val geminiService: GeminiService
+    private val groqService: GroqService,
+    private val geminiService: GeminiService // Inject GeminiService
 ) : AIRepository {
-    
+
     override suspend fun summarize(text: String): Result<String> {
         val prompt = """
             Rangkum teks berikut:
             
             $text
         """.trimIndent()
-        
-        return geminiService.generateContent(
+
+        return groqService.generateContent(
             prompt = prompt,
             systemPrompt = SystemPrompts.SUMMARIZER
         )
     }
-    
+
     override suspend fun generateIdeas(topic: String): Result<List<String>> {
         val prompt = """
             Berikan 5 ide kreatif untuk topik: $topic
         """.trimIndent()
-        
-        return geminiService.generateContent(
+
+        return groqService.generateContent(
             prompt = prompt,
             systemPrompt = SystemPrompts.IDEA_GENERATOR
         ).map { response ->
@@ -39,7 +41,7 @@ class AIRepositoryImpl(
                 .filter { it.isNotBlank() }
         }
     }
-    
+
     override suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
         val styleInstruction = when (style) {
             WritingStyle.FORMAL -> "Gunakan gaya formal dan profesional."
@@ -48,7 +50,7 @@ class AIRepositoryImpl(
             WritingStyle.CREATIVE -> "Gunakan gaya kreatif dan menarik."
             WritingStyle.NEUTRAL -> "Gunakan gaya netral."
         }
-        
+
         val prompt = """
             $styleInstruction
             
@@ -56,40 +58,59 @@ class AIRepositoryImpl(
             
             $text
         """.trimIndent()
-        
-        return geminiService.generateContent(
+
+        return groqService.generateContent(
             prompt = prompt,
             systemPrompt = SystemPrompts.WRITING_IMPROVER
         )
     }
-    
+
     override suspend fun translate(text: String, targetLanguage: String): Result<String> {
         val prompt = """
             Terjemahkan ke bahasa $targetLanguage:
             
             $text
         """.trimIndent()
-        
-        return geminiService.generateContent(
+
+        return groqService.generateContent(
             prompt = prompt,
             systemPrompt = SystemPrompts.TRANSLATOR
         )
     }
-    
+
     override suspend fun chat(message: String): Result<String> {
-        return geminiService.generateContent(prompt = message)
+        return groqService.generateContent(prompt = message)
     }
-    
+
     override suspend fun suggestTitle(content: String): Result<String> {
         val prompt = """
             Berikan saran judul untuk konten berikut:
             
             $content
         """.trimIndent()
-        
-        return geminiService.generateContent(
+
+        return groqService.generateContent(
             prompt = prompt,
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         ).map { it.trim().removeSurrounding("\"") }
+    }
+
+    // UPDATE: Terhubung langsung ke Gemini Vision API
+    override suspend fun analyzeImage(prompt: String, imageBytes: ByteArray): String {
+        // Instruksi tegas agar AI hanya membalas dengan format JSON yang bisa di-parsing, termasuk nama makanan!
+        val strictPrompt = """
+            $prompt
+            
+            PENTING: Balas HANYA dengan format JSON valid persis seperti di bawah ini, tanpa awalan markdown (```json) dan tanpa penjelasan apapun:
+            {
+                "nama_makanan": "Nama Makanan",
+                "kalori": 0,
+                "protein": 0,
+                "karbohidrat": 0,
+                "lemak": 0
+            }
+        """.trimIndent()
+
+        return geminiService.analyzeImage(strictPrompt, imageBytes)
     }
 }

@@ -5,73 +5,76 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
-// ==================== COLOR SCHEMES ====================
+// ==================== LIGHT COLOR SCHEME ====================
 
 private val LightColorScheme = lightColorScheme(
-    primary = FitOrange,
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = FitOrangeContainer,
-    onPrimaryContainer = OnFitOrangeContainer,
-    secondary = FitGreen,
-    onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = FitGreenContainer,
-    onSecondaryContainer = OnFitGreenContainer,
-    tertiary = FitBlue,
-    onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = FitBlueContainer,
-    onTertiaryContainer = OnFitBlueContainer,
-    error = FitError,
-    onError = OnFitError,
-    errorContainer = FitErrorContainer,
-    onErrorContainer = OnFitErrorContainer,
-    background = BackgroundLight,
-    onBackground = OnBackgroundLight,
-    surface = SurfaceLight,
-    onSurface = OnSurfaceLight,
-    surfaceVariant = SurfaceVariantLight,
-    onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight
+    primary               = MaroonPrimary,
+    onPrimary             = MaroonOnPrimary,
+    primaryContainer      = MaroonPrimaryContainer,
+    onPrimaryContainer    = MaroonOnPrimaryContainer,
+    secondary             = CreamSecondary,
+    onSecondary           = OnCreamSecondary,
+    secondaryContainer    = CreamSecondaryContainer,
+    onSecondaryContainer  = OnCreamSecondaryContainer,
+    tertiary              = TertiaryLight,
+    onTertiary            = OnTertiaryLight,
+    tertiaryContainer     = TertiaryContainerLight,
+    onTertiaryContainer   = OnTertiaryContainerLight,
+    error                 = ErrorLight,
+    onError               = OnErrorLight,
+    errorContainer        = ErrorContainerLight,
+    onErrorContainer      = OnErrorContainerLight,
+    background            = BackgroundLight,
+    onBackground          = OnBackgroundLight,
+    surface               = SurfaceLight,
+    onSurface             = OnSurfaceLight,
+    surfaceVariant        = SurfaceVariantLight,
+    onSurfaceVariant      = OnSurfaceVariantLight,
+    outline               = OutlineLight
 )
+
+// ==================== DARK COLOR SCHEME ====================
 
 private val DarkColorScheme = darkColorScheme(
-    primary = FitOrangeLight,
-    onPrimary = Color(0xFF4A1800),
-    primaryContainer = FitOrange,
-    onPrimaryContainer = FitOrangeContainer,
-    secondary = FitGreen,
-    onSecondary = FitGreenDark,
-    secondaryContainer = FitGreenDark,
-    onSecondaryContainer = FitGreenContainer,
-    tertiary = FitBlue,
-    onTertiary = FitBlueDark,
-    tertiaryContainer = FitBlueDark,
-    onTertiaryContainer = FitBlueContainer,
-    error = Color(0xFFFFB4AB),
-    onError = Color(0xFF690005),
-    errorContainer = Color(0xFF93000A),
-    onErrorContainer = Color(0xFFFFDAD6),
-    background = BackgroundDark,
-    onBackground = OnBackgroundDark,
-    surface = SurfaceDark,
-    onSurface = OnSurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+    primary               = MaroonPrimaryDarkScheme,
+    onPrimary             = MaroonOnPrimaryDarkScheme,
+    primaryContainer      = MaroonPrimaryContainerDark,
+    onPrimaryContainer    = MaroonOnPrimaryContainerDark,
+    secondary             = CreamSecondaryDark,
+    onSecondary           = OnCreamSecondaryDark,
+    secondaryContainer    = CreamSecondaryContainerDark,
+    onSecondaryContainer  = OnCreamSecondaryContainerDark,
+    tertiary              = TertiaryDark,
+    onTertiary            = OnTertiaryDark,
+    tertiaryContainer     = TertiaryContainerDark,
+    onTertiaryContainer   = OnTertiaryContainerDark,
+    error                 = ErrorDark,
+    onError               = OnErrorDark,
+    errorContainer        = ErrorContainerDark,
+    onErrorContainer      = OnErrorContainerDark,
+    background            = BackgroundDark,
+    onBackground          = OnBackgroundDark,
+    surface               = SurfaceDark,
+    onSurface             = OnSurfaceDark,
+    surfaceVariant        = SurfaceVariantDark,
+    onSurfaceVariant      = OnSurfaceVariantDark,
+    outline               = OutlineDark
 )
 
-// ==================== THEME ====================
+// ==================== FITGEN THEME ====================
 
 @Composable
-fun NoteAITheme(
+fun FitGenTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val typography = getTypography()
 
     MaterialTheme(
         colorScheme = colorScheme,
-        content = content
+        typography  = typography,
+        content     = content
     )
 }

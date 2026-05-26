@@ -6,6 +6,7 @@ import com.example.fitgen.domain.model.WorkoutLog
 import com.example.fitgen.domain.usecase.GetAllWorkoutsUseCase
 import com.example.fitgen.domain.usecase.WorkoutSortBy
 import com.example.fitgen.domain.repository.WorkoutRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class WorkoutListViewModel(
     private val getAllWorkoutsUseCase: GetAllWorkoutsUseCase,
     private val repository: WorkoutRepository

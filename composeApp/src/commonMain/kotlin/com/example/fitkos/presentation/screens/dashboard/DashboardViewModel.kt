@@ -60,7 +60,7 @@ data class DashboardUiState(
     val mealCount: Int = 0,
     val waterGlasses: Int = 0,
     val waterTarget: Int = 8,
-    val exerciseMinutes: Int? = null,
+    val exerciseMinutes: Int = 0,
     val exerciseTarget: Int = 30,
     val mealTarget: Int = 3
 )

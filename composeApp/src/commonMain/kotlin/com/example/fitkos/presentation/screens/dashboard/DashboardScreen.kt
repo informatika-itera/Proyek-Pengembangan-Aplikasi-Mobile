@@ -123,7 +123,7 @@ private fun SummaryGrid(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SummaryCard(
                 title = "Olahraga Hari Ini",
-                value = "0",
+                value = uiState.exerciseMinutes.toString(),
                 unit = "menit",
                 icon = "🏃",
                 modifier = Modifier.weight(1f),
@@ -180,8 +180,15 @@ private fun TargetHarianSection(uiState: DashboardUiState) {
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(text = "Target Harian", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Target Harian",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
 
             TargetItem(
                 icon = "💧",
@@ -189,25 +196,24 @@ private fun TargetHarianSection(uiState: DashboardUiState) {
                 current = uiState.waterGlasses,
                 target = uiState.waterTarget,
                 unit = "gelas",
-                progress = if (uiState.waterTarget > 0) uiState.waterGlasses.toFloat() / uiState.waterTarget else 0f
+                progress = if (uiState.waterTarget > 0) {
+                    uiState.waterGlasses.toFloat() / uiState.waterTarget
+                } else {
+                    0f
+                }
             )
 
             TargetItem(
-                icon = "🚶",
-                title = "Langkah",
-                current = 2300,
-                target = 10000,
-                unit = "langkah",
-                progress = 0.23f
-            )
-
-            TargetItem(
-                icon = "🔥",
-                title = "Kalori",
-                current = 450,
-                target = 2000,
-                unit = "kkal",
-                progress = 0.22f
+                icon = "🏃",
+                title = "Olahraga",
+                current = uiState.exerciseMinutes,
+                target = uiState.exerciseTarget,
+                unit = "menit",
+                progress = if (uiState.exerciseTarget > 0) {
+                    uiState.exerciseMinutes.toFloat() / uiState.exerciseTarget
+                } else {
+                    0f
+                }
             )
         }
     }

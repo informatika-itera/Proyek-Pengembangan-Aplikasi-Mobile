@@ -10,12 +10,13 @@ CREATE TABLE FoodItemEntity (
     category TEXT NOT NULL,
     storageLocation TEXT NOT NULL DEFAULT 'Kulkas',
     notes TEXT,
-    isConsumed INTEGER NOT NULL DEFAULT 0
+    isConsumed INTEGER NOT NULL DEFAULT 0,
+    isDiscarded INTEGER NOT NULL DEFAULT 0
 );
 
 insertFoodItem:
-INSERT OR REPLACE INTO FoodItemEntity(id, name, quantity, unit, buyDate, expiryDate, category, storageLocation, notes, isConsumed)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO FoodItemEntity(id, name, quantity, unit, buyDate, expiryDate, category, storageLocation, notes, isConsumed, isDiscarded)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getAllFoodItems:
 SELECT * FROM FoodItemEntity ORDER BY expiryDate ASC;
@@ -31,5 +32,5 @@ DELETE FROM FoodItemEntity WHERE id = ?;
 
 updateFoodItem:
 UPDATE FoodItemEntity
-SET name = ?, quantity = ?, unit = ?, buyDate = ?, expiryDate = ?, category = ?, storageLocation = ?, notes = ?, isConsumed = ?
+SET name = ?, quantity = ?, unit = ?, buyDate = ?, expiryDate = ?, category = ?, storageLocation = ?, notes = ?, isConsumed = ?, isDiscarded = ?
 WHERE id = ?;

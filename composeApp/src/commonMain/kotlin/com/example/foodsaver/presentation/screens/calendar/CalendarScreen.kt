@@ -17,10 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.foodsaver.presentation.theme.BackgroundLight
-import com.example.foodsaver.presentation.theme.PrimaryGreen
-import com.example.foodsaver.presentation.theme.TextMain
-import com.example.foodsaver.presentation.theme.TextSecondary
+import com.example.foodsaver.domain.model.FoodItem
+import com.example.foodsaver.domain.model.FoodStatus
+import com.example.foodsaver.presentation.components.getEmojiForCategory
+import com.example.foodsaver.presentation.theme.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
@@ -35,14 +35,14 @@ fun CalendarScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Food Calendar", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Food Calendar", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = TextMain) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
             )
         },
         containerColor = BackgroundLight
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Placeholder for real calendar view
+            // Header Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -63,7 +63,7 @@ fun CalendarScreen(
                             color = PrimaryGreen
                         )
                         Text(
-                            "Daftar makanan berdasarkan tanggal expired",
+                            "Pantau masa simpan stok makananmu",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
@@ -71,38 +71,71 @@ fun CalendarScreen(
                 }
             }
 
-            Text(
-                "Mendatang",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = TextMain
-            )
-
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryGreen)
-                } else if (state.items.isEmpty()) {
+                } else if (state.upcomingItems.isEmpty() && state.pastItems.isEmpty()) {
                     EmptyCalendarState()
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = PaddingValues(bottom = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        items(state.items) { item ->
-                            CalendarItemRow(item)
+                        // UPCOMING SECTION
+                        item {
+                            Text(
+                                "Mendatang",
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = TextMain
+                            )
+                        }
+
+                        if (state.upcomingItems.isEmpty()) {
+                            item {
+                                Text(
+                                    "Tidak ada jadwal kedaluwarsa mendatang.",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
+                            }
+                        } else {
+                            items(state.upcomingItems) { item ->
+                                CalendarItemRow(item)
+                            }
+                        }
+
+                        // PAST SECTION
+                        if (state.pastItems.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    "Sudah Lewat",
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ExpiredRed
+                                )
+                            }
+
+                            items(state.pastItems) { item ->
+                                CalendarItemRow(item)
+                            }
                         }
                         
                         item {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                                 shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+                                colors = CardDefaults.cardColors(containerColor = CardWhite),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                             ) {
                                 Text(
-                                    "Integrasi kalender sistem & reminder otomatis akan hadir pada pembaruan berikutnya.",
+                                    "Tips: Konsumsi makanan di daftar 'Mendatang' sesegera mungkin untuk meminimalkan food waste.",
                                     modifier = Modifier.padding(16.dp),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary,
@@ -118,10 +151,16 @@ fun CalendarScreen(
 }
 
 @Composable
-fun CalendarItemRow(item: com.example.foodsaver.domain.model.FoodItem) {
+fun CalendarItemRow(item: FoodItem) {
     val date = item.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val status = item.getStatus()
+    val isPast = status == FoodStatus.EXPIRED || status == FoodStatus.EXPIRED_TODAY
+    val dateColor = if (isPast) ExpiredRed else PrimaryGreen
+    
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -132,7 +171,7 @@ fun CalendarItemRow(item: com.example.foodsaver.domain.model.FoodItem) {
                 date.dayOfMonth.toString(),
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 20.sp,
-                color = PrimaryGreen
+                color = dateColor
             )
             Text(
                 date.month.name.take(3),
@@ -146,18 +185,31 @@ fun CalendarItemRow(item: com.example.foodsaver.domain.model.FoodItem) {
         Card(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            colors = CardDefaults.cardColors(containerColor = CardWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
                 modifier = Modifier.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(com.example.foodsaver.presentation.components.getEmojiForCategory(item.category), fontSize = 24.sp)
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    color = dateColor.copy(alpha = 0.1f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(getEmojiForCategory(item.category), fontSize = 20.sp)
+                    }
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text(item.name, fontWeight = FontWeight.Bold, color = TextMain)
-                    Text(item.getStatusLabel(), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text(item.name, fontWeight = FontWeight.Bold, color = TextMain, maxLines = 1)
+                    Text(
+                        item.getStatusLabel(), 
+                        style = MaterialTheme.typography.labelSmall, 
+                        color = if (isPast) ExpiredRed else TextSecondary,
+                        fontWeight = if (isPast) FontWeight.Bold else FontWeight.Normal
+                    )
                 }
             }
         }
@@ -171,8 +223,15 @@ fun EmptyCalendarState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Icon(
+            Icons.Default.CalendarToday, 
+            contentDescription = null, 
+            modifier = Modifier.size(64.dp), 
+            tint = PrimaryGreen.copy(alpha = 0.2f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Tidak ada jadwal kedaluwarsa mendatang.",
+            "Tidak ada jadwal kedaluwarsa.",
             style = MaterialTheme.typography.bodyMedium,
             color = TextSecondary,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center

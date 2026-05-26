@@ -15,6 +15,8 @@ import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.theme.ExpiredRed
 import com.example.foodsaver.presentation.theme.PrimaryGreen
 import com.example.foodsaver.presentation.theme.WarningOrange
+import com.example.foodsaver.presentation.theme.TextMain
+import com.example.foodsaver.presentation.theme.TextSecondary
 
 @Composable
 fun FoodItemCard(
@@ -25,7 +27,7 @@ fun FoodItemCard(
     val statusColor = when (status) {
         FoodStatus.SAFE -> PrimaryGreen
         FoodStatus.NEAR_EXPIRY -> WarningOrange
-        FoodStatus.EXPIRED -> ExpiredRed
+        FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> ExpiredRed
     }
 
     Card(
@@ -34,7 +36,7 @@ fun FoodItemCard(
             .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -68,7 +70,7 @@ fun FoodItemCard(
                         text = item.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF263238),
+                        color = TextMain,
                         maxLines = 1
                     )
                     StatusBadge(status = status)
@@ -77,14 +79,14 @@ fun FoodItemCard(
                 Text(
                     text = "${item.category} • ${item.quantity} ${item.unit}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = TextSecondary
                 )
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Simpan: ${item.storageLocation}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = TextSecondary
                     )
                 }
 
@@ -107,6 +109,7 @@ fun StatusBadge(status: FoodStatus) {
         FoodStatus.SAFE -> "Aman" to PrimaryGreen
         FoodStatus.NEAR_EXPIRY -> "Penting" to WarningOrange
         FoodStatus.EXPIRED -> "Expired" to ExpiredRed
+        FoodStatus.EXPIRED_TODAY -> "Expired Hari Ini" to ExpiredRed
     }
 
     Surface(

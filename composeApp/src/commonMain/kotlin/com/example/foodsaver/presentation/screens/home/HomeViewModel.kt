@@ -11,7 +11,8 @@ import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val isLoading: Boolean = false,
-    val items: List<FoodItem> = emptyList(),
+    val items: List<FoodItem> = emptyList(), // All items
+    val activeItems: List<FoodItem> = emptyList(), // Not consumed, not discarded
     val filteredItems: List<FoodItem> = emptyList(),
     val priorityItems: List<FoodItem> = emptyList(),
     val searchQuery: String = "",
@@ -42,22 +43,26 @@ class HomeViewModel(
                 .catch { e ->
                     _state.update { it.copy(isLoading = false, error = e.message) }
                 }
-                .collect { items ->
-                    val safe = items.count { it.getStatus() == FoodStatus.SAFE }
-                    val nearlyExpired = items.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
-                    val expired = items.count { it.getStatus() == FoodStatus.EXPIRED }
-                    
-                    // Priority items are those nearly expired or already expired
-                    val priority = items.filter { it.getStatus() != FoodStatus.SAFE }
+                .collect { allItems ->
+                    // Logic: Only show items that are NOT consumed and NOT discarded
+                    val activeItems = allItems.filter { !it.isConsumed && !it.isDiscarded }
                         .sortedBy { it.getDaysRemaining() }
+
+                    val safe = activeItems.count { it.getStatus() == FoodStatus.SAFE }
+                    val nearlyExpired = activeItems.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
+                    val expired = activeItems.count { it.getStatus() == FoodStatus.EXPIRED || it.getStatus() == FoodStatus.EXPIRED_TODAY }
+                    
+                    // Priority items are those nearly expired or already expired, limit to 5
+                    val priority = activeItems.filter { it.getStatus() != FoodStatus.SAFE }
                         .take(5)
                     
                     _state.update { it.copy(
                         isLoading = false, 
-                        items = items, 
-                        filteredItems = filterItems(items, it.searchQuery),
+                        items = allItems,
+                        activeItems = activeItems,
+                        filteredItems = filterItems(activeItems, it.searchQuery),
                         priorityItems = priority,
-                        totalItems = items.size,
+                        totalItems = activeItems.size,
                         safeCount = safe,
                         nearlyExpiredCount = nearlyExpired,
                         expiredCount = expired,
@@ -71,7 +76,7 @@ class HomeViewModel(
         _state.update { 
             it.copy(
                 searchQuery = query,
-                filteredItems = filterItems(it.items, query)
+                filteredItems = filterItems(it.activeItems, query)
             )
         }
     }
@@ -87,21 +92,6 @@ class HomeViewModel(
                 it.getStatusLabel().contains(query, ignoreCase = true)
             }
         }
-    }
-
-    fun toggleSelection(id: Long) {
-        _state.update { currentState ->
-            val newSelection = if (currentState.selectedIds.contains(id)) {
-                currentState.selectedIds - id
-            } else {
-                currentState.selectedIds + id
-            }
-            currentState.copy(selectedIds = newSelection)
-        }
-    }
-
-    fun clearSelection() {
-        _state.update { it.copy(selectedIds = emptySet()) }
     }
 
     fun deleteItem(id: Long) {

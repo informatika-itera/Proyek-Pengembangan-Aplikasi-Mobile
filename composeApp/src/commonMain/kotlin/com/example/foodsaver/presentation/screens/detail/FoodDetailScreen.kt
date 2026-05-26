@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.RestoreFromTrash
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -52,8 +54,8 @@ fun FoodDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus Makanan") },
-            text = { Text("Apakah kamu yakin ingin menghapus ${state.foodItem?.name} dari inventory?") },
+            title = { Text("Hapus Makanan", color = TextMain) },
+            text = { Text("Apakah kamu yakin ingin menghapus ${state.foodItem?.name} dari inventory?", color = TextSecondary) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -67,7 +69,7 @@ fun FoodDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Batal")
+                    Text("Batal", color = TextSecondary)
                 }
             }
         )
@@ -76,10 +78,10 @@ fun FoodDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = TextMain) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
                     }
                 },
                 actions = {
@@ -114,7 +116,7 @@ fun FoodDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(28.dp),
                             colors = CardDefaults.cardColors(containerColor = CardWhite),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
                                 modifier = Modifier.padding(24.dp),
@@ -151,7 +153,7 @@ fun FoodDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(containerColor = CardWhite),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 InfoRow(label = "Jumlah Stok", value = "${food.quantity} ${food.unit}")
@@ -165,7 +167,7 @@ fun FoodDetailScreen(
                                 val color = when(status) {
                                     FoodStatus.SAFE -> PrimaryGreen
                                     FoodStatus.NEAR_EXPIRY -> WarningOrange
-                                    FoodStatus.EXPIRED -> ExpiredRed
+                                    FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> ExpiredRed
                                 }
                                 InfoRow(
                                     label = "Sisa Waktu", 
@@ -174,6 +176,9 @@ fun FoodDetailScreen(
                                 )
                             }
                         }
+
+                        // Recommendation Card
+                        RecommendationCard(status = food.getStatus())
                         
                         // Notes Card
                         if (!food.notes.isNullOrBlank()) {
@@ -181,7 +186,7 @@ fun FoodDetailScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(24.dp),
                                 colors = CardDefaults.cardColors(containerColor = CardWhite),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Column(modifier = Modifier.padding(20.dp)) {
                                     Text(
@@ -200,24 +205,87 @@ fun FoodDetailScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         
                         // Action Buttons
-                        Button(
-                            onClick = { viewModel.toggleConsumed() },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (food.isConsumed) Color.Gray else PrimaryGreen
-                            )
-                        ) {
-                            Icon(if (food.isConsumed) Icons.Default.Inventory else Icons.Default.CheckCircle, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(if (food.isConsumed) "Tandai Belum Dikonsumsi" else "Tandai Sudah Dikonsumsi", fontWeight = FontWeight.Bold)
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                onClick = { viewModel.toggleConsumed() },
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (food.isConsumed) Color.Gray else PrimaryGreen
+                                )
+                            ) {
+                                Icon(if (food.isConsumed) Icons.Default.Inventory else Icons.Default.CheckCircle, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(if (food.isConsumed) "Tandai Belum Dikonsumsi" else "Tandai Sudah Dikonsumsi", fontWeight = FontWeight.Bold)
+                            }
+
+                            if (!food.isConsumed) {
+                                OutlinedButton(
+                                    onClick = { viewModel.toggleDiscarded() },
+                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = if (food.isDiscarded) TextSecondary else ExpiredRed
+                                    )
+                                ) {
+                                    Icon(if (food.isDiscarded) Icons.Default.RestoreFromTrash else Icons.Default.DeleteForever, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(if (food.isDiscarded) "Batalkan Dibuang" else "Tandai Dibuang", fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RecommendationCard(status: FoodStatus) {
+    val (message, bgColor, textColor) = when(status) {
+        FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> Triple(
+            "Makanan ini sudah melewati tanggal kedaluwarsa. Periksa kondisinya sebelum dikonsumsi.",
+            ExpiredBg,
+            ExpiredRed
+        )
+        FoodStatus.NEAR_EXPIRY -> Triple(
+            "Sebaiknya konsumsi makanan ini dalam waktu dekat.",
+            WarningBg,
+            WarningOrange
+        )
+        FoodStatus.SAFE -> Triple(
+            "Makanan ini masih aman disimpan.",
+            SafeBg,
+            PrimaryGreen
+        )
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Inventory,
+                contentDescription = null,
+                tint = textColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

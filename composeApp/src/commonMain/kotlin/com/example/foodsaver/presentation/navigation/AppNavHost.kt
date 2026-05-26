@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -131,11 +132,13 @@ fun MainScreen(rootNavController: NavHostController) {
                         selected = isSelected,
                         onClick = {
                             nestedNavController.navigate(item.route) {
-                                popUpTo(item.route) {
-                                    saveState = true
+                                // Pop up ke start destination untuk menjaga satu stack utama
+                                val startDestination = nestedNavController.graph.findStartDestination()
+                                popUpTo(startDestination.route ?: BottomNavItem.Home.route) {
+                                    saveState = false // Dimatikan sementara untuk stabilitas
                                 }
                                 launchSingleTop = true
-                                restoreState = true
+                                restoreState = false // Dimatikan sementara untuk stabilitas
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(

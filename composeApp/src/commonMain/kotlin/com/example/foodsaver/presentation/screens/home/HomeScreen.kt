@@ -12,16 +12,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Inventory
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.foodsaver.domain.model.FoodItem
+import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.components.AITipsSection
 import com.example.foodsaver.presentation.components.FoodItemCard
+import com.example.foodsaver.presentation.components.getEmojiForCategory
 import com.example.foodsaver.presentation.theme.*
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -41,7 +49,7 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("FoodSaver Inventory", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                        Text("FoodSaver Inventory", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = TextMain)
                         Text(
                             "Kelola stok makananmu sebelum kedaluwarsa",
                             style = MaterialTheme.typography.labelSmall,
@@ -106,12 +114,12 @@ fun HomeScreen(
                         // AI Tips Card
                         if (state.searchQuery.isEmpty()) {
                             item {
-                                AITipsSection(items = state.items)
+                                AITipsSection(items = state.activeItems)
                             }
                         }
 
-                        // Priority Section
-                        if (state.priorityItems.isNotEmpty() && state.searchQuery.isEmpty()) {
+                        // Priority Section (Save Before Waste)
+                        if (state.searchQuery.isEmpty()) {
                             item {
                                 Text(
                                     "Save Before Waste 🔥",
@@ -120,13 +128,37 @@ fun HomeScreen(
                                     fontWeight = FontWeight.Bold,
                                     color = TextMain
                                 )
-                                LazyRow(
-                                    contentPadding = PaddingValues(horizontal = 16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.padding(bottom = 16.dp)
-                                ) {
-                                    items(state.priorityItems) { item ->
-                                        PriorityCard(item = item, onClick = { onFoodClick(item.id) })
+                                
+                                if (state.priorityItems.isNotEmpty()) {
+                                    LazyRow(
+                                        contentPadding = PaddingValues(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    ) {
+                                        items(state.priorityItems) { item ->
+                                            PriorityCard(item = item, onClick = { onFoodClick(item.id) })
+                                        }
+                                    }
+                                } else {
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = CardDefaults.cardColors(containerColor = SafeBg.copy(alpha = 0.5f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PrimaryGreen)
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Text(
+                                                "Tidak ada makanan yang perlu segera dikonsumsi.",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = DarkGreen
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -143,11 +175,19 @@ fun HomeScreen(
                             )
                         }
 
-                        items(state.filteredItems, key = { it.id }) { item ->
-                            FoodItemCard(
-                                item = item,
-                                modifier = Modifier.clickable { onFoodClick(item.id) }
-                            )
+                        if (state.filteredItems.isEmpty()) {
+                            item {
+                                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                                    Text("Tidak ada makanan ditemukan", color = TextSecondary)
+                                }
+                            }
+                        } else {
+                            items(state.filteredItems, key = { it.id }) { item ->
+                                FoodItemCard(
+                                    item = item,
+                                    modifier = Modifier.clickable { onFoodClick(item.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -188,12 +228,14 @@ fun SummarySection(state: HomeUiState) {
                 label = "Total",
                 count = state.totalItems.toString(),
                 color = TextMain,
+                icon = Icons.Outlined.Inventory,
                 modifier = Modifier.weight(1f)
             )
             SummaryItem(
                 label = "Aman",
                 count = state.safeCount.toString(),
                 color = PrimaryGreen,
+                icon = Icons.Outlined.CheckCircle,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -203,15 +245,17 @@ fun SummarySection(state: HomeUiState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryItem(
-                label = "Hampir Expired",
+                label = "Hampir",
                 count = state.nearlyExpiredCount.toString(),
                 color = WarningOrange,
+                icon = Icons.Outlined.Warning,
                 modifier = Modifier.weight(1f)
             )
             SummaryItem(
                 label = "Expired",
                 count = state.expiredCount.toString(),
                 color = ExpiredRed,
+                icon = Icons.Outlined.ErrorOutline,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -219,37 +263,87 @@ fun SummarySection(state: HomeUiState) {
 }
 
 @Composable
-fun SummaryItem(label: String, count: String, color: Color, modifier: Modifier = Modifier) {
+fun SummaryItem(label: String, count: String, color: Color, icon: ImageVector, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.Start
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = count, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = color)
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(color.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(text = count, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = color)
+                Text(text = label, style = MaterialTheme.typography.labelSmall, color = TextSecondary, maxLines = 1)
+            }
         }
     }
 }
 
 @Composable
-fun PriorityCard(item: com.example.foodsaver.domain.model.FoodItem, onClick: () -> Unit) {
+fun PriorityCard(item: FoodItem, onClick: () -> Unit) {
+    val status = item.getStatus()
+    val statusColor = when (status) {
+        FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> ExpiredRed
+        else -> WarningOrange
+    }
+    val bgColor = when (status) {
+        FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> ExpiredBg
+        else -> WarningBg
+    }
+
     Card(
         modifier = Modifier
-            .width(160.dp)
+            .width(180.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = if (item.getStatus() == com.example.foodsaver.domain.model.FoodStatus.EXPIRED) ExpiredRed.copy(alpha = 0.1f) else WarningOrange.copy(alpha = 0.1f))
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(com.example.foodsaver.presentation.components.getEmojiForCategory(item.category), fontSize = 24.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    modifier = Modifier.size(32.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.White.copy(alpha = 0.5f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(getEmojiForCategory(item.category), fontSize = 18.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    item.category, 
+                    style = MaterialTheme.typography.labelSmall, 
+                    color = statusColor.copy(alpha = 0.8f)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                item.name, 
+                fontWeight = FontWeight.Bold, 
+                maxLines = 1, 
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextMain
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(item.name, fontWeight = FontWeight.Bold, maxLines = 1, style = MaterialTheme.typography.bodyMedium)
-            Text(item.getStatusLabel(), style = MaterialTheme.typography.labelSmall, color = if (item.getStatus() == com.example.foodsaver.domain.model.FoodStatus.EXPIRED) ExpiredRed else WarningOrange)
+            Text(
+                item.getStatusLabel(), 
+                style = MaterialTheme.typography.labelSmall, 
+                color = statusColor,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
@@ -298,7 +392,7 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
             shape = RoundedCornerShape(12.dp),
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
         ) {
-            Text("Tambah Makanan Pertama")
+            Text("Tambah Makanan Pertama", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -314,13 +408,13 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = message, 
-            color = ExpiredRed,
+            color = TextMain,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = ExpiredRed)) {
-            Text("Coba Lagi")
+            Text("Coba Lagi", fontWeight = FontWeight.Bold)
         }
     }
 }

@@ -9,14 +9,16 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class ExpiryUiState(
-    val items: List<FoodItem> = emptyList(),
+    val items: List<FoodItem> = emptyList(), // These should be active items
     val isLoading: Boolean = false,
-    val selectedTab: Int = 0 // 0: Semua, 1: Hampir Expired, 2: Expired
+    val selectedTab: Int = 0, // 0: Semua, 1: Hampir Expired, 2: Expired
+    val nearlyExpiredCount: Int = 0,
+    val expiredCount: Int = 0
 ) {
     val filteredItems: List<FoodItem>
         get() = when (selectedTab) {
             1 -> items.filter { it.getStatus() == FoodStatus.NEAR_EXPIRY }
-            2 -> items.filter { it.getStatus() == FoodStatus.EXPIRED }
+            2 -> items.filter { it.getStatus() == FoodStatus.EXPIRED || it.getStatus() == FoodStatus.EXPIRED_TODAY }
             else -> items
         }.sortedBy { it.getDaysRemaining() }
 }
@@ -35,8 +37,14 @@ class ExpiryViewModel(
     private fun loadItems() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            getAllFoodUseCase().collect { items ->
-                _state.update { it.copy(items = items, isLoading = false) }
+            getAllFoodUseCase().collect { allItems ->
+                val activeItems = allItems.filter { !it.isConsumed && !it.isDiscarded }
+                _state.update { it.copy(
+                    items = activeItems, 
+                    nearlyExpiredCount = activeItems.count { it.getStatus() == FoodStatus.NEAR_EXPIRY },
+                    expiredCount = activeItems.count { it.getStatus() == FoodStatus.EXPIRED || it.getStatus() == FoodStatus.EXPIRED_TODAY },
+                    isLoading = false
+                ) }
             }
         }
     }

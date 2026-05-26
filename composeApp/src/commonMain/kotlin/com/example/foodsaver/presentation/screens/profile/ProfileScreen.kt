@@ -36,7 +36,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil Pengguna", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Profil Pengguna", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = TextMain) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
             )
         },
@@ -91,24 +91,30 @@ fun ProfileScreen(
                     .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = CardWhite),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text("Statistik Inventory", fontWeight = FontWeight.Bold, color = TextMain)
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        StatItem("Aktif", state.totalItems.toString(), PrimaryGreen)
+                        StatItem("Aktif", state.totalItems.toString(), TextMain)
                         StatItem("Aman", state.safeCount.toString(), PrimaryGreen)
                         StatItem("Hampir", state.nearlyExpiredCount.toString(), WarningOrange)
                         StatItem("Expired", state.expiredCount.toString(), ExpiredRed)
                     }
                     
-                    Divider(modifier = Modifier.padding(vertical = 16.dp), color = BackgroundLight)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = BackgroundLight)
                     
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Total Dikonsumsi", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
-                        Text("${state.consumedCount} Makanan", fontWeight = FontWeight.Bold, color = PrimaryGreen)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Total Dikonsumsi", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            Text("${state.consumedCount} Makanan", fontWeight = FontWeight.Bold, color = PrimaryGreen)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Total Dibuang", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            Text("${state.discardedCount} Makanan", fontWeight = FontWeight.Bold, color = ExpiredRed)
+                        }
                     }
                 }
             }

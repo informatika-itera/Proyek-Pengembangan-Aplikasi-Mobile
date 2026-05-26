@@ -7,13 +7,14 @@ import com.example.foodsaver.data.local.FoodSaverDatabase
 
 /**
  * Implementasi Android untuk DatabaseDriverFactory.
+ * Nama database diubah untuk memastikan skema terbaru (termasuk isDiscarded) diterapkan.
  */
 actual class DatabaseDriverFactory(private val context: Context) {
     actual fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(
             schema = FoodSaverDatabase.Schema,
             context = context,
-            name = "foodsaver.db"
+            name = "foodsaver_v2.db"
         )
     }
 }

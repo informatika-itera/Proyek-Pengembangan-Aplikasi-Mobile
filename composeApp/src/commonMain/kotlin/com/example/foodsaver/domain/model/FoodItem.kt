@@ -19,14 +19,16 @@ data class FoodItem(
     val category: String,
     val storageLocation: String = "Kulkas",
     val notes: String? = null,
-    val isConsumed: Boolean = false
+    val isConsumed: Boolean = false,
+    val isDiscarded: Boolean = false
 ) {
     fun getStatus(): FoodStatus {
         val daysRemaining = getDaysRemaining()
 
         return when {
             daysRemaining < 0 -> FoodStatus.EXPIRED
-            daysRemaining <= 3 -> FoodStatus.NEAR_EXPIRY
+            daysRemaining == 0 -> FoodStatus.EXPIRED_TODAY
+            daysRemaining in 1..3 -> FoodStatus.NEAR_EXPIRY
             else -> FoodStatus.SAFE
         }
     }
@@ -42,7 +44,7 @@ data class FoodItem(
         return when {
             daysRemaining < 0 -> "Expired ${abs(daysRemaining)} hari lalu"
             daysRemaining == 0 -> "Expired hari ini"
-            daysRemaining == 1 -> "Akan expired dalam 1 hari"
+            daysRemaining == 1 -> "Akan expired besok"
             daysRemaining in 2..3 -> "Akan expired dalam $daysRemaining hari"
             else -> "Aman, $daysRemaining hari lagi"
         }
@@ -56,5 +58,5 @@ data class FoodItem(
 }
 
 enum class FoodStatus {
-    SAFE, NEAR_EXPIRY, EXPIRED
+    SAFE, NEAR_EXPIRY, EXPIRED, EXPIRED_TODAY
 }

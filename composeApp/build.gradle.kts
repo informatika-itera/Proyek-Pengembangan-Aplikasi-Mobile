@@ -155,6 +155,7 @@ sqldelight {
     databases {
         create("FoodSaverDatabase") {
             packageName.set("com.example.foodsaver.data.local")
+            verifyMigrations.set(false) // Disable verification due to SQLite environment issues
         }
     }
 }

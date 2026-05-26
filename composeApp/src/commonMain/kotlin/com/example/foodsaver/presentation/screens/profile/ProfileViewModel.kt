@@ -14,6 +14,7 @@ data class ProfileUiState(
     val nearlyExpiredCount: Int = 0,
     val expiredCount: Int = 0,
     val consumedCount: Int = 0,
+    val discardedCount: Int = 0,
     val isLoading: Boolean = false
 )
 
@@ -32,13 +33,16 @@ class ProfileViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             getAllFoodUseCase().collect { items ->
-                val activeItems = items.filter { !it.isConsumed }
+                // Active items: Not consumed and not discarded
+                val activeItems = items.filter { !it.isConsumed && !it.isDiscarded }
+                
                 _state.update { it.copy(
                     totalItems = activeItems.size,
                     safeCount = activeItems.count { it.getStatus() == FoodStatus.SAFE },
                     nearlyExpiredCount = activeItems.count { it.getStatus() == FoodStatus.NEAR_EXPIRY },
-                    expiredCount = activeItems.count { it.getStatus() == FoodStatus.EXPIRED },
+                    expiredCount = activeItems.count { it.getStatus() == FoodStatus.EXPIRED || it.getStatus() == FoodStatus.EXPIRED_TODAY },
                     consumedCount = items.count { it.isConsumed },
+                    discardedCount = items.count { it.isDiscarded },
                     isLoading = false
                 ) }
             }

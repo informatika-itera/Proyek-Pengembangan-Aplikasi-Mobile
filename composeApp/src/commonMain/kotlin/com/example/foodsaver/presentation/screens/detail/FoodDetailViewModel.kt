@@ -57,6 +57,19 @@ class FoodDetailViewModel(
         }
     }
 
+    fun toggleDiscarded() {
+        val currentItem = _state.value.foodItem ?: return
+        viewModelScope.launch {
+            try {
+                val updatedItem = currentItem.copy(isDiscarded = !currentItem.isDiscarded)
+                saveFoodUseCase(updatedItem)
+                _state.update { it.copy(foodItem = updatedItem) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
     fun deleteItem() {
         val id = _state.value.foodItem?.id ?: return
         viewModelScope.launch {

@@ -15,4 +15,8 @@ interface NoteRepository {
     suspend fun deleteBook(id: Long)
     suspend fun togglePinNote(id: Long)
     suspend fun deleteBooks(ids: List<Long>)
+    
+    // Offline Support for AI
+    fun getCachedRecommendation(bookId: Long): Flow<String?>
+    suspend fun saveRecommendation(bookId: Long, recommendation: String)
 }

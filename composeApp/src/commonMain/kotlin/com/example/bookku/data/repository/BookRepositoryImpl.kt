@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.example.bookku.data.local.BookDatabase
+import com.example.bookku.data.local.AIRecommendation
 import com.example.bookku.data.local.entity.toDomain
 import com.example.bookku.data.local.entity.toDomainList
 import com.example.bookku.data.local.entity.toEntityValues
@@ -95,5 +96,20 @@ class NoteRepositoryImpl(private val database: BookDatabase) : NoteRepository {
 
     override suspend fun deleteBooks(ids: List<Long>) = withContext(Dispatchers.Default) {
         queries.deleteNotesByIds(ids)
+    }
+
+    override fun getCachedRecommendation(bookId: Long): Flow<String?> {
+        return queries.getRecommendationForBook(bookId)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.Default)
+            .map { it?.recommendation_text }
+    }
+
+    override suspend fun saveRecommendation(bookId: Long, recommendation: String) = withContext(Dispatchers.Default) {
+        queries.insertRecommendation(
+            book_id = bookId,
+            recommendation_text = recommendation,
+            created_at = Clock.System.now().toEpochMilliseconds()
+        )
     }
 }

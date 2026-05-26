@@ -14,6 +14,7 @@ import com.example.bookku.domain.repository.NoteRepository
 import com.example.bookku.domain.usecase.deleteBookUseCase
 import com.example.bookku.domain.usecase.GenerateIdeasUseCase
 import com.example.bookku.domain.usecase.GetAllNotesUseCase
+import com.example.bookku.domain.usecase.GetRecommendationUseCase
 import com.example.bookku.domain.usecase.ImproveWritingUseCase
 import com.example.bookku.domain.usecase.SaveNoteUseCase
 import com.example.bookku.domain.usecase.SearchNotesUseCase
@@ -70,6 +71,7 @@ val useCaseModule = module {
     singleOf(::SummarizeNoteUseCase)
     singleOf(::ImproveWritingUseCase)
     singleOf(::GenerateIdeasUseCase)
+    singleOf(::GetRecommendationUseCase)
 }
 
 // ==================== VIEWMODEL MODULE ====================

@@ -10,29 +10,20 @@ class GetRecommendationUseCase(
     private val aiRepository: AIRepository,
     private val noteRepository: NoteRepository
 ) {
-    /**
-     * Cache-First Strategy:
-     * 1. Ambil data dari cache lokal (SQLDelight)
-     * 2. Jika ada, tampilkan segera
-     * 3. Secara paralel, coba fetch data baru dari Remote (Gemini)
-     * 4. Jika fetch remote berhasil, update cache dan tampilkan data baru
-     */
     operator fun invoke(bookId: Long, content: String): Flow<Result<String>> = flow {
-        // 1. Cek Cache
+        // 1. Ambil dari cache
         val cached = noteRepository.getCachedRecommendation(bookId).firstOrNull()
         if (cached != null) {
             emit(Result.success(cached))
         }
 
-        // 2. Fetch Remote (Gemini)
-        val result = aiRepository.chat("Berikan rekomendasi buku atau saran pengembangan untuk tulisan berikut: $content")
+        // 2. Fetch dari Remote
+        val remoteResult = aiRepository.chat("Berikan rekomendasi untuk konten ini: $content")
         
-        result.onSuccess { newRecommendation ->
-            // 3. Update Cache
+        remoteResult.onSuccess { newRecommendation ->
             noteRepository.saveRecommendation(bookId, newRecommendation)
             emit(Result.success(newRecommendation))
         }.onFailure { error ->
-            // Jika gagal remote dan tidak ada cache, baru return error
             if (cached == null) {
                 emit(Result.failure(error))
             }

@@ -2,6 +2,7 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bookku.data.local.datastore.UserPreferences
 import com.example.bookku.domain.model.Book
 import com.example.bookku.domain.model.BookGenre
 import com.example.bookku.domain.repository.NoteRepository
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,45 +28,68 @@ class HomeViewModel(
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val searchNotesUseCase: SearchNotesUseCase,
     private val deleteBookUseCase: deleteBookUseCase,
-    private val repository: NoteRepository
+    private val repository: NoteRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
     
+    val isDarkMode = userPreferences.isDarkMode.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+    
+    fun toggleDarkMode() {
+        viewModelScope.launch {
+            val current = isDarkMode.value
+            userPreferences.setDarkMode(!current)
+        }
+    }
+    
     private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+    
     private val _selectedCategory = MutableStateFlow<BookGenre?>(null)
+    val selectedCategory: StateFlow<BookGenre?> = _selectedCategory
+    
     private val _sortBy = MutableStateFlow(NoteSortBy.UPDATED_DESC)
-    private val _isLoading = MutableStateFlow(false)
-    
-    private val debouncedSearchQuery = _searchQuery.debounce(300)
-    
     val sortBy: StateFlow<NoteSortBy> = _sortBy
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
     
     val uiState: StateFlow<HomeUiState> = combine(
-        debouncedSearchQuery,
+        _searchQuery,
         _selectedCategory,
         _sortBy
     ) { query, category, sortBy ->
         Triple(query, category, sortBy)
+    }.debounce { (query, _, _) ->
+        if (query.isEmpty()) 0L else 300L
     }.flatMapLatest { (query, category, sortBy) ->
-        if (query.isBlank() && category == null) {
+        _isLoading.value = true
+        val flow = if (query.isBlank() && category == null) {
             getAllNotesUseCase(sortBy)
         } else {
             searchNotesUseCase(query, category)
         }
-    }.combine(_isLoading) { books, isLoading ->
-        when {
-            isLoading -> HomeUiState.Loading
-            books.isEmpty() -> HomeUiState.Empty(
-                query = _searchQuery.value,
-                category = _selectedCategory.value
-            )
-            else -> HomeUiState.Success(
-                books = books,
-                query = _searchQuery.value,
-                category = _selectedCategory.value,
-                sortBy = _sortBy.value
-            )
+        flow.map { books ->
+            _isLoading.value = false
+            if (books.isEmpty()) {
+                HomeUiState.Empty(
+                    query = query,
+                    category = category
+                )
+            } else {
+                HomeUiState.Success(
+                    books = books,
+                    query = query,
+                    category = category,
+                    sortBy = sortBy
+                )
+            }
         }
     }.catch { e ->
+        _isLoading.value = false
         emit(HomeUiState.Error(e.message ?: "Terjadi kesalahan"))
     }.stateIn(
         scope = viewModelScope,

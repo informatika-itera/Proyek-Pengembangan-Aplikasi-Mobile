@@ -154,6 +154,7 @@ sqldelight {
     databases {
         create("BookDatabase") {
             packageName.set("com.example.bookku.data.local")
+            srcDirs("src/commonMain/sqldelight")
         }
     }
 }

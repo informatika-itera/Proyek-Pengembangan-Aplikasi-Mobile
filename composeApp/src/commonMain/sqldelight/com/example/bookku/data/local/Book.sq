@@ -12,6 +12,26 @@ CREATE TABLE BookEntity (
     updated_at INTEGER NOT NULL
 );
 
+-- Table for caching AI Recommendations
+CREATE TABLE AIRecommendation (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    book_id INTEGER NOT NULL,
+    recommendation_text TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (book_id) REFERENCES BookEntity(id) ON DELETE CASCADE
+);
+
+-- AI Recommendation Queries
+getRecommendationForBook:
+SELECT * FROM AIRecommendation WHERE book_id = ?;
+
+insertRecommendation:
+INSERT OR REPLACE INTO AIRecommendation (book_id, recommendation_text, created_at)
+VALUES (?, ?, ?);
+
+deleteRecommendation:
+DELETE FROM AIRecommendation WHERE book_id = ?;
+
 -- Get all books ordered by updated_at descending
 getAllNotes:
 SELECT * FROM BookEntity

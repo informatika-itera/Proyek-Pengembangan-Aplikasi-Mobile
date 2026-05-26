@@ -1,6 +1,7 @@
 package com.example.travelplanner.presentation.screens.result
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -11,6 +12,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,80 +23,43 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.travelplanner.domain.model.Trip
+import com.example.travelplanner.domain.model.ItineraryItem
 import com.example.travelplanner.presentation.screens.planner.PantaiAnimatedScene
-
-// ══════════════════════════════════════════════════════════════════════
-//  DATA MODEL
-// ══════════════════════════════════════════════════════════════════════
-
-data class ItineraryDay(val dayLabel: String, val date: String, val items: List<ItineraryItem>)
-data class ItineraryItem(
-    val time: String,
-    val activity: String,
-    val location: String,
-    val category: String,
-    val estimatedCost: String = ""
-)
-
-private val categoryColor = mapOf(
-    "Kuliner"     to Color(0xFFE63946),
-    "Wisata"      to Color(0xFF0096C7),
-    "Akomodasi"   to Color(0xFF3D7A6F),
-    "Transportasi" to Color(0xFFB8893A),
-    "Hiburan"     to Color(0xFF6A0572)
-)
-
-// ══════════════════════════════════════════════════════════════════════
-//  SCREEN
-// ══════════════════════════════════════════════════════════════════════
+import com.example.travelplanner.presentation.screens.expenses.formatRupiah
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripResultScreen(
     tripId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToExpenseTracker: () -> Unit
+    onNavigateToExpenseTracker: () -> Unit,
+    viewModel: TripResultViewModel = koinViewModel()
 ) {
-    val destination = "Bali"; val country = "Indonesia"
-    val vibe = "Santai & Pantai"; val dateRange = "10–14 Jul 2026"
+    val uiState by viewModel.uiState.collectAsState()
 
-    val itineraryDays = listOf(
-        ItineraryDay("Hari 1", "Selasa, 10 Juli", listOf(
-            ItineraryItem("09.00", "Tiba di Ngurah Rai, transfer ke hotel", "Bandara Ngurah Rai", "Transportasi", "Rp 150k"),
-            ItineraryItem("12.00", "Makan siang nasi campur Bali", "Warung Babi Guling Ibu Oka", "Kuliner", "Rp 80k"),
-            ItineraryItem("15.00", "Check-in & istirahat", "Villa Seminyak", "Akomodasi"),
-            ItineraryItem("18.00", "Sunset di Tanah Lot", "Pura Tanah Lot", "Wisata", "Rp 60k")
-        )),
-        ItineraryDay("Hari 2", "Rabu, 11 Juli", listOf(
-            ItineraryItem("08.00", "Sarapan di tepi sawah", "Ubud Rice Terrace", "Kuliner", "Rp 95k"),
-            ItineraryItem("10.00", "Mengunjungi Pura Tirta Empul", "Tampaksiring, Gianyar", "Wisata", "Rp 50k"),
-            ItineraryItem("14.00", "Belanja di Pasar Seni Ubud", "Jl. Raya Ubud", "Hiburan"),
-            ItineraryItem("20.00", "Dinner & Kecak Dance", "GWK Cultural Park", "Hiburan", "Rp 120k")
-        ))
-    )
+    // Load dynamic data on enter
+    LaunchedEffect(tripId) {
+        viewModel.loadTripDetails(tripId)
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Itinerary",
+                title = { Text("Itinerary Perjalanan",
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 0.3.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Share, contentDescription = "Share",
-                            tint = MaterialTheme.colorScheme.primary)
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.BookmarkBorder, contentDescription = "Save",
-                            tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -122,31 +89,61 @@ fun TripResultScreen(
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = 100.dp)
-        ) {
-            // ── HERO CARD ────────────────────────────────────────────
-            item {
-                HeroTripCard(destination, country, vibe, dateRange,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp))
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-
-            // ── STATS ROW ────────────────────────────────────────────
-            item {
-                StatsRow(modifier = Modifier.padding(horizontal = 24.dp))
+        } else if (uiState.trip == null) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text(
+                    text = uiState.errorMessage ?: "Gagal memuat rencana perjalanan.",
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center
+                )
             }
-
-            // ── HARI PER HARI ────────────────────────────────────────
-            itineraryDays.forEach { day ->
+        } else {
+            val trip = uiState.trip!!
+            
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentPadding = PaddingValues(bottom = 120.dp)
+            ) {
+                // ── HERO CARD ────────────────────────────────────────────
                 item {
-                    DayHeader(day.dayLabel, day.date,
-                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp))
+                    HeroTripCard(
+                        destination = trip.destination,
+                        vibe = trip.vibe,
+                        dateRange = "${trip.startDate} (${trip.duration})",
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                    )
                 }
-                itemsIndexed(day.items) { idx, item ->
+
+                // ── STATS ROW ────────────────────────────────────────────
+                item {
+                    StatsRow(
+                        duration = trip.duration,
+                        activityCount = trip.itineraryItems.size,
+                        totalExpenses = uiState.totalExpenses,
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                }
+
+                // ── TIMELINE TITLE ───────────────────────────────────────
+                item {
+                    Text(
+                        text = "Rencana Aktivitas Harian",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                // ── TIMELINE LISTING ─────────────────────────────────────
+                itemsIndexed(trip.itineraryItems) { idx, item ->
                     TimelineItem(
                         item = item,
-                        isLast = idx == day.items.lastIndex,
+                        isLast = idx == trip.itineraryItems.lastIndex,
                         modifier = Modifier.padding(horizontal = 24.dp)
                     )
                 }
@@ -156,13 +153,12 @@ fun TripResultScreen(
 }
 
 // ══════════════════════════════════════════════════════════════════════
-//  HERO CARD — animated ocean backdrop
+//  SUB-COMPONENTS
 // ══════════════════════════════════════════════════════════════════════
 
 @Composable
 fun HeroTripCard(
     destination: String,
-    country: String,
     vibe: String,
     dateRange: String,
     modifier: Modifier = Modifier
@@ -195,7 +191,7 @@ fun HeroTripCard(
                     letterSpacing = 1.sp)
             }
             Spacer(modifier = Modifier.height(6.dp))
-            Text("$destination, $country",
+            Text(destination,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White)
@@ -211,117 +207,170 @@ fun HeroTripCard(
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-//  STATS ROW
-// ══════════════════════════════════════════════════════════════════════
-
 @Composable
-fun StatsRow(modifier: Modifier = Modifier) {
+fun StatsRow(
+    duration: String,
+    activityCount: Int,
+    totalExpenses: Double,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        listOf(
-            Triple(Icons.Default.NightsStay, "4", "Malam"),
-            Triple(Icons.Default.Place, "8", "Destinasi"),
-            Triple(Icons.Default.Restaurant, "6", "Kuliner")
-        ).forEach { (icon, val_, label) ->
-            Surface(
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
+        // Durasi Stat
+        Surface(
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(icon, contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.height(4.dp))
-                    Text(val_, style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface)
-                    Text(label, style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                Icon(Icons.Default.NightsStay, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.height(4.dp))
+                Text(duration, style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center)
+                Text("Waktu", style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-    }
-}
 
-// ══════════════════════════════════════════════════════════════════════
-//  DAY HEADER
-// ══════════════════════════════════════════════════════════════════════
-
-@Composable
-fun DayHeader(dayLabel: String, date: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        // Aktivitas Stat
+        Surface(
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primary
+            Column(
+                modifier = Modifier.padding(vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(dayLabel,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                Icon(Icons.Default.Place, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.height(4.dp))
+                Text("$activityCount", style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("Destinasi", style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        // Biaya Stat
+        Surface(
+            modifier = Modifier.weight(1.2f), // Extra space for currency string
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(Icons.Default.Wallet, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = formatRupiah(totalExpenses),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    letterSpacing = 0.3.sp)
+                    color = MaterialTheme.colorScheme.secondary,
+                    textAlign = TextAlign.Center
+                )
+                Text("Biaya", style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(date,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        HorizontalDivider(
-            modifier = Modifier.weight(1f).padding(start = 12.dp),
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)
-        )
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-//  TIMELINE ITEM
-// ══════════════════════════════════════════════════════════════════════
-
 @Composable
-fun TimelineItem(item: ItineraryItem, isLast: Boolean, modifier: Modifier = Modifier) {
-    val dotColor = categoryColor[item.category] ?: MaterialTheme.colorScheme.primary
+fun TimelineItem(
+    item: ItineraryItem,
+    isLast: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    
+    // Inject hyperlink on the placeName substring within the activity description
+    val annotatedText = buildAnnotatedString {
+        val activityText = item.activity
+        val place = item.placeName
+        val url = item.mapsUrl
+        
+        if (place.isNotBlank() && url.isNotBlank()) {
+            val startIndex = activityText.indexOf(place, ignoreCase = true)
+            if (startIndex != -1) {
+                val endIndex = startIndex + place.length
+                
+                // Prefix text
+                append(activityText.substring(0, startIndex))
+                
+                // Hyperlink text (styled and annotated)
+                pushStringAnnotation(tag = "URL", annotation = url)
+                pushStyle(
+                    SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                append(activityText.substring(startIndex, endIndex))
+                pop()
+                pop()
+                
+                // Suffix text
+                append(activityText.substring(endIndex))
+            } else {
+                append(activityText)
+            }
+        } else {
+            append(activityText)
+        }
+    }
 
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 3.dp)
     ) {
-        // Timeline left column
+        // Left Column (Time & Emoji Ring Connector)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(52.dp).padding(top = 4.dp)
+            modifier = Modifier.width(56.dp).padding(top = 4.dp)
         ) {
-            // Time label
-            Text(item.time,
+            Text(
+                text = item.time,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center)
-            Spacer(Modifier.height(4.dp))
-            // Dot
-            Box(
-                modifier = Modifier.size(10.dp).clip(CircleShape)
-                    .background(dotColor)
+                textAlign = TextAlign.Center
             )
-            // Connector line
+            Spacer(Modifier.height(6.dp))
+            
+            // Emoji Bubble
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(item.icon, fontSize = 14.sp)
+            }
+            
+            // Connecting line
             if (!isLast) {
                 Box(
-                    modifier = Modifier.width(1.5.dp).height(40.dp)
+                    modifier = Modifier
+                        .width(1.5.dp)
+                        .height(48.dp)
                         .background(
                             Brush.verticalGradient(
-                                listOf(dotColor.copy(alpha = 0.5f), Color.Transparent)
+                                listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                    Color.Transparent
+                                )
                             )
                         )
                 )
@@ -330,55 +379,96 @@ fun TimelineItem(item: ItineraryItem, isLast: Boolean, modifier: Modifier = Modi
 
         Spacer(Modifier.width(12.dp))
 
-        // Card content
+        // Right Column (Itinerary Content Card)
         Card(
-            modifier = Modifier.weight(1f)
-                .padding(bottom = if (isLast) 0.dp else 6.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = if (isLast) 0.dp else 10.dp),
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(item.activity,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface)
-                    Spacer(Modifier.height(3.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(3.dp)
-                    ) {
-                        Icon(Icons.Default.Place, contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = Modifier.size(11.dp))
-                        Text(item.location,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    ClickableText(
+                        text = annotatedText,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = 20.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        onClick = { offset ->
+                            annotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
+                                .firstOrNull()?.let { annotation ->
+                                    uriHandler.openUri(annotation.item)
+                                }
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    if (item.priceRange.isNotBlank()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(
+                                0.5.dp, 
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocalOffer,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(10.dp)
+                                )
+                                Text(
+                                    text = item.priceRange,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp
+                                )
+                            }
+                        }
                     }
                 }
 
-                Column(horizontalAlignment = Alignment.End) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = dotColor.copy(alpha = 0.12f)
+                // Clickable Google Maps hyperlink
+                if (item.mapsUrl.isNotBlank()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { uriHandler.openUri(item.mapsUrl) }
+                            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(item.category,
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = dotColor,
-                            fontWeight = FontWeight.SemiBold)
-                    }
-                    if (item.estimatedCost.isNotBlank()) {
-                        Spacer(Modifier.height(4.dp))
-                        Text(item.estimatedCost,
+                        Icon(
+                            imageVector = Icons.Default.Map,
+                            contentDescription = "Buka Peta",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = "Buka di Google Maps ↗",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.SemiBold)
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }

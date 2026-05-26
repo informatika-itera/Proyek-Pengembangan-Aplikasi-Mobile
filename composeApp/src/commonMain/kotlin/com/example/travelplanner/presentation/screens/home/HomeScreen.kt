@@ -1,6 +1,6 @@
 package com.example.travelplanner.presentation.screens.home
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,68 +25,37 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.example.travelplanner.domain.model.Trip
 import com.example.travelplanner.presentation.screens.planner.PantaiAnimatedScene
+import org.koin.compose.viewmodel.koinViewModel
 
-// ══════════════════════════════════════════════════════════════════════
-//  DATA MODEL
-// ══════════════════════════════════════════════════════════════════════
-
+// Elegant visual card model mapped dynamically from DB
 data class DummyTrip(
     val id: String,
     val destination: String,
     val country: String,
     val dateRange: String,
     val vibe: String,
-    /** URL foto real destinasi dari Unsplash (free, no auth) */
     val photoUrl: String,
-    /** Fallback gradient saat foto loading */
     val gradientStart: Color,
     val gradientEnd: Color
 )
-
-private val sampleTrips = listOf(
-    DummyTrip(
-        id = "1",
-        destination = "Bali",
-        country = "Indonesia",
-        dateRange = "10–14 Jul 2026",
-        vibe = "Santai & Pantai",
-        photoUrl = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80",
-        gradientStart = Color(0xFF0096C7),
-        gradientEnd = Color(0xFF48CAE4)
-    ),
-    DummyTrip(
-        id = "2",
-        destination = "Yogyakarta",
-        country = "Indonesia",
-        dateRange = "20–23 Agt 2026",
-        vibe = "Sejarah & Budaya",
-        photoUrl = "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?w=600&q=80",
-        gradientStart = Color(0xFFE07A5F),
-        gradientEnd = Color(0xFFF2CC8F)
-    ),
-    DummyTrip(
-        id = "3",
-        destination = "Raja Ampat",
-        country = "Indonesia",
-        dateRange = "5–12 Sep 2026",
-        vibe = "Alam & Petualangan",
-        photoUrl = "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=600&q=80",
-        gradientStart = Color(0xFF2D6A4F),
-        gradientEnd = Color(0xFF52B788)
-    )
-)
-
-// ══════════════════════════════════════════════════════════════════════
-//  SCREEN
-// ══════════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToGenerateTrip: () -> Unit,
-    onNavigateToTripDetail: (String) -> Unit
+    onNavigateToTripDetail: (String) -> Unit,
+    onNavigateToMyTrips: () -> Unit = {},
+    viewModel: HomeViewModel = koinViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Trigger db refresh whenever home screen comes back into focus
+    LaunchedEffect(Unit) {
+        viewModel.loadRecentTrips()
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
@@ -130,34 +99,77 @@ fun HomeScreen(
                 ) {
                     Column {
                         Text(
-                            "Perjalanan Tersimpan",
+                            "Perjalanan Terbaru",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            "${sampleTrips.size} itinerary aktif",
+                            "${uiState.recentTrips.size} rencana liburan aktif",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    TextButton(onClick = {}) {
-                        Text(
-                            "Lihat Semua",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                    if (uiState.recentTrips.isNotEmpty()) {
+                        TextButton(onClick = onNavigateToMyTrips) {
+                            Text(
+                                "Lihat Semua",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
 
-            if (sampleTrips.isEmpty()) {
+            if (uiState.isLoading) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            } else if (uiState.recentTrips.isEmpty()) {
                 item { EmptyState() }
             } else {
-                items(sampleTrips) { trip ->
+                // Map only the 3 most recent trips in dashboard
+                items(uiState.recentTrips.take(3)) { trip ->
+                    // Map real Trip object to high fidelity DummyTrip layout dynamically
+                    val seed = trip.destination.hashCode()
+                    val visualTrip = remember(trip) {
+                        val startCol = when (seed % 3) {
+                            0 -> Color(0xFF0096C7)
+                            1 -> Color(0xFFE07A5F)
+                            else -> Color(0xFF2D6A4F)
+                        }
+                        val endCol = when (seed % 3) {
+                            0 -> Color(0xFF48CAE4)
+                            1 -> Color(0xFFF2CC8F)
+                            else -> Color(0xFF52B788)
+                        }
+                        DummyTrip(
+                            id = trip.id,
+                            destination = trip.destination,
+                            country = "Indonesia",
+                            dateRange = "${trip.startDate} (${trip.duration})",
+                            vibe = trip.vibe,
+                            photoUrl = when (seed % 3) {
+                                0 -> "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80"
+                                1 -> "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?w=600&q=80"
+                                else -> "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=600&q=80"
+                            },
+                            gradientStart = startCol,
+                            gradientEnd = endCol
+                        )
+                    }
+
                     TripCard(
-                        trip = trip,
+                        trip = visualTrip,
                         onClick = { onNavigateToTripDetail(trip.id) },
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)
                     )
@@ -172,7 +184,7 @@ fun HomeScreen(
 }
 
 // ══════════════════════════════════════════════════════════════════════
-//  HERO — animated ocean backdrop (tetap animasi untuk hero)
+//  SUB-COMPONENTS
 // ══════════════════════════════════════════════════════════════════════
 
 @Composable
@@ -234,10 +246,6 @@ fun HeroSection() {
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-//  TRIP CARD — foto asli destinasi via Coil AsyncImage
-// ══════════════════════════════════════════════════════════════════════
-
 @Composable
 fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalPlatformContext.current
@@ -250,7 +258,6 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
     ) {
-        // ── Fallback gradient (tampil saat foto masih loading) ────────
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -261,7 +268,6 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
                 )
         )
 
-        // ── Foto real dari Unsplash ───────────────────────────────────
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(trip.photoUrl)
@@ -272,7 +278,6 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
             modifier = Modifier.fillMaxSize()
         )
 
-        // ── Gradient overlay gelap supaya teks terbaca ────────────────
         Box(
             Modifier
                 .fillMaxSize()
@@ -286,7 +291,6 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
                 )
         )
 
-        // ── Konten teks kiri ──────────────────────────────────────────
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
@@ -337,7 +341,6 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
             }
         }
 
-        // ── Panah kanan ───────────────────────────────────────────────
         Icon(
             Icons.Default.ChevronRight,
             contentDescription = null,
@@ -349,10 +352,6 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
         )
     }
 }
-
-// ══════════════════════════════════════════════════════════════════════
-//  EMPTY STATE
-// ══════════════════════════════════════════════════════════════════════
 
 @Composable
 fun EmptyState() {
@@ -383,10 +382,6 @@ fun EmptyState() {
         )
     }
 }
-
-// ══════════════════════════════════════════════════════════════════════
-//  INSIGHT BANNER
-// ══════════════════════════════════════════════════════════════════════
 
 @Composable
 fun InsightBanner(modifier: Modifier = Modifier) {

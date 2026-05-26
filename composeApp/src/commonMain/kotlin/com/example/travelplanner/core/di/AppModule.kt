@@ -1,6 +1,7 @@
 package com.example.travelplanner.core.di
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
@@ -20,6 +21,11 @@ val networkModule = module {
                     ignoreUnknownKeys = true
                 })
             }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 60_000
+                connectTimeoutMillis = 30_000
+                socketTimeoutMillis = 60_000
+            }
             install(Logging) {
                 level = LogLevel.ALL
             }
@@ -27,20 +33,39 @@ val networkModule = module {
     }
 }
 
+val databaseModule = module {
+    single {
+        val driverFactory: com.example.travelplanner.core.util.DatabaseDriverFactory = get()
+        com.example.travelplanner.data.local.TravelPlannerDatabase(driverFactory.createDriver())
+    }
+}
+
 val repositoryModule = module {
-    // Suntikan repositori dasar
+    // Suntikan repositori dasar AI
     single<com.example.travelplanner.domain.repository.AIRepository> {
         com.example.travelplanner.data.repository.AIRepositoryImpl(get())
     }
 
-    // Suntikan UseCases baru yang baru saja kita rakit, Sir
+    // Suntikan repositori database lokal
+    single<com.example.travelplanner.domain.repository.TripRepository> {
+        com.example.travelplanner.data.repository.TripRepositoryImpl(get())
+    }
+
+    single<com.example.travelplanner.domain.repository.ExpenseRepository> {
+        com.example.travelplanner.data.repository.ExpenseRepositoryImpl(get())
+    }
+
+    // Suntikan UseCases
     factory { com.example.travelplanner.domain.usecase.GenerateItineraryUseCase(get()) }
     factory { com.example.travelplanner.domain.usecase.ExtractExpenseUseCase(get()) }
 }
 
 val viewModelModule = module {
-    // Mendaftarkan HomeViewModel menggunakan deklarasi factory khas Koin
-    factory { com.example.travelplanner.presentation.screens.home.HomeViewModel() }
+    factory { com.example.travelplanner.presentation.screens.home.HomeViewModel(get()) }
+    factory { com.example.travelplanner.presentation.screens.planner.GenerateTripViewModel(get(), get()) }
+    factory { com.example.travelplanner.presentation.screens.result.TripResultViewModel(get(), get()) }
+    factory { com.example.travelplanner.presentation.screens.expenses.ExpenseViewModel(get(), get(), get()) }
+    factory { com.example.travelplanner.presentation.screens.trips.MyTripsViewModel(get()) }
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
@@ -48,6 +73,7 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
         appDeclaration()
         modules(
             networkModule,
+            databaseModule,
             repositoryModule,
             viewModelModule
         )

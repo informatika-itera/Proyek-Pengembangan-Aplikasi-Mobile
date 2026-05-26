@@ -11,18 +11,24 @@ class AIRepositoryImpl(
     private val client: HttpClient
 ) : AIRepository {
 
-    // Sir, pastikan Anda menaruh API Key Anda di local.properties atau proxy backend Anda nanti.
-    private val apiKey = "YOUR_GEMINI_API_KEY"
-    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+    private val apiKey = com.example.travelplanner.core.network.ApiConfig.geminiApiKey
+    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey"
 
     override suspend fun generateItinerary(destination: String, duration: String, vibe: String): String {
         val systemPrompt = """
-            Kamu adalah asisten perencana perjalanan AI yang cerdas. Tugasmu adalah membuat itinerary perjalanan harian.
-            Kota Tujuan: $destination
+            Kamu adalah asisten perencana perjalanan AI yang cerdas. Tugasmu adalah membuat itinerary perjalanan harian di $destination.
             Durasi: $duration
             Vibe Liburan: $vibe
             
-            Berikan output dalam bentuk format JSON raw yang rapi berisi array objek dengan properti: 'time', 'activity', dan 'icon' (berupa emoji yang relevan). Jangan berikan teks markdown seperti ```json atau teks pembuka lainnya! Hanya return string JSON murni.
+            Berikan output dalam bentuk format JSON raw yang rapi berisi array objek dengan properti berikut:
+            - 'time': Waktu aktivitas (contoh: '09.00', '12.00')
+            - 'activity': Deskripsi lengkap aktivitas perjalanan atau kuliner harian (contoh: 'Makan malam santai dengan kulineran lokal khas di Merdeka Walk Medan')
+            - 'icon': Emoji yang relevan dengan aktivitas tersebut (contoh: '🍽️', '🌳')
+            - 'priceRange': Prediksi kisaran harga/biaya masuk/makan per orang dalam Rupiah (contoh: 'Rp 20rb - 50rb', 'Rp 100rb - 150rb', atau 'Gratis')
+            - 'mapsUrl': Tautan pencarian Google Maps untuk nama tempat spesifik tersebut (contoh: 'https://www.google.com/maps/search/?api=1&query=Merdeka+Walk+Medan')
+            - 'placeName': Nama tempat spesifik yang dikunjungi yang terdapat di dalam deskripsi aktivitas (contoh: 'Merdeka Walk Medan'). Suku kata ini HARUS tertulis persis sama dengan kata yang ada di dalam 'activity' agar aplikasi bisa mendeteksi dan menjadikannya hyperlink.
+            
+            Jangan berikan teks markdown seperti ```json atau teks pembuka lainnya! Hanya return string JSON murni berbentuk array objek.
         """.trimIndent()
 
         return try {

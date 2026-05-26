@@ -1,0 +1,48 @@
+CREATE TABLE tripEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT,
+    city TEXT NOT NULL,
+    vibes TEXT NOT NULL,
+    duration TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    itinerary_json TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE expenseEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    trip_id TEXT NOT NULL,
+    nama_item TEXT NOT NULL,
+    nominal REAL NOT NULL,
+    kategori TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (trip_id) REFERENCES tripEntity(id) ON DELETE CASCADE
+);
+
+-- Queries for Trips
+insertTrip:
+INSERT OR REPLACE INTO tripEntity(id, user_id, city, vibes, duration, start_date, itinerary_json, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+getAllTrips:
+SELECT * FROM tripEntity ORDER BY created_at DESC;
+
+getTripById:
+SELECT * FROM tripEntity WHERE id = ?;
+
+deleteTrip:
+DELETE FROM tripEntity WHERE id = ?;
+
+-- Queries for Expenses
+insertExpense:
+INSERT OR REPLACE INTO expenseEntity(id, trip_id, nama_item, nominal, kategori, created_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getExpensesForTrip:
+SELECT * FROM expenseEntity WHERE trip_id = ? ORDER BY created_at DESC;
+
+deleteExpense:
+DELETE FROM expenseEntity WHERE id = ?;
+
+getTotalExpensesForTrip:
+SELECT SUM(nominal) FROM expenseEntity WHERE trip_id = ?;

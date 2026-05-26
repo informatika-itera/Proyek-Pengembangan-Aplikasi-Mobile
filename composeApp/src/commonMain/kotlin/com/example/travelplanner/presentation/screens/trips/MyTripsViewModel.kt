@@ -1,33 +1,30 @@
-package com.example.travelplanner.presentation.screens.home
+package com.example.travelplanner.presentation.screens.trips
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.travelplanner.domain.model.Trip
 import com.example.travelplanner.domain.repository.TripRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-data class HomeUiState(
+data class MyTripsUiState(
     val isLoading: Boolean = false,
-    val recentTrips: List<Trip> = emptyList(),
+    val trips: List<Trip> = emptyList(),
     val errorMessage: String? = null
 )
 
-class HomeViewModel(
+class MyTripsViewModel(
     private val tripRepository: TripRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<MyTripsUiState>(MyTripsUiState())
+    val uiState: StateFlow<MyTripsUiState> = _uiState.asStateFlow()
 
     init {
-        loadRecentTrips()
+        loadTrips()
     }
 
-    fun loadRecentTrips() {
+    fun loadTrips() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             tripRepository.getAllTrips()
@@ -40,10 +37,20 @@ class HomeViewModel(
                 .collect { trips ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        recentTrips = trips,
+                        trips = trips,
                         errorMessage = null
                     )
                 }
+        }
+    }
+
+    fun deleteTrip(tripId: String) {
+        viewModelScope.launch {
+            try {
+                tripRepository.deleteTrip(tripId)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(errorMessage = "Gagal menghapus perjalanan: ${e.message}")
+            }
         }
     }
 }

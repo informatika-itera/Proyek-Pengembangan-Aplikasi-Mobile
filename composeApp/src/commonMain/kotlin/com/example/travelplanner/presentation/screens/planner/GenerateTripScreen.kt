@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,8 +58,11 @@ private val vibeOptions = listOf(
 @Composable
 fun GenerateTripScreen(
     onNavigateBack: () -> Unit,
-    onGenerateSuccess: (String) -> Unit
+    onGenerateSuccess: (String) -> Unit,
+    viewModel: GenerateTripViewModel = koinViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var departureCity      by remember { mutableStateOf("") }
     var destination        by remember { mutableStateOf("") }
     var startDate          by remember { mutableStateOf("") }
@@ -69,65 +73,84 @@ fun GenerateTripScreen(
     var specialNotes       by remember { mutableStateOf("") }
 
     val isFormValid = departureCity.isNotBlank() && destination.isNotBlank()
-            && startDate.isNotBlank() && endDate.isNotBlank() && selectedVibe.isNotBlank()
+            && startDate.isNotBlank() && endDate.isNotBlank() && selectedVibe.isNotBlank() && !uiState.isLoading
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Rancang Perjalanan",
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.3.sp)
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-        },
-        bottomBar = {
-            Surface(
-                tonalElevation = 4.dp,
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
-                    Button(
-                        onClick = { onGenerateSuccess("dummy_trip_id_verification") },
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
-                        enabled = isFormValid,
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                    ) {
-                        Icon(Icons.Default.AutoAwesome, contentDescription = null,
-                            modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Buat Itinerary dengan AI",
+    // Navigasi sukses hasil AI
+    LaunchedEffect(uiState.successTripId) {
+        uiState.successTripId?.let { tripId ->
+            onGenerateSuccess(tripId)
+            viewModel.resetState()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text("Rancang Perjalanan",
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 0.3.sp)
-                    }
-                    if (!isFormValid) {
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text("* Lengkapi semua kolom wajib untuk melanjutkan",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center)
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            },
+            bottomBar = {
+                Surface(
+                    tonalElevation = 4.dp,
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+                        Button(
+                            onClick = {
+                                viewModel.generateTrip(
+                                    departureCity = departureCity,
+                                    destination = destination,
+                                    startDate = startDate,
+                                    endDate = endDate,
+                                    duration = "$startDate - $endDate",
+                                    vibe = selectedVibe,
+                                    specialNotes = specialNotes
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            enabled = isFormValid,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null,
+                                modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Buat Itinerary dengan AI",
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.3.sp)
+                        }
+                        if (!isFormValid && !uiState.isLoading) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text("* Lengkapi semua kolom wajib untuk melanjutkan",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center)
+                        }
                     }
                 }
             }
-        }
-    ) { padding ->
+        ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -233,7 +256,69 @@ fun GenerateTripScreen(
                 )
             }
 
+            // Error display dari AI
+            uiState.errorMessage?.let { error ->
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+}
+
+    // AI Generation premium loading dialog overlay
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.75f))
+                .clickable(enabled = false) {}, // block taps
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.padding(32.dp).shadow(12.dp, RoundedCornerShape(18.dp))
+            ) {
+                Column(
+                    modifier = Modifier.padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(18.dp)
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(40.dp),
+                        strokeWidth = 3.5.dp
+                    )
+                    Text(
+                        "AI Sedang Menyusun Itinerary...",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Menghubungi AI Gemini untuk merancang petualangan terbaik Anda. Mohon tunggu sebentar...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+                }
+            }
         }
     }
 }

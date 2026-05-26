@@ -11,8 +11,11 @@ import kotlinx.serialization.Serializable
 import com.example.travelplanner.presentation.screens.home.HomeScreen
 import com.example.travelplanner.presentation.screens.planner.GenerateTripScreen
 import com.example.travelplanner.presentation.screens.result.TripResultScreen
+import com.example.travelplanner.presentation.screens.trips.MyTripsScreen
+import com.example.travelplanner.presentation.screens.expenses.ExpenseTrackerScreen
+import com.example.travelplanner.presentation.screens.settings.SettingsScreen
 
-// Definisi Rute Type-Safe (Aman dari Kesalahan Ketik)
+// Definisi Rute Type-Safe
 sealed class Route {
     @Serializable
     data object Home : Route()
@@ -22,10 +25,21 @@ sealed class Route {
 
     @Serializable
     data class TripResult(val tripId: String) : Route()
+
+    @Serializable
+    data object MyTrips : Route()
+
+    @Serializable
+    data class Expenses(val tripId: String? = null) : Route()
+
+    @Serializable
+    data object Settings : Route()
 }
 
 @Composable
 fun AppNavHost(
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
     navController: NavHostController = rememberNavController(),
     modifier: Modifier = Modifier
 ) {
@@ -34,7 +48,7 @@ fun AppNavHost(
         startDestination = Route.Home,
         modifier = modifier
     ) {
-        // Layar 1: Dasbor Utama
+        // Layar 1: Dasbor Utama (Home)
         composable<Route.Home> {
             HomeScreen(
                 onNavigateToGenerateTrip = {
@@ -46,12 +60,11 @@ fun AppNavHost(
             )
         }
 
-        // Layar 2: Input AI Itinerary
+        // Layar 2: Input AI Itinerary (Generate Trip)
         composable<Route.GenerateTrip> {
             GenerateTripScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onGenerateSuccess = { tripId ->
-                    // Setelah berhasil generate, pergi ke Result Screen dan hancurkan layar Generate dari backstack
                     navController.navigate(Route.TripResult(tripId)) {
                         popUpTo(Route.GenerateTrip) { inclusive = true }
                     }
@@ -59,17 +72,42 @@ fun AppNavHost(
             )
         }
 
-        // Layar 3: Hasil AI & Timeline
+        // Layar 3: Hasil AI & Timeline (Trip Result)
         composable<Route.TripResult> { backStackEntry ->
-            // Mengambil argumen tripId dari rute secara aman
             val route: Route.TripResult = backStackEntry.toRoute()
 
             TripResultScreen(
                 tripId = route.tripId,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToExpenseTracker = {
-                    // TODO: Akan dihubungkan saat fitur Expense Tracker selesai dibangun
+                    navController.navigate(Route.Expenses(route.tripId))
                 }
+            )
+        }
+
+        // Layar 4: Semua Perjalanan (My Trips)
+        composable<Route.MyTrips> {
+            MyTripsScreen(
+                onNavigateToTripDetail = { tripId ->
+                    navController.navigate(Route.TripResult(tripId))
+                }
+            )
+        }
+
+        // Layar 5: Catatan Biaya (Expenses Tab)
+        composable<Route.Expenses> { backStackEntry ->
+            val route: Route.Expenses = backStackEntry.toRoute()
+            ExpenseTrackerScreen(
+                tripId = route.tripId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Layar 6: Pengaturan (Settings)
+        composable<Route.Settings> {
+            SettingsScreen(
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode
             )
         }
     }

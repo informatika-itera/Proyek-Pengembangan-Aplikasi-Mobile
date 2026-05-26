@@ -1,4 +1,4 @@
-package com.example.noteai.data.local.datastore
+package com.example.travelplanner.data.local.datastore
 
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains

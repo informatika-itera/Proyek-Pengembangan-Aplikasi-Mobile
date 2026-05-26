@@ -2,19 +2,21 @@ package com.example.foodsaver.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-val FreshGreen = Color(0xFF4CAF50)
-val FreshGreenDark = Color(0xFF388E3C)
-val FreshGreenLight = Color(0xFFC8E6C9)
-
+// Brand Colors
+val PrimaryGreen = Color(0xFF4CAF50)
+val DarkGreen = Color(0xFF1B5E20)
 val WarningOrange = Color(0xFFFF9800)
-val DangerRed = Color(0xFFF44336)
-val SafeBlue = Color(0xFF2196F3)
+val ExpiredRed = Color(0xFFEF5350)
 
-val BackgroundCream = Color(0xFFFFF8F0)
+// UI Colors
+val BackgroundLight = Color(0xFFFAFAF5)
+val CardWhite = Color(0xFFFFFFFF)
 val TextMain = Color(0xFF263238)
+val TextSecondary = Color(0xFF757575)
 
-val md_theme_light_primary = Color(0xFF006E1C)
-val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_primaryContainer = Color(0xFF94F990)
-val md_theme_light_onPrimaryContainer = Color(0xFF002204)
-// ... keeping it simple for now based on user request
+// Backward Compatibility / Existing
+val FreshGreen = PrimaryGreen
+val FreshGreenLight = Color(0xFFE8F5E9)
+val FreshGreenDark = DarkGreen
+val DangerRed = ExpiredRed
+val BackgroundCream = Color(0xFFFFF8F0)

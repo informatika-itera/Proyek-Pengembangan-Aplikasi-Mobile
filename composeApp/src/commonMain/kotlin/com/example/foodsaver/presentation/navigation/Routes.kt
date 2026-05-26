@@ -10,6 +10,15 @@ sealed class Screen {
     data object Home : Screen()
 
     @Serializable
+    data object Expiry : Screen()
+
+    @Serializable
+    data object Calendar : Screen()
+
+    @Serializable
+    data object Profile : Screen()
+
+    @Serializable
     data object AddFood : Screen()
 
     @Serializable

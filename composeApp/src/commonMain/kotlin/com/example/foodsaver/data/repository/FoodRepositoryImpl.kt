@@ -27,9 +27,10 @@ class FoodRepositoryImpl(
                         name = entity.name,
                         quantity = entity.quantity,
                         unit = entity.unit,
+                        buyDate = entity.buyDate,
                         category = entity.category,
                         expiryDate = entity.expiryDate,
-                        storageLocation = entity.storageLocation, // Default sudah ada di DB
+                        storageLocation = entity.storageLocation,
                         notes = entity.notes,
                         isConsumed = entity.isConsumed == 1L
                     )
@@ -46,6 +47,7 @@ class FoodRepositoryImpl(
                     name = entity.name,
                     quantity = entity.quantity,
                     unit = entity.unit,
+                    buyDate = entity.buyDate,
                     category = entity.category,
                     expiryDate = entity.expiryDate,
                     storageLocation = entity.storageLocation,
@@ -61,6 +63,7 @@ class FoodRepositoryImpl(
             name = foodItem.name,
             quantity = foodItem.quantity,
             unit = foodItem.unit,
+            buyDate = foodItem.buyDate,
             expiryDate = foodItem.expiryDate,
             category = foodItem.category,
             storageLocation = foodItem.storageLocation,
@@ -78,6 +81,7 @@ class FoodRepositoryImpl(
             name = foodItem.name,
             quantity = foodItem.quantity,
             unit = foodItem.unit,
+            buyDate = foodItem.buyDate,
             expiryDate = foodItem.expiryDate,
             category = foodItem.category,
             storageLocation = foodItem.storageLocation,

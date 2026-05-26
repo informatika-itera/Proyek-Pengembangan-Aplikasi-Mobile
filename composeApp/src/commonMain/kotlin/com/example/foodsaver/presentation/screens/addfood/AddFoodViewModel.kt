@@ -13,10 +13,10 @@ import kotlinx.datetime.Instant
 data class AddFoodUiState(
     val id: Long = 0,
     val name: String = "",
-    val quantity: String = "",
-    val unit: String = "pcs",
-    val category: String = "Sayuran",
-    val storageLocation: String = "Kulkas",
+    val quantity: String = "1",
+    val unit: String = FoodItem.UNITS[0],
+    val category: String = FoodItem.CATEGORIES[0],
+    val storageLocation: String = FoodItem.STORAGE_LOCATIONS[0],
     val notes: String = "",
     val expiryDate: Instant = Clock.System.now(),
     val isLoading: Boolean = false,
@@ -57,8 +57,8 @@ class AddFoodViewModel(
         }
     }
 
-    fun onNameChange(name: String) = _state.update { it.copy(name = name) }
-    fun onQuantityChange(q: String) = _state.update { it.copy(quantity = q) }
+    fun onNameChange(name: String) = _state.update { it.copy(name = name, error = null) }
+    fun onQuantityChange(q: String) = _state.update { it.copy(quantity = q, error = null) }
     fun onUnitChange(unit: String) = _state.update { it.copy(unit = unit) }
     fun onCategoryChange(cat: String) = _state.update { it.copy(category = cat) }
     fun onStorageLocationChange(loc: String) = _state.update { it.copy(storageLocation = loc) }
@@ -68,13 +68,13 @@ class AddFoodViewModel(
     fun saveFood() {
         val currentState = _state.value
         if (currentState.name.isBlank()) {
-            _state.update { it.copy(error = "Nama tidak boleh kosong") }
+            _state.update { it.copy(error = "Ups! Nama makanan tidak boleh kosong.") }
             return
         }
         
         val qty = currentState.quantity.toDoubleOrNull() ?: 0.0
         if (qty <= 0) {
-            _state.update { it.copy(error = "Jumlah harus lebih dari 0") }
+            _state.update { it.copy(error = "Jumlah makanan harus lebih dari 0.") }
             return
         }
 
@@ -89,12 +89,13 @@ class AddFoodViewModel(
                     category = currentState.category,
                     storageLocation = currentState.storageLocation,
                     notes = currentState.notes.ifBlank { null },
+                    buyDate = Clock.System.now(), // Default buy date to now
                     expiryDate = currentState.expiryDate
                 )
                 saveFoodUseCase(food)
                 _state.update { it.copy(isLoading = false, isSaved = true) }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = e.message) }
+                _state.update { it.copy(isLoading = false, error = "Gagal menyimpan: ${e.message}") }
             }
         }
     }

@@ -5,6 +5,7 @@ CREATE TABLE FoodItemEntity (
     name TEXT NOT NULL,
     quantity REAL NOT NULL,
     unit TEXT NOT NULL,
+    buyDate INTEGER AS Instant NOT NULL,
     expiryDate INTEGER AS Instant NOT NULL,
     category TEXT NOT NULL,
     storageLocation TEXT NOT NULL DEFAULT 'Kulkas',
@@ -13,11 +14,14 @@ CREATE TABLE FoodItemEntity (
 );
 
 insertFoodItem:
-INSERT OR REPLACE INTO FoodItemEntity(id, name, quantity, unit, expiryDate, category, storageLocation, notes, isConsumed)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO FoodItemEntity(id, name, quantity, unit, buyDate, expiryDate, category, storageLocation, notes, isConsumed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getAllFoodItems:
 SELECT * FROM FoodItemEntity ORDER BY expiryDate ASC;
+
+getFoodItemsByCategory:
+SELECT * FROM FoodItemEntity WHERE category = ? ORDER BY expiryDate ASC;
 
 getFoodItemById:
 SELECT * FROM FoodItemEntity WHERE id = ?;
@@ -27,5 +31,5 @@ DELETE FROM FoodItemEntity WHERE id = ?;
 
 updateFoodItem:
 UPDATE FoodItemEntity
-SET name = ?, quantity = ?, unit = ?, expiryDate = ?, category = ?, storageLocation = ?, notes = ?, isConsumed = ?
+SET name = ?, quantity = ?, unit = ?, buyDate = ?, expiryDate = ?, category = ?, storageLocation = ?, notes = ?, isConsumed = ?
 WHERE id = ?;

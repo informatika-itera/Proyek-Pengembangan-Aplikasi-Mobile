@@ -19,6 +19,9 @@ import com.example.foodsaver.presentation.screens.addfood.AddFoodViewModel
 import com.example.foodsaver.presentation.screens.detail.FoodDetailViewModel
 import com.example.foodsaver.presentation.screens.home.HomeViewModel
 import com.example.foodsaver.presentation.screens.ai.AIAssistantViewModel
+import com.example.foodsaver.presentation.screens.expiry.ExpiryViewModel
+import com.example.foodsaver.presentation.screens.calendar.CalendarViewModel
+import com.example.foodsaver.presentation.screens.profile.ProfileViewModel
 import com.example.foodsaver.presentation.screens.mealplan.MealPlannerViewModel
 import com.example.foodsaver.presentation.screens.recipe.RecipeViewModel
 import com.example.foodsaver.presentation.screens.recipe.detail.RecipeDetailViewModel
@@ -43,6 +46,7 @@ val commonModule = module {
         FoodSaverDatabase(
             driver = get(),
             FoodItemEntityAdapter = FoodItemEntity.Adapter(
+                buyDateAdapter = instantAdapter,
                 expiryDateAdapter = instantAdapter
             )
         ) 
@@ -85,11 +89,14 @@ val commonModule = module {
     // ViewModels
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AddFoodViewModel(get(), get()) }
-    viewModel { FoodDetailViewModel(get(), get()) }
+    viewModel { FoodDetailViewModel(get(), get(), get()) }
     viewModel { AIAssistantViewModel(get(), get(), get(), get()) }
     viewModel { RecipeViewModel(get(), get()) }
     viewModel { RecipeDetailViewModel(get(), get(), get()) }
     viewModel { MealPlannerViewModel(get(), get()) }
+    viewModel { ExpiryViewModel(get()) }
+    viewModel { CalendarViewModel(get()) }
+    viewModel { ProfileViewModel(get()) }
 }
 
 /**

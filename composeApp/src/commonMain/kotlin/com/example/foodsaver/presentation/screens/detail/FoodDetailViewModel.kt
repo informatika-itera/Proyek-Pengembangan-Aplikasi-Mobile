@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.usecase.DeleteFoodUseCase
 import com.example.foodsaver.domain.usecase.GetFoodDetailUseCase
+import com.example.foodsaver.domain.usecase.SaveFoodUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +21,8 @@ data class FoodDetailUiState(
 
 class FoodDetailViewModel(
     private val getFoodDetailUseCase: GetFoodDetailUseCase,
-    private val deleteFoodUseCase: DeleteFoodUseCase
+    private val deleteFoodUseCase: DeleteFoodUseCase,
+    private val saveFoodUseCase: SaveFoodUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FoodDetailUiState())
@@ -38,6 +40,19 @@ class FoodDetailViewModel(
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun toggleConsumed() {
+        val currentItem = _state.value.foodItem ?: return
+        viewModelScope.launch {
+            try {
+                val updatedItem = currentItem.copy(isConsumed = !currentItem.isConsumed)
+                saveFoodUseCase(updatedItem)
+                _state.update { it.copy(foodItem = updatedItem) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
             }
         }
     }

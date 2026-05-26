@@ -6,6 +6,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
+import kotlin.math.abs
 
 @Serializable
 data class FoodItem(
@@ -13,16 +14,15 @@ data class FoodItem(
     val name: String,
     val quantity: Double,
     val unit: String,
-    val category: String,
+    val buyDate: Instant,
     val expiryDate: Instant,
+    val category: String,
     val storageLocation: String = "Kulkas",
     val notes: String? = null,
     val isConsumed: Boolean = false
 ) {
     fun getStatus(): FoodStatus {
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        val expiry = expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
-        val daysRemaining = today.daysUntil(expiry)
+        val daysRemaining = getDaysRemaining()
 
         return when {
             daysRemaining < 0 -> FoodStatus.EXPIRED
@@ -35,6 +35,23 @@ data class FoodItem(
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         val expiry = expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
         return today.daysUntil(expiry)
+    }
+
+    fun getStatusLabel(): String {
+        val daysRemaining = getDaysRemaining()
+        return when {
+            daysRemaining < 0 -> "Expired ${abs(daysRemaining)} hari lalu"
+            daysRemaining == 0 -> "Expired hari ini"
+            daysRemaining == 1 -> "Akan expired dalam 1 hari"
+            daysRemaining in 2..3 -> "Akan expired dalam $daysRemaining hari"
+            else -> "Aman, $daysRemaining hari lagi"
+        }
+    }
+
+    companion object {
+        val CATEGORIES = listOf("Buah", "Sayur", "Daging", "Susu & Telur", "Minuman", "Camilan", "Bumbu", "Lainnya")
+        val STORAGE_LOCATIONS = listOf("Kulkas", "Freezer", "Rak Dapur", "Meja Makan")
+        val UNITS = listOf("pcs", "gram", "kg", "botol", "bungkus", "liter")
     }
 }
 

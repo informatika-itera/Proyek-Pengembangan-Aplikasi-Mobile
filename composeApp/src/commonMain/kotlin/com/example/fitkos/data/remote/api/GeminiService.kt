@@ -20,7 +20,7 @@ class GeminiService(private val client: HttpClient) {
 
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-1.5-flash"
+        private const val MODEL = "gemini-2.5-flash"
     }
 
     suspend fun generateContent(
@@ -54,8 +54,8 @@ class GeminiService(private val client: HttpClient) {
         val request = GeminiRequest(
             contents = contents,
             generationConfig = GenerationConfig(
-                temperature = 0.7,
-                maxOutputTokens = 1000
+                temperature = 0.6,
+                maxOutputTokens = 2048
             )
         )
 
@@ -111,6 +111,9 @@ object SystemPrompts {
         3. Saran minum air
         4. Saran olahraga ringan
         5. Motivasi singkat
+        6. Jawaban maksimal 5 poin
+        7. Hindari jawaban terlalu panjang
+        8. Gunakan format singkat dan mudah dibaca di layar HP
     """.trimIndent()
 
     val SUMMARIZER = """

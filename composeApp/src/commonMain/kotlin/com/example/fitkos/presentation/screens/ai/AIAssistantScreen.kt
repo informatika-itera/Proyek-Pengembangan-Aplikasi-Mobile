@@ -1,9 +1,23 @@
 package com.example.fitkos.presentation.screens.ai
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -14,14 +28,33 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.RestaurantMenu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,18 +72,18 @@ fun AIAssistantScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
-    
+
     LaunchedEffect(initialText) {
         viewModel.setInitialText(initialText)
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is AIAssistantEvent.CopyToClipboard -> {
-                    // Handle copy to clipboard logic here (platform specific usually)
                     snackbarHostState.showSnackbar("Berhasil disalin ke papan klip")
                 }
+
                 is AIAssistantEvent.ApplyToNote -> {
                     onApplyResult?.invoke(event.text)
                     snackbarHostState.showSnackbar("Diterapkan ke catatan")
@@ -59,35 +92,50 @@ fun AIAssistantScreen(
             }
         }
     }
-    
-    LaunchedEffect(uiState.messages.size) {
-        if (uiState.messages.isNotEmpty()) {
-            listState.animateScrollToItem(uiState.messages.size - 1)
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { message ->
+            snackbarHostState.showSnackbar(message)
         }
     }
-    
+
+    LaunchedEffect(uiState.messages.size, uiState.isLoading) {
+        if (uiState.messages.isNotEmpty()) {
+            listState.animateScrollToItem(uiState.messages.lastIndex)
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Asisten AI", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Asisten AI",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
                     }
                 }
             )
         },
         bottomBar = {
-            Column {
-                // Tips Section (As shown in Image 6)
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 TipsSection(
                     onTipClick = { prompt ->
                         viewModel.onInputTextChange(prompt)
                         viewModel.executeAction()
                     }
                 )
-                
+
                 ChatInputBar(
                     text = uiState.inputText,
                     onTextChange = viewModel::onInputTextChange,
@@ -97,38 +145,88 @@ fun AIAssistantScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            item {
+                Text(
+                    text = "Hari Ini",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            uiState.cacheNotice?.let { notice ->
                 item {
-                    Text(
-                        text = "Hari Ini",
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    CacheNoticeCard(
+                        message = notice
                     )
                 }
+            }
 
-                items(uiState.messages) { message ->
-                    ChatBubble(message = message)
-                }
+            items(uiState.messages) { message ->
+                ChatBubble(message = message)
+            }
 
-                if (uiState.isLoading) {
-                    item {
-                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+            if (uiState.isLoading) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "AI",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            shadowElevation = 1.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+
+                                Text(
+                                    text = "AI sedang menjawab...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -138,10 +236,13 @@ fun AIAssistantScreen(
 }
 
 @Composable
-fun TipsSection(onTipClick: (String) -> Unit) {
+fun TipsSection(
+    onTipClick: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
@@ -149,7 +250,9 @@ fun TipsSection(onTipClick: (String) -> Unit) {
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -158,20 +261,50 @@ fun TipsSection(onTipClick: (String) -> Unit) {
                     title = "Menu hemat",
                     subtitle = "Sarapan sehat < Rp10.000",
                     icon = Icons.Default.RestaurantMenu,
-                    color = Color(0xFFFFB74D).copy(alpha = 0.2f),
-                    onClick = { onTipClick("Berikan saran menu sarapan sehat untuk anak kos dengan budget di bawah 10 ribu rupiah.") }
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    onClick = {
+                        onTipClick(
+                            "Berikan saran menu sarapan sehat untuk anak kos dengan budget di bawah 10 ribu rupiah. Jawab maksimal 5 poin dan singkat."
+                        )
+                    }
                 )
             }
+
             item {
                 TipCard(
                     title = "Olahraga Ringan",
-                    subtitle = "Stretching 5 menit setiap pagi",
+                    subtitle = "Stretching 5 menit pagi",
                     icon = Icons.AutoMirrored.Filled.DirectionsRun,
-                    color = Color(0xFF2E7D32).copy(alpha = 0.2f),
-                    onClick = { onTipClick("Berikan panduan olahraga ringan atau stretching 5 menit yang bisa dilakukan anak kos di kamar.") }
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    onClick = {
+                        onTipClick(
+                            "Berikan panduan olahraga ringan atau stretching 5 menit yang bisa dilakukan anak kos di kamar. Jawab maksimal 5 langkah singkat."
+                        )
+                    }
                 )
             }
         }
+    }
+}
+
+@Composable
+fun CacheNoticeCard(
+    message: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        )
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier.padding(12.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -187,8 +320,11 @@ fun TipCard(
         modifier = Modifier
             .width(200.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -196,27 +332,57 @@ fun TipCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(color),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color.Black.copy(alpha = 0.7f))
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
+
             Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                Text(text = subtitle, fontSize = 10.sp, color = Color.Gray, lineHeight = 12.sp)
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    maxLines = 1
+                )
+
+                Text(
+                    text = subtitle,
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 12.sp,
+                    maxLines = 2
+                )
             }
         }
     }
 }
 
 @Composable
-fun ChatBubble(message: Message) {
+fun ChatBubble(
+    message: Message
+) {
     val arrangement = if (message.isFromUser) Arrangement.End else Arrangement.Start
-    val bubbleColor = if (message.isFromUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-    val textColor = if (message.isFromUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val bubbleColor = if (message.isFromUser) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    val textColor = if (message.isFromUser) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     val shape = if (message.isFromUser) {
         RoundedCornerShape(16.dp, 16.dp, 0.dp, 16.dp)
     } else {
@@ -225,10 +391,10 @@ fun ChatBubble(message: Message) {
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = arrangement
+        horizontalArrangement = arrangement,
+        verticalAlignment = Alignment.Top
     ) {
         if (!message.isFromUser) {
-            // AI Avatar placeholder as in Image 6
             Box(
                 modifier = Modifier
                     .padding(end = 8.dp)
@@ -237,11 +403,19 @@ fun ChatBubble(message: Message) {
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Text("AI", color = MaterialTheme.colorScheme.onPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "AI",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-        
+
         Surface(
+            modifier = Modifier
+                .fillMaxWidth(if (message.isFromUser) 0.78f else 0.82f)
+                .widthIn(min = 48.dp),
             color = bubbleColor,
             shape = shape,
             shadowElevation = 1.dp
@@ -250,7 +424,8 @@ fun ChatBubble(message: Message) {
                 text = message.text,
                 modifier = Modifier.padding(12.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                color = textColor
+                color = textColor,
+                lineHeight = 20.sp
             )
         }
     }
@@ -266,7 +441,7 @@ fun ChatInputBar(
     Surface(
         tonalElevation = 2.dp,
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier
@@ -278,28 +453,42 @@ fun ChatInputBar(
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                placeholder = { Text("Tanya sesuatu...", fontSize = 14.sp) },
-                modifier = Modifier.weight(1f),
+                placeholder = {
+                    Text(
+                        text = "Tanya sesuatu...",
+                        fontSize = 14.sp
+                    )
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF5F5F5),
-                    unfocusedContainerColor = Color(0xFFF5F5F5),
-                    disabledContainerColor = Color(0xFFF5F5F5),
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
                 shape = RoundedCornerShape(24.dp),
-                maxLines = 4
+                singleLine = true
             )
+
             Spacer(modifier = Modifier.width(8.dp))
+
             IconButton(
                 onClick = onSend,
                 enabled = text.isNotBlank() && !isLoading,
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Kirim")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Kirim"
+                )
             }
         }
     }

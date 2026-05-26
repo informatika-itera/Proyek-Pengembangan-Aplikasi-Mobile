@@ -1,5 +1,8 @@
 package com.example.fitkos.domain.repository
 
+import com.example.fitkos.domain.model.AIResponseCache
+import kotlinx.coroutines.flow.Flow
+
 interface AIRepository {
     suspend fun summarize(text: String): Result<String>
     suspend fun generateIdeas(topic: String): Result<List<String>>
@@ -7,6 +10,10 @@ interface AIRepository {
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
     suspend fun suggestTitle(content: String): Result<String>
+
+    // Stale-While-Revalidate support
+    fun getCachedChatResponse(): Flow<AIResponseCache>
+    suspend fun refreshChat(message: String): Result<String>
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

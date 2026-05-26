@@ -75,7 +75,12 @@ data class GeminiError(
 // ==================== HELPER EXTENSIONS ====================
 
 fun GeminiResponse.getTextContent(): String? {
-    return candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
+    return candidates
+        ?.firstOrNull()
+        ?.content
+        ?.parts
+        ?.joinToString(separator = "\n") { it.text }
+        ?.takeIf { it.isNotBlank() }
 }
 
 fun GeminiResponse.isBlocked(): Boolean {

@@ -23,7 +23,7 @@ class UserPreferences(
     private val dataStore: DataStore<Preferences>
 ) {
     // ==================== PREFERENCE KEYS ====================
-    
+
     private object Keys {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val SORT_BY = stringPreferencesKey("sort_by")
@@ -32,6 +32,10 @@ class UserPreferences(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val USER_NAME = stringPreferencesKey("user_name")
         val WATER_TARGET = intPreferencesKey("water_target")
+
+        val AI_CACHED_PROMPT = stringPreferencesKey("ai_cached_prompt")
+        val AI_CACHED_RESPONSE = stringPreferencesKey("ai_cached_response")
+        val AI_CACHED_UPDATED_AT = stringPreferencesKey("ai_cached_updated_at")
     }
     
     // ==================== PROFILE ====================
@@ -65,6 +69,55 @@ class UserPreferences(
     suspend fun setWaterTarget(target: Int) {
         dataStore.edit { prefs ->
             prefs[Keys.WATER_TARGET] = target
+        }
+    }
+
+    // ==================== AI CACHE ====================
+
+    /**
+     * Observe cached AI prompt
+     */
+    val cachedAIPrompt: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_CACHED_PROMPT] ?: ""
+    }
+
+    /**
+     * Observe cached AI response
+     */
+    val cachedAIResponse: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_CACHED_RESPONSE] ?: ""
+    }
+
+    /**
+     * Observe cached AI updated time
+     */
+    val cachedAIUpdatedAt: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_CACHED_UPDATED_AT] ?: ""
+    }
+
+    /**
+     * Save latest AI response cache
+     */
+    suspend fun saveAIResponseCache(
+        prompt: String,
+        response: String,
+        updatedAt: String
+    ) {
+        dataStore.edit { prefs ->
+            prefs[Keys.AI_CACHED_PROMPT] = prompt
+            prefs[Keys.AI_CACHED_RESPONSE] = response
+            prefs[Keys.AI_CACHED_UPDATED_AT] = updatedAt
+        }
+    }
+
+    /**
+     * Clear AI response cache
+     */
+    suspend fun clearAIResponseCache() {
+        dataStore.edit { prefs ->
+            prefs.remove(Keys.AI_CACHED_PROMPT)
+            prefs.remove(Keys.AI_CACHED_RESPONSE)
+            prefs.remove(Keys.AI_CACHED_UPDATED_AT)
         }
     }
 

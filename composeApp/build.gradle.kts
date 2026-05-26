@@ -63,6 +63,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
+            // implementation(libs.ktor.client.cache)
             
             // Koin DI
             implementation(libs.koin.core)
@@ -111,11 +112,11 @@ iosMain.dependencies {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.example.hujjah"
     compileSdk = 35
     
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.example.hujjah"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -158,7 +159,7 @@ android {
 sqldelight {
     databases {
         create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+            packageName.set("com.example.hujjah.data.local")
         }
     }
 }

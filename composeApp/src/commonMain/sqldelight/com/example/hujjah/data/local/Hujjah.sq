@@ -1,0 +1,114 @@
+-- Hujjah Database schema for Sprint 3
+
+-- Table to store Surah List (Quran)
+CREATE TABLE QuranSurahEntity (
+    number INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    numberOfVerses INTEGER NOT NULL,
+    revelation TEXT NOT NULL,
+    asma TEXT NOT NULL
+);
+
+-- Table to store Verses of Surahs (Cache for Offline reading)
+CREATE TABLE QuranVerseEntity (
+    surahNumber INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    arabic TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    PRIMARY KEY (surahNumber, number)
+);
+
+-- Table to store Hadith Books (Books list)
+CREATE TABLE HadithBookEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    totalHadith INTEGER NOT NULL
+);
+
+-- Table to store Hadith content (Cache for Offline range pagination)
+CREATE TABLE HadithEntity (
+    bookId TEXT NOT NULL,
+    number INTEGER NOT NULL,
+    arab TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    PRIMARY KEY (bookId, number)
+);
+
+-- Table to store Lens AI Chat Session History
+CREATE TABLE LensChatEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    sender TEXT NOT NULL,
+    text TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    -- Stored as JSON strings (nullable if not model reference/solutions response)
+    referencesJson TEXT, 
+    solutionsJson TEXT
+);
+
+-- Queries for Quran Surahs
+getAllSurahs:
+SELECT * FROM QuranSurahEntity
+ORDER BY number ASC;
+
+insertSurah:
+INSERT OR REPLACE INTO QuranSurahEntity (number, name, translation, numberOfVerses, revelation, asma)
+VALUES (?, ?, ?, ?, ?, ?);
+
+clearSurahs:
+DELETE FROM QuranSurahEntity;
+
+-- Queries for Quran Verses
+getVersesBySurah:
+SELECT * FROM QuranVerseEntity
+WHERE surahNumber = ?
+ORDER BY number ASC;
+
+insertVerse:
+INSERT OR REPLACE INTO QuranVerseEntity (surahNumber, number, arabic, translation)
+VALUES (?, ?, ?, ?);
+
+clearVersesBySurah:
+DELETE FROM QuranVerseEntity
+WHERE surahNumber = ?;
+
+-- Queries for Hadith Books
+getAllHadithBooks:
+SELECT * FROM HadithBookEntity;
+
+insertHadithBook:
+INSERT OR REPLACE INTO HadithBookEntity (id, name, totalHadith)
+VALUES (?, ?, ?);
+
+clearHadithBooks:
+DELETE FROM HadithBookEntity;
+
+-- Queries for Hadith Items
+getHadithsByRange:
+SELECT * FROM HadithEntity
+WHERE bookId = ? AND number >= ? AND number <= ?
+ORDER BY number ASC;
+
+getHadithByNumber:
+SELECT * FROM HadithEntity
+WHERE bookId = ? AND number = ?;
+
+insertHadith:
+INSERT OR REPLACE INTO HadithEntity (bookId, number, arab, translation)
+VALUES (?, ?, ?, ?);
+
+-- Queries for Lens Chat
+getAllChats:
+SELECT * FROM LensChatEntity
+ORDER BY timestamp ASC;
+
+insertChat:
+INSERT OR REPLACE INTO LensChatEntity (id, sender, text, timestamp, referencesJson, solutionsJson)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteChatById:
+DELETE FROM LensChatEntity
+WHERE id = ?;
+
+clearAllChats:
+DELETE FROM LensChatEntity;

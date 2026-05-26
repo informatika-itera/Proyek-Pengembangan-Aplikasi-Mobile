@@ -34,6 +34,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import com.example.fitkos.presentation.screens.exercise.ExerciseViewModel
 
 // ==================== NETWORK MODULE ====================
 
@@ -88,6 +89,7 @@ val viewModelModule = module {
     viewModelOf(::DashboardViewModel)
     viewModelOf(::WaterTrackerViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::ExerciseViewModel)
 }
 
 // ==================== SHARED MODULES ====================

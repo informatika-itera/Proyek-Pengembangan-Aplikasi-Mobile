@@ -28,6 +28,7 @@ fun DashboardScreen(
     onNavigateToAddMeal: () -> Unit,
     onNavigateToAI: () -> Unit,
     onNavigateToWaterTracker: () -> Unit,
+    onNavigateToExercise: () -> Unit,
     viewModel: DashboardViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,7 +50,8 @@ fun DashboardScreen(
                 uiState = uiState,
                 onNavigateToMealLog = onNavigateToMealLog,
                 onNavigateToAI = onNavigateToAI,
-                onNavigateToWaterTracker = onNavigateToWaterTracker
+                onNavigateToWaterTracker = onNavigateToWaterTracker,
+                onNavigateToExercise = onNavigateToExercise
             )
 
             TargetHarianSection(uiState)
@@ -93,7 +95,8 @@ private fun SummaryGrid(
     uiState: DashboardUiState,
     onNavigateToMealLog: () -> Unit,
     onNavigateToAI: () -> Unit,
-    onNavigateToWaterTracker: () -> Unit
+    onNavigateToWaterTracker: () -> Unit,
+    onNavigateToExercise: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
@@ -126,7 +129,9 @@ private fun SummaryGrid(
                 value = uiState.exerciseMinutes.toString(),
                 unit = "menit",
                 icon = "🏃",
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onNavigateToExercise() },
                 color = Color(0xFFFFF3E0)
             )
             SummaryCard(

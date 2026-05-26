@@ -36,6 +36,8 @@ class UserPreferences(
         val AI_CACHED_PROMPT = stringPreferencesKey("ai_cached_prompt")
         val AI_CACHED_RESPONSE = stringPreferencesKey("ai_cached_response")
         val AI_CACHED_UPDATED_AT = stringPreferencesKey("ai_cached_updated_at")
+
+        val EXERCISE_MINUTES_TODAY = intPreferencesKey("exercise_minutes_today")
     }
     
     // ==================== PROFILE ====================
@@ -69,6 +71,43 @@ class UserPreferences(
     suspend fun setWaterTarget(target: Int) {
         dataStore.edit { prefs ->
             prefs[Keys.WATER_TARGET] = target
+        }
+    }
+
+    // ==================== EXERCISE ====================
+
+    /**
+     * Observe exercise minutes today
+     */
+    val exerciseMinutesToday: Flow<Int> = dataStore.data.map { prefs ->
+        prefs[Keys.EXERCISE_MINUTES_TODAY] ?: 0
+    }
+
+    /**
+     * Set exercise minutes today
+     */
+    suspend fun setExerciseMinutesToday(minutes: Int) {
+        dataStore.edit { prefs ->
+            prefs[Keys.EXERCISE_MINUTES_TODAY] = minutes.coerceAtLeast(0)
+        }
+    }
+
+    /**
+     * Add exercise minutes today
+     */
+    suspend fun addExerciseMinutesToday(minutes: Int) {
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.EXERCISE_MINUTES_TODAY] ?: 0
+            prefs[Keys.EXERCISE_MINUTES_TODAY] = (current + minutes).coerceAtLeast(0)
+        }
+    }
+
+    /**
+     * Reset exercise minutes today
+     */
+    suspend fun resetExerciseMinutesToday() {
+        dataStore.edit { prefs ->
+            prefs[Keys.EXERCISE_MINUTES_TODAY] = 0
         }
     }
 

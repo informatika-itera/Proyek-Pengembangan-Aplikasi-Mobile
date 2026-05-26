@@ -29,6 +29,9 @@ sealed interface Route {
     data object WaterTracker : Route
 
     @Serializable
+    data object Exercise : Route
+
+    @Serializable
     data object Settings : Route
 }
 
@@ -39,6 +42,7 @@ interface NavigationActions {
     fun navigateToNoteDetail(noteId: Long)
     fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
     fun navigateToWaterTracker()
+    fun navigateToExercise()
     fun navigateToSettings()
     fun navigateBack()
 }

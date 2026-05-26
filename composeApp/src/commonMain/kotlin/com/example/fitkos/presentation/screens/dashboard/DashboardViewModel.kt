@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -38,16 +37,20 @@ class DashboardViewModel(
                 repository.getAllNotes(),
                 waterRepository.getWaterLogByDate(dateString),
                 userPreferences.userName,
-                userPreferences.waterTarget
-            ) { notes, waterLog, userName, waterTarget ->
+                userPreferences.waterTarget,
+                userPreferences.exerciseMinutesToday
+            ) { notes, waterLog, userName, waterTarget, exerciseMinutes ->
                 DashboardUiState(
                     userName = userName,
                     mealCount = notes.size,
                     waterGlasses = waterLog?.amount ?: 0,
-                    waterTarget = waterTarget
+                    waterTarget = waterTarget,
+                    exerciseMinutes = exerciseMinutes,
+                    exerciseTarget = 30,
+                    mealTarget = 3
                 )
-            }.catch { e ->
-                // Handle error
+            }.catch {
+                _uiState.value = DashboardUiState()
             }.collect { newState ->
                 _uiState.value = newState
             }

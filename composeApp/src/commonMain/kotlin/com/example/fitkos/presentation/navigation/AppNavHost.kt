@@ -30,6 +30,7 @@ import com.example.fitkos.presentation.screens.home.HomeScreen
 import com.example.fitkos.presentation.screens.splash.SplashScreen
 import com.example.fitkos.presentation.screens.settings.SettingsScreen
 import com.example.fitkos.presentation.screens.watertracker.WaterTrackerScreen
+import com.example.fitkos.presentation.screens.exercise.ExerciseScreen
 
 @Composable
 fun AppNavHost(
@@ -71,12 +72,13 @@ fun AppNavHost(
                     onNavigateToMealLog = { navigationActions.navigateToHome() },
                     onNavigateToAddMeal = { navigationActions.navigateToAddNote() },
                     onNavigateToWaterTracker = { navigationActions.navigateToWaterTracker() },
+                    onNavigateToExercise = { navigationActions.navigateToExercise() },
                     onNavigateToAI = {
                         navigationActions.navigateToAIAssistant(
                             initialText = """
-                                Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
-                                Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
-                            """.trimIndent()
+                    Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
+                    Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
+                """.trimIndent()
                         )
                     }
                 )
@@ -92,6 +94,12 @@ fun AppNavHost(
 
             composable<Route.WaterTracker> {
                 WaterTrackerScreen(
+                    onNavigateBack = { navigationActions.navigateBack() }
+                )
+            }
+
+            composable<Route.Exercise> {
+                ExerciseScreen(
                     onNavigateBack = { navigationActions.navigateBack() }
                 )
             }
@@ -247,6 +255,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
 
         override fun navigateToWaterTracker() {
             navController.navigateTopLevel(Route.WaterTracker)
+        }
+
+        override fun navigateToExercise() {
+            navController.navigate(Route.Exercise)
         }
 
         override fun navigateToSettings() {

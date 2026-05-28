@@ -59,7 +59,7 @@ fun AddFoodScreen(
                         viewModel.onDateChange(Instant.fromEpochMilliseconds(it))
                     }
                     showDatePicker = false
-                }) { Text("Pilih", color = PrimaryGreen) }
+                }) { Text("Pilih", color = MaterialTheme.colorScheme.primary) }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
@@ -68,8 +68,8 @@ fun AddFoodScreen(
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = PrimaryGreen,
-                    todayContentColor = PrimaryGreen
+                    selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                    todayContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -90,14 +90,14 @@ fun AddFoodScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = BackgroundLight
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryGreen)
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
             } else {
                 Column(
                     modifier = Modifier
@@ -108,14 +108,14 @@ fun AddFoodScreen(
                 ) {
                     Card(
                         shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardWhite),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Informasi Dasar", fontWeight = FontWeight.Bold, color = TextMain)
+                            Text("Informasi Dasar", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             
                             OutlinedTextField(
                                 value = state.name,
@@ -125,8 +125,8 @@ fun AddFoodScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = PrimaryGreen,
-                                    focusedLabelColor = PrimaryGreen
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary
                                 ),
                                 singleLine = true
                             )
@@ -140,8 +140,8 @@ fun AddFoodScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = PrimaryGreen,
-                                        focusedLabelColor = PrimaryGreen
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                        focusedLabelColor = MaterialTheme.colorScheme.primary
                                     ),
                                     singleLine = true
                                 )
@@ -165,14 +165,14 @@ fun AddFoodScreen(
 
                     Card(
                         shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardWhite),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Penyimpanan & Expired", fontWeight = FontWeight.Bold, color = TextMain)
+                            Text("Penyimpanan & Expired", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                             DropdownSelector(
                                 label = "Lokasi Penyimpanan",
@@ -190,12 +190,12 @@ fun AddFoodScreen(
                                 readOnly = true,
                                 trailingIcon = {
                                     IconButton(onClick = { showDatePicker = true }) {
-                                        Icon(Icons.Default.CalendarMonth, contentDescription = "Pilih Tanggal", tint = PrimaryGreen)
+                                        Icon(Icons.Default.CalendarMonth, contentDescription = "Pilih Tanggal", tint = MaterialTheme.colorScheme.primary)
                                     }
                                 },
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = PrimaryGreen,
-                                    focusedLabelColor = PrimaryGreen
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary
                                 )
                             )
                         }
@@ -203,11 +203,11 @@ fun AddFoodScreen(
 
                     Card(
                         shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardWhite),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text("Catatan", fontWeight = FontWeight.Bold, color = TextMain, modifier = Modifier.padding(bottom = 8.dp))
+                            Text("Catatan", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 8.dp))
                             OutlinedTextField(
                                 value = state.notes,
                                 onValueChange = viewModel::onNotesChange,
@@ -216,8 +216,8 @@ fun AddFoodScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 minLines = 3,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = PrimaryGreen,
-                                    focusedLabelColor = PrimaryGreen
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary
                                 )
                             )
                         }
@@ -226,7 +226,7 @@ fun AddFoodScreen(
                     state.error?.let {
                         Text(
                             it, 
-                            color = ExpiredRed, 
+                            color = MaterialTheme.colorScheme.error, 
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(horizontal = 8.dp),
                             fontWeight = FontWeight.Medium
@@ -240,7 +240,7 @@ fun AddFoodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
@@ -282,14 +282,13 @@ fun DropdownSelector(
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryGreen,
-                focusedLabelColor = PrimaryGreen
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                focusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(CardWhite)
+            onDismissRequest = { expanded = false }
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

@@ -6,10 +6,12 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,6 +34,8 @@ import com.example.foodsaver.presentation.screens.detail.FoodDetailScreen
 import com.example.foodsaver.presentation.screens.expiry.ExpiryScreen
 import com.example.foodsaver.presentation.screens.home.HomeScreen
 import com.example.foodsaver.presentation.screens.profile.ProfileScreen
+import com.example.foodsaver.presentation.screens.recipe.CookFromStockScreen
+import com.example.foodsaver.presentation.screens.recipe.RecipeRecommendationScreen
 import com.example.foodsaver.presentation.theme.PrimaryGreen
 
 sealed class BottomNavItem(
@@ -42,6 +46,7 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Filled.Home, Icons.Outlined.Home)
     object Expiry : BottomNavItem("expiry", "Expiry", Icons.Filled.History, Icons.Outlined.History)
+    object Recipe : BottomNavItem("recipe", "Resep", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu)
     object Calendar : BottomNavItem("calendar", "Calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth)
     object Profile : BottomNavItem("profile", "Profile", Icons.Filled.Person, Icons.Outlined.Person)
 }
@@ -97,6 +102,50 @@ fun AppNavHost() {
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+
+        // Fitur Masak dari Stok (Sekarang bisa diakses dari Bottom Nav juga)
+        composable("recipe_selection") {
+            CookFromStockScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResult = { ingredientIds, manualIngredients, prioritizeExpired, preference ->
+                    val idsString = if (ingredientIds.isEmpty()) "none" else ingredientIds.joinToString(",")
+                    val manualString = if (manualIngredients.isEmpty()) "none" else manualIngredients.joinToString(",")
+                    navController.navigate("recipe_result/$idsString/$manualString/$prioritizeExpired/$preference")
+                }
+            )
+        }
+
+        composable(
+            route = "recipe_result/{ids}/{manual}/{prioritize}/{pref}",
+            arguments = listOf(
+                navArgument("ids") { type = NavType.StringType },
+                navArgument("manual") { type = NavType.StringType },
+                navArgument("prioritize") { type = NavType.BoolType },
+                navArgument("pref") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val ids = backStackEntry.arguments?.getString("ids")?.let { 
+                if (it == "none") emptyList() else it.split(",").mapNotNull { id -> id.toLongOrNull() } 
+            } ?: emptyList()
+            val manual = backStackEntry.arguments?.getString("manual")?.let {
+                if (it == "none") emptyList() else it.split(",")
+            } ?: emptyList()
+            val prioritize = backStackEntry.arguments?.getBoolean("prioritize") ?: true
+            val pref = backStackEntry.arguments?.getString("pref") ?: "Praktis"
+            
+            RecipeRecommendationScreen(
+                ingredientIds = ids,
+                manualIngredients = manual,
+                prioritizeExpired = prioritize,
+                preference = pref,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = {
+                    navController.navigate("main") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -106,6 +155,7 @@ fun MainScreen(rootNavController: NavHostController) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Expiry,
+        BottomNavItem.Recipe,
         BottomNavItem.Calendar,
         BottomNavItem.Profile
     )
@@ -113,7 +163,7 @@ fun MainScreen(rootNavController: NavHostController) {
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 val navBackStackEntry by nestedNavController.currentBackStackEntryAsState()
@@ -132,13 +182,12 @@ fun MainScreen(rootNavController: NavHostController) {
                         selected = isSelected,
                         onClick = {
                             nestedNavController.navigate(item.route) {
-                                // Pop up ke start destination untuk menjaga satu stack utama
                                 val startDestination = nestedNavController.graph.findStartDestination()
                                 popUpTo(startDestination.route ?: BottomNavItem.Home.route) {
-                                    saveState = false // Dimatikan sementara untuk stabilitas
+                                    saveState = true
                                 }
                                 launchSingleTop = true
-                                restoreState = false // Dimatikan sementara untuk stabilitas
+                                restoreState = true
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
@@ -161,12 +210,23 @@ fun MainScreen(rootNavController: NavHostController) {
                     onAddFoodClick = { rootNavController.navigate("add_food") },
                     onFoodClick = { id -> rootNavController.navigate("detail/$id") },
                     onCalendarClick = { nestedNavController.navigate(BottomNavItem.Calendar.route) },
-                    onAIClick = { rootNavController.navigate("ai") }
+                    onAIClick = { rootNavController.navigate("ai") },
+                    onCookFromStockClick = { nestedNavController.navigate(BottomNavItem.Recipe.route) }
                 )
             }
             composable(BottomNavItem.Expiry.route) {
                 ExpiryScreen(
                     onFoodClick = { id -> rootNavController.navigate("detail/$id") }
+                )
+            }
+            composable(BottomNavItem.Recipe.route) {
+                CookFromStockScreen(
+                    onNavigateBack = { /* No back button in bottom nav tab */ },
+                    onNavigateToResult = { ingredientIds, manualIngredients, prioritizeExpired, preference ->
+                        val idsString = if (ingredientIds.isEmpty()) "none" else ingredientIds.joinToString(",")
+                        val manualString = if (manualIngredients.isEmpty()) "none" else manualIngredients.joinToString(",")
+                        rootNavController.navigate("recipe_result/$idsString/$manualString/$prioritizeExpired/$preference")
+                    }
                 )
             }
             composable(BottomNavItem.Calendar.route) {

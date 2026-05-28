@@ -3,6 +3,7 @@ package com.example.foodsaver.presentation.screens.expiry
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,11 +40,14 @@ fun ExpiryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Expiry Alert", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = TextMain) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
+                title = { Text("Expiry Alert", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
         },
-        containerColor = BackgroundLight
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             // Summary Card
@@ -54,14 +58,14 @@ fun ExpiryScreen(
 
             TabRow(
                 selectedTabIndex = state.selectedTab,
-                containerColor = BackgroundLight,
-                contentColor = PrimaryGreen,
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.primary,
                 divider = {},
                 indicator = { tabPositions ->
                     if (state.selectedTab < tabPositions.size) {
                         TabRowDefaults.SecondaryIndicator(
                             Modifier.tabIndicatorOffset(tabPositions[state.selectedTab]),
-                            color = PrimaryGreen
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -73,8 +77,8 @@ fun ExpiryScreen(
                         text = {
                             Text(
                                 title,
-                                fontWeight = if (state.selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (state.selectedTab == index) PrimaryGreen else TextSecondary
+                                fontWeight = if (state.selectedTab == index) FontWeight.Bold else FontWeight.Medium,
+                                color = if (state.selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     )
@@ -83,19 +87,22 @@ fun ExpiryScreen(
 
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryGreen)
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center), 
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 } else if (state.filteredItems.isEmpty()) {
                     EmptyExpiryState(state.selectedTab)
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 16.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(state.filteredItems, key = { it.id }) { item ->
                             FoodItemCard(
                                 item = item,
-                                modifier = Modifier.clickable { onFoodClick(item.id) }
+                                onClick = { onFoodClick(item.id) }
                             )
                         }
                     }
@@ -108,15 +115,26 @@ fun ExpiryScreen(
 @Composable
 fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
     val totalUrgent = nearlyExpired + expired
+    val isDark = isSystemInDarkTheme()
+    
+    val bgColor = if (totalUrgent > 0) {
+        if (isDark) WarningBgDark else WarningBgLight
+    } else {
+        if (isDark) SafeBgDark else SafeBgLight
+    }
+    
+    val contentColor = if (totalUrgent > 0) {
+        if (isDark) WarningTextDark else WarningTextLight
+    } else {
+        if (isDark) SafeTextDark else SafeTextLight
+    }
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (totalUrgent > 0) WarningBg else SafeBg
-        )
+        colors = CardDefaults.cardColors(containerColor = bgColor)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -125,15 +143,15 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
             Icon(
                 imageVector = if (totalUrgent > 0) Icons.Default.Info else Icons.Default.CheckCircle,
                 contentDescription = null,
-                tint = if (totalUrgent > 0) WarningOrange else PrimaryGreen,
+                tint = contentColor,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
                     text = if (totalUrgent > 0) "$totalUrgent Makanan Perlu Perhatian" else "Semua Stok Aman",
-                    fontWeight = FontWeight.Bold,
-                    color = if (totalUrgent > 0) WarningOrange else PrimaryGreen,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = contentColor,
                     fontSize = 16.sp
                 )
                 Text(
@@ -141,7 +159,8 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
                         "$nearlyExpired hampir expired, $expired sudah expired." 
                         else "Tidak ada makanan yang akan segera kedaluwarsa.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = contentColor.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -177,22 +196,23 @@ fun EmptyExpiryState(tabIndex: Int) {
             icon,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
-            tint = PrimaryGreen.copy(alpha = 0.2f)
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = message,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = TextMain,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = subMessage,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary,
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Medium
         )
     }
 }

@@ -8,15 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
-import com.example.foodsaver.presentation.theme.PrimaryGreen
-import com.example.foodsaver.presentation.theme.TextMain
-import com.example.foodsaver.presentation.theme.TextSecondary
 
 @Composable
 fun AITipsSection(items: List<FoodItem>) {
@@ -27,8 +23,14 @@ fun AITipsSection(items: List<FoodItem>) {
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = PrimaryGreen.copy(alpha = 0.05f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.2f))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp, 
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+        )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -37,7 +39,7 @@ fun AITipsSection(items: List<FoodItem>) {
             Icon(
                 Icons.Default.AutoAwesome,
                 contentDescription = null,
-                tint = PrimaryGreen,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -45,14 +47,15 @@ fun AITipsSection(items: List<FoodItem>) {
                 Text(
                     "Saran FoodSaver AI",
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryGreen
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     tip,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextMain,
-                    lineHeight = 16.sp
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

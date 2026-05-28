@@ -1,6 +1,7 @@
 package com.example.foodsaver.presentation.screens.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,13 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.components.StatusBadge
 import com.example.foodsaver.presentation.components.getEmojiForCategory
 import com.example.foodsaver.presentation.theme.*
+import com.example.foodsaver.core.util.formatQuantity
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
@@ -54,22 +56,22 @@ fun FoodDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus Makanan", color = TextMain) },
-            text = { Text("Apakah kamu yakin ingin menghapus ${state.foodItem?.name} dari inventory?", color = TextSecondary) },
+            title = { Text("Hapus Makanan") },
+            text = { Text("Apakah kamu yakin ingin menghapus ${state.foodItem?.name} dari inventory?") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.deleteItem()
                         showDeleteDialog = false
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = ExpiredRed)
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("Hapus", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Batal", color = TextSecondary)
+                    Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -78,28 +80,28 @@ fun FoodDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = TextMain) },
+                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
                     IconButton(onClick = { onNavigateToEdit(foodId) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = PrimaryGreen)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = ExpiredRed)
+                        Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = BackgroundLight
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryGreen)
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
             } else if (state.error != null) {
                 ErrorState(message = state.error ?: "Terjadi kesalahan", onRetry = { viewModel.loadFoodDetail(foodId) })
             } else {
@@ -115,7 +117,10 @@ fun FoodDetailScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(28.dp),
-                            colors = CardDefaults.cardColors(containerColor = CardWhite),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -125,7 +130,7 @@ fun FoodDetailScreen(
                                 Surface(
                                     modifier = Modifier.size(100.dp),
                                     shape = RoundedCornerShape(24.dp),
-                                    color = BackgroundLight
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Text(text = getEmojiForCategory(food.category), fontSize = 56.sp)
@@ -136,12 +141,14 @@ fun FoodDetailScreen(
                                     text = food.name,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = TextMain
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = food.category,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = TextSecondary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 StatusBadge(status = food.getStatus())
@@ -152,22 +159,25 @@ fun FoodDetailScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = CardWhite),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                InfoRow(label = "Jumlah Stok", value = "${food.quantity} ${food.unit}")
+                                InfoRow(label = "Jumlah Stok", value = food.quantity.formatQuantity(food.unit))
                                 InfoRow(label = "Lokasi Simpan", value = food.storageLocation)
+                                
+                                val expiryDate = food.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
                                 InfoRow(
                                     label = "Tanggal Expired", 
-                                    value = food.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+                                    value = "${expiryDate.dayOfMonth} / ${expiryDate.monthNumber} / ${expiryDate.year}"
                                 )
                                 
                                 val status = food.getStatus()
+                                val isDark = isSystemInDarkTheme()
                                 val color = when(status) {
-                                    FoodStatus.SAFE -> PrimaryGreen
-                                    FoodStatus.NEAR_EXPIRY -> WarningOrange
-                                    FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> ExpiredRed
+                                    FoodStatus.SAFE -> if (isDark) SafeTextDark else SafeTextLight
+                                    FoodStatus.NEAR_EXPIRY -> if (isDark) WarningTextDark else WarningTextLight
+                                    else -> if (isDark) ExpiredTextDark else ExpiredTextLight
                                 }
                                 InfoRow(
                                     label = "Sisa Waktu", 
@@ -185,21 +195,22 @@ fun FoodDetailScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(24.dp),
-                                colors = CardDefaults.cardColors(containerColor = CardWhite),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Column(modifier = Modifier.padding(20.dp)) {
                                     Text(
                                         text = "Catatan",
                                         style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = TextMain
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = food.notes,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = TextSecondary
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        lineHeight = 20.sp
                                     )
                                 }
                             }
@@ -214,7 +225,8 @@ fun FoodDetailScreen(
                                 modifier = Modifier.fillMaxWidth().height(56.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (food.isConsumed) Color.Gray else PrimaryGreen
+                                    containerColor = if (food.isConsumed) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
+                                    contentColor = if (food.isConsumed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
                                 )
                             ) {
                                 Icon(if (food.isConsumed) Icons.Default.Inventory else Icons.Default.CheckCircle, contentDescription = null)
@@ -228,8 +240,9 @@ fun FoodDetailScreen(
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = if (food.isDiscarded) TextSecondary else ExpiredRed
-                                    )
+                                        contentColor = if (food.isDiscarded) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+                                    ),
+                                    border = if (food.isDiscarded) null else ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error))
                                 ) {
                                     Icon(if (food.isDiscarded) Icons.Default.RestoreFromTrash else Icons.Default.DeleteForever, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
@@ -246,21 +259,22 @@ fun FoodDetailScreen(
 
 @Composable
 fun RecommendationCard(status: FoodStatus) {
+    val isDark = isSystemInDarkTheme()
     val (message, bgColor, textColor) = when(status) {
         FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> Triple(
             "Makanan ini sudah melewati tanggal kedaluwarsa. Periksa kondisinya sebelum dikonsumsi.",
-            ExpiredBg,
-            ExpiredRed
+            if (isDark) ExpiredBgDark else ExpiredBgLight,
+            if (isDark) ExpiredTextDark else ExpiredTextLight
         )
         FoodStatus.NEAR_EXPIRY -> Triple(
             "Sebaiknya konsumsi makanan ini dalam waktu dekat.",
-            WarningBg,
-            WarningOrange
+            if (isDark) WarningBgDark else WarningBgLight,
+            if (isDark) WarningTextDark else WarningTextLight
         )
         FoodStatus.SAFE -> Triple(
             "Makanan ini masih aman disimpan.",
-            SafeBg,
-            PrimaryGreen
+            if (isDark) SafeBgDark else SafeBgLight,
+            if (isDark) SafeTextDark else SafeTextLight
         )
     }
 
@@ -284,20 +298,25 @@ fun RecommendationCard(status: FoodStatus) {
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Bold
             )
         }
     }
 }
 
 @Composable
-fun InfoRow(label: String, value: String, valueColor: Color = TextMain) {
+fun InfoRow(label: String, value: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.bodyMedium, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium
+        )
         Text(
             text = value, 
             style = MaterialTheme.typography.bodyMedium, 
@@ -314,7 +333,7 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = message, color = ExpiredRed, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(text = message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetry) { Text("Coba Lagi") }
     }

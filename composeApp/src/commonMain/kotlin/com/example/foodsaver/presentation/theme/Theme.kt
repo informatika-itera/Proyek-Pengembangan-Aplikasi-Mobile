@@ -6,25 +6,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = FreshGreen,
+    primary = PrimaryLight,
     onPrimary = Color.White,
-    primaryContainer = FreshGreenLight,
-    onPrimaryContainer = FreshGreenDark,
-    secondary = WarningOrange,
+    primaryContainer = SafeBgLight,
+    onPrimaryContainer = PrimaryDarkLight,
+    secondary = WarningTextLight,
     onSecondary = Color.White,
-    background = BackgroundCream,
-    onBackground = TextMain,
-    surface = Color.White,
-    onSurface = TextMain,
-    error = DangerRed,
-    onError = Color.White
+    background = BackgroundLight,
+    onBackground = TextMainLight,
+    surface = SurfaceLight,
+    onSurface = TextMainLight,
+    error = ExpiredTextLight,
+    onError = Color.White,
+    surfaceVariant = SafeBgLight,
+    onSurfaceVariant = TextSecondaryLight
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = FreshGreen,
-    onPrimary = Color.White,
-    secondary = WarningOrange,
-    error = DangerRed
+    primary = PrimaryDark,
+    onPrimary = BackgroundDark,
+    primaryContainer = SafeBgDark,
+    onPrimaryContainer = PrimaryDarkDark,
+    secondary = WarningTextDark,
+    onSecondary = BackgroundDark,
+    background = BackgroundDark,
+    onBackground = TextMainDark,
+    surface = SurfaceDark,
+    onSurface = TextMainDark,
+    error = ExpiredTextDark,
+    onError = Color.White,
+    surfaceVariant = SurfaceDark,
+    onSurfaceVariant = TextSecondaryDark
 )
 
 @Composable

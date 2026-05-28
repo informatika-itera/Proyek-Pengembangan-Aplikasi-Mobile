@@ -1,5 +1,6 @@
 package com.example.foodsaver.presentation.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -12,22 +13,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
-import com.example.foodsaver.presentation.theme.ExpiredRed
-import com.example.foodsaver.presentation.theme.PrimaryGreen
-import com.example.foodsaver.presentation.theme.WarningOrange
-import com.example.foodsaver.presentation.theme.TextMain
-import com.example.foodsaver.presentation.theme.TextSecondary
+import com.example.foodsaver.presentation.theme.*
+import com.example.foodsaver.core.util.formatQuantity
 
 @Composable
 fun FoodItemCard(
     item: FoodItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     val status = item.getStatus()
+    val isDark = isSystemInDarkTheme()
+    
     val statusColor = when (status) {
-        FoodStatus.SAFE -> PrimaryGreen
-        FoodStatus.NEAR_EXPIRY -> WarningOrange
-        FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> ExpiredRed
+        FoodStatus.SAFE -> if (isDark) SafeTextDark else SafeTextLight
+        FoodStatus.NEAR_EXPIRY -> if (isDark) WarningTextDark else WarningTextLight
+        else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
     Card(
@@ -35,8 +36,12 @@ fun FoodItemCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = { onClick?.invoke() }
     ) {
         Row(
             modifier = Modifier
@@ -48,7 +53,7 @@ fun FoodItemCard(
             Surface(
                 modifier = Modifier.size(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = statusColor.copy(alpha = 0.1f)
+                color = statusColor.copy(alpha = 0.15f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -70,23 +75,24 @@ fun FoodItemCard(
                         text = item.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = TextMain,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1
                     )
                     StatusBadge(status = status)
                 }
                 
                 Text(
-                    text = "${item.category} • ${item.quantity} ${item.unit}",
+                    text = "${item.category} • ${item.quantity.formatQuantity(item.unit)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium
                 )
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Simpan: ${item.storageLocation}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                 }
 
@@ -95,7 +101,7 @@ fun FoodItemCard(
                 Text(
                     text = item.getStatusLabel(),
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = statusColor
                 )
             }
@@ -105,20 +111,21 @@ fun FoodItemCard(
 
 @Composable
 fun StatusBadge(status: FoodStatus) {
+    val isDark = isSystemInDarkTheme()
     val (text, color) = when (status) {
-        FoodStatus.SAFE -> "Aman" to PrimaryGreen
-        FoodStatus.NEAR_EXPIRY -> "Penting" to WarningOrange
-        FoodStatus.EXPIRED -> "Expired" to ExpiredRed
-        FoodStatus.EXPIRED_TODAY -> "Expired Hari Ini" to ExpiredRed
+        FoodStatus.SAFE -> "Aman" to if (isDark) SafeTextDark else SafeTextLight
+        FoodStatus.NEAR_EXPIRY -> "Penting" to if (isDark) WarningTextDark else WarningTextLight
+        FoodStatus.EXPIRED -> "Expired" to if (isDark) ExpiredTextDark else ExpiredTextLight
+        FoodStatus.EXPIRED_TODAY -> "Hari Ini" to if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
     Surface(
-        color = color.copy(alpha = 0.15f),
+        color = color.copy(alpha = 0.2f),
         shape = RoundedCornerShape(6.dp)
     ) {
         Text(
             text = text,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.ExtraBold,
             color = color

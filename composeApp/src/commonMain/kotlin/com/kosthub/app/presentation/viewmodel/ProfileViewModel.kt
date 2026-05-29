@@ -33,10 +33,12 @@ class ProfileViewModel(
         scope.launch {
             _uiState.value = UiState.Loading
             try {
-                val profile = repository.getProfile() ?: defaultProfile().also {
-                    repository.saveProfile(it)
+                val profile = repository.getProfile()
+                if (profile != null) {
+                    _uiState.value = UiState.Success(profile)
+                } else {
+                    _uiState.value = UiState.Empty
                 }
-                _uiState.value = UiState.Success(profile)
             } catch (error: Exception) {
                 _uiState.value = UiState.Error(error.message ?: "Gagal memuat profil")
             }
@@ -56,18 +58,24 @@ class ProfileViewModel(
         }
     }
 
+    fun clearProfile() {
+        scope.launch {
+            _operationState.value = OperationState.Loading
+            try {
+                repository.clearProfile()
+                loadProfile()
+                _operationState.value = OperationState.Success("Profil berhasil direset ke default")
+            } catch (error: Exception) {
+                _operationState.value = OperationState.Error(error.message ?: "Gagal mereset profil")
+            }
+        }
+    }
+
     fun clearOperationState() {
         _operationState.value = OperationState.Idle
     }
 
     fun dispose() {
         scope.cancel()
-    }
-
-    private fun defaultProfile(): Profile {
-        return Profile(
-            name = "Nashrullah",
-            email = "nashrullah@itera.ac.id"
-        )
     }
 }

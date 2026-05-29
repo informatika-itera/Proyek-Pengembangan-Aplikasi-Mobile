@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kosthub.app.domain.model.Profile
 import com.kosthub.app.presentation.components.EmptyState
@@ -32,12 +37,15 @@ import com.kosthub.app.presentation.components.LoadingState
 import com.kosthub.app.presentation.state.OperationState
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.presentation.viewmodel.ProfileViewModel
+import androidx.compose.runtime.rememberCoroutineScope
+import com.kosthub.app.platform.LocationTracker
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
-    onNavigateSettings: () -> Unit
+    locationTracker: LocationTracker
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val operationState by profileViewModel.operationState.collectAsState()
@@ -56,8 +64,8 @@ fun ProfileScreen(
         is UiState.Success -> ProfileForm(
             profile = state.data,
             operationState = operationState,
-            onSave = { profileViewModel.saveProfile(it) },
-            onNavigateSettings = onNavigateSettings
+            locationTracker = locationTracker,
+            onSave = { profileViewModel.saveProfile(it) }
         )
     }
 }
@@ -66,19 +74,30 @@ fun ProfileScreen(
 private fun ProfileForm(
     profile: Profile,
     operationState: OperationState,
-    onSave: (Profile) -> Unit,
-    onNavigateSettings: () -> Unit
+    locationTracker: LocationTracker,
+    onSave: (Profile) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf(profile.name) }
     var email by remember { mutableStateOf(profile.email) }
+    var latitude by remember { mutableStateOf(profile.latitude.toString()) }
+    var longitude by remember { mutableStateOf(profile.longitude.toString()) }
+    var isFetchingLocation by remember { mutableStateOf(false) }
+    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(profile) {
         name = profile.name
         email = profile.email
+        latitude = profile.latitude.toString()
+        longitude = profile.longitude.toString()
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -103,8 +122,66 @@ private fun ProfileForm(
                 label = { Text(text = "Email") },
                 modifier = Modifier.fillMaxWidth()
             )
+            TextField(
+                value = latitude,
+                onValueChange = { 
+                    latitude = it
+                    showError = false
+                },
+                label = { Text("Latitude") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextField(
+                value = longitude,
+                onValueChange = { 
+                    longitude = it
+                    showError = false
+                },
+                label = { Text("Longitude") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            androidx.compose.material3.OutlinedButton(
+                onClick = {
+                    scope.launch {
+                        isFetchingLocation = true
+                        showError = false
+                        try {
+                            val loc = locationTracker.getCurrentLocation()
+                            if (loc != null) {
+                                latitude = loc.first.toString()
+                                longitude = loc.second.toString()
+                            } else {
+                                errorMessage = "Gagal mengambil lokasi GPS. Pastikan GPS aktif dan izin diberikan."
+                                showError = true
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = "Terjadi kesalahan: ${e.message}"
+                            showError = true
+                        } finally {
+                            isFetchingLocation = false
+                        }
+                    }
+                },
+                enabled = !isFetchingLocation,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = if (isFetchingLocation) "Mengambil GPS..." else "Ambil Lokasi via GPS")
+            }
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        if (showError) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
         when (operationState) {
             is OperationState.Loading -> Text(
                 text = "Menyimpan profil...",
@@ -123,25 +200,41 @@ private fun ProfileForm(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
-                onSave(
-                    profile.copy(
-                        name = name,
-                        email = email
+                val lat = latitude.trim().replace(",", ".").toDoubleOrNull()
+                val lon = longitude.trim().replace(",", ".").toDoubleOrNull()
+
+                if (name.isBlank()) {
+                    errorMessage = "Nama tidak boleh kosong"
+                    showError = true
+                } else if (email.isBlank()) {
+                    errorMessage = "Email tidak boleh kosong"
+                    showError = true
+                } else if (!email.contains("@")) {
+                    errorMessage = "Format email tidak valid"
+                    showError = true
+                } else if (lat == null) {
+                    errorMessage = "Format Latitude tidak valid (harus angka desimal)"
+                    showError = true
+                } else if (lon == null) {
+                    errorMessage = "Format Longitude tidak valid (harus angka desimal)"
+                    showError = true
+                } else {
+                    onSave(
+                        profile.copy(
+                            name = name.trim(),
+                            email = email.trim(),
+                            latitude = lat,
+                            longitude = lon
+                        )
                     )
-                )
+                }
             },
             enabled = operationState !is OperationState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Simpan Profil")
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        androidx.compose.material3.OutlinedButton(
-            onClick = onNavigateSettings,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = "Pengaturan Tema")
-        }
+
     }
 }
 

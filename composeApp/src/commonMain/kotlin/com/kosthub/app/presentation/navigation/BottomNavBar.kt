@@ -26,7 +26,6 @@ fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomItem(Routes.Home, "Home") { Icon(Icons.Filled.Home, contentDescription = null) },
         BottomItem(Routes.Favorites, "Favorites") { Icon(Icons.Filled.Favorite, contentDescription = null) },
-        BottomItem(Routes.Contribute, "Contribute") { Icon(Icons.Filled.Settings, contentDescription = null) },
         BottomItem(Routes.Profile, "Profile") { Icon(Icons.Filled.Person, contentDescription = null) }
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()

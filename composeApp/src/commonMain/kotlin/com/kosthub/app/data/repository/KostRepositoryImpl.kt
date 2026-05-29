@@ -10,191 +10,118 @@ import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 
 class KostRepositoryImpl(
     private val database: KostDatabase,
     private val apiService: ApiService? = null
 ) : KostRepository {
     private val queries = database.kostQueries
+    private val _remoteKosts = MutableStateFlow<List<Kost>>(emptyList())
 
-    override suspend fun getAll(): List<Kost> = withContext(Dispatchers.Default) {
-        queries.getAllKost().executeAsList().map { it.toDomain() }
-    }
-
-    override fun getAllFlow(): Flow<List<Kost>> {
-        // Trigger background sync when flow is collected
+    init {
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 syncRemote()
             } catch (e: Exception) {
-                // Ignore sync errors for offline first
+                // Ignore initial sync error
             }
         }
+    }
 
-        return queries.getAllKost()
+    override suspend fun getAll(): List<Kost> = withContext(Dispatchers.Default) {
+        val favSet = queries.getFavorites().executeAsList().toSet()
+        _remoteKosts.value.map { kost ->
+            kost.copy(isFavorite = favSet.contains(kost.id))
+        }
+    }
+
+    override fun getAllFlow(): Flow<List<Kost>> {
+        val favoritesFlow = queries.getFavorites()
             .asFlow()
             .mapToList(Dispatchers.Default)
-            .map { list -> list.map { it.toDomain() } }
+            .map { list -> list.toSet() }
+
+        return combine(_remoteKosts, favoritesFlow) { remoteList, favSet ->
+            remoteList.map { kost ->
+                kost.copy(isFavorite = favSet.contains(kost.id))
+            }
+        }
     }
 
     override suspend fun syncRemote(): Unit = withContext(Dispatchers.Default) {
         if (apiService == null) return@withContext
         when (val result = apiService.getAllKosts()) {
             is NetworkResult.Success -> {
-                val remoteKosts = result.data.data
-                database.transaction {
-                    remoteKosts.forEach { dto ->
-                        val localKost = queries.getKostById(dto.id).executeAsOneOrNull()
-                        if (localKost != null) {
-                            queries.updateKost(
-                                contributor_id = dto.contributorId,
-                                nama_kos = dto.namaKos,
-                                nomor_telepon = dto.nomorTelepon,
-                                daerah = dto.daerah,
-                                jarak_km = dto.jarakKm,
-                                harga_tahunan = dto.hargaTahunan,
-                                tipe_kos = dto.tipeKos,
-                                kamar_mandi = dto.kamarMandi,
-                                wifi = dto.wifi,
-                                furnitur_kasur = dto.furniturKasur,
-                                furnitur_lemari = dto.furniturLemari,
-                                furnitur_meja_belajar = dto.furniturMejaBelajar,
-                                fasilitas_pendingin = dto.fasilitasPendingin,
-                                area_laundry = dto.areaLaundry,
-                                area_dapur = dto.areaDapur,
-                                keamanan_cctv = dto.keamananCctv,
-                                is_favorite = if (dto.isFavorite) 1 else 0,
-                                updated_at = currentTimeMillis(),
-                                id = dto.id
-                            )
-                        } else {
-                            // Insert since it's not present locally
-                            queries.insertKost(
-                                contributor_id = dto.contributorId,
-                                nama_kos = dto.namaKos,
-                                nomor_telepon = dto.nomorTelepon,
-                                daerah = dto.daerah,
-                                jarak_km = dto.jarakKm,
-                                harga_tahunan = dto.hargaTahunan,
-                                tipe_kos = dto.tipeKos,
-                                kamar_mandi = dto.kamarMandi,
-                                wifi = dto.wifi,
-                                furnitur_kasur = dto.furniturKasur,
-                                furnitur_lemari = dto.furniturLemari,
-                                furnitur_meja_belajar = dto.furniturMejaBelajar,
-                                fasilitas_pendingin = dto.fasilitasPendingin,
-                                area_laundry = dto.areaLaundry,
-                                area_dapur = dto.areaDapur,
-                                keamanan_cctv = dto.keamananCctv,
-                                is_favorite = if (dto.isFavorite) 1 else 0,
-                                created_at = currentTimeMillis(),
-                                updated_at = currentTimeMillis()
-                            )
-                        }
-                    }
+                val remoteList = result.data.data.map { dto ->
+                    Kost(
+                        id = dto.id,
+                        contributorId = dto.contributorId,
+                        namaKos = dto.namaKos,
+                        nomorTelepon = dto.nomorTelepon,
+                        daerah = dto.daerah,
+                        jarakKm = dto.jarakKm,
+                        hargaTahunan = dto.hargaTahunan,
+                        tipeKos = dto.tipeKos,
+                        kamarMandi = dto.kamarMandi,
+                        wifi = dto.wifi,
+                        furniturKasur = dto.furniturKasur,
+                        furniturLemari = dto.furniturLemari,
+                        furniturMejaBelajar = dto.furniturMejaBelajar,
+                        fasilitasPendingin = dto.fasilitasPendingin,
+                        areaLaundry = dto.areaLaundry,
+                        areaDapur = dto.areaDapur,
+                        keamananCctv = dto.keamananCctv,
+                        isFavorite = false
+                    )
                 }
+                _remoteKosts.value = remoteList
             }
-            is NetworkResult.Error -> {
-                // Log or ignore network error for cache-first behavior
-            }
-            NetworkResult.Loading -> {
-                // No-op
-            }
+            else -> {}
         }
     }
 
     override suspend fun getById(id: Long): Kost? = withContext(Dispatchers.Default) {
-        queries.getKostById(id).executeAsOneOrNull()?.toDomain()
-    }
+        val kost = _remoteKosts.value.find { it.id == id } ?: run {
+            if (apiService != null) {
+                when (val result = apiService.getKostById(id)) {
+                    is NetworkResult.Success -> {
+                        result.data.data?.toDomain()
+                    }
+                    else -> null
+                }
+            } else {
+                null
+            }
+        }
 
-    override suspend fun add(kost: Kost): Long = withContext(Dispatchers.Default) {
-        val now = currentTimeMillis()
-        queries.insertKost(
-            contributor_id = kost.contributorId,
-            nama_kos = kost.namaKos,
-            nomor_telepon = kost.nomorTelepon,
-            daerah = kost.daerah,
-            jarak_km = kost.jarakKm,
-            harga_tahunan = kost.hargaTahunan,
-            tipe_kos = kost.tipeKos,
-            kamar_mandi = kost.kamarMandi,
-            wifi = kost.wifi,
-            furnitur_kasur = kost.furniturKasur,
-            furnitur_lemari = kost.furniturLemari,
-            furnitur_meja_belajar = kost.furniturMejaBelajar,
-            fasilitas_pendingin = kost.fasilitasPendingin,
-            area_laundry = kost.areaLaundry,
-            area_dapur = kost.areaDapur,
-            keamanan_cctv = kost.keamananCctv,
-            is_favorite = if (kost.isFavorite) 1 else 0,
-            created_at = now,
-            updated_at = now
-        )
-        queries.lastInsertId().executeAsOne()
-    }
-
-    override suspend fun update(kost: Kost) = withContext(Dispatchers.Default) {
-        queries.updateKost(
-            contributor_id = kost.contributorId,
-            nama_kos = kost.namaKos,
-            nomor_telepon = kost.nomorTelepon,
-            daerah = kost.daerah,
-            jarak_km = kost.jarakKm,
-            harga_tahunan = kost.hargaTahunan,
-            tipe_kos = kost.tipeKos,
-            kamar_mandi = kost.kamarMandi,
-            wifi = kost.wifi,
-            furnitur_kasur = kost.furniturKasur,
-            furnitur_lemari = kost.furniturLemari,
-            furnitur_meja_belajar = kost.furniturMejaBelajar,
-            fasilitas_pendingin = kost.fasilitasPendingin,
-            area_laundry = kost.areaLaundry,
-            area_dapur = kost.areaDapur,
-            keamanan_cctv = kost.keamananCctv,
-            is_favorite = if (kost.isFavorite) 1 else 0,
-            updated_at = currentTimeMillis(),
-            id = kost.id
-        )
-    }
-
-    override suspend fun delete(id: Long) = withContext(Dispatchers.Default) {
-        queries.deleteKost(id)
-    }
-
-    override suspend fun seedIfEmpty(items: List<Kost>) = withContext(Dispatchers.Default) {
-        val count = queries.countKost().executeAsOne()
-        if (count == 0L) {
-            items.forEach { add(it) }
+        kost?.let {
+            val isFav = queries.isFavorite(it.id).executeAsOne() > 0
+            it.copy(isFavorite = isFav)
         }
     }
 
-    private fun currentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()
-}
+    override suspend fun add(kost: Kost): Long {
+        throw UnsupportedOperationException("Fitur kontribusi dinonaktifkan")
+    }
 
-private fun com.kosthub.app.data.local.KostEntity.toDomain(): Kost {
-    return Kost(
-        id = id,
-        contributorId = contributor_id,
-        namaKos = nama_kos,
-        nomorTelepon = nomor_telepon,
-        daerah = daerah,
-        jarakKm = jarak_km,
-        hargaTahunan = harga_tahunan,
-        tipeKos = tipe_kos,
-        kamarMandi = kamar_mandi,
-        wifi = wifi,
-        furniturKasur = furnitur_kasur,
-        furniturLemari = furnitur_lemari,
-        furniturMejaBelajar = furnitur_meja_belajar,
-        fasilitasPendingin = fasilitas_pendingin,
-        areaLaundry = area_laundry,
-        areaDapur = area_dapur,
-        keamananCctv = keamanan_cctv,
-        isFavorite = is_favorite == 1L
-    )
-}
+    override suspend fun update(kost: Kost) = withContext(Dispatchers.Default) {
+        if (kost.isFavorite) {
+            queries.insertFavorite(kost.id)
+        } else {
+            queries.deleteFavorite(kost.id)
+        }
+    }
 
+    override suspend fun delete(id: Long) {
+        throw UnsupportedOperationException("Fitur kontribusi dinonaktifkan")
+    }
+
+    override suspend fun seedIfEmpty(items: List<Kost>) {
+        // No-op
+    }
+}

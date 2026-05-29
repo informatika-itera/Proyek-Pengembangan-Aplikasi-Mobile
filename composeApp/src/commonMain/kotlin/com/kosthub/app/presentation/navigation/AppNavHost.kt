@@ -3,7 +3,10 @@ package com.kosthub.app.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -13,19 +16,14 @@ import androidx.navigation.navArgument
 import com.kosthub.app.presentation.screens.detail.DetailScreen
 import com.kosthub.app.presentation.screens.favorites.FavoritesScreen
 import com.kosthub.app.presentation.screens.home.HomeScreen
-import com.kosthub.app.presentation.screens.contribute.AddEditKostScreen
-import com.kosthub.app.presentation.screens.contribute.ContributeScreen
-import com.kosthub.app.presentation.screens.contribute.DeleteKostScreen
 import com.kosthub.app.presentation.screens.profile.ProfileScreen
-import com.kosthub.app.presentation.screens.settings.SettingsScreen
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.presentation.viewmodel.KostViewModel
 import com.kosthub.app.presentation.viewmodel.HomeViewModel
 import com.kosthub.app.presentation.viewmodel.ProfileViewModel
 import com.kosthub.app.domain.model.Kost
-import com.kosthub.app.data.local.datastore.ThemePreferences
-import com.kosthub.app.data.local.datastore.ThemeMode
-import kotlinx.coroutines.launch
+import com.kosthub.app.platform.PlatformContext
+import com.kosthub.app.platform.LocationTracker
 
 @Composable
 fun AppNavHost(
@@ -34,13 +32,14 @@ fun AppNavHost(
     viewModel: KostViewModel,
     homeViewModel: HomeViewModel,
     profileViewModel: ProfileViewModel,
-    themePreferences: ThemePreferences,
-    currentThemeMode: ThemeMode,
+    platformContext: PlatformContext,
     modifier: Modifier = Modifier
 ) {
+    val startDestination = Routes.Home
+
     NavHost(
         navController = navController,
-        startDestination = Routes.Home,
+        startDestination = startDestination!!,
         modifier = modifier
     ) {
         composable(Routes.Home) {
@@ -68,73 +67,11 @@ fun AppNavHost(
                 onToggleFavorite = { viewModel.toggleFavorite(it) }
             )
         }
-        composable(Routes.Contribute) {
-            ContributeScreen(
-                uiState = uiState,
-                profileViewModel = profileViewModel,
-                onNavigateAdd = { navController.navigate(Routes.ContributeAdd) },
-                onNavigateEdit = { id -> navController.navigate(Routes.contributeEdit(id)) },
-                onNavigateDelete = { id -> navController.navigate(Routes.contributeDelete(id)) }
-            )
-        }
-        composable(Routes.ContributeAdd) {
-            AddEditKostScreen(
-                title = "Tambah Kost",
-                kostId = null,
-                uiState = uiState,
-                profileViewModel = profileViewModel,
-                operationState = viewModel.operationState.collectAsState().value,
-                onClearOperation = { viewModel.clearOperationState() },
-                onSave = { viewModel.addKost(it) },
-                onBack = { navController.popBackStack() }
-            )
-        }
-        composable(
-            route = Routes.ContributeEdit,
-            arguments = listOf(navArgument("id") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getLong("id") ?: 0L
-            AddEditKostScreen(
-                title = "Edit Kost",
-                kostId = id,
-                uiState = uiState,
-                profileViewModel = profileViewModel,
-                operationState = viewModel.operationState.collectAsState().value,
-                onClearOperation = { viewModel.clearOperationState() },
-                onSave = { viewModel.updateKost(it) },
-                onBack = { navController.popBackStack() }
-            )
-        }
-        composable(
-            route = Routes.ContributeDelete,
-            arguments = listOf(navArgument("id") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getLong("id") ?: 0L
-            DeleteKostScreen(
-                kostId = id,
-                uiState = uiState,
-                operationState = viewModel.operationState.collectAsState().value,
-                onClearOperation = { viewModel.clearOperationState() },
-                onDelete = { viewModel.deleteKost(it) },
-                onBack = { navController.popBackStack() }
-            )
-        }
+
         composable(Routes.Profile) {
             ProfileScreen(
                 profileViewModel = profileViewModel,
-                onNavigateSettings = { navController.navigate(Routes.Settings) }
-            )
-        }
-        composable(Routes.Settings) {
-            val scope = rememberCoroutineScope()
-            SettingsScreen(
-                currentThemeMode = currentThemeMode,
-                onThemeModeSelected = { mode ->
-                    scope.launch {
-                        themePreferences.setThemeMode(mode)
-                    }
-                },
-                onBack = { navController.popBackStack() }
+                locationTracker = remember { LocationTracker(platformContext) }
             )
         }
         composable(

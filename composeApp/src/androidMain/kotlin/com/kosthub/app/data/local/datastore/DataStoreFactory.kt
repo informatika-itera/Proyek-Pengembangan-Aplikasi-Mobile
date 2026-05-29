@@ -4,7 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.kosthub.app.platform.PlatformContext
-import okio.Path.Companion.toPath
+import java.io.File
 
 actual class DataStoreFactory actual constructor(
     private val platformContext: PlatformContext
@@ -12,7 +12,7 @@ actual class DataStoreFactory actual constructor(
     actual fun createDataStore(): DataStore<Preferences> {
         return PreferenceDataStoreFactory.create(
             produceFile = {
-                platformContext.context.filesDir.resolve("kosthub.preferences_pb").absolutePath.toPath()
+                platformContext.context.filesDir.resolve("kosthub.preferences_pb")
             }
         )
     }

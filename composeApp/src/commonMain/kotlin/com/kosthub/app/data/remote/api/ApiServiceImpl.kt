@@ -17,7 +17,7 @@ import com.kosthub.app.data.remote.dto.KostListResponse
 
 class ApiServiceImpl(
     private val client: HttpClient,
-    private val baseUrl: String = "http://localhost:8787"
+    private val baseUrl: String = "https://kosthup-api.klikolio-creative.workers.dev"
 ) : ApiService {
 
     override suspend fun getAllKosts(daerah: String?, tipeKos: String?): NetworkResult<KostListResponse> {

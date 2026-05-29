@@ -17,9 +17,8 @@ import com.kosthub.app.data.local.KostDatabaseFactory
 import com.kosthub.app.data.repository.KostRepositoryImpl
 import com.kosthub.app.data.repository.ProfileRepositoryImpl
 import com.kosthub.app.data.remote.api.ApiServiceImpl
-import com.kosthub.app.data.local.datastore.DataStoreFactory
-import com.kosthub.app.data.local.datastore.ThemePreferences
-import com.kosthub.app.data.local.datastore.ThemeMode
+import com.kosthub.app.presentation.navigation.Routes
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kosthub.app.platform.PlatformContext
 import com.kosthub.app.presentation.navigation.AppNavHost
 import com.kosthub.app.presentation.navigation.BottomNavBar
@@ -50,7 +49,7 @@ fun App(platformContext: PlatformContext) {
                 })
             }
         }
-        ApiServiceImpl(client = client, baseUrl = "http://localhost:8787")
+        ApiServiceImpl(client = client, baseUrl = "https://kosthup-api.klikolio-creative.workers.dev")
     }
 
     val repository = remember { KostRepositoryImpl(database, apiService) }
@@ -59,16 +58,7 @@ fun App(platformContext: PlatformContext) {
     val profileViewModel = remember { ProfileViewModel(ProfileRepositoryImpl(database)) }
     val uiState by kostViewModel.uiState.collectAsState()
 
-    // DataStore & Theme Preferences setup
-    val dataStore = remember { DataStoreFactory(platformContext).createDataStore() }
-    val themePreferences = remember { ThemePreferences(dataStore) }
-    val themeMode by themePreferences.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
-
-    val isDarkTheme = when (themeMode) {
-        ThemeMode.LIGHT -> false
-        ThemeMode.DARK -> true
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-    }
+    val isDarkTheme = isSystemInDarkTheme()
 
     MaterialTheme(
         colorScheme = if (isDarkTheme) darkColorScheme() else lightColorScheme()
@@ -83,8 +73,13 @@ fun App(platformContext: PlatformContext) {
             }
         }
 
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
         Scaffold(
-            bottomBar = { BottomNavBar(navController = navController) }
+            bottomBar = {
+                BottomNavBar(navController = navController)
+            }
         ) { innerPadding ->
             AppNavHost(
                 navController = navController,
@@ -92,8 +87,7 @@ fun App(platformContext: PlatformContext) {
                 viewModel = kostViewModel,
                 homeViewModel = homeViewModel,
                 profileViewModel = profileViewModel,
-                themePreferences = themePreferences,
-                currentThemeMode = themeMode,
+                platformContext = platformContext,
                 modifier = Modifier.padding(innerPadding)
             )
         }

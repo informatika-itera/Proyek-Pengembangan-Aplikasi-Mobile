@@ -11,7 +11,27 @@ class ProfileRepositoryImpl(private val database: KostDatabase) : ProfileReposit
     private val queries = database.profileQueries
 
     override suspend fun getProfile(): Profile? = withContext(Dispatchers.Default) {
-        queries.getProfile().executeAsOneOrNull()?.toDomain()
+        val existing = queries.getProfile().executeAsOneOrNull()?.toDomain()
+        if (existing != null) {
+            existing
+        } else {
+            val defaultProfile = Profile(
+                id = 1L,
+                name = "Anonim",
+                email = "anonim@kosthub.com",
+                latitude = 0.0,
+                longitude = 0.0
+            )
+            queries.upsertProfile(
+                id = defaultProfile.id,
+                name = defaultProfile.name,
+                email = defaultProfile.email,
+                latitude = defaultProfile.latitude,
+                longitude = defaultProfile.longitude,
+                updated_at = currentTimeMillis()
+            )
+            defaultProfile
+        }
     }
 
     override suspend fun saveProfile(profile: Profile) = withContext(Dispatchers.Default) {
@@ -19,6 +39,8 @@ class ProfileRepositoryImpl(private val database: KostDatabase) : ProfileReposit
             id = profile.id,
             name = profile.name,
             email = profile.email,
+            latitude = profile.latitude,
+            longitude = profile.longitude,
             updated_at = currentTimeMillis()
         )
     }
@@ -34,6 +56,8 @@ private fun com.kosthub.app.data.local.ProfileEntity.toDomain(): Profile {
     return Profile(
         id = id,
         name = name,
-        email = email
+        email = email,
+        latitude = latitude,
+        longitude = longitude
     )
 }

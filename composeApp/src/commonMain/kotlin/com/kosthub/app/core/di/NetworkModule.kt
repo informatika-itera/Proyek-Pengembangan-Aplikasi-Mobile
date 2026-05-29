@@ -27,7 +27,6 @@ val networkModule = module {
     }
     
     single<ApiService> {
-        // Default to localhost, can be customized or passed dynamically
-        ApiServiceImpl(client = get(), baseUrl = "http://localhost:8787")
+        ApiServiceImpl(client = get(), baseUrl = "https://kosthup-api.klikolio-creative.workers.dev")
     }
 }

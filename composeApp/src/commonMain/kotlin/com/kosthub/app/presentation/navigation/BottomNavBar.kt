@@ -4,7 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -25,8 +25,9 @@ private data class BottomItem(
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomItem(Routes.Home, "Home") { Icon(Icons.Filled.Home, contentDescription = null) },
-        BottomItem(Routes.Favorites, "Favorites") { Icon(Icons.Filled.Favorite, contentDescription = null) },
-        BottomItem(Routes.Profile, "Profile") { Icon(Icons.Filled.Person, contentDescription = null) }
+        BottomItem(Routes.Favorites, "Favorit") { Icon(Icons.Filled.Favorite, contentDescription = null) },
+        BottomItem(Routes.Recommendation, "AI") { Icon(Icons.Outlined.AutoAwesome, contentDescription = null) },
+        BottomItem(Routes.Profile, "Profil") { Icon(Icons.Filled.Person, contentDescription = null) }
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route

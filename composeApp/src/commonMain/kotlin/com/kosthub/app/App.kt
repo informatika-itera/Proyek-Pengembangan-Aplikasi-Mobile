@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.kosthub.app.data.local.DatabaseDriverFactory
 import com.kosthub.app.data.local.KostDatabaseFactory
+import com.kosthub.app.data.remote.api.ApiServiceImpl
+import com.kosthub.app.data.remote.api.GeminiService
 import com.kosthub.app.data.repository.KostRepositoryImpl
 import com.kosthub.app.data.repository.ProfileRepositoryImpl
-import com.kosthub.app.data.remote.api.ApiServiceImpl
-import com.kosthub.app.presentation.navigation.Routes
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kosthub.app.platform.PlatformContext
 import com.kosthub.app.presentation.navigation.AppNavHost
@@ -25,6 +25,7 @@ import com.kosthub.app.presentation.navigation.BottomNavBar
 import com.kosthub.app.presentation.viewmodel.KostViewModel
 import com.kosthub.app.presentation.viewmodel.HomeViewModel
 import com.kosthub.app.presentation.viewmodel.ProfileViewModel
+import com.kosthub.app.presentation.viewmodel.RecommendationViewModel
 import androidx.compose.runtime.collectAsState
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -37,10 +38,10 @@ fun App(platformContext: PlatformContext) {
         val driverFactory = DatabaseDriverFactory(platformContext)
         KostDatabaseFactory(driverFactory).create()
     }
-    
-    // Ktor client & ApiService setup
-    val apiService = remember {
-        val client = HttpClient {
+
+    // Shared Ktor client for ApiService & GeminiService
+    val httpClient = remember {
+        HttpClient {
             install(ContentNegotiation) {
                 json(Json {
                     ignoreUnknownKeys = true
@@ -49,13 +50,19 @@ fun App(platformContext: PlatformContext) {
                 })
             }
         }
-        ApiServiceImpl(client = client, baseUrl = "https://kosthup-api.klikolio-creative.workers.dev")
     }
+
+    val apiService = remember {
+        ApiServiceImpl(client = httpClient, baseUrl = "https://kosthup-api.klikolio-creative.workers.dev")
+    }
+
+    val geminiService = remember { GeminiService(client = httpClient) }
 
     val repository = remember { KostRepositoryImpl(database, apiService) }
     val kostViewModel = remember { KostViewModel(repository) }
     val homeViewModel = remember { HomeViewModel(repository) }
     val profileViewModel = remember { ProfileViewModel(ProfileRepositoryImpl(database)) }
+    val recommendationViewModel = remember { RecommendationViewModel(geminiService) }
     val uiState by kostViewModel.uiState.collectAsState()
 
     val isDarkTheme = isSystemInDarkTheme()
@@ -70,11 +77,11 @@ fun App(platformContext: PlatformContext) {
                 kostViewModel.dispose()
                 homeViewModel.dispose()
                 profileViewModel.dispose()
+                recommendationViewModel.dispose()
             }
         }
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
 
         Scaffold(
             bottomBar = {
@@ -87,6 +94,7 @@ fun App(platformContext: PlatformContext) {
                 viewModel = kostViewModel,
                 homeViewModel = homeViewModel,
                 profileViewModel = profileViewModel,
+                recommendationViewModel = recommendationViewModel,
                 platformContext = platformContext,
                 modifier = Modifier.padding(innerPadding)
             )

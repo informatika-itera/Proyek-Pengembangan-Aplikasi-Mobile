@@ -3,6 +3,7 @@ package com.kosthub.app.presentation.navigation
 object Routes {
     const val Home = "home"
     const val Favorites = "favorites"
+    const val Recommendation = "recommendation"
     const val Profile = "profile"
     const val Detail = "detail/{id}"
 

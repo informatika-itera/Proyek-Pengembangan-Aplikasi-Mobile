@@ -4,49 +4,65 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.GpsFixed
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kosthub.app.domain.model.Profile
+import com.kosthub.app.platform.LocationTracker
+import com.kosthub.app.platform.PlatformContext
 import com.kosthub.app.presentation.components.EmptyState
 import com.kosthub.app.presentation.components.ErrorState
 import com.kosthub.app.presentation.components.LoadingState
 import com.kosthub.app.presentation.state.OperationState
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.presentation.viewmodel.ProfileViewModel
-import androidx.compose.runtime.rememberCoroutineScope
-import com.kosthub.app.platform.LocationTracker
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     locationTracker: LocationTracker,
-    platformContext: com.kosthub.app.platform.PlatformContext
+    platformContext: PlatformContext
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val operationState by profileViewModel.operationState.collectAsState()
@@ -86,7 +102,7 @@ private fun ProfileForm(
     profile: Profile,
     operationState: OperationState,
     locationTracker: LocationTracker,
-    platformContext: com.kosthub.app.platform.PlatformContext,
+    platformContext: PlatformContext,
     onSave: (Profile) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -103,110 +119,219 @@ private fun ProfileForm(
         longitude = profile.longitude.toString()
     }
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+    )
+    val fieldShape = RoundedCornerShape(12.dp)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
-        Box(
-            modifier = Modifier
-                .size(96.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(48.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = initials(name), style = MaterialTheme.typography.titleLarge)
-        }
-        Spacer(modifier = Modifier.height(32.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text(text = "Nama") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text(text = "Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextField(
-                value = latitude,
-                onValueChange = { latitude = it },
-                label = { Text("Latitude") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextField(
-                value = longitude,
-                onValueChange = { longitude = it },
-                label = { Text("Longitude") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
+        Spacer(modifier = Modifier.height(24.dp))
 
-            androidx.compose.material3.OutlinedButton(
-                onClick = {
-                    scope.launch {
-                        isFetchingLocation = true
-                        try {
-                            val loc = locationTracker.getCurrentLocation()
-                            if (loc != null) {
-                                latitude = loc.first.toString()
-                                longitude = loc.second.toString()
-                                com.kosthub.app.platform.showToast(platformContext, "Lokasi GPS berhasil diambil")
-                            } else {
-                                com.kosthub.app.platform.showToast(platformContext, "Gagal mengambil lokasi GPS. Pastikan GPS aktif dan izin diberikan.")
-                            }
-                        } catch (e: Exception) {
-                            com.kosthub.app.platform.showToast(platformContext, "Terjadi kesalahan: ${e.message}")
-                        } finally {
-                            isFetchingLocation = false
-                        }
-                    }
-                },
-                enabled = !isFetchingLocation,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = if (isFetchingLocation) "Mengambil GPS..." else "Ambil Lokasi via GPS")
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(48.dp),
+            modifier = Modifier.size(96.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = initials(name),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         }
+
         Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = name.ifBlank { "Pengguna" },
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = email.ifBlank { "Belum ada email" },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Informasi Pribadi",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nama") },
+                    leadingIcon = {
+                        Icon(Icons.Outlined.Person, contentDescription = null, modifier = Modifier.size(20.dp))
+                    },
+                    shape = fieldShape,
+                    colors = textFieldColors,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    leadingIcon = {
+                        Icon(Icons.Outlined.Email, contentDescription = null, modifier = Modifier.size(20.dp))
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    shape = fieldShape,
+                    colors = textFieldColors,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Lokasi Kampus",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = latitude,
+                        onValueChange = { latitude = it },
+                        label = { Text("Latitude") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        shape = fieldShape,
+                        colors = textFieldColors,
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = longitude,
+                        onValueChange = { longitude = it },
+                        label = { Text("Longitude") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        shape = fieldShape,
+                        colors = textFieldColors,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            isFetchingLocation = true
+                            try {
+                                val loc = locationTracker.getCurrentLocation()
+                                if (loc != null) {
+                                    latitude = loc.first.toString()
+                                    longitude = loc.second.toString()
+                                    com.kosthub.app.platform.showToast(platformContext, "Lokasi GPS berhasil diambil")
+                                } else {
+                                    com.kosthub.app.platform.showToast(platformContext, "Gagal mengambil lokasi GPS. Pastikan GPS aktif dan izin diberikan.")
+                                }
+                            } catch (e: Exception) {
+                                com.kosthub.app.platform.showToast(platformContext, "Terjadi kesalahan: ${e.message}")
+                            } finally {
+                                isFetchingLocation = false
+                            }
+                        }
+                    },
+                    enabled = !isFetchingLocation,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.GpsFixed,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = if (isFetchingLocation) "Mengambil GPS..." else "Ambil Lokasi via GPS")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
                 val lat = latitude.trim().replace(",", ".").toDoubleOrNull()
                 val lon = longitude.trim().replace(",", ".").toDoubleOrNull()
-
-                if (name.isBlank()) {
-                    com.kosthub.app.platform.showToast(platformContext, "Nama tidak boleh kosong")
-                } else if (email.isBlank()) {
-                    com.kosthub.app.platform.showToast(platformContext, "Email tidak boleh kosong")
-                } else if (!email.contains("@")) {
-                    com.kosthub.app.platform.showToast(platformContext, "Format email tidak valid")
-                } else if (lat == null) {
-                    com.kosthub.app.platform.showToast(platformContext, "Format Latitude tidak valid (harus angka desimal)")
-                } else if (lon == null) {
-                    com.kosthub.app.platform.showToast(platformContext, "Format Longitude tidak valid (harus angka desimal)")
-                } else {
-                    onSave(
-                        profile.copy(
-                            name = name.trim(),
-                            email = email.trim(),
-                            latitude = lat,
-                            longitude = lon
-                        )
-                    )
+                when {
+                    name.isBlank() -> com.kosthub.app.platform.showToast(platformContext, "Nama tidak boleh kosong")
+                    email.isBlank() -> com.kosthub.app.platform.showToast(platformContext, "Email tidak boleh kosong")
+                    !email.contains("@") -> com.kosthub.app.platform.showToast(platformContext, "Format email tidak valid")
+                    lat == null -> com.kosthub.app.platform.showToast(platformContext, "Format Latitude tidak valid")
+                    lon == null -> com.kosthub.app.platform.showToast(platformContext, "Format Longitude tidak valid")
+                    else -> onSave(profile.copy(name = name.trim(), email = email.trim(), latitude = lat, longitude = lon))
                 }
             },
             enabled = operationState !is OperationState.Loading,
-            modifier = Modifier.fillMaxWidth()
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 88.dp)
         ) {
-            Text(text = if (operationState is OperationState.Loading) "Menyimpan..." else "Simpan Profil")
+            Text(
+                text = if (operationState is OperationState.Loading) "Menyimpan..." else "Simpan Profil",
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
         }
-
     }
 }
 

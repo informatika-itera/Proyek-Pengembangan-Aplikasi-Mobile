@@ -17,11 +17,13 @@ import com.kosthub.app.presentation.screens.detail.DetailScreen
 import com.kosthub.app.presentation.screens.favorites.FavoritesScreen
 import com.kosthub.app.presentation.screens.home.HomeScreen
 import com.kosthub.app.presentation.screens.profile.ProfileScreen
+import com.kosthub.app.presentation.screens.recommendation.RecommendationScreen
 import com.kosthub.app.presentation.state.OperationState
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.presentation.viewmodel.KostViewModel
 import com.kosthub.app.presentation.viewmodel.HomeViewModel
 import com.kosthub.app.presentation.viewmodel.ProfileViewModel
+import com.kosthub.app.presentation.viewmodel.RecommendationViewModel
 import com.kosthub.app.domain.model.Kost
 import com.kosthub.app.platform.PlatformContext
 import com.kosthub.app.platform.LocationTracker
@@ -33,6 +35,7 @@ fun AppNavHost(
     viewModel: KostViewModel,
     homeViewModel: HomeViewModel,
     profileViewModel: ProfileViewModel,
+    recommendationViewModel: RecommendationViewModel,
     platformContext: PlatformContext,
     modifier: Modifier = Modifier
 ) {
@@ -55,7 +58,7 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = startDestination!!,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         composable(Routes.Home) {
@@ -73,11 +76,23 @@ fun AppNavHost(
                 onToggleFavorite = { viewModel.toggleFavorite(it) }
             )
         }
+
         composable(Routes.Favorites) {
             FavoritesScreen(
                 uiState = uiState,
                 onNavigateDetail = { id -> navController.navigate(Routes.detail(id)) },
                 onToggleFavorite = { viewModel.toggleFavorite(it) }
+            )
+        }
+
+        composable(Routes.Recommendation) {
+            val kosts = when (val s = uiState) {
+                is UiState.Success -> s.data
+                else -> emptyList()
+            }
+            RecommendationScreen(
+                kosts = kosts,
+                viewModel = recommendationViewModel
             )
         }
 
@@ -88,6 +103,7 @@ fun AppNavHost(
                 platformContext = platformContext
             )
         }
+
         composable(
             route = Routes.Detail,
             arguments = listOf(navArgument("id") { type = NavType.LongType })
@@ -102,4 +118,3 @@ fun AppNavHost(
         }
     }
 }
-

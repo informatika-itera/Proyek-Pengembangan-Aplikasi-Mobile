@@ -1,13 +1,19 @@
 package com.example.noteai.presentation.screens.pantry
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,7 +31,13 @@ fun PantryScreen(
     viewModel: PantryViewModel = koinViewModel()
 ) {
     val items by viewModel.pantryItems.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+
     var showAddDialog by remember { mutableStateOf(false) }
+    var showSearch by remember { mutableStateOf(false) }
+
+    val categories = listOf("Bahan Utama", "Bumbu", "Sayuran", "Daging", "Minuman", "Lainnya")
 
     val groupedItems = remember(items) {
         items.groupBy { it.category }
@@ -33,11 +45,47 @@ fun PantryScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Inventory Dapur", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            TopAppBar(
+                title = {
+                    if (showSearch) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = viewModel::onSearchQueryChange,
+                            placeholder = { Text("Cari bahan...") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 8.dp),
+                            trailingIcon = {
+                                AnimatedVisibility(
+                                    visible = searchQuery.isNotBlank(),
+                                    enter = fadeIn(),
+                                    exit = fadeOut()
+                                ) {
+                                    IconButton(onClick = {
+                                        viewModel.clearSearch()
+                                        showSearch = false
+                                    }) {
+                                        Icon(Icons.Default.Close, contentDescription = "Tutup Pencarian")
+                                    }
+                                }
+                            }
+                        )
+                    } else {
+                        Text("Inventory Dapur", fontWeight = FontWeight.Bold)
+                    }
+                },
+                actions = {
+                    if (!showSearch) {
+                        IconButton(onClick = { showSearch = true }) {
+                            Icon(Icons.Default.Search, contentDescription = "Cari")
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
         },
@@ -51,35 +99,74 @@ fun PantryScreen(
             }
         }
     ) { padding ->
-        if (items.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Stok bahan kosong. Tambahkan sekarang!", style = MaterialTheme.typography.bodyLarge)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        ) {
+            // Filter Categories Row
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                groupedItems.forEach { (category, categoryItems) ->
-                    item {
-                        Text(
-                            text = category.uppercase(),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.typography.labelLarge.color.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
-                        )
-                    }
-                    items(categoryItems, key = { it.id }) { item ->
-                        PantryInventoryCard(
-                            item = item,
-                            onIncrement = { viewModel.updateAmount(item.id, item.amount, 1.0) },
-                            onDecrement = { viewModel.updateAmount(item.id, item.amount, -1.0) },
-                            onDelete = { viewModel.removeItem(item.id) }
-                        )
-                    }
+                item {
+                    FilterChip(
+                        selected = selectedCategory == null,
+                        onClick = { viewModel.onCategorySelected(null) },
+                        label = { Text("Semua") }
+                    )
                 }
-                item { Spacer(modifier = Modifier.height(80.dp)) }
+                items(categories) { category ->
+                    FilterChip(
+                        selected = selectedCategory == category,
+                        onClick = {
+                            viewModel.onCategorySelected(
+                                if (selectedCategory == category) null else category
+                            )
+                        },
+                        label = { Text(category) }
+                    )
+                }
+            }
+
+            // Inventory Content
+            if (items.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        if (searchQuery.isNotBlank() || selectedCategory != null)
+                            "Bahan tidak ditemukan."
+                        else
+                            "Stok bahan kosong. Tambahkan sekarang!",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    groupedItems.forEach { (category, categoryItems) ->
+                        item {
+                            Text(
+                                text = category.uppercase(),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.typography.labelLarge.color.copy(alpha = 0.6f),
+                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
+                            )
+                        }
+                        items(categoryItems, key = { it.id }) { item ->
+                            PantryInventoryCard(
+                                item = item,
+                                onIncrement = { viewModel.updateAmount(item.id, item.amount, 1.0) },
+                                onDecrement = { viewModel.updateAmount(item.id, item.amount, -1.0) },
+                                onDelete = { viewModel.removeItem(item.id) }
+                            )
+                        }
+                    }
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
             }
         }
 

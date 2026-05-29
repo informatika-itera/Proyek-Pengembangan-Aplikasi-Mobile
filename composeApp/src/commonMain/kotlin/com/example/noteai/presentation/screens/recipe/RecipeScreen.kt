@@ -27,38 +27,76 @@ fun RecipeScreen(
     viewModel: RecipeViewModel = koinViewModel()
 ) {
     val recipes by viewModel.recipes.collectAsState()
+    val showFavoritesOnly by viewModel.showFavoritesOnly.collectAsState()
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(title = { Text("My Recipes") })
+            CenterAlignedTopAppBar(
+                title = { Text("Buku Resep") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddRecipeClick) {
+            FloatingActionButton(
+                onClick = onAddRecipeClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Recipe")
             }
         }
     ) { padding ->
-        if (recipes.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Belum ada resep. Yuk buat resep baru!")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            // Tab Header
+            TabRow(selectedTabIndex = if (showFavoritesOnly) 1 else 0) {
+                Tab(
+                    selected = !showFavoritesOnly,
+                    onClick = { viewModel.setShowFavoritesOnly(false) },
+                    text = { Text("Semua Resep") }
+                )
+                Tab(
+                    selected = showFavoritesOnly,
+                    onClick = { viewModel.setShowFavoritesOnly(true) },
+                    text = { Text("Favorit") }
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(recipes) { recipe ->
-                    RecipeCard(
-                        recipe = recipe,
-                        onClick = { onRecipeClick(recipe.id) },
-                        onFavoriteClick = { viewModel.toggleFavorite(recipe.id) }
+
+            // Recipe List Content
+            if (recipes.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = if (showFavoritesOnly) "Belum ada resep favorit." else "Belum ada resep. Yuk buat resep baru!",
+                        style = MaterialTheme.typography.bodyLarge
                     )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(recipes, key = { it.id }) { recipe ->
+                        RecipeCard(
+                            recipe = recipe,
+                            onClick = { onRecipeClick(recipe.id) },
+                            onFavoriteClick = { viewModel.toggleFavorite(recipe.id) }
+                        )
+                    }
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
                 }
             }
         }
     }
 }
+
+// ... Bagian RecipeCard dibiarkan seperti kode Anda yang asli ...
 
 @Composable
 fun RecipeCard(

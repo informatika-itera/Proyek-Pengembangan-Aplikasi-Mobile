@@ -21,12 +21,19 @@ import kotlin.test.assertIs
 class FakeDetailRepository : LetterRepository {
     var shouldFail = false
     override fun getLetters(): Flow<List<Note>> = flowOf(emptyList())
+    
+    override fun getGlobalLetters(): Flow<List<Note>> = flowOf(emptyList())
+
     override suspend fun getLetterById(id: Long): Note? {
         if (shouldFail) throw Exception("Network Error")
         return if (id == 1L) Note(id = 1L, recipient = "Test", content = "Content") else null
     }
+    
     override suspend fun sendLetter(letter: Note) {}
+    
     override suspend fun deleteLetter(id: Long) {}
+
+    override suspend fun clearHistory() {}
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -24,12 +24,24 @@ class FakeLetterRepo : LetterRepository {
     var shouldFail = false
     var wasSendCalled = false
     var lastDeletedId: Long? = null
+    
     override fun getLetters(): Flow<List<Note>> = flowOf(emptyList())
+    
+    override fun getGlobalLetters(): Flow<List<Note>> = flowOf(emptyList())
+
     override suspend fun getLetterById(id: Long): Note? = null
-    override suspend fun deleteLetter(id: Long) { lastDeletedId = id }
+    
     override suspend fun sendLetter(letter: Note) {
         wasSendCalled = true
         if (shouldFail) throw Exception("Network Error")
+    }
+
+    override suspend fun deleteLetter(id: Long) {
+        lastDeletedId = id
+    }
+
+    override suspend fun clearHistory() {
+        // No-op for fake
     }
 }
 

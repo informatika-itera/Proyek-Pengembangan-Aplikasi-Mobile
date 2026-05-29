@@ -1,39 +1,53 @@
 package com.soundletter.app.presentation.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DeepNavy = Color(0xFF0B0E14)
-private val ElectricBlue = Color(0xFF00E5FF)
-private val CyanAccent = Color(0xFF00B8D4)
-private val GlassWhite = Color(0x1AFFFFFF)
-private val BorderWhite = Color(0x33FFFFFF)
+private val LightColorScheme = lightColorScheme(
+    primary = SoundLetterColors.SkyBlue,
+    onPrimary = Color.White,
+    secondary = SoundLetterColors.SkyBlueDark,
+    onSecondary = Color.White,
+    background = SoundLetterColors.PureWhite,
+    surface = SoundLetterColors.PureWhite,
+    onBackground = SoundLetterColors.TextPrimaryLight,
+    onSurface = SoundLetterColors.TextPrimaryLight,
+    surfaceVariant = Color(0xFFF5F5F5),
+    onSurfaceVariant = SoundLetterColors.TextSecondaryLight,
+    outline = SoundLetterColors.SkyBlue,
+    error = Color(0xFFBA1A1A),
+    onError = Color.White
+)
 
 private val DarkColorScheme = darkColorScheme(
-    primary = ElectricBlue,
-    secondary = CyanAccent,
-    background = DeepNavy,
-    surface = DeepNavy,
+    primary = SoundLetterColors.SkyBlue,
     onPrimary = Color.Black,
+    secondary = SoundLetterColors.SkyBlueDark,
     onSecondary = Color.Black,
-    onBackground = Color.White,
-    onSurface = Color.White,
+    background = SoundLetterColors.PureBlack,
+    surface = SoundLetterColors.DarkSurface,
+    onBackground = SoundLetterColors.TextPrimaryDark,
+    onSurface = SoundLetterColors.TextPrimaryDark,
+    surfaceVariant = Color(0xFF1E1E1E),
+    onSurfaceVariant = SoundLetterColors.TextSecondaryDark,
+    outline = SoundLetterColors.SkyBlue,
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005)
 )
 
 @Composable
 fun SoundLetterTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = colorScheme,
         content = content
     )
-}
-
-object SoundLetterColors {
-    val GlassBackground = GlassWhite
-    val GlassBorder = BorderWhite
-    val BackgroundGradient = listOf(DeepNavy, Color(0xFF161B22))
 }

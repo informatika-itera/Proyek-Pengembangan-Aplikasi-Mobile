@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -27,11 +28,18 @@ class FakeHistoryRepository : LetterRepository {
         if (shouldFail) throw Exception("Database Connection Error")
         return flow
     }
+
+    override fun getGlobalLetters(): Flow<List<Note>> = emptyFlow()
+
     override suspend fun getLetterById(id: Long): Note? = null
+    
     override suspend fun sendLetter(letter: Note) {}
+    
     override suspend fun deleteLetter(id: Long) {
         lastDeletedId = id
     }
+
+    override suspend fun clearHistory() {}
 
     suspend fun emit(data: List<Note>) = flow.emit(data)
 }

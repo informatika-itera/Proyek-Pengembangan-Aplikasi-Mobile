@@ -2,6 +2,7 @@ package com.soundletter.app.presentation.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
@@ -24,6 +25,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SplashContent(onTimeout: () -> Unit) {
+    val isDarkMode = isSystemInDarkTheme()
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -42,7 +44,7 @@ fun SplashContent(onTimeout: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(SoundLetterColors.BackgroundGradient)),
+            .background(Brush.verticalGradient(SoundLetterColors.getBackgroundGradient(isDarkMode))),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

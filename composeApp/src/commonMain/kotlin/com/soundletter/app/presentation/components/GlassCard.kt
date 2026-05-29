@@ -1,6 +1,7 @@
 package com.soundletter.app.presentation.components
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,14 +15,17 @@ import com.soundletter.app.presentation.theme.SoundLetterColors
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
+    isDarkMode: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val backgroundColor = if (isDarkMode) SoundLetterColors.GlassBackgroundDark else SoundLetterColors.GlassBackgroundLight
+
     Card(
         modifier = modifier
             .border(1.dp, SoundLetterColors.GlassBorder, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = SoundLetterColors.GlassBackground
+            containerColor = backgroundColor
         )
     ) {
         Box(modifier = Modifier.padding(16.dp)) {

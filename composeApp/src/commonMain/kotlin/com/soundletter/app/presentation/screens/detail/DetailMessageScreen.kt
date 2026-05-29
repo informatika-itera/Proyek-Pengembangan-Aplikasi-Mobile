@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.components.GlassCard
+import com.soundletter.app.presentation.screens.settings.SettingsViewModel
 import com.soundletter.app.presentation.theme.SoundLetterColors
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -35,9 +36,11 @@ import org.koin.compose.viewmodel.koinViewModel
 fun DetailMessageScreen(
     messageId: String,
     onNavigateBack: () -> Unit,
-    viewModel: DetailMessageScreenViewModel = koinViewModel()
+    viewModel: DetailMessageScreenViewModel = koinViewModel(),
+    settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.state.collectAsState()
+    val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
 
     LaunchedEffect(messageId) {
         viewModel.loadMessage(messageId)
@@ -62,7 +65,7 @@ fun DetailMessageScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(SoundLetterColors.BackgroundGradient))
+                .background(Brush.verticalGradient(SoundLetterColors.getBackgroundGradient(isDarkMode)))
                 .padding(padding)
         ) {
             when (val state = uiState) {

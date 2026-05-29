@@ -45,15 +45,25 @@ import kotlinx.coroutines.delay
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
-    locationTracker: LocationTracker
+    locationTracker: LocationTracker,
+    platformContext: com.kosthub.app.platform.PlatformContext
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val operationState by profileViewModel.operationState.collectAsState()
 
     LaunchedEffect(operationState) {
-        if (operationState is OperationState.Success) {
-            delay(1500)
-            profileViewModel.clearOperationState()
+        when (operationState) {
+            is OperationState.Success -> {
+                com.kosthub.app.platform.showToast(platformContext, (operationState as OperationState.Success).message)
+                delay(1000)
+                profileViewModel.clearOperationState()
+            }
+            is OperationState.Error -> {
+                com.kosthub.app.platform.showToast(platformContext, (operationState as OperationState.Error).message)
+                delay(1000)
+                profileViewModel.clearOperationState()
+            }
+            else -> {}
         }
     }
 
@@ -100,6 +110,7 @@ private fun ProfileForm(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(32.dp))
         Box(
             modifier = Modifier
                 .size(96.dp)
@@ -108,7 +119,7 @@ private fun ProfileForm(
         ) {
             Text(text = initials(name), style = MaterialTheme.typography.titleLarge)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TextField(
                 value = name,
@@ -171,7 +182,7 @@ private fun ProfileForm(
                 Text(text = if (isFetchingLocation) "Mengambil GPS..." else "Ambil Lokasi via GPS")
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         if (showError) {
             Text(
                 text = errorMessage,
@@ -181,23 +192,7 @@ private fun ProfileForm(
                 textAlign = TextAlign.Center
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        when (operationState) {
-            is OperationState.Loading -> Text(
-                text = "Menyimpan profil...",
-                style = MaterialTheme.typography.bodySmall
-            )
-            is OperationState.Success -> Text(
-                text = operationState.message,
-                style = MaterialTheme.typography.bodySmall
-            )
-            is OperationState.Error -> Text(
-                text = operationState.message,
-                style = MaterialTheme.typography.bodySmall
-            )
-            OperationState.Idle -> Unit
-        }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Button(
             onClick = {
                 val lat = latitude.trim().replace(",", ".").toDoubleOrNull()
@@ -232,7 +227,7 @@ private fun ProfileForm(
             enabled = operationState !is OperationState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Simpan Profil")
+            Text(text = if (operationState is OperationState.Loading) "Menyimpan..." else "Simpan Profil")
         }
 
     }

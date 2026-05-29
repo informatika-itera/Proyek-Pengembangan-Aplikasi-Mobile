@@ -71,7 +71,8 @@ fun AppNavHost(
         composable(Routes.Profile) {
             ProfileScreen(
                 profileViewModel = profileViewModel,
-                locationTracker = remember { LocationTracker(platformContext) }
+                locationTracker = remember { LocationTracker(platformContext) },
+                platformContext = platformContext
             )
         }
         composable(

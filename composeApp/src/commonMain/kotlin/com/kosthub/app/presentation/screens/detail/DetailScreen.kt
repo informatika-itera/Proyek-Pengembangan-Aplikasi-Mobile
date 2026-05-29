@@ -87,8 +87,7 @@ private fun DetailContent(
             .verticalScroll(scrollState)
     ) {
         // Premium AsyncImage from Placehold.co
-        val encodedName = kost.namaKos.replace(" ", "+")
-        val imageUrl = "https://placehold.co/600x400/4f378b/ffffff?text=$encodedName"
+        val imageUrl = "https://placehold.co/600x400/4f378b/ffffff/png"
         AsyncImage(
             model = imageUrl,
             contentDescription = kost.namaKos,

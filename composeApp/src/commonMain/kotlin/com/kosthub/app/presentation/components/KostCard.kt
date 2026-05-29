@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,8 +41,7 @@ fun KostCard(
     onClick: () -> Unit,
     onToggleFavorite: (Kost) -> Unit
 ) {
-    val encodedName = kost.namaKos.replace(" ", "+")
-    val imageUrl = "https://placehold.co/600x200/4f378b/ffffff?text=$encodedName"
+    val imageUrl = "https://placehold.co/600x400/4f378b/ffffff/png"
 
     Card(
         onClick = onClick,
@@ -61,7 +61,7 @@ fun KostCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(140.dp)
+                        .aspectRatio(3f / 2f)
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 )
 

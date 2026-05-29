@@ -75,6 +75,7 @@ fun ProfileScreen(
             profile = state.data,
             operationState = operationState,
             locationTracker = locationTracker,
+            platformContext = platformContext,
             onSave = { profileViewModel.saveProfile(it) }
         )
     }
@@ -85,6 +86,7 @@ private fun ProfileForm(
     profile: Profile,
     operationState: OperationState,
     locationTracker: LocationTracker,
+    platformContext: com.kosthub.app.platform.PlatformContext,
     onSave: (Profile) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -93,8 +95,6 @@ private fun ProfileForm(
     var latitude by remember { mutableStateOf(profile.latitude.toString()) }
     var longitude by remember { mutableStateOf(profile.longitude.toString()) }
     var isFetchingLocation by remember { mutableStateOf(false) }
-    var showError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(profile) {
         name = profile.name
@@ -135,20 +135,14 @@ private fun ProfileForm(
             )
             TextField(
                 value = latitude,
-                onValueChange = { 
-                    latitude = it
-                    showError = false
-                },
+                onValueChange = { latitude = it },
                 label = { Text("Latitude") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
             )
             TextField(
                 value = longitude,
-                onValueChange = { 
-                    longitude = it
-                    showError = false
-                },
+                onValueChange = { longitude = it },
                 label = { Text("Longitude") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
@@ -158,19 +152,17 @@ private fun ProfileForm(
                 onClick = {
                     scope.launch {
                         isFetchingLocation = true
-                        showError = false
                         try {
                             val loc = locationTracker.getCurrentLocation()
                             if (loc != null) {
                                 latitude = loc.first.toString()
                                 longitude = loc.second.toString()
+                                com.kosthub.app.platform.showToast(platformContext, "Lokasi GPS berhasil diambil")
                             } else {
-                                errorMessage = "Gagal mengambil lokasi GPS. Pastikan GPS aktif dan izin diberikan."
-                                showError = true
+                                com.kosthub.app.platform.showToast(platformContext, "Gagal mengambil lokasi GPS. Pastikan GPS aktif dan izin diberikan.")
                             }
                         } catch (e: Exception) {
-                            errorMessage = "Terjadi kesalahan: ${e.message}"
-                            showError = true
+                            com.kosthub.app.platform.showToast(platformContext, "Terjadi kesalahan: ${e.message}")
                         } finally {
                             isFetchingLocation = false
                         }
@@ -182,37 +174,22 @@ private fun ProfileForm(
                 Text(text = if (isFetchingLocation) "Mengambil GPS..." else "Ambil Lokasi via GPS")
             }
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        if (showError) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = 4.dp),
-                textAlign = TextAlign.Center
-            )
-        }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
                 val lat = latitude.trim().replace(",", ".").toDoubleOrNull()
                 val lon = longitude.trim().replace(",", ".").toDoubleOrNull()
 
                 if (name.isBlank()) {
-                    errorMessage = "Nama tidak boleh kosong"
-                    showError = true
+                    com.kosthub.app.platform.showToast(platformContext, "Nama tidak boleh kosong")
                 } else if (email.isBlank()) {
-                    errorMessage = "Email tidak boleh kosong"
-                    showError = true
+                    com.kosthub.app.platform.showToast(platformContext, "Email tidak boleh kosong")
                 } else if (!email.contains("@")) {
-                    errorMessage = "Format email tidak valid"
-                    showError = true
+                    com.kosthub.app.platform.showToast(platformContext, "Format email tidak valid")
                 } else if (lat == null) {
-                    errorMessage = "Format Latitude tidak valid (harus angka desimal)"
-                    showError = true
+                    com.kosthub.app.platform.showToast(platformContext, "Format Latitude tidak valid (harus angka desimal)")
                 } else if (lon == null) {
-                    errorMessage = "Format Longitude tidak valid (harus angka desimal)"
-                    showError = true
+                    com.kosthub.app.platform.showToast(platformContext, "Format Longitude tidak valid (harus angka desimal)")
                 } else {
                     onSave(
                         profile.copy(

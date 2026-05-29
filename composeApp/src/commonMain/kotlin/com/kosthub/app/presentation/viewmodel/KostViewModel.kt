@@ -32,6 +32,7 @@ class KostViewModel(
                 refresh()
             } catch (error: Exception) {
                 _uiState.value = UiState.Error(error.message ?: "Gagal memuat data")
+                _operationState.value = OperationState.Error(error.message ?: "Gagal memuat data")
             }
         }
     }
@@ -44,6 +45,7 @@ class KostViewModel(
                 _uiState.value = if (data.isEmpty()) UiState.Empty else UiState.Success(data)
             } catch (error: Exception) {
                 _uiState.value = UiState.Error(error.message ?: "Gagal memuat data")
+                _operationState.value = OperationState.Error(error.message ?: "Gagal memuat data")
             }
         }
     }

@@ -17,6 +17,7 @@ import com.kosthub.app.presentation.screens.detail.DetailScreen
 import com.kosthub.app.presentation.screens.favorites.FavoritesScreen
 import com.kosthub.app.presentation.screens.home.HomeScreen
 import com.kosthub.app.presentation.screens.profile.ProfileScreen
+import com.kosthub.app.presentation.state.OperationState
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.presentation.viewmodel.KostViewModel
 import com.kosthub.app.presentation.viewmodel.HomeViewModel
@@ -36,6 +37,21 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val startDestination = Routes.Home
+    val operationState by viewModel.operationState.collectAsState()
+
+    LaunchedEffect(operationState) {
+        when (operationState) {
+            is OperationState.Success -> {
+                com.kosthub.app.platform.showToast(platformContext, (operationState as OperationState.Success).message)
+                viewModel.clearOperationState()
+            }
+            is OperationState.Error -> {
+                com.kosthub.app.platform.showToast(platformContext, (operationState as OperationState.Error).message)
+                viewModel.clearOperationState()
+            }
+            else -> {}
+        }
+    }
 
     NavHost(
         navController = navController,

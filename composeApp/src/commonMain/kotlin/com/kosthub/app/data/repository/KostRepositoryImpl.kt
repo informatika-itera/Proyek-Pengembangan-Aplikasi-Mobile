@@ -60,7 +60,12 @@ class KostRepositoryImpl(
                 val remoteList = result.data.data.map { it.toDomain() }
                 _remoteKosts.value = remoteList
             }
-            else -> {}
+            is NetworkResult.Error -> {
+                throw Exception(result.message ?: "Gagal mengambil data dari server")
+            }
+            else -> {
+                throw Exception("Koneksi bermasalah")
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.kosthub.app.presentation.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,13 +38,14 @@ fun HomeScreen(
 ) {
     val daftarTipe = listOf("Campur", "Perempuan", "Laki-laki")
 
-    Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-        SearchBar(query = searchQuery, onQueryChange = onQueryChange)
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
         Spacer(modifier = Modifier.height(12.dp))
+        SearchBar(query = searchQuery, onQueryChange = onQueryChange)
+        Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             item {
                 FilterChip(
@@ -61,15 +63,24 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         when (uiState) {
             is UiState.Loading -> LoadingState()
             is UiState.Error -> ErrorState(message = uiState.message)
             is UiState.Empty -> EmptyState(text = "Belum ada data kost")
             is UiState.Success -> {
+                val count = uiState.data.size
+                Text(
+                    text = "$count kost ditemukan",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 88.dp),
                     modifier = Modifier.weight(1f)
                 ) {
                     items(uiState.data) { kost ->

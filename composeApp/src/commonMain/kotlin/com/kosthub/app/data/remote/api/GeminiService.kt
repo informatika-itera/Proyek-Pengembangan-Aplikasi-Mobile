@@ -87,29 +87,33 @@ class GeminiService(private val client: HttpClient) {
 object GeminiPromptBuilder {
 
     fun buildRecommendationPrompt(kostData: String, userPreference: String): String = """
-Kamu adalah asisten cerdas yang membantu mahasiswa menemukan kost yang paling sesuai dengan kebutuhan mereka.
+Kamu adalah asisten cerdas yang membantu mahasiswa menemukan kost yang paling sesuai.
 
-Berikut adalah daftar kost yang tersedia beserta detail lengkapnya:
+Berikut adalah daftar kost yang tersedia:
 
 $kostData
 
-Preferensi mahasiswa:
-"$userPreference"
+Preferensi mahasiswa: "$userPreference"
 
 Tugasmu:
-1. Analisis setiap kost berdasarkan preferensi di atas.
-2. Pilih TOP 3 kost yang paling cocok.
-3. Untuk setiap kost yang direkomendasikan, jelaskan alasannya secara singkat dan jelas (maksimal 2 kalimat).
-4. Jika tidak ada kost yang benar-benar cocok, rekomendasikan yang paling mendekati dan jelaskan komprominya.
+1. Pilih TOP 3 kost yang paling cocok dengan preferensi.
+2. Jika tidak ada yang benar-benar cocok, rekomendasikan yang paling mendekati.
 
-Format jawaban yang HARUS diikuti:
-🏠 **[Nama Kost]**
-💰 Harga: [harga] | 📍 Jarak: [jarak] km
-✅ Alasan: [penjelasan singkat mengapa direkomendasikan]
+Format output yang HARUS diikuti dengan TEPAT (tanpa markdown, tanpa tanda bintang, tanpa simbol lain):
 
----
+NAMA: [nama kost]
+DETAIL: [harga per tahun] | [jarak] km dari kampus | Tipe: [tipe kost]
+ALASAN: [penjelasan singkat maksimal 2 kalimat dalam bahasa Indonesia]
 
-Gunakan Bahasa Indonesia yang ramah dan informatif. Jangan menambahkan teks selain format di atas.
+NAMA: [nama kost]
+DETAIL: [harga per tahun] | [jarak] km dari kampus | Tipe: [tipe kost]
+ALASAN: [penjelasan singkat maksimal 2 kalimat dalam bahasa Indonesia]
+
+NAMA: [nama kost]
+DETAIL: [harga per tahun] | [jarak] km dari kampus | Tipe: [tipe kost]
+ALASAN: [penjelasan singkat maksimal 2 kalimat dalam bahasa Indonesia]
+
+Jangan tambahkan teks apapun di luar format di atas.
     """.trimIndent()
 
     fun formatKostForPrompt(

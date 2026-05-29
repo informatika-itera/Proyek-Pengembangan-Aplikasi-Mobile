@@ -5,7 +5,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -18,14 +28,29 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Restaurant
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fitkos.domain.model.Note
 import com.example.fitkos.domain.model.NoteCategory
@@ -37,7 +62,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToAddNote: () -> Unit,
@@ -50,41 +74,16 @@ fun HomeScreen(
     var showSortMenu by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Catatan Makan",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Urutkan")
-                    }
-
-                    SortDropdownMenu(
-                        expanded = showSortMenu,
-                        currentSortBy = currentSortBy,
-                        onSortSelected = {
-                            viewModel.onSortByChanged(it)
-                            showSortMenu = false
-                        },
-                        onDismiss = { showSortMenu = false }
-                    )
-
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
-                    }
-                }
-            )
-        },
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddNote,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Tambah Catatan"
+                )
             }
         }
     ) { paddingValues ->
@@ -92,8 +91,27 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 6.dp,
+                    bottom = 120.dp
+                )
         ) {
+            HomeHeaderSection(
+                showSortMenu = showSortMenu,
+                currentSortBy = currentSortBy,
+                onShowSortMenu = { showSortMenu = true },
+                onSortSelected = {
+                    viewModel.onSortByChanged(it)
+                    showSortMenu = false
+                },
+                onDismissSortMenu = { showSortMenu = false },
+                onNavigateToAI = onNavigateToAI
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             val query = when (val state = uiState) {
                 is HomeUiState.Success -> state.query
                 is HomeUiState.Empty -> state.query
@@ -149,6 +167,57 @@ fun HomeScreen(
 }
 
 @Composable
+private fun HomeHeaderSection(
+    showSortMenu: Boolean,
+    currentSortBy: NoteSortBy,
+    onShowSortMenu: () -> Unit,
+    onSortSelected: (NoteSortBy) -> Unit,
+    onDismissSortMenu: () -> Unit,
+    onNavigateToAI: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Catatan Makan",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box {
+                IconButton(onClick = onShowSortMenu) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Urutkan"
+                    )
+                }
+
+                SortDropdownMenu(
+                    expanded = showSortMenu,
+                    currentSortBy = currentSortBy,
+                    onSortSelected = onSortSelected,
+                    onDismiss = onDismissSortMenu
+                )
+            }
+
+            IconButton(onClick = onNavigateToAI) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = "AI Assistant"
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun MealSearchField(
     query: String,
     onQueryChange: (String) -> Unit,
@@ -161,7 +230,10 @@ private fun MealSearchField(
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = null)
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
         },
         trailingIcon = {
             AnimatedVisibility(
@@ -170,7 +242,10 @@ private fun MealSearchField(
                 exit = fadeOut()
             ) {
                 IconButton(onClick = onClear) {
-                    Icon(Icons.Default.Close, contentDescription = "Hapus")
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Hapus"
+                    )
                 }
             }
         },
@@ -222,7 +297,8 @@ private fun MealList(
     onNoteClick: (Long) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(bottom = 96.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
@@ -293,16 +369,12 @@ private fun MealLogCard(
                     .padding(horizontal = 14.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = " ${note.category.shortLabel()}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text = note.category.shortLabel(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
 
                 Text(
                     text = note.title.ifBlank { "Makanan tanpa nama" },
@@ -351,7 +423,7 @@ private fun EmptyMealState(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(
-                Icons.Outlined.Restaurant,
+                imageVector = Icons.Outlined.Restaurant,
                 contentDescription = null,
                 modifier = Modifier.size(72.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
@@ -401,7 +473,10 @@ private fun SortDropdownMenu(
 
                         if (sortBy == currentSortBy) {
                             Spacer(modifier = Modifier.size(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                text = "✓",
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 },

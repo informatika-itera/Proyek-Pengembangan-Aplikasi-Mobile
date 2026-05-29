@@ -31,6 +31,7 @@ import com.example.fitkos.presentation.screens.splash.SplashScreen
 import com.example.fitkos.presentation.screens.settings.SettingsScreen
 import com.example.fitkos.presentation.screens.watertracker.WaterTrackerScreen
 import com.example.fitkos.presentation.screens.exercise.ExerciseScreen
+import androidx.compose.material.icons.filled.Timer
 
 @Composable
 fun AppNavHost(
@@ -175,10 +176,10 @@ private fun FitKosBottomBar(
             routeKey = "AIAssistant"
         ),
         BottomBarItem(
-            label = "Setting",
-            icon = Icons.Default.Settings,
-            route = Route.Settings,
-            routeKey = "Settings"
+            label = "Stopwatch",
+            icon = Icons.Default.Timer,
+            route = Route.Exercise,
+            routeKey = "Exercise"
         )
     )
 
@@ -217,7 +218,7 @@ private fun String?.shouldShowBottomBar(): Boolean {
             this?.contains("Home") == true ||
             this?.contains("WaterTracker") == true ||
             this?.contains("AIAssistant") == true ||
-            this?.contains("Settings") == true
+            this?.contains("Exercise") == true
 }
 
 private fun NavHostController.navigateTopLevel(route: Route) {

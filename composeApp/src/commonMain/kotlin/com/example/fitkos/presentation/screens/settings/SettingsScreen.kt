@@ -1,6 +1,7 @@
 package com.example.fitkos.presentation.screens.settings
 
 import androidx.compose.foundation.layout.*
+import com.example.fitkos.presentation.components.FitKosTopBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
@@ -32,8 +33,8 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Pengaturan", fontWeight = FontWeight.Bold) }
+            FitKosTopBar(
+                title = "Pengaturan"
             )
         }
     ) { paddingValues ->

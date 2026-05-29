@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
@@ -27,6 +30,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +44,53 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.fitkos.domain.model.Note
 import com.example.fitkos.domain.model.NoteColor
+import androidx.compose.foundation.layout.offset
+
+@Composable
+fun FitKosTopBar(
+    title: String,
+    onNavigateBack: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(34.dp)
+                .padding(horizontal = 16.dp)
+                .offset(y = (-8).dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (onNavigateBack != null) {
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clickable { onNavigateBack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Kembali",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
 
 @Composable
 fun NoteCard(
@@ -53,7 +104,7 @@ fun NoteCard(
         targetValue = Color(note.color.hexValue),
         label = "card_bg"
     )
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -76,7 +127,7 @@ fun NoteCard(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 Row {
                     IconButton(
                         onClick = onPinClick,
@@ -89,7 +140,7 @@ fun NoteCard(
                             modifier = Modifier.size(18.dp)
                         )
                     }
-                    
+
                     IconButton(
                         onClick = onDeleteClick,
                         modifier = Modifier.size(32.dp)
@@ -103,7 +154,7 @@ fun NoteCard(
                     }
                 }
             }
-            
+
             if (note.content.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -114,7 +165,7 @@ fun NoteCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
             CategoryBadge(category = note.category.displayName)
         }
@@ -165,17 +216,17 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         icon?.invoke()
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
@@ -202,15 +253,15 @@ fun ErrorState(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         if (onRetry != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onRetry) {
@@ -236,7 +287,7 @@ fun ColorPickerRow(
                 targetValue = if (isSelected) 1f else 0.6f,
                 label = "color_alpha"
             )
-            
+
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -250,7 +301,9 @@ fun ColorPickerRow(
                                 Color.Black.copy(alpha = 0.1f),
                                 CircleShape
                             )
-                        } else Modifier
+                        } else {
+                            Modifier
+                        }
                     )
             )
         }

@@ -1,6 +1,7 @@
 package com.example.fitkos.presentation.screens.ai
 
 import androidx.compose.foundation.background
+import com.example.fitkos.presentation.components.FitKosTopBar
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -108,21 +109,9 @@ fun AIAssistantScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Asisten AI",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
-                        )
-                    }
-                }
+            FitKosTopBar(
+                title = "Asisten AI",
+                onNavigateBack = onNavigateBack
             )
         },
         bottomBar = {

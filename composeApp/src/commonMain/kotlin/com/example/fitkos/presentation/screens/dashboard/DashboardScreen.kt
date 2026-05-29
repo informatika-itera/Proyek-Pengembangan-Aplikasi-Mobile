@@ -2,14 +2,30 @@ package com.example.fitkos.presentation.screens.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,7 +57,12 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 6.dp,
+                    bottom = 120.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             HeaderSection(uiState)
@@ -60,7 +81,9 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun HeaderSection(uiState: DashboardUiState) {
+private fun HeaderSection(
+    uiState: DashboardUiState
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -74,18 +97,24 @@ private fun HeaderSection(uiState: DashboardUiState) {
                     fontSize = 22.sp
                 )
             )
+
             Text(
                 text = "Yuk jaga kesehatan hari ini",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        
+
         IconButton(
             onClick = { },
-            modifier = Modifier.clip(CircleShape).background(Color.White)
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
-            Icon(Icons.Default.NotificationsNone, contentDescription = "Notifikasi")
+            Icon(
+                imageVector = Icons.Default.NotificationsNone,
+                contentDescription = "Notifikasi"
+            )
         }
     }
 }
@@ -98,32 +127,47 @@ private fun SummaryGrid(
     onNavigateToWaterTracker: () -> Unit,
     onNavigateToExercise: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         Text(
             text = "Ringkasan Hari Ini",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold
+            )
         )
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             SummaryCard(
                 title = "Minum Air",
                 value = "${uiState.waterGlasses}/${uiState.waterTarget}",
                 unit = "gelas",
                 icon = "💧",
-                modifier = Modifier.weight(1f).clickable { onNavigateToWaterTracker() },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onNavigateToWaterTracker() },
                 color = Color(0xFFE3F2FD)
             )
+
             SummaryCard(
                 title = "Catatan Makan",
                 value = "${uiState.mealCount}",
                 unit = "catatan",
                 icon = "🍽️",
-                modifier = Modifier.weight(1f).clickable { onNavigateToMealLog() },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onNavigateToMealLog() },
                 color = Color(0xFFF1F8E9)
             )
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             SummaryCard(
                 title = "Olahraga Hari Ini",
                 value = uiState.exerciseMinutes.toString(),
@@ -134,12 +178,15 @@ private fun SummaryGrid(
                     .clickable { onNavigateToExercise() },
                 color = Color(0xFFFFF3E0)
             )
+
             SummaryCard(
                 title = "Langsung Tanya Asisten AI",
                 value = "AI",
                 unit = "Tanya AI",
                 icon = "🤖",
-                modifier = Modifier.weight(1f).clickable { onNavigateToAI() },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onNavigateToAI() },
                 color = Color(0xFFF3E5F5)
             )
         }
@@ -158,20 +205,45 @@ private fun SummaryCard(
     Card(
         modifier = modifier.height(110.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = color),
-        elevation = CardDefaults.cardElevation(0.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = color
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, fontSize = 24.sp)
-                Spacer(Modifier.width(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = icon,
+                    fontSize = 24.sp
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
                 Column {
-                    Text(text = value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text(text = unit, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = unit,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -179,11 +251,15 @@ private fun SummaryCard(
 }
 
 @Composable
-private fun TargetHarianSection(uiState: DashboardUiState) {
+private fun TargetHarianSection(
+    uiState: DashboardUiState
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -233,18 +309,42 @@ private fun TargetItem(
     unit: String,
     progress: Float
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = icon,
+                    modifier = Modifier.size(20.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-            Text(text = "$current / $target $unit", style = MaterialTheme.typography.labelSmall)
+
+            Text(
+                text = "$current / $target $unit",
+                style = MaterialTheme.typography.labelSmall
+            )
         }
+
         LinearProgressIndicator(
             progress = { progress.coerceIn(0f, 1f) },
-            modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(CircleShape),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.primaryContainer
         )

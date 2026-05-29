@@ -43,9 +43,9 @@ class ExerciseViewModel(
 
         timerJob = viewModelScope.launch {
             while (_uiState.value.isRunning) {
-                delay(1000)
+                delay(10)
                 _uiState.update {
-                    it.copy(elapsedSeconds = it.elapsedSeconds + 1)
+                    it.copy(elapsedMillis = it.elapsedMillis + 10)
                 }
             }
         }
@@ -66,7 +66,7 @@ class ExerciseViewModel(
 
         _uiState.update {
             it.copy(
-                elapsedSeconds = 0,
+                elapsedMillis = 0L,
                 isRunning = false,
                 message = null
             )
@@ -74,23 +74,23 @@ class ExerciseViewModel(
     }
 
     fun saveSession() {
-        val seconds = _uiState.value.elapsedSeconds
+        val millis = _uiState.value.elapsedMillis
 
-        if (seconds <= 0) {
+        if (millis <= 0L) {
             _uiState.update {
                 it.copy(message = "Mulai stopwatch dulu sebelum menyimpan.")
             }
             return
         }
 
-        val minutes = ((seconds + 59) / 60).coerceAtLeast(1)
+        val minutes = ((millis + 59_999) / 60_000).toInt().coerceAtLeast(1)
 
         viewModelScope.launch {
             userPreferences.addExerciseMinutesToday(minutes)
 
             _uiState.update {
                 it.copy(
-                    elapsedSeconds = 0,
+                    elapsedMillis = 0L,
                     isRunning = false,
                     message = "Berhasil menyimpan $minutes menit olahraga."
                 )
@@ -114,7 +114,7 @@ class ExerciseViewModel(
 }
 
 data class ExerciseUiState(
-    val elapsedSeconds: Int = 0,
+    val elapsedMillis: Long = 0L,
     val totalMinutesToday: Int = 0,
     val dailyTargetMinutes: Int = 30,
     val isRunning: Boolean = false,
@@ -129,8 +129,13 @@ data class ExerciseUiState(
 
     val formattedTime: String
         get() {
-            val minutes = elapsedSeconds / 60
-            val seconds = elapsedSeconds % 60
-            return "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+            val totalSeconds = elapsedMillis / 1000
+            val minutes = totalSeconds / 60
+            val seconds = totalSeconds % 60
+            val milliseconds = elapsedMillis % 1000
+
+            return "${minutes.toString().padStart(2, '0')}:" +
+                    "${seconds.toString().padStart(2, '0')}." +
+                    milliseconds.toString().padStart(3, '0')
         }
 }

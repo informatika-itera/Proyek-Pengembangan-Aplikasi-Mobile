@@ -1,6 +1,7 @@
 package com.example.fitkos.presentation.screens.watertracker
 
 import androidx.compose.foundation.background
+import com.example.fitkos.presentation.components.FitKosTopBar
 import androidx.compose.foundation.layout.*
 import com.example.fitkos.domain.model.WaterLog
 import androidx.compose.foundation.lazy.LazyRow
@@ -8,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -38,18 +38,9 @@ fun WaterTrackerScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Tracker Air", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
-                    }
-                }
+            FitKosTopBar(
+                title = "Minum Air",
+                onNavigateBack = onNavigateBack
             )
         }
     ) { paddingValues ->

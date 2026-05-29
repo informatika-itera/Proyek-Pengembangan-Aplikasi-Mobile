@@ -43,7 +43,7 @@ fun KostCard(
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = formatHargaTahunan(kost.hargaTahunan), style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "${kost.daerah} - ${formatJarakKm(kost.jarakKm)} km", style = MaterialTheme.typography.bodySmall)
+            Text(text = "${formatJarakKm(kost.jarakKm)} km", style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 badgeItems(kost).take(3).forEach { label ->

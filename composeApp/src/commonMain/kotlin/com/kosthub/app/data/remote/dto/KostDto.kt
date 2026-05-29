@@ -6,10 +6,8 @@ import com.kosthub.app.domain.model.Kost
 @Serializable
 data class KostDto(
     val id: Long,
-    val contributorId: Long,
     val namaKos: String,
     val nomorTelepon: String? = null,
-    val daerah: String,
     val jarakKm: Double,
     val hargaTahunan: Long,
     val tipeKos: String,
@@ -22,15 +20,13 @@ data class KostDto(
     val areaLaundry: String,
     val areaDapur: String,
     val keamananCctv: String,
-    val isFavorite: Boolean
+    val isFavorite: Boolean = false
 ) {
     fun toDomain(): Kost {
         return Kost(
             id = id,
-            contributorId = contributorId,
             namaKos = namaKos,
             nomorTelepon = nomorTelepon,
-            daerah = daerah,
             jarakKm = jarakKm,
             hargaTahunan = hargaTahunan,
             tipeKos = tipeKos,
@@ -51,10 +47,8 @@ data class KostDto(
         fun fromDomain(kost: Kost): KostDto {
             return KostDto(
                 id = kost.id,
-                contributorId = kost.contributorId,
                 namaKos = kost.namaKos,
                 nomorTelepon = kost.nomorTelepon,
-                daerah = kost.daerah,
                 jarakKm = kost.jarakKm,
                 hargaTahunan = kost.hargaTahunan,
                 tipeKos = kost.tipeKos,

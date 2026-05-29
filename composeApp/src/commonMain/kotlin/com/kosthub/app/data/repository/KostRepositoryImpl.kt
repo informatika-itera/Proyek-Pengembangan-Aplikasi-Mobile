@@ -57,28 +57,7 @@ class KostRepositoryImpl(
         if (apiService == null) return@withContext
         when (val result = apiService.getAllKosts()) {
             is NetworkResult.Success -> {
-                val remoteList = result.data.data.map { dto ->
-                    Kost(
-                        id = dto.id,
-                        contributorId = dto.contributorId,
-                        namaKos = dto.namaKos,
-                        nomorTelepon = dto.nomorTelepon,
-                        daerah = dto.daerah,
-                        jarakKm = dto.jarakKm,
-                        hargaTahunan = dto.hargaTahunan,
-                        tipeKos = dto.tipeKos,
-                        kamarMandi = dto.kamarMandi,
-                        wifi = dto.wifi,
-                        furniturKasur = dto.furniturKasur,
-                        furniturLemari = dto.furniturLemari,
-                        furniturMejaBelajar = dto.furniturMejaBelajar,
-                        fasilitasPendingin = dto.fasilitasPendingin,
-                        areaLaundry = dto.areaLaundry,
-                        areaDapur = dto.areaDapur,
-                        keamananCctv = dto.keamananCctv,
-                        isFavorite = false
-                    )
-                }
+                val remoteList = result.data.data.map { it.toDomain() }
                 _remoteKosts.value = remoteList
             }
             else -> {}

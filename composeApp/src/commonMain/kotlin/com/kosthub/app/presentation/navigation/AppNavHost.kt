@@ -45,15 +45,12 @@ fun AppNavHost(
         composable(Routes.Home) {
             val homeUiState by homeViewModel.uiState.collectAsState()
             val searchQuery by homeViewModel.searchQuery.collectAsState()
-            val selectedDaerah by homeViewModel.selectedDaerah.collectAsState()
             val selectedTipeKos by homeViewModel.selectedTipeKos.collectAsState()
 
             HomeScreen(
                 uiState = homeUiState,
                 searchQuery = searchQuery,
                 onQueryChange = { homeViewModel.onSearchQueryChange(it) },
-                selectedDaerah = selectedDaerah,
-                onDaerahChange = { homeViewModel.onDaerahChange(it) },
                 selectedTipeKos = selectedTipeKos,
                 onTipeKosChange = { homeViewModel.onTipeKosChange(it) },
                 onNavigateDetail = { id -> navController.navigate(Routes.detail(id)) },

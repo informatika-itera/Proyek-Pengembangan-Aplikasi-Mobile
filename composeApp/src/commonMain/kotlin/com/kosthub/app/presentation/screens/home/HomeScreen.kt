@@ -30,54 +30,17 @@ fun HomeScreen(
     uiState: UiState<List<Kost>>,
     searchQuery: String,
     onQueryChange: (String) -> Unit,
-    selectedDaerah: String?,
-    onDaerahChange: (String?) -> Unit,
     selectedTipeKos: String?,
     onTipeKosChange: (String?) -> Unit,
     onNavigateDetail: (Long) -> Unit,
     onToggleFavorite: (Kost) -> Unit
 ) {
-    val daftarDaerah = listOf("Belwis", "Airan", "Korpri")
     val daftarTipe = listOf("Campur", "Perempuan", "Laki-laki")
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text(text = "Temukan Kost Terdekat", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(12.dp))
-        
+    Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         SearchBar(query = searchQuery, onQueryChange = onQueryChange)
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Filter Daerah",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold
-        )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-        ) {
-            item {
-                FilterChip(
-                    selected = selectedDaerah == null,
-                    onClick = { onDaerahChange(null) },
-                    label = { Text("Semua") }
-                )
-            }
-            items(daftarDaerah) { daerah ->
-                FilterChip(
-                    selected = selectedDaerah == daerah,
-                    onClick = { onDaerahChange(daerah) },
-                    label = { Text(daerah) }
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Tipe Kos",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold
-        )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
@@ -98,13 +61,7 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Rekomendasi",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         when (uiState) {
             is UiState.Loading -> LoadingState()

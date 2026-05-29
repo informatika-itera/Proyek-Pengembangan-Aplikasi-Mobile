@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+@OptIn(kotlinx.coroutines.FlowPreview::class)
 class HomeViewModel(
     private val repository: KostRepository,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
@@ -25,9 +26,6 @@ class HomeViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-
-    private val _selectedDaerah = MutableStateFlow<String?>(null)
-    val selectedDaerah: StateFlow<String?> = _selectedDaerah
 
     private val _selectedTipeKos = MutableStateFlow<String?>(null)
     val selectedTipeKos: StateFlow<String?> = _selectedTipeKos
@@ -39,19 +37,15 @@ class HomeViewModel(
     val uiState: StateFlow<UiState<List<Kost>>> = combine(
         repository.getAllFlow(),
         debouncedSearchQuery,
-        _selectedDaerah,
         _selectedTipeKos
-    ) { data, query, daerah, tipeKos ->
+    ) { data, query, tipeKos ->
         val filtered = data.filter { kost ->
             val matchesQuery = query.isEmpty() || 
-                kost.namaKos.contains(query, ignoreCase = true) ||
-                kost.daerah.contains(query, ignoreCase = true)
-            val matchesDaerah = daerah.isNullOrEmpty() || 
-                kost.daerah.equals(daerah, ignoreCase = true)
+                kost.namaKos.contains(query, ignoreCase = true)
             val matchesTipeKos = tipeKos.isNullOrEmpty() || 
                 kost.tipeKos.equals(tipeKos, ignoreCase = true)
             
-            matchesQuery && matchesDaerah && matchesTipeKos
+            matchesQuery && matchesTipeKos
         }
         if (filtered.isEmpty()) {
             UiState.Empty
@@ -66,10 +60,6 @@ class HomeViewModel(
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-    }
-
-    fun onDaerahChange(daerah: String?) {
-        _selectedDaerah.value = daerah
     }
 
     fun onTipeKosChange(tipeKos: String?) {

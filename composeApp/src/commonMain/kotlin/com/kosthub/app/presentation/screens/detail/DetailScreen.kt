@@ -58,7 +58,7 @@ private fun DetailContent(kost: Kost, onBack: () -> Unit) {
     Spacer(modifier = Modifier.height(12.dp))
     Text(text = kost.namaKos, style = MaterialTheme.typography.titleLarge)
     Text(text = formatHargaTahunan(kost.hargaTahunan), style = MaterialTheme.typography.bodyMedium)
-    Text(text = "${kost.daerah} - ${formatJarakKm(kost.jarakKm)} km", style = MaterialTheme.typography.bodySmall)
+    Text(text = "${formatJarakKm(kost.jarakKm)} km", style = MaterialTheme.typography.bodySmall)
     Spacer(modifier = Modifier.height(8.dp))
     Text(text = "Tipe: ${kost.tipeKos}", style = MaterialTheme.typography.bodySmall)
     Text(text = "Kamar mandi: ${kost.kamarMandi}", style = MaterialTheme.typography.bodySmall)

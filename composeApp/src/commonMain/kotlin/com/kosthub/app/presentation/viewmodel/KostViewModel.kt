@@ -48,36 +48,6 @@ class KostViewModel(
         }
     }
 
-    fun addKost(kost: Kost) {
-        scope.launch {
-            runOperation(
-                successMessage = "Kost berhasil ditambahkan"
-            ) {
-                repository.add(kost)
-            }
-        }
-    }
-
-    fun updateKost(kost: Kost) {
-        scope.launch {
-            runOperation(
-                successMessage = "Kost berhasil diperbarui"
-            ) {
-                repository.update(kost)
-            }
-        }
-    }
-
-    fun deleteKost(id: Long) {
-        scope.launch {
-            runOperation(
-                successMessage = "Kost berhasil dihapus"
-            ) {
-                repository.delete(id)
-            }
-        }
-    }
-
     fun toggleFavorite(kost: Kost) {
         scope.launch {
             runOperation(

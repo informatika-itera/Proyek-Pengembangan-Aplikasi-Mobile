@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,7 +48,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -193,7 +191,7 @@ fun RecommendationScreen(
         ) { currentState ->
             when (currentState) {
                 is RecommendationState.Idle -> {
-                    IdleHint(kostCount = kosts.size)
+                    Spacer(modifier = Modifier.height(0.dp))
                 }
                 is RecommendationState.Loading -> {
                     LoadingShimmer()
@@ -231,42 +229,6 @@ private fun SuggestionChip(text: String, onClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun IdleHint(kostCount: Int) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        ),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(24.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.AutoAwesome,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "AI siap membantu!",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "$kostCount kost tersedia untuk dianalisis.\nCeritakan preferensi kamu di atas.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
 
 @Composable
 private fun LoadingShimmer() {
@@ -477,7 +439,7 @@ private fun ErrorCard(message: String, onRetry: () -> Unit) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "⚠️ Terjadi Kesalahan",
+                text = "Terjadi Kesalahan",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.error

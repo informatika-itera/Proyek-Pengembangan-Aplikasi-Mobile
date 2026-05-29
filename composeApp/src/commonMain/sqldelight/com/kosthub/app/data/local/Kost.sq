@@ -2,6 +2,24 @@ CREATE TABLE FavoriteEntity (
     kost_id INTEGER PRIMARY KEY NOT NULL
 );
 
+CREATE TABLE KostEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    namaKos TEXT NOT NULL,
+    nomorTelepon TEXT,
+    jarakKm REAL NOT NULL,
+    hargaTahunan INTEGER NOT NULL,
+    tipeKos TEXT NOT NULL,
+    kamarMandi TEXT NOT NULL,
+    wifi TEXT NOT NULL,
+    furniturKasur TEXT NOT NULL,
+    furniturLemari TEXT NOT NULL,
+    furniturMejaBelajar TEXT NOT NULL,
+    fasilitasPendingin TEXT NOT NULL,
+    areaLaundry TEXT NOT NULL,
+    areaDapur TEXT NOT NULL,
+    keamananCctv TEXT NOT NULL
+);
+
 getFavorites:
 SELECT kost_id FROM FavoriteEntity;
 
@@ -13,3 +31,68 @@ DELETE FROM FavoriteEntity WHERE kost_id = ?;
 
 isFavorite:
 SELECT COUNT(*) FROM FavoriteEntity WHERE kost_id = ?;
+
+selectAll:
+SELECT
+    k.id,
+    k.namaKos,
+    k.nomorTelepon,
+    k.jarakKm,
+    k.hargaTahunan,
+    k.tipeKos,
+    k.kamarMandi,
+    k.wifi,
+    k.furniturKasur,
+    k.furniturLemari,
+    k.furniturMejaBelajar,
+    k.fasilitasPendingin,
+    k.areaLaundry,
+    k.areaDapur,
+    k.keamananCctv,
+    CASE WHEN f.kost_id IS NULL THEN 0 ELSE 1 END AS isFavorite
+FROM KostEntity k
+LEFT JOIN FavoriteEntity f ON k.id = f.kost_id;
+
+selectById:
+SELECT
+    k.id,
+    k.namaKos,
+    k.nomorTelepon,
+    k.jarakKm,
+    k.hargaTahunan,
+    k.tipeKos,
+    k.kamarMandi,
+    k.wifi,
+    k.furniturKasur,
+    k.furniturLemari,
+    k.furniturMejaBelajar,
+    k.fasilitasPendingin,
+    k.areaLaundry,
+    k.areaDapur,
+    k.keamananCctv,
+    CASE WHEN f.kost_id IS NULL THEN 0 ELSE 1 END AS isFavorite
+FROM KostEntity k
+LEFT JOIN FavoriteEntity f ON k.id = f.kost_id
+WHERE k.id = ?;
+
+insertKost:
+INSERT OR REPLACE INTO KostEntity (
+    id,
+    namaKos,
+    nomorTelepon,
+    jarakKm,
+    hargaTahunan,
+    tipeKos,
+    kamarMandi,
+    wifi,
+    furniturKasur,
+    furniturLemari,
+    furniturMejaBelajar,
+    fasilitasPendingin,
+    areaLaundry,
+    areaDapur,
+    keamananCctv
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAllKosts:
+DELETE FROM KostEntity;

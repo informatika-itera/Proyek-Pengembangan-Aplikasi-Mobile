@@ -5,13 +5,12 @@ import com.kosthub.app.domain.model.Kost
 import com.kosthub.app.domain.repository.KostRepository
 import com.kosthub.app.data.remote.api.ApiService
 import com.kosthub.app.data.remote.NetworkResult
+import com.kosthub.app.data.remote.dto.KostDto
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,7 +20,6 @@ class KostRepositoryImpl(
     private val apiService: ApiService? = null
 ) : KostRepository {
     private val queries = database.kostQueries
-    private val _remoteKosts = MutableStateFlow<List<Kost>>(emptyList())
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
@@ -34,31 +32,29 @@ class KostRepositoryImpl(
     }
 
     override suspend fun getAll(): List<Kost> = withContext(Dispatchers.Default) {
-        val favSet = queries.getFavorites().executeAsList().toSet()
-        _remoteKosts.value.map { kost ->
-            kost.copy(isFavorite = favSet.contains(kost.id))
+        queries.selectAll().executeAsList().map { row ->
+            row.toDomain()
         }
     }
 
     override fun getAllFlow(): Flow<List<Kost>> {
-        val favoritesFlow = queries.getFavorites()
+        return queries.selectAll()
             .asFlow()
             .mapToList(Dispatchers.Default)
-            .map { list -> list.toSet() }
-
-        return combine(_remoteKosts, favoritesFlow) { remoteList, favSet ->
-            remoteList.map { kost ->
-                kost.copy(isFavorite = favSet.contains(kost.id))
-            }
-        }
+            .map { list -> list.map { it.toDomain() } }
     }
 
     override suspend fun syncRemote(): Unit = withContext(Dispatchers.Default) {
         if (apiService == null) return@withContext
         when (val result = apiService.getAllKosts()) {
             is NetworkResult.Success -> {
-                val remoteList = result.data.data.map { it.toDomain() }
-                _remoteKosts.value = remoteList
+                val remoteList = result.data.data
+                database.transaction {
+                    queries.deleteAllKosts()
+                    remoteList.forEach { dto ->
+                        insertFromDto(dto)
+                    }
+                }
             }
             is NetworkResult.Error -> {
                 throw Exception(result.message ?: "Gagal mengambil data dari server")
@@ -70,22 +66,22 @@ class KostRepositoryImpl(
     }
 
     override suspend fun getById(id: Long): Kost? = withContext(Dispatchers.Default) {
-        val kost = _remoteKosts.value.find { it.id == id } ?: run {
-            if (apiService != null) {
-                when (val result = apiService.getKostById(id)) {
-                    is NetworkResult.Success -> {
-                        result.data.data?.toDomain()
-                    }
-                    else -> null
-                }
-            } else {
-                null
-            }
+        val cached = queries.selectById(id).executeAsOneOrNull()
+        if (cached != null) {
+            return@withContext cached.toDomain()
         }
-
-        kost?.let {
-            val isFav = queries.isFavorite(it.id).executeAsOne() > 0
-            it.copy(isFavorite = isFav)
+        if (apiService == null) return@withContext null
+        when (val result = apiService.getKostById(id)) {
+            is NetworkResult.Success -> {
+                val dto = result.data.data
+                if (dto != null) {
+                    insertFromDto(dto)
+                    dto.toDomain()
+                } else {
+                    null
+                }
+            }
+            else -> null
         }
     }
 
@@ -107,5 +103,67 @@ class KostRepositoryImpl(
 
     override suspend fun seedIfEmpty(items: List<Kost>) {
         // No-op
+    }
+
+    private fun insertFromDto(dto: KostDto) {
+        queries.insertKost(
+            id = dto.id,
+            namaKos = dto.namaKos,
+            nomorTelepon = dto.nomorTelepon,
+            jarakKm = dto.jarakKm,
+            hargaTahunan = dto.hargaTahunan,
+            tipeKos = dto.tipeKos,
+            kamarMandi = dto.kamarMandi,
+            wifi = dto.wifi,
+            furniturKasur = dto.furniturKasur,
+            furniturLemari = dto.furniturLemari,
+            furniturMejaBelajar = dto.furniturMejaBelajar,
+            fasilitasPendingin = dto.fasilitasPendingin,
+            areaLaundry = dto.areaLaundry,
+            areaDapur = dto.areaDapur,
+            keamananCctv = dto.keamananCctv
+        )
+    }
+
+    private fun com.kosthub.app.data.local.SelectAll.toDomain(): Kost {
+        return Kost(
+            id = id,
+            namaKos = namaKos,
+            nomorTelepon = nomorTelepon,
+            jarakKm = jarakKm,
+            hargaTahunan = hargaTahunan,
+            tipeKos = tipeKos,
+            kamarMandi = kamarMandi,
+            wifi = wifi,
+            furniturKasur = furniturKasur,
+            furniturLemari = furniturLemari,
+            furniturMejaBelajar = furniturMejaBelajar,
+            fasilitasPendingin = fasilitasPendingin,
+            areaLaundry = areaLaundry,
+            areaDapur = areaDapur,
+            keamananCctv = keamananCctv,
+            isFavorite = isFavorite != 0L
+        )
+    }
+
+    private fun com.kosthub.app.data.local.SelectById.toDomain(): Kost {
+        return Kost(
+            id = id,
+            namaKos = namaKos,
+            nomorTelepon = nomorTelepon,
+            jarakKm = jarakKm,
+            hargaTahunan = hargaTahunan,
+            tipeKos = tipeKos,
+            kamarMandi = kamarMandi,
+            wifi = wifi,
+            furniturKasur = furniturKasur,
+            furniturLemari = furniturLemari,
+            furniturMejaBelajar = furniturMejaBelajar,
+            fasilitasPendingin = fasilitasPendingin,
+            areaLaundry = areaLaundry,
+            areaDapur = areaDapur,
+            keamananCctv = keamananCctv,
+            isFavorite = isFavorite != 0L
+        )
     }
 }

@@ -233,7 +233,7 @@ fun MealPlanSelectionDialog(
                     val label = when (selectedDate) {
                         today -> "Hari Ini"
                         today.plus(1, DateTimeUnit.DAY) -> "Besok"
-                        else -> "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase().capitalize()}"
+                        else -> "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }}"
                     }
                     Text("Tanggal: $label", fontWeight = FontWeight.Bold)
                 }

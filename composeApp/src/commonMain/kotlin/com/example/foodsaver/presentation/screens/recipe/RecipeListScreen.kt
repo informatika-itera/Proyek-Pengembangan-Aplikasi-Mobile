@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,7 +53,6 @@ fun RecipeListScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Search Bar
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = viewModel::onSearchQueryChange,
@@ -65,7 +65,6 @@ fun RecipeListScreen(
                 singleLine = true
             )
 
-            // Filter Chips
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,7 +153,7 @@ fun RecipeItem(recipe: Recipe, onClick: () -> Unit) {
                 contentDescription = recipe.name,
                 modifier = Modifier
                     .size(80.dp)
-                    .androidx.compose.ui.draw.clip(RoundedCornerShape(12.dp)),
+                    .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(12.dp))

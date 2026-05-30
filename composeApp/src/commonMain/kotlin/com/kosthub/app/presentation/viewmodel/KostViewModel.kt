@@ -1,6 +1,5 @@
 package com.kosthub.app.presentation.viewmodel
 
-import com.kosthub.app.data.DummyKostData
 import com.kosthub.app.domain.model.Kost
 import com.kosthub.app.domain.repository.KostRepository
 import com.kosthub.app.presentation.state.OperationState
@@ -29,10 +28,11 @@ class KostViewModel(
     init {
         scope.launch {
             try {
-                repository.seedIfEmpty(DummyKostData.seedData())
+                repository.syncRemote()
                 refresh()
             } catch (error: Exception) {
                 _uiState.value = UiState.Error(error.message ?: "Gagal memuat data")
+                _operationState.value = OperationState.Error(error.message ?: "Gagal memuat data")
             }
         }
     }
@@ -45,36 +45,7 @@ class KostViewModel(
                 _uiState.value = if (data.isEmpty()) UiState.Empty else UiState.Success(data)
             } catch (error: Exception) {
                 _uiState.value = UiState.Error(error.message ?: "Gagal memuat data")
-            }
-        }
-    }
-
-    fun addKost(kost: Kost) {
-        scope.launch {
-            runOperation(
-                successMessage = "Kost berhasil ditambahkan"
-            ) {
-                repository.add(kost)
-            }
-        }
-    }
-
-    fun updateKost(kost: Kost) {
-        scope.launch {
-            runOperation(
-                successMessage = "Kost berhasil diperbarui"
-            ) {
-                repository.update(kost)
-            }
-        }
-    }
-
-    fun deleteKost(id: Long) {
-        scope.launch {
-            runOperation(
-                successMessage = "Kost berhasil dihapus"
-            ) {
-                repository.delete(id)
+                _operationState.value = OperationState.Error(error.message ?: "Gagal memuat data")
             }
         }
     }

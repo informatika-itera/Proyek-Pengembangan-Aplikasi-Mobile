@@ -1,86 +1,98 @@
-CREATE TABLE KostEntity (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    contributor_id INTEGER NOT NULL,
-    nama_kos TEXT NOT NULL,
-    nomor_telepon TEXT,
-    daerah TEXT NOT NULL,
-    jarak_km REAL NOT NULL,
-    harga_tahunan INTEGER NOT NULL,
-    tipe_kos TEXT NOT NULL,
-    kamar_mandi TEXT NOT NULL,
-    wifi TEXT NOT NULL,
-    furnitur_kasur TEXT NOT NULL,
-    furnitur_lemari TEXT NOT NULL,
-    furnitur_meja_belajar TEXT NOT NULL,
-    fasilitas_pendingin TEXT NOT NULL,
-    area_laundry TEXT NOT NULL,
-    area_dapur TEXT NOT NULL,
-    keamanan_cctv TEXT NOT NULL,
-    is_favorite INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+CREATE TABLE FavoriteEntity (
+    kost_id INTEGER PRIMARY KEY NOT NULL
 );
 
-getAllKost:
-SELECT * FROM KostEntity
-ORDER BY is_favorite DESC, updated_at DESC;
+CREATE TABLE KostEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    namaKos TEXT NOT NULL,
+    nomorTelepon TEXT,
+    jarakKm REAL NOT NULL,
+    hargaTahunan INTEGER NOT NULL,
+    tipeKos TEXT NOT NULL,
+    kamarMandi TEXT NOT NULL,
+    wifi TEXT NOT NULL,
+    furniturKasur TEXT NOT NULL,
+    furniturLemari TEXT NOT NULL,
+    furniturMejaBelajar TEXT NOT NULL,
+    fasilitasPendingin TEXT NOT NULL,
+    areaLaundry TEXT NOT NULL,
+    areaDapur TEXT NOT NULL,
+    keamananCctv TEXT NOT NULL
+);
 
-getKostById:
-SELECT * FROM KostEntity
-WHERE id = ?;
+getFavorites:
+SELECT kost_id FROM FavoriteEntity;
+
+insertFavorite:
+INSERT OR REPLACE INTO FavoriteEntity (kost_id) VALUES (?);
+
+deleteFavorite:
+DELETE FROM FavoriteEntity WHERE kost_id = ?;
+
+isFavorite:
+SELECT COUNT(*) FROM FavoriteEntity WHERE kost_id = ?;
+
+selectAll:
+SELECT
+    k.id,
+    k.namaKos,
+    k.nomorTelepon,
+    k.jarakKm,
+    k.hargaTahunan,
+    k.tipeKos,
+    k.kamarMandi,
+    k.wifi,
+    k.furniturKasur,
+    k.furniturLemari,
+    k.furniturMejaBelajar,
+    k.fasilitasPendingin,
+    k.areaLaundry,
+    k.areaDapur,
+    k.keamananCctv,
+    CASE WHEN f.kost_id IS NULL THEN 0 ELSE 1 END AS isFavorite
+FROM KostEntity k
+LEFT JOIN FavoriteEntity f ON k.id = f.kost_id;
+
+selectById:
+SELECT
+    k.id,
+    k.namaKos,
+    k.nomorTelepon,
+    k.jarakKm,
+    k.hargaTahunan,
+    k.tipeKos,
+    k.kamarMandi,
+    k.wifi,
+    k.furniturKasur,
+    k.furniturLemari,
+    k.furniturMejaBelajar,
+    k.fasilitasPendingin,
+    k.areaLaundry,
+    k.areaDapur,
+    k.keamananCctv,
+    CASE WHEN f.kost_id IS NULL THEN 0 ELSE 1 END AS isFavorite
+FROM KostEntity k
+LEFT JOIN FavoriteEntity f ON k.id = f.kost_id
+WHERE k.id = ?;
 
 insertKost:
-INSERT INTO KostEntity (
-    contributor_id,
-    nama_kos,
-    nomor_telepon,
-    daerah,
-    jarak_km,
-    harga_tahunan,
-    tipe_kos,
-    kamar_mandi,
+INSERT OR REPLACE INTO KostEntity (
+    id,
+    namaKos,
+    nomorTelepon,
+    jarakKm,
+    hargaTahunan,
+    tipeKos,
+    kamarMandi,
     wifi,
-    furnitur_kasur,
-    furnitur_lemari,
-    furnitur_meja_belajar,
-    fasilitas_pendingin,
-    area_laundry,
-    area_dapur,
-    keamanan_cctv,
-    is_favorite,
-    created_at,
-    updated_at
-)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    furniturKasur,
+    furniturLemari,
+    furniturMejaBelajar,
+    fasilitasPendingin,
+    areaLaundry,
+    areaDapur,
+    keamananCctv
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
-lastInsertId:
-SELECT last_insert_rowid();
-
-updateKost:
-UPDATE KostEntity
-SET contributor_id = ?,
-    nama_kos = ?,
-    nomor_telepon = ?,
-    daerah = ?,
-    jarak_km = ?,
-    harga_tahunan = ?,
-    tipe_kos = ?,
-    kamar_mandi = ?,
-    wifi = ?,
-    furnitur_kasur = ?,
-    furnitur_lemari = ?,
-    furnitur_meja_belajar = ?,
-    fasilitas_pendingin = ?,
-    area_laundry = ?,
-    area_dapur = ?,
-    keamanan_cctv = ?,
-    is_favorite = ?,
-    updated_at = ?
-WHERE id = ?;
-
-deleteKost:
-DELETE FROM KostEntity
-WHERE id = ?;
-
-countKost:
-SELECT COUNT(*) FROM KostEntity;
+deleteAllKosts:
+DELETE FROM KostEntity;

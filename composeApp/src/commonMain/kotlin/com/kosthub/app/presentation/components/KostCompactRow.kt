@@ -32,7 +32,7 @@ fun KostCompactRow(kost: Kost) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = kost.namaKos, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = "${kost.daerah} - ${formatJarakKm(kost.jarakKm)} km",
+                    text = "${formatJarakKm(kost.jarakKm)} km",
                     style = MaterialTheme.typography.bodySmall
                 )
             }

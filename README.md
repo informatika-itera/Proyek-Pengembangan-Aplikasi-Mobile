@@ -49,11 +49,11 @@ Aplikasi ini memenuhi standar wajib proyek akhir:
 
 *Fokus: Integrasi API dan Pencarian* 
 
-- [ ] Integrasi REST API menggunakan Ktor Client untuk data kos publik.
-- [ ] Implementasi fitur *Search* dan *Filter* kos berdasarkan harga/fasilitas.
-- [ ] Dukungan *Offline Mode* agar data yang sudah di-cache tetap dapat diakses.
-- [ ] Penambahan layar tambahan seperti *Settings* atau *User Profile*.
-- [ ] Integrasi fitur bonus (misal: klasterisasi AI atau *Dark Mode*).
+- [x] Integrasi REST API menggunakan Ktor Client untuk data kos publik.
+- [x] Implementasi fitur *Search* dan *Filter* kos berdasarkan harga dan tipe kos.
+- [x] Dukungan *Offline Mode* agar data yang sudah di-cache tetap dapat diakses.
+- [x] Penambahan layar tambahan seperti *Settings* atau *User Profile*.
+- [x] Integrasi fitur bonus (misal: klasterisasi AI atau *Dark Mode*).
 
 ### Sprint 4: Polish & Testing (Week 14)
 

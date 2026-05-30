@@ -4,6 +4,7 @@ import app.cash.sqldelight.ColumnAdapter
 import com.example.foodsaver.core.network.HttpClientFactory
 import com.example.foodsaver.data.local.FoodItemEntity
 import com.example.foodsaver.data.local.FoodSaverDatabase
+import com.example.foodsaver.data.local.datastore.UserPreferences
 import com.example.foodsaver.data.remote.api.GeminiService
 import com.example.foodsaver.data.remote.api.MealApiService
 import com.example.foodsaver.data.repository.AIRepositoryImpl
@@ -19,8 +20,12 @@ import com.example.foodsaver.presentation.screens.addfood.AddFoodViewModel
 import com.example.foodsaver.presentation.screens.detail.FoodDetailViewModel
 import com.example.foodsaver.presentation.screens.home.HomeViewModel
 import com.example.foodsaver.presentation.screens.ai.AIAssistantViewModel
+import com.example.foodsaver.presentation.screens.expiry.ExpiryViewModel
+import com.example.foodsaver.presentation.screens.calendar.CalendarViewModel
+import com.example.foodsaver.presentation.screens.profile.ProfileViewModel
 import com.example.foodsaver.presentation.screens.mealplan.MealPlannerViewModel
 import com.example.foodsaver.presentation.screens.recipe.RecipeViewModel
+import com.example.foodsaver.presentation.screens.recipe.CookFromStockViewModel
 import com.example.foodsaver.presentation.screens.recipe.detail.RecipeDetailViewModel
 import kotlinx.datetime.Instant
 import org.koin.core.context.startKoin
@@ -43,11 +48,16 @@ val commonModule = module {
         FoodSaverDatabase(
             driver = get(),
             FoodItemEntityAdapter = FoodItemEntity.Adapter(
+                buyDateAdapter = instantAdapter,
                 expiryDateAdapter = instantAdapter
             )
         ) 
     }
     
+    // Preferences
+    single { get<com.example.foodsaver.data.local.datastore.DataStoreFactory>().create() }
+    single { UserPreferences(get()) }
+
     // Network
     single { HttpClientFactory().create() }
     single { GeminiService(get()) }
@@ -83,13 +93,17 @@ val commonModule = module {
     factory { GenerateIdeasUseCase(get()) }
 
     // ViewModels
-    viewModel { HomeViewModel(get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { AddFoodViewModel(get(), get()) }
-    viewModel { FoodDetailViewModel(get(), get()) }
-    viewModel { AIAssistantViewModel(get(), get(), get(), get()) }
+    viewModel { FoodDetailViewModel(get(), get(), get()) }
+    viewModel { AIAssistantViewModel(get(), get(), get(), get(), get()) } // Updated to 5 params
     viewModel { RecipeViewModel(get(), get()) }
     viewModel { RecipeDetailViewModel(get(), get(), get()) }
     viewModel { MealPlannerViewModel(get(), get()) }
+    viewModel { ExpiryViewModel(get()) }
+    viewModel { CalendarViewModel(get()) }
+    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { CookFromStockViewModel(get()) }
 }
 
 /**

@@ -1,0 +1,2 @@
+-- Migrasi dari versi 3 ke 4
+ALTER TABLE FoodItemEntity ADD COLUMN isDiscarded INTEGER NOT NULL DEFAULT 0;

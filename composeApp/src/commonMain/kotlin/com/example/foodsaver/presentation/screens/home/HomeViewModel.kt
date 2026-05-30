@@ -2,6 +2,7 @@ package com.example.foodsaver.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.foodsaver.data.local.datastore.UserPreferences
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.domain.usecase.DeleteFoodUseCase
@@ -12,25 +13,47 @@ import kotlinx.coroutines.launch
 data class HomeUiState(
     val isLoading: Boolean = false,
     val items: List<FoodItem> = emptyList(),
+    val activeItems: List<FoodItem> = emptyList(),
     val filteredItems: List<FoodItem> = emptyList(),
+    val priorityItems: List<FoodItem> = emptyList(),
+    val urgentReminders: List<FoodItem> = emptyList(),
     val searchQuery: String = "",
+    val selectedCategory: String = "Semua",
     val totalItems: Int = 0,
+    val safeCount: Int = 0,
     val nearlyExpiredCount: Int = 0,
     val expiredCount: Int = 0,
-    val selectedIds: Set<Long> = emptySet(),
+    val notificationsEnabled: Boolean = true,
+    val reminderDays: Int = 1,
     val error: String? = null
 )
 
 class HomeViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
-    private val deleteFoodUseCase: DeleteFoodUseCase
+    private val deleteFoodUseCase: DeleteFoodUseCase,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
     init {
+        observePreferences()
         loadItems()
+    }
+
+    private fun observePreferences() {
+        viewModelScope.launch {
+            combine(
+                userPreferences.notificationsEnabled,
+                userPreferences.reminderDays
+            ) { enabled, days ->
+                enabled to days
+            }.collect { (enabled, days) ->
+                _state.update { it.copy(notificationsEnabled = enabled, reminderDays = days) }
+                updateReminders()
+            }
+        }
     }
 
     fun loadItems() {
@@ -40,53 +63,76 @@ class HomeViewModel(
                 .catch { e ->
                     _state.update { it.copy(isLoading = false, error = e.message) }
                 }
-                .collect { items ->
-                    val nearlyExpired = items.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
-                    val expired = items.count { it.getStatus() == FoodStatus.EXPIRED }
+                .collect { allItems ->
+                    val activeItems = allItems.filter { !it.isConsumed && !it.isDiscarded }
+                        .sortedBy { it.getDaysRemaining() }
+
+                    val safe = activeItems.count { it.getStatus() == FoodStatus.SAFE }
+                    val nearlyExpired = activeItems.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
+                    val expired = activeItems.count { it.getStatus() == FoodStatus.EXPIRED || it.getStatus() == FoodStatus.EXPIRED_TODAY }
+                    
+                    val priority = activeItems.filter { it.getStatus() != FoodStatus.SAFE }.take(5)
                     
                     _state.update { it.copy(
                         isLoading = false, 
-                        items = items, 
-                        filteredItems = filterItems(items, it.searchQuery),
-                        totalItems = items.size,
+                        items = allItems,
+                        activeItems = activeItems,
+                        filteredItems = filterItems(activeItems, it.searchQuery, it.selectedCategory),
+                        priorityItems = priority,
+                        totalItems = activeItems.size,
+                        safeCount = safe,
                         nearlyExpiredCount = nearlyExpired,
                         expiredCount = expired,
                         error = null
                     ) }
+                    updateReminders()
                 }
         }
+    }
+
+    private fun updateReminders() {
+        val currentState = _state.value
+        if (!currentState.notificationsEnabled) {
+            _state.update { it.copy(urgentReminders = emptyList()) }
+            return
+        }
+
+        val reminders = currentState.activeItems.filter { item ->
+            val days = item.getDaysRemaining()
+            days == 0 || (days > 0 && days <= currentState.reminderDays)
+        }
+        _state.update { it.copy(urgentReminders = reminders) }
     }
 
     fun onSearchQueryChange(query: String) {
         _state.update { 
             it.copy(
                 searchQuery = query,
-                filteredItems = filterItems(it.items, query)
+                filteredItems = filterItems(it.activeItems, query, it.selectedCategory)
             )
         }
     }
 
-    private fun filterItems(items: List<FoodItem>, query: String): List<FoodItem> {
-        return if (query.isBlank()) {
-            items
-        } else {
-            items.filter { it.name.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
+    fun onCategoryChange(category: String) {
+        _state.update {
+            it.copy(
+                selectedCategory = category,
+                filteredItems = filterItems(it.activeItems, it.searchQuery, category)
+            )
         }
     }
 
-    fun toggleSelection(id: Long) {
-        _state.update { currentState ->
-            val newSelection = if (currentState.selectedIds.contains(id)) {
-                currentState.selectedIds - id
-            } else {
-                currentState.selectedIds + id
-            }
-            currentState.copy(selectedIds = newSelection)
+    private fun filterItems(items: List<FoodItem>, query: String, category: String): List<FoodItem> {
+        return items.filter { item ->
+            val matchesQuery = query.isBlank() || 
+                    item.name.contains(query, ignoreCase = true) || 
+                    item.category.contains(query, ignoreCase = true) ||
+                    item.storageLocation.contains(query, ignoreCase = true)
+            
+            val matchesCategory = category == "Semua" || item.category == category
+            
+            matchesQuery && matchesCategory
         }
-    }
-
-    fun clearSelection() {
-        _state.update { it.copy(selectedIds = emptySet()) }
     }
 
     fun deleteItem(id: Long) {

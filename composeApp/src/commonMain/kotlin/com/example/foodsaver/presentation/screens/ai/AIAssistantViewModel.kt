@@ -2,8 +2,10 @@ package com.example.foodsaver.presentation.screens.ai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.repository.AIRepository
 import com.example.foodsaver.domain.repository.WritingStyle
+import com.example.foodsaver.domain.usecase.GetAllFoodUseCase
 import com.example.foodsaver.domain.usecase.GenerateIdeasUseCase
 import com.example.foodsaver.domain.usecase.ImproveWritingUseCase
 import com.example.foodsaver.domain.usecase.SummarizeNoteUseCase
@@ -13,11 +15,13 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AIAssistantViewModel(
     private val aiRepository: AIRepository,
+    private val getAllFoodUseCase: GetAllFoodUseCase,
     private val summarizeUseCase: SummarizeNoteUseCase,
     private val improveWritingUseCase: ImproveWritingUseCase,
     private val generateIdeasUseCase: GenerateIdeasUseCase
@@ -41,13 +45,18 @@ class AIAssistantViewModel(
     
     fun onActionSelected(action: AIAction) {
         _uiState.update { it.copy(selectedAction = action) }
+        
+        // Auto-fill prompt for inventory suggestion
+        if (action == AIAction.SUGGEST_FROM_INVENTORY) {
+            _uiState.update { it.copy(inputText = "Bantu saya carikan ide resep dari bahan makanan yang ada di kulkas.") }
+        }
     }
     
     fun executeAction() {
         val state = _uiState.value
         
-        if (state.inputText.isBlank()) {
-            _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
+        if (state.inputText.isBlank() && state.selectedAction != AIAction.SUGGEST_FROM_INVENTORY) {
+            _uiState.update { it.copy(error = "Tuliskan sesuatu dulu ya sebelum bertanya ke AI.") }
             return
         }
         
@@ -55,6 +64,7 @@ class AIAssistantViewModel(
         
         viewModelScope.launch {
             val result = when (state.selectedAction) {
+                AIAction.SUGGEST_FROM_INVENTORY -> suggestFromInventory()
                 AIAction.SUMMARIZE -> summarize(state.inputText)
                 AIAction.GENERATE_IDEAS -> generateIdeas(state.inputText)
                 AIAction.IMPROVE_WRITING -> improveWriting(state.inputText, state.writingStyle)
@@ -68,8 +78,30 @@ class AIAssistantViewModel(
                     _uiState.update { it.copy(isLoading = false, result = output) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
+                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Waduh, ada kendala teknis nih. Coba lagi yuk!") }
                 }
+        }
+    }
+
+    private suspend fun suggestFromInventory(): Result<String> {
+        return try {
+            val items = getAllFoodUseCase().first()
+            if (items.isEmpty()) {
+                return Result.failure(Exception("Inventarismu masih kosong nih. Tambahkan bahan makanan dulu yuk!"))
+            }
+            
+            val nearExpiry = items.filter { it.getDaysRemaining() <= 3 && it.getDaysRemaining() >= 0 }
+            val inventoryText = if (nearExpiry.isNotEmpty()) {
+                "Saya punya bahan makanan yang hampir lewat batas kesegarannya: ${nearExpiry.joinToString { "${it.name} (${it.getStatusLabel()})" }}. " +
+                "Serta bahan lainnya: ${items.filter { it !in nearExpiry }.joinToString { it.name }}. "
+            } else {
+                "Saya punya bahan makanan: ${items.joinToString { it.name }}. "
+            }
+            
+            val prompt = inventoryText + "Berikan 3 ide resep kreatif yang bisa saya masak agar bahan tersebut tidak terbuang. Jelaskan langkah singkatnya dengan bahasa yang ramah."
+            aiRepository.chat(prompt)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
     
@@ -127,17 +159,18 @@ class AIAssistantViewModel(
 }
 
 enum class AIAction(val displayName: String, val description: String) {
-    SUMMARIZE("Ringkas", "Buat ringkasan dari teks"),
-    GENERATE_IDEAS("Ide", "Generate ide berdasarkan topik"),
-    IMPROVE_WRITING("Perbaiki", "Perbaiki tulisan"),
-    TRANSLATE("Terjemah", "Terjemahkan ke bahasa lain"),
-    SUGGEST_TITLE("Judul", "Sarankan judul"),
-    CHAT("Tanya", "Tanya AI tentang apapun")
+    SUGGEST_FROM_INVENTORY("Cek Kulkas", "Cari ide resep dari bahan yang segera habis"),
+    SUMMARIZE("Ringkas", "Buat ringkasan singkat dari teks"),
+    GENERATE_IDEAS("Ide Kreatif", "Dapatkan ide-ide baru untuk topikmu"),
+    IMPROVE_WRITING("Perbaiki Teks", "Buat tulisanmu jadi lebih rapi"),
+    TRANSLATE("Terjemahkan", "Ganti teks ke bahasa pilihanmu"),
+    SUGGEST_TITLE("Saran Judul", "Dapatkan judul menarik untuk catatanmu"),
+    CHAT("Tanya Bebas", "Ngobrol santai atau tanya apapun ke AI")
 }
 
 data class AIAssistantUiState(
     val inputText: String = "",
-    val selectedAction: AIAction = AIAction.SUMMARIZE,
+    val selectedAction: AIAction = AIAction.SUGGEST_FROM_INVENTORY,
     val writingStyle: WritingStyle = WritingStyle.NEUTRAL,
     val targetLanguage: String = "English",
     val isLoading: Boolean = false,
@@ -145,7 +178,7 @@ data class AIAssistantUiState(
     val error: String? = null
 ) {
     val canExecute: Boolean
-        get() = inputText.isNotBlank() && !isLoading
+        get() = (inputText.isNotBlank() || selectedAction == AIAction.SUGGEST_FROM_INVENTORY) && !isLoading
 }
 
 sealed interface AIAssistantEvent {

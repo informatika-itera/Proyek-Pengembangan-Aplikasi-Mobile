@@ -1,5 +1,7 @@
 package com.example.foodsaver.presentation.screens.detail
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,18 +10,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.RestoreFromTrash
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.foodsaver.domain.model.FoodItem
+import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.components.StatusBadge
 import com.example.foodsaver.presentation.components.getEmojiForCategory
+import com.example.foodsaver.presentation.theme.*
+import com.example.foodsaver.core.util.formatQuantity
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
@@ -48,8 +56,8 @@ fun FoodDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus Makanan") },
-            text = { Text("Apakah Anda yakin ingin menghapus ${state.foodItem?.name} dari daftar inventory?") },
+            title = { Text("Hapus Stok Makanan") },
+            text = { Text("Yakin ingin menghapus ${state.foodItem?.name} dari daftar?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -58,12 +66,12 @@ fun FoodDetailScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Hapus")
+                    Text("Hapus", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Batal")
+                    Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -72,7 +80,7 @@ fun FoodDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Makanan", fontWeight = FontWeight.Bold) },
+                title = { Text("Detail Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -80,24 +88,22 @@ fun FoodDetailScreen(
                 },
                 actions = {
                     IconButton(onClick = { onNavigateToEdit(foodId) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit")
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
             } else if (state.error != null) {
-                Text(
-                    text = state.error ?: "Terjadi kesalahan",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.error
-                )
+                ErrorState(message = "Gagal memuat data nih. Coba lagi ya!", onRetry = { viewModel.loadFoodDetail(foodId) })
             } else {
                 state.foodItem?.let { food ->
                     Column(
@@ -107,72 +113,142 @@ fun FoodDetailScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Header Card
+                        // Header Emoji & Status Card
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            shape = RoundedCornerShape(28.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
                                 modifier = Modifier.padding(24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
-                                    text = getEmojiForCategory(food.category),
-                                    fontSize = 64.sp
-                                )
+                                Surface(
+                                    modifier = Modifier.size(100.dp),
+                                    shape = RoundedCornerShape(24.dp),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Text(text = getEmojiForCategory(food.category), fontSize = 56.sp)
+                                    }
+                                }
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
                                     text = food.name,
                                     style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = food.category,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium
                                 )
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                                 StatusBadge(status = food.getStatus())
                             }
                         }
 
-                        // Info Details
-                        DetailInfoSection(food)
+                        // Info Detail Card
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                InfoRow(label = "Sisa stok", value = food.quantity.formatQuantity(food.unit))
+                                InfoRow(label = "Disimpan di", value = food.storageLocation)
+                                
+                                val expiryDate = food.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
+                                InfoRow(
+                                    label = "Batas kesegaran", 
+                                    value = "${expiryDate.dayOfMonth} / ${expiryDate.monthNumber} / ${expiryDate.year}"
+                                )
+                                
+                                val status = food.getStatus()
+                                val isDark = isSystemInDarkTheme()
+                                val color = when(status) {
+                                    FoodStatus.SAFE -> if (isDark) SafeTextDark else SafeTextLight
+                                    FoodStatus.NEAR_EXPIRY -> if (isDark) WarningTextDark else WarningTextLight
+                                    else -> if (isDark) ExpiredTextDark else ExpiredTextLight
+                                }
+                                InfoRow(
+                                    label = "Status saat ini", 
+                                    value = food.getStatusLabel(),
+                                    valueColor = color
+                                )
+                            }
+                        }
+
+                        // Recommendation Card
+                        RecommendationCard(status = food.getStatus())
                         
+                        // Notes Card
                         if (!food.notes.isNullOrBlank()) {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
+                                shape = RoundedCornerShape(24.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
+                                Column(modifier = Modifier.padding(20.dp)) {
                                     Text(
-                                        text = "Catatan",
+                                        text = "Catatan tambahan",
                                         style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = food.notes,
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        lineHeight = 20.sp
                                     )
                                 }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         
-                        Button(
-                            onClick = { onNavigateToEdit(foodId) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Edit Makanan")
+                        // Action Buttons
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                onClick = { viewModel.toggleConsumed() },
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (food.isConsumed) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
+                                    contentColor = if (food.isConsumed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
+                                )
+                            ) {
+                                Icon(if (food.isConsumed) Icons.Default.Inventory else Icons.Default.CheckCircle, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(if (food.isConsumed) "Tandai belum habis" else "Sudah saya habiskan", fontWeight = FontWeight.Bold)
+                            }
+
+                            if (!food.isConsumed) {
+                                OutlinedButton(
+                                    onClick = { viewModel.toggleDiscarded() },
+                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = if (food.isDiscarded) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+                                    ),
+                                    border = if (food.isDiscarded) null else ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error))
+                                ) {
+                                    Icon(if (food.isDiscarded) Icons.Default.RestoreFromTrash else Icons.Default.DeleteForever, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(if (food.isDiscarded) "Batal buang stok" else "Dibuang karena rusak", fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
                     }
                 }
@@ -182,42 +258,83 @@ fun FoodDetailScreen(
 }
 
 @Composable
-fun DetailInfoSection(food: FoodItem) {
+fun RecommendationCard(status: FoodStatus) {
+    val isDark = isSystemInDarkTheme()
+    val (message, bgColor, textColor) = when(status) {
+        FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> Triple(
+            "Sepertinya sudah lewat tanggalnya. Cek dulu sebelum dikonsumsi ya!",
+            if (isDark) ExpiredBgDark else ExpiredBgLight,
+            if (isDark) ExpiredTextDark else ExpiredTextLight
+        )
+        FoodStatus.NEAR_EXPIRY -> Triple(
+            "Bahan ini sudah harus segera diolah biar nggak mubazir.",
+            if (isDark) WarningBgDark else WarningBgLight,
+            if (isDark) WarningTextDark else WarningTextLight
+        )
+        FoodStatus.SAFE -> Triple(
+            "Stok ini masih dalam kondisi segar dan aman disimpan.",
+            if (isDark) SafeBgDark else SafeBgLight,
+            if (isDark) SafeTextDark else SafeTextLight
+        )
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = bgColor)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            InfoRow(label = "Jumlah", value = "${food.quantity} ${food.unit}")
-            InfoRow(label = "Lokasi", value = food.storageLocation)
-            InfoRow(
-                label = "Tanggal Expired", 
-                value = food.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Inventory,
+                contentDescription = null,
+                tint = textColor,
+                modifier = Modifier.size(24.dp)
             )
-            
-            val days = food.getDaysRemaining()
-            InfoRow(
-                label = "Sisa Hari", 
-                value = if (days < 0) "Sudah Expired" else "$days Hari lagi",
-                valueColor = if (days < 0) MaterialTheme.colorScheme.error else if (days <= 3) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor,
+                fontWeight = FontWeight.Bold
             )
         }
     }
 }
 
 @Composable
-fun InfoRow(label: String, value: String, valueColor: Color = Color.Unspecified) {
+fun InfoRow(label: String, value: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.bodyMedium, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium
+        )
         Text(
             text = value, 
             style = MaterialTheme.typography.bodyMedium, 
             fontWeight = FontWeight.Bold,
             color = valueColor
         )
+    }
+}
+
+@Composable
+private fun ErrorState(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onRetry) { Text("Coba Lagi") }
     }
 }

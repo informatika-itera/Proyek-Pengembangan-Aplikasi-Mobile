@@ -27,11 +27,13 @@ class FoodRepositoryImpl(
                         name = entity.name,
                         quantity = entity.quantity,
                         unit = entity.unit,
+                        buyDate = entity.buyDate,
                         category = entity.category,
                         expiryDate = entity.expiryDate,
-                        storageLocation = entity.storageLocation, // Default sudah ada di DB
+                        storageLocation = entity.storageLocation,
                         notes = entity.notes,
-                        isConsumed = entity.isConsumed == 1L
+                        isConsumed = entity.isConsumed == 1L,
+                        isDiscarded = entity.isDiscarded == 1L
                     )
                 }
             }
@@ -46,11 +48,13 @@ class FoodRepositoryImpl(
                     name = entity.name,
                     quantity = entity.quantity,
                     unit = entity.unit,
+                    buyDate = entity.buyDate,
                     category = entity.category,
                     expiryDate = entity.expiryDate,
                     storageLocation = entity.storageLocation,
                     notes = entity.notes,
-                    isConsumed = entity.isConsumed == 1L
+                    isConsumed = entity.isConsumed == 1L,
+                    isDiscarded = entity.isDiscarded == 1L
                 )
             }
     }
@@ -61,11 +65,13 @@ class FoodRepositoryImpl(
             name = foodItem.name,
             quantity = foodItem.quantity,
             unit = foodItem.unit,
+            buyDate = foodItem.buyDate,
             expiryDate = foodItem.expiryDate,
             category = foodItem.category,
             storageLocation = foodItem.storageLocation,
             notes = foodItem.notes,
-            isConsumed = if (foodItem.isConsumed) 1L else 0L
+            isConsumed = if (foodItem.isConsumed) 1L else 0L,
+            isDiscarded = if (foodItem.isDiscarded) 1L else 0L
         )
     }
 
@@ -78,11 +84,13 @@ class FoodRepositoryImpl(
             name = foodItem.name,
             quantity = foodItem.quantity,
             unit = foodItem.unit,
+            buyDate = foodItem.buyDate,
             expiryDate = foodItem.expiryDate,
             category = foodItem.category,
             storageLocation = foodItem.storageLocation,
             notes = foodItem.notes,
             isConsumed = if (foodItem.isConsumed) 1L else 0L,
+            isDiscarded = if (foodItem.isDiscarded) 1L else 0L,
             id = foodItem.id
         )
     }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -13,9 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.foodsaver.domain.model.MealPlan
 import com.example.foodsaver.domain.model.MealType
@@ -34,7 +37,9 @@ fun MealPlannerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Meal Planner") },
+                title = { 
+                    Text("Jadwal Masakmu", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -48,7 +53,6 @@ fun MealPlannerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Date Selector
             DateHeader(
                 selectedDate = state.selectedDate,
                 onPreviousDate = { viewModel.onDateSelected(state.selectedDate.minus(1, DateTimeUnit.DAY)) },
@@ -61,7 +65,18 @@ fun MealPlannerScreen(
                 }
             } else if (state.mealPlans.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Belum ada rencana makan untuk hari ini.")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "Belum ada rencana masak nih.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            "Yuk, cari resep dan mulai atur jadwalmu!",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             } else {
                 LazyColumn(
@@ -77,11 +92,11 @@ fun MealPlannerScreen(
                             item {
                                 Text(
                                     text = when(type) {
-                                        MealType.BREAKFAST -> "Sarapan"
-                                        MealType.LUNCH -> "Makan Siang"
-                                        MealType.DINNER -> "Makan Malam"
+                                        MealType.BREAKFAST -> "Menu Sarapan"
+                                        MealType.LUNCH -> "Menu Makan Siang"
+                                        MealType.DINNER -> "Menu Makan Malam"
                                     },
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -108,7 +123,7 @@ fun DateHeader(
     onNextDate: () -> Unit
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -122,10 +137,18 @@ fun DateHeader(
                 Icon(Icons.Default.ChevronLeft, contentDescription = "Sebelumnya")
             }
             
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            val dateLabel = when (selectedDate) {
+                today -> "Hari Ini"
+                today.plus(1, DateTimeUnit.DAY) -> "Besok"
+                today.minus(1, DateTimeUnit.DAY) -> "Kemarin"
+                else -> "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${selectedDate.year}"
+            }
+
             Text(
-                text = "${selectedDate.dayOfMonth} ${selectedDate.month.name} ${selectedDate.year}",
+                text = dateLabel,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold
             )
 
             IconButton(onClick = onNextDate) {
@@ -145,6 +168,8 @@ fun MealPlanItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -158,16 +183,18 @@ fun MealPlanItem(
                 contentDescription = plan.recipeName,
                 modifier = Modifier
                     .size(64.dp)
-                    .padding(end = 12.dp),
+                    .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = plan.recipeName,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
+                Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f))
             }
         }
     }

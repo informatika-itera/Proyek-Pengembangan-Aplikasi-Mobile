@@ -55,17 +55,20 @@ val repositoryModule = module {
         com.example.travelplanner.data.repository.ExpenseRepositoryImpl(get())
     }
 
+    // Shared city image service — singleton so cache is shared across all screens
+    single { com.example.travelplanner.core.service.CityImageService(get()) }
+
     // Suntikan UseCases
     factory { com.example.travelplanner.domain.usecase.GenerateItineraryUseCase(get()) }
     factory { com.example.travelplanner.domain.usecase.ExtractExpenseUseCase(get()) }
 }
 
 val viewModelModule = module {
-    factory { com.example.travelplanner.presentation.screens.home.HomeViewModel(get()) }
+    factory { com.example.travelplanner.presentation.screens.home.HomeViewModel(get(), get()) }
     factory { com.example.travelplanner.presentation.screens.planner.GenerateTripViewModel(get(), get()) }
-    factory { com.example.travelplanner.presentation.screens.result.TripResultViewModel(get(), get()) }
+    factory { com.example.travelplanner.presentation.screens.result.TripResultViewModel(get(), get(), get()) }
     factory { com.example.travelplanner.presentation.screens.expenses.ExpenseViewModel(get(), get(), get()) }
-    factory { com.example.travelplanner.presentation.screens.trips.MyTripsViewModel(get()) }
+    factory { com.example.travelplanner.presentation.screens.trips.MyTripsViewModel(get(), get()) }
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

@@ -7,11 +7,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,53 +29,71 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.travelplanner.core.util.LocalStrings
 import com.example.travelplanner.domain.model.Expense
 import org.koin.compose.viewmodel.koinViewModel
 import kotlinx.coroutines.delay
-import kotlin.math.sin
 
-// Category visual colors matching Theme
+// ══════════════════════════════════════════════════════════════════════
+//  CATEGORY CONSTANTS — stored in DB as fixed ID keys, never translated
+//  UI labels are resolved from AppStrings at render time
+// ══════════════════════════════════════════════════════════════════════
+
+// Internal storage keys (never change — DB-stable)
+object CategoryKey {
+    const val FOOD          = "Konsumsi"
+    const val TOURISM       = "Wisata"
+    const val LODGING       = "Penginapan"
+    const val TRANSPORT     = "Transportasi"
+    const val ENTERTAINMENT = "Hiburan"
+    const val OTHER         = "Lainnya"
+}
+
+// Category colors — constant regardless of language
 private val categoryColors = mapOf(
-    "Konsumsi"     to Color(0xFFE63946), // Red
-    "Wisata"      to Color(0xFF0096C7), // Blue
-    "Penginapan"   to Color(0xFF3D7A6F), // Slate Teal
-    "Transportasi" to Color(0xFFB8893A), // Antique Gold
-    "Hiburan"     to Color(0xFF6A0572), // Purple
-    "Lainnya"      to Color(0xFF7F8C8D)  // Slate Gray
+    CategoryKey.FOOD          to Color(0xFFE63946),
+    CategoryKey.TOURISM       to Color(0xFF0096C7),
+    CategoryKey.LODGING       to Color(0xFF3D7A6F),
+    CategoryKey.TRANSPORT     to Color(0xFFB8893A),
+    CategoryKey.ENTERTAINMENT to Color(0xFF6A0572),
+    CategoryKey.OTHER         to Color(0xFF7F8C8D)
 )
 
 private val categoryIcons = mapOf(
-    "Konsumsi"     to Icons.Default.Restaurant,
-    "Wisata"      to Icons.Default.Place,
-    "Penginapan"   to Icons.Default.Hotel,
-    "Transportasi" to Icons.Default.DirectionsCar,
-    "Hiburan"     to Icons.Default.ConfirmationNumber,
-    "Lainnya"      to Icons.Default.AccountBalanceWallet
+    CategoryKey.FOOD          to Icons.Default.Restaurant,
+    CategoryKey.TOURISM       to Icons.Default.Place,
+    CategoryKey.LODGING       to Icons.Default.Hotel,
+    CategoryKey.TRANSPORT     to Icons.Default.DirectionsCar,
+    CategoryKey.ENTERTAINMENT to Icons.Default.ConfirmationNumber,
+    CategoryKey.OTHER         to Icons.Default.AccountBalanceWallet
 )
 
-// Lightweight KMP Currency Formatter
+// Currency formatter
 fun formatRupiah(amount: Double): String {
     val amountInt = amount.toLong()
     if (amountInt == 0L) return "Rp 0"
     return "Rp " + amountInt.toString().reversed().chunked(3).joinToString(".").reversed()
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  SCREEN
+// ══════════════════════════════════════════════════════════════════════
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseTrackerScreen(
     tripId: String?,
     onNavigateBack: () -> Unit,
+    onNavigateToTrips: (() -> Unit)? = null,
     viewModel: ExpenseViewModel = koinViewModel(),
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val s = LocalStrings.current
     var inputText by remember { mutableStateOf("") }
     var showVoiceAssistantModal by remember { mutableStateOf(false) }
 
-    // Initialize/sync database listener
-    LaunchedEffect(tripId) {
-        viewModel.initializeTrip(tripId ?: "")
-    }
+    LaunchedEffect(tripId) { viewModel.initializeTrip(tripId ?: "") }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -85,23 +101,17 @@ fun ExpenseTrackerScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(
-                            "Catatan Pengeluaran",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 18.sp
-                        )
+                        Text(s.expenseTitle, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                         uiState.trip?.let {
-                            Text(
-                                "Tujuan: ${it.destination}",
+                            Text("${s.destinationCity}: ${it.destination}",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = s.back)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,145 +126,94 @@ fun ExpenseTrackerScreen(
                 CircularProgressIndicator()
             }
         } else if (uiState.trip == null) {
-            // Elegant Empty State when no trip exists
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(Modifier.fillMaxSize().padding(padding).padding(32.dp),
+                contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.FlightTakeoff,
-                        contentDescription = null,
+                    Icon(Icons.Default.FlightTakeoff, contentDescription = null,
                         modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                    )
+                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Belum Ada Perjalanan Aktif",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(s.noActiveTripTitle, style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Silakan buat rencana liburan dengan AI terlebih dahulu agar Anda dapat mencatat pengeluaran di sini.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                    Text(s.noActiveTripBody, style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                    if (onNavigateToTrips != null) {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(onClick = onNavigateToTrips) { Text(s.goToTrips) }
+                    }
                 }
             }
         } else {
-            val trip = uiState.trip!!
-
-            Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
+            Box(modifier = modifier.fillMaxSize().padding(padding)) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 120.dp, start = 24.dp, end = 24.dp, top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
-                    // ── GLASSMORPHIC SUMMARY CARD ────────────────────────────
                     item {
                         ExpenseSummaryCard(
                             totalExpenses = uiState.totalExpenses,
                             expenses = uiState.expenses
                         )
                     }
-
-                    // ── AI EXPENSE CHAT INPUT BOX ───────────────────────────
                     item {
                         AIInputBox(
                             inputText = inputText,
                             onValueChange = { inputText = it },
-                            onSend = {
-                                viewModel.addExpenseAI(inputText)
-                                inputText = ""
-                            },
+                            onSend = { viewModel.addExpenseAI(inputText); inputText = "" },
                             onMicClick = {
                                 com.example.travelplanner.core.util.VoiceInputManager.startVoiceInput { spokenText ->
-                                    if (spokenText.startsWith("Error:")) {
-                                        // Fallback to the premium simulator modal
-                                        showVoiceAssistantModal = true
-                                    } else {
-                                        // Directly process the voice transcription with AI
-                                        viewModel.addExpenseAI(spokenText)
-                                    }
+                                    if (spokenText.startsWith("Error:")) showVoiceAssistantModal = true
+                                    else viewModel.addExpenseAI(spokenText)
                                 }
                             },
                             aiIsProcessing = uiState.aiIsProcessing
                         )
                     }
-
-                    // Error indicator from AI if any
                     uiState.errorMessage?.let { error ->
                         item {
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
+                            Surface(shape = RoundedCornerShape(10.dp),
                                 color = MaterialTheme.colorScheme.errorContainer,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(12.dp),
+                                modifier = Modifier.fillMaxWidth()) {
+                                Row(modifier = Modifier.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                                    Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Icon(Icons.Default.ErrorOutline, contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error)
+                                    Text(error, style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer)
                                 }
                             }
                         }
                     }
-
-                    // ── CATEGORY FILTER CHIPS ────────────────────────────────
                     item {
                         CategoryFilters(
                             selectedFilter = uiState.activeCategoryFilter,
                             onFilterSelect = { viewModel.setCategoryFilter(it) }
                         )
                     }
-
-                    // ── TRANSACTION ITEMS ────────────────────────────────────
                     if (uiState.filteredExpenses.isEmpty()) {
                         item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 40.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
+                            Box(Modifier.fillMaxWidth().padding(vertical = 40.dp),
+                                contentAlignment = Alignment.Center) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        Icons.Default.AccountBalanceWallet,
-                                        contentDescription = null,
+                                    Icon(Icons.Default.AccountBalanceWallet, contentDescription = null,
                                         modifier = Modifier.size(44.dp),
-                                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
-                                    )
+                                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        "Belum Ada Catatan Biaya",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    Text(s.noExpenses, style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
                     } else {
                         items(uiState.filteredExpenses, key = { it.id }) { expense ->
-                            TransactionItem(
-                                expense = expense,
-                                onDelete = { viewModel.deleteExpense(expense.id) }
-                            )
+                            TransactionItem(expense = expense,
+                                onDelete = { viewModel.deleteExpense(expense.id) })
                         }
                     }
                 }
-
-                // ── VOICE ASSISTANT SIMULATOR MODAL ─────────────────────────
                 if (showVoiceAssistantModal) {
                     VoiceAssistantSimulator(
                         onDismiss = { showVoiceAssistantModal = false },
@@ -274,104 +233,46 @@ fun ExpenseTrackerScreen(
 // ══════════════════════════════════════════════════════════════════════
 
 @Composable
-fun ExpenseSummaryCard(
-    totalExpenses: Double,
-    expenses: List<Expense>
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(18.dp)),
+fun ExpenseSummaryCard(totalExpenses: Double, expenses: List<Expense>) {
+    val s = LocalStrings.current
+    Card(modifier = Modifier.fillMaxWidth().shadow(6.dp, RoundedCornerShape(18.dp)),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                "Total Pengeluaran Liburan",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.secondary,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
+            Text(s.expenseSummaryTitle, style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = formatRupiah(totalExpenses),
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            Text(formatRupiah(totalExpenses), style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Spacer(modifier = Modifier.height(18.dp))
-
-            // Stacked Bar Chart Title
-            Text(
-                "Proporsi Berdasarkan Kategori",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                fontWeight = FontWeight.SemiBold
-            )
+            Text(s.expenseCategoryChart, style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(8.dp))
-
-            // Canvas Stacked horizontal Bar Chart
-            Canvas(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp))
-            ) {
-                if (totalExpenses == 0.0) {
-                    // Fallback gray bar when empty spendings
-                    drawRect(color = Color.LightGray.copy(alpha = 0.5f))
-                    return@Canvas
-                }
-
-                // Group expenses by category
-                val categorySums = expenses.groupBy { it.kategori }
-                    .mapValues { it.value.sumOf { e -> e.nominal } }
-
+            Canvas(modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp))) {
+                if (totalExpenses == 0.0) { drawRect(color = Color.LightGray.copy(alpha = 0.5f)); return@Canvas }
+                val categorySums = expenses.groupBy { it.kategori }.mapValues { it.value.sumOf { e -> e.nominal } }
                 var startX = 0f
-                val canvasWidth = size.width
-
-                categorySums.forEach { (category, sum) ->
-                    val color = categoryColors[category] ?: Color.Gray
-                    val percentage = (sum / totalExpenses).toFloat()
-                    val barWidth = canvasWidth * percentage
-
-                    drawRect(
-                        color = color,
-                        topLeft = androidx.compose.ui.geometry.Offset(startX, 0f),
-                        size = androidx.compose.ui.geometry.Size(barWidth, size.height)
-                    )
-                    startX += barWidth
+                val cw = size.width
+                categorySums.forEach { (cat, sum) ->
+                    val color = categoryColors[cat] ?: Color.Gray
+                    val bw = cw * (sum / totalExpenses).toFloat()
+                    drawRect(color = color, topLeft = androidx.compose.ui.geometry.Offset(startX, 0f),
+                        size = androidx.compose.ui.geometry.Size(bw, size.height))
+                    startX += bw
                 }
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Custom Legend Wrap
+            // Legend — translate category key to current language label
             val activeCategories = expenses.map { it.kategori }.distinct()
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                activeCategories.take(4).forEach { category ->
-                    val color = categoryColors[category] ?: Color.Gray
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                        )
-                        Text(
-                            text = category,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                            fontSize = 9.sp
-                        )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                activeCategories.take(4).forEach { catKey ->
+                    val color = categoryColors[catKey] ?: Color.Gray
+                    val label = catKey.toCatLabel(s)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
+                        Text(label, style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), fontSize = 9.sp)
                     }
                 }
             }
@@ -387,43 +288,22 @@ fun AIInputBox(
     onMicClick: () -> Unit,
     aiIsProcessing: Boolean
 ) {
-    Card(
-        shape = RoundedCornerShape(14.dp),
+    val s = LocalStrings.current
+    Card(shape = RoundedCornerShape(14.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    Icons.Default.AutoAwesome,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    "Catat Cepat via AI Gemini",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                Text(s.aiInputTitle, style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = inputText,
-                    onValueChange = onValueChange,
-                    placeholder = {
-                        Text("Ketik: 'sarapan sushi 120k'...", style = MaterialTheme.typography.bodySmall)
-                    },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    value = inputText, onValueChange = onValueChange,
+                    placeholder = { Text(s.aiInputPlaceholder, style = MaterialTheme.typography.bodySmall) },
+                    modifier = Modifier.weight(1f), singleLine = true, shape = RoundedCornerShape(10.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = { onSend() }),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -431,43 +311,20 @@ fun AIInputBox(
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                     )
                 )
-
-                // Premium Microphone trigger
-                IconButton(
-                    onClick = onMicClick,
-                    modifier = Modifier
-                        .size(46.dp)
-                        .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)
-                ) {
-                    Icon(
-                        Icons.Default.Mic,
-                        contentDescription = "Simulate Voice Input",
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
+                IconButton(onClick = onMicClick,
+                    modifier = Modifier.size(46.dp).background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)) {
+                    Icon(Icons.Default.Mic, contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
                 }
-
-                // Send button with spinner
-                IconButton(
-                    onClick = onSend,
-                    enabled = inputText.isNotBlank() && !aiIsProcessing,
-                    modifier = Modifier
-                        .size(46.dp)
-                        .background(
-                            if (inputText.isNotBlank() && !aiIsProcessing) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.surfaceVariant,
-                            CircleShape
-                        )
-                ) {
+                IconButton(onClick = onSend, enabled = inputText.isNotBlank() && !aiIsProcessing,
+                    modifier = Modifier.size(46.dp).background(
+                        if (inputText.isNotBlank() && !aiIsProcessing) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant, CircleShape)) {
                     if (aiIsProcessing) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Kirim",
-                            tint = if (inputText.isNotBlank()) Color.White else Color.Gray,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(Icons.Default.Send, contentDescription = s.aiInputSend,
+                            tint = if (inputText.isNotBlank()) Color.White else Color.Gray, modifier = Modifier.size(18.dp))
                     }
                 }
             }
@@ -476,109 +333,72 @@ fun AIInputBox(
 }
 
 @Composable
-fun CategoryFilters(
-    selectedFilter: String,
-    onFilterSelect: (String) -> Unit
-) {
-    val filters = listOf("Semua", "Konsumsi", "Wisata", "Penginapan", "Transportasi", "Hiburan", "Lainnya")
+fun CategoryFilters(selectedFilter: String, onFilterSelect: (String) -> Unit) {
+    val s = LocalStrings.current
+    // Display labels paired with their storage keys
+    val filters = listOf(
+        "" to s.catAll,
+        CategoryKey.FOOD          to s.catFood,
+        CategoryKey.TOURISM       to s.catTourism,
+        CategoryKey.LODGING       to s.catLodging,
+        CategoryKey.TRANSPORT     to s.catTransport,
+        CategoryKey.ENTERTAINMENT to s.catEntertainment,
+        CategoryKey.OTHER         to s.catOther
+    )
     androidx.compose.foundation.lazy.LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(filters) { filter ->
-            val isSelected = selectedFilter == filter
+        items(filters) { (key, label) ->
+            val isSelected = selectedFilter == key
             Surface(
-                modifier = Modifier
-                    .clickable { onFilterSelect(filter) }
-                    .padding(vertical = 4.dp),
+                modifier = Modifier.clickable { onFilterSelect(key) }.padding(vertical = 4.dp),
                 shape = RoundedCornerShape(20.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                color = if (isSelected) MaterialTheme.colorScheme.secondary
+                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                 border = if (!isSelected) BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)) else null
             ) {
-                Text(
-                    text = filter,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isSelected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(label, modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSecondary
+                            else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
 }
 
 @Composable
-fun TransactionItem(
-    expense: Expense,
-    onDelete: () -> Unit
-) {
+fun TransactionItem(expense: Expense, onDelete: () -> Unit) {
+    val s = LocalStrings.current
     val color = categoryColors[expense.kategori] ?: Color.Gray
-    val icon = categoryIcons[expense.kategori] ?: Icons.Default.AccountBalanceWallet
+    val icon  = categoryIcons[expense.kategori]  ?: Icons.Default.AccountBalanceWallet
+    val label = expense.kategori.toCatLabel(s)
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                // Circular color badge icon
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(color.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
+                Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(color.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center) {
                     Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
                 }
-
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        expense.namaItem,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        expense.kategori,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = color,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(expense.namaItem, style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(label, style = MaterialTheme.typography.labelSmall,
+                        color = color, fontWeight = FontWeight.Bold)
                 }
             }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    formatRupiah(expense.nominal),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(formatRupiah(expense.nominal), style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Hapus",
-                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.Close, contentDescription = s.delete,
+                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
                 }
             }
         }
@@ -586,163 +406,81 @@ fun TransactionItem(
 }
 
 // ══════════════════════════════════════════════════════════════════════
-//  PREMIUM VOICE ASSISTANT OVERLAY SIMULATOR
+//  VOICE ASSISTANT SIMULATOR
 // ══════════════════════════════════════════════════════════════════════
 
 @Composable
-fun VoiceAssistantSimulator(
-    onDismiss: () -> Unit,
-    onVoiceInputGenerated: (String) -> Unit
-) {
+fun VoiceAssistantSimulator(onDismiss: () -> Unit, onVoiceInputGenerated: (String) -> Unit) {
+    val s = LocalStrings.current
     val infiniteTransition = rememberInfiniteTransition()
-    
-    // Waveform micro-animations
-    val scaleFactor1 by infiniteTransition.animateFloat(
-        initialValue = 0.8f, targetValue = 1.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    val scaleFactor2 by infiniteTransition.animateFloat(
-        initialValue = 1.3f, targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    val scaleFactor3 by infiniteTransition.animateFloat(
-        initialValue = 0.5f, targetValue = 1.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
+    val scale1 by infiniteTransition.animateFloat(initialValue = 0.8f, targetValue = 1.6f,
+        animationSpec = infiniteRepeatable(tween(600, easing = LinearEasing), RepeatMode.Reverse), label = "s1")
+    val scale2 by infiniteTransition.animateFloat(initialValue = 1.3f, targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(tween(800, easing = LinearEasing), RepeatMode.Reverse), label = "s2")
+    val scale3 by infiniteTransition.animateFloat(initialValue = 0.5f, targetValue = 1.8f,
+        animationSpec = infiniteRepeatable(tween(500, easing = LinearEasing), RepeatMode.Reverse), label = "s3")
+    val pulseSize by infiniteTransition.animateFloat(initialValue = 100f, targetValue = 180f,
+        animationSpec = infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "ps")
+    val pulseAlpha by infiniteTransition.animateFloat(initialValue = 0.4f, targetValue = 0f,
+        animationSpec = infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "pa")
 
-    // Pulse circles backdrops
-    val pulseSize by infiniteTransition.animateFloat(
-        initialValue = 100f, targetValue = 180f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f, targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
+    var simulatedText by remember { mutableStateOf(s.voiceListening) }
+    var completed by remember { mutableStateOf(false) }
 
-    var simulatedSpeechText by remember { mutableStateOf("Mendengarkan suara Anda...") }
-    var listeningCompleted by remember { mutableStateOf(false) }
-
-    // Simulating natural voice transcription after 2.5 seconds
     LaunchedEffect(Unit) {
         delay(2200)
-        simulatedSpeechText = "\"beli tiket ferry penyebrangan 180 ribu rupiah\""
-        listeningCompleted = true
+        simulatedText = "\"beli tiket ferry penyebrangan 180 ribu rupiah\""
+        completed = true
         delay(1400)
         onVoiceInputGenerated("beli tiket ferry penyebrangan 180 ribu rupiah")
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.85f))
-            .clickable { onDismiss() }, // Click outer to dismiss
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(24.dp)
-        ) {
-            // Pulse Visualizer Ring
-            Box(
-                modifier = Modifier
-                    .size(200.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // Pulsing Background Circle
-                Box(
-                    modifier = Modifier
-                        .size(pulseSize.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFB8893A).copy(alpha = pulseAlpha))
-                )
-
-                // Static Microphone Core
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Color(0xFF1B3A5C), Color(0xFF3D7A6F))
-                            )
-                        )
-                        .border(2.dp, Color(0xFFB8893A), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Mic,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(40.dp)
-                    )
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)).clickable { onDismiss() },
+        contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(24.dp)) {
+            Box(modifier = Modifier.size(200.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.size(pulseSize.dp).clip(CircleShape)
+                    .background(Color(0xFFB8893A).copy(alpha = pulseAlpha)))
+                Box(modifier = Modifier.size(100.dp).clip(CircleShape)
+                    .background(Brush.linearGradient(listOf(Color(0xFF1B3A5C), Color(0xFF3D7A6F))))
+                    .border(2.dp, Color(0xFFB8893A), CircleShape),
+                    contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Mic, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
                 }
             }
-
             Spacer(modifier = Modifier.height(28.dp))
-
-            // Sine Wave bar visualizers
-            if (!listeningCompleted) {
-                Row(
-                    modifier = Modifier.height(60.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    listOf(scaleFactor1, scaleFactor2, scaleFactor3, scaleFactor2, scaleFactor1).forEach { scale ->
-                        Box(
-                            modifier = Modifier
-                                .width(6.dp)
-                                .height((35 * scale).dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(Color(0xFFB8893A))
-                        )
+            if (!completed) {
+                Row(modifier = Modifier.height(60.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    listOf(scale1, scale2, scale3, scale2, scale1).forEach { sc ->
+                        Box(modifier = Modifier.width(6.dp).height((35 * sc).dp)
+                            .clip(RoundedCornerShape(3.dp)).background(Color(0xFFB8893A)))
                     }
                 }
             } else {
-                // Transcribed badge icon
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = Color.Green,
-                    modifier = Modifier.size(36.dp)
-                )
+                Icon(Icons.Default.CheckCircle, contentDescription = null,
+                    tint = Color.Green, modifier = Modifier.size(36.dp))
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Listening status & simulated speech bubble
-            Text(
-                text = if (!listeningCompleted) "Bicara sekarang..." else "Mentranskripsi...",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.5f),
-                letterSpacing = 1.2.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text(if (!completed) s.voiceSpeakNow else s.voiceTranscribing,
+                style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.5f),
+                letterSpacing = 1.2.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = simulatedSpeechText,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp
-            )
+            Text(simulatedText, style = MaterialTheme.typography.titleMedium,
+                color = Color.White, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, lineHeight = 24.sp)
         }
     }
+}
+
+// ── Extension: translate category storage key → display label ─────────
+private fun String.toCatLabel(s: com.example.travelplanner.core.util.AppStrings): String = when (this) {
+    CategoryKey.FOOD          -> s.catFood
+    CategoryKey.TOURISM       -> s.catTourism
+    CategoryKey.LODGING       -> s.catLodging
+    CategoryKey.TRANSPORT     -> s.catTransport
+    CategoryKey.ENTERTAINMENT -> s.catEntertainment
+    CategoryKey.OTHER         -> s.catOther
+    else -> this
 }

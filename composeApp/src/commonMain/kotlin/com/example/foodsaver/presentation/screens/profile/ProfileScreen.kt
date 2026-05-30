@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
@@ -32,6 +33,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    onNavigateBack: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -41,7 +43,12 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil Pengguna", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Profil & Pengaturan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
@@ -90,21 +97,6 @@ fun ProfileScreen(
                 fontWeight = FontWeight.Medium
             )
             
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            Surface(
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    "Belum Login", 
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-
             Spacer(modifier = Modifier.height(32.dp))
 
             // Stats Card
@@ -113,52 +105,17 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        "Statistik Inventory", 
-                        fontWeight = FontWeight.ExtraBold, 
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    Text("Statistik Inventory", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(20.dp))
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         StatItem("Aktif", state.totalItems.toString(), MaterialTheme.colorScheme.onSurface)
                         StatItem("Aman", state.safeCount.toString(), MaterialTheme.colorScheme.primary)
-                        StatItem("Hampir", state.nearlyExpiredCount.toString(), MaterialTheme.colorScheme.secondary)
                         StatItem("Expired", state.expiredCount.toString(), MaterialTheme.colorScheme.error)
-                    }
-                    
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 20.dp), 
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
-                    
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(
-                                "Total Dikonsumsi", 
-                                style = MaterialTheme.typography.bodyMedium, 
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text("${state.consumedCount} Makanan", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        }
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(
-                                "Total Dibuang", 
-                                style = MaterialTheme.typography.bodyMedium, 
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text("${state.discardedCount} Makanan", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                        }
                     }
                 }
             }
@@ -169,8 +126,7 @@ fun ProfileScreen(
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
                     "Pengaturan", 
-                    fontWeight = FontWeight.ExtraBold, 
-                    color = MaterialTheme.colorScheme.onBackground, 
+                    fontWeight = FontWeight.Bold, 
                     modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -191,23 +147,12 @@ fun ProfileScreen(
                     },
                     onClick = { showThemeDialog = true }
                 )
-                
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                Button(
-                    onClick = { /* Placeholder */ },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text("Login / Sign In", fontWeight = FontWeight.ExtraBold)
-                }
             }
-            
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
 
+    // Dialogs remain the same...
     if (showThemeDialog) {
         ThemeSelectionDialog(
             currentMode = state.themeMode,
@@ -231,11 +176,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ThemeSelectionDialog(
-    currentMode: ThemeMode,
-    onDismiss: () -> Unit,
-    onSelectMode: (ThemeMode) -> Unit
-) {
+fun ThemeSelectionDialog(currentMode: ThemeMode, onDismiss: () -> Unit, onSelectMode: (ThemeMode) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Pilih Tema", fontWeight = FontWeight.Bold) },
@@ -246,57 +187,36 @@ fun ThemeSelectionDialog(
                 ThemeOption("Ikuti Sistem", ThemeMode.SYSTEM, currentMode == ThemeMode.SYSTEM) { onSelectMode(ThemeMode.SYSTEM) }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Tutup", fontWeight = FontWeight.Bold) }
-        }
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Tutup") } }
     )
 }
 
 @Composable
 fun ThemeOption(text: String, mode: ThemeMode, selected: Boolean, onClick: () -> Unit) {
     Row(
-        Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-                role = Role.RadioButton
-            )
-            .padding(horizontal = 8.dp),
+        Modifier.fillMaxWidth().height(56.dp).selectable(selected = selected, onClick = onClick, role = Role.RadioButton).padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(selected = selected, onClick = null)
-        Text(text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp), fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+        Text(text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp))
     }
 }
 
 @Composable
-fun NotificationSettingsDialog(
-    enabled: Boolean,
-    reminderDays: Int,
-    onDismiss: () -> Unit,
-    onToggleEnabled: (Boolean) -> Unit,
-    onSelectDays: (Int) -> Unit
-) {
+fun NotificationSettingsDialog(enabled: Boolean, reminderDays: Int, onDismiss: () -> Unit, onToggleEnabled: (Boolean) -> Unit, onSelectDays: (Int) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Notifikasi & Reminder", fontWeight = FontWeight.Bold) },
         text = {
             Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Aktifkan Notifikasi", fontWeight = FontWeight.Medium)
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Aktifkan Notifikasi")
                     Switch(checked = enabled, onCheckedChange = onToggleEnabled)
                 }
-                
                 if (enabled) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Ingatkan pada:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    Column(Modifier.selectableGroup().padding(top = 8.dp)) {
+                    Column(Modifier.selectableGroup()) {
                         ReminderOption("Hari H Kedaluwarsa", 0, reminderDays == 0) { onSelectDays(0) }
                         ReminderOption("1 Hari Sebelum", 1, reminderDays == 1) { onSelectDays(1) }
                         ReminderOption("3 Hari Sebelum", 3, reminderDays == 3) { onSelectDays(3) }
@@ -304,27 +224,15 @@ fun NotificationSettingsDialog(
                 }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Selesai", fontWeight = FontWeight.Bold) }
-        }
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Selesai") } }
     )
 }
 
 @Composable
 fun ReminderOption(text: String, days: Int, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-                role = Role.RadioButton
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(Modifier.fillMaxWidth().height(48.dp).selectable(selected = selected, onClick = onClick, role = Role.RadioButton), verticalAlignment = Alignment.CenterVertically) {
         RadioButton(selected = selected, onClick = null)
-        Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 12.dp), fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+        Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 12.dp))
     }
 }
 
@@ -332,34 +240,21 @@ fun ReminderOption(text: String, days: Int, selected: Boolean, onClick: () -> Un
 fun StatItem(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, fontWeight = FontWeight.Black, fontSize = 20.sp, color = color)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surface).clickable(onClick = onClick).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        }
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(title, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyLarge)
-            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+            Text(title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(modifier = Modifier.weight(1f))
         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)

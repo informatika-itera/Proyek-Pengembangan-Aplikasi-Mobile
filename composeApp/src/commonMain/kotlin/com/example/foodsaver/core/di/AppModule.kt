@@ -96,7 +96,7 @@ val commonModule = module {
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { AddFoodViewModel(get(), get()) }
     viewModel { FoodDetailViewModel(get(), get(), get()) }
-    viewModel { AIAssistantViewModel(get(), get(), get(), get()) }
+    viewModel { AIAssistantViewModel(get(), get(), get(), get(), get()) } // Updated to 5 params
     viewModel { RecipeViewModel(get(), get()) }
     viewModel { RecipeDetailViewModel(get(), get(), get()) }
     viewModel { MealPlannerViewModel(get(), get()) }

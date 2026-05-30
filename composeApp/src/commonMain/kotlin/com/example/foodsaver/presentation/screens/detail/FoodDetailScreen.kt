@@ -56,8 +56,8 @@ fun FoodDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus Makanan") },
-            text = { Text("Apakah kamu yakin ingin menghapus ${state.foodItem?.name} dari inventory?") },
+            title = { Text("Hapus Stok Makanan") },
+            text = { Text("Yakin ingin menghapus ${state.foodItem?.name} dari daftar?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -80,7 +80,7 @@ fun FoodDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Detail Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -103,7 +103,7 @@ fun FoodDetailScreen(
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
             } else if (state.error != null) {
-                ErrorState(message = state.error ?: "Terjadi kesalahan", onRetry = { viewModel.loadFoodDetail(foodId) })
+                ErrorState(message = "Gagal memuat data nih. Coba lagi ya!", onRetry = { viewModel.loadFoodDetail(foodId) })
             } else {
                 state.foodItem?.let { food ->
                     Column(
@@ -163,12 +163,12 @@ fun FoodDetailScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                InfoRow(label = "Jumlah Stok", value = food.quantity.formatQuantity(food.unit))
-                                InfoRow(label = "Lokasi Simpan", value = food.storageLocation)
+                                InfoRow(label = "Sisa stok", value = food.quantity.formatQuantity(food.unit))
+                                InfoRow(label = "Disimpan di", value = food.storageLocation)
                                 
                                 val expiryDate = food.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
                                 InfoRow(
-                                    label = "Tanggal Expired", 
+                                    label = "Batas kesegaran", 
                                     value = "${expiryDate.dayOfMonth} / ${expiryDate.monthNumber} / ${expiryDate.year}"
                                 )
                                 
@@ -180,7 +180,7 @@ fun FoodDetailScreen(
                                     else -> if (isDark) ExpiredTextDark else ExpiredTextLight
                                 }
                                 InfoRow(
-                                    label = "Sisa Waktu", 
+                                    label = "Status saat ini", 
                                     value = food.getStatusLabel(),
                                     valueColor = color
                                 )
@@ -200,7 +200,7 @@ fun FoodDetailScreen(
                             ) {
                                 Column(modifier = Modifier.padding(20.dp)) {
                                     Text(
-                                        text = "Catatan",
+                                        text = "Catatan tambahan",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -231,7 +231,7 @@ fun FoodDetailScreen(
                             ) {
                                 Icon(if (food.isConsumed) Icons.Default.Inventory else Icons.Default.CheckCircle, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
-                                Text(if (food.isConsumed) "Tandai Belum Dikonsumsi" else "Tandai Sudah Dikonsumsi", fontWeight = FontWeight.Bold)
+                                Text(if (food.isConsumed) "Tandai belum habis" else "Sudah saya habiskan", fontWeight = FontWeight.Bold)
                             }
 
                             if (!food.isConsumed) {
@@ -246,7 +246,7 @@ fun FoodDetailScreen(
                                 ) {
                                     Icon(if (food.isDiscarded) Icons.Default.RestoreFromTrash else Icons.Default.DeleteForever, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
-                                    Text(if (food.isDiscarded) "Batalkan Dibuang" else "Tandai Dibuang", fontWeight = FontWeight.Bold)
+                                    Text(if (food.isDiscarded) "Batal buang stok" else "Dibuang karena rusak", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -262,17 +262,17 @@ fun RecommendationCard(status: FoodStatus) {
     val isDark = isSystemInDarkTheme()
     val (message, bgColor, textColor) = when(status) {
         FoodStatus.EXPIRED, FoodStatus.EXPIRED_TODAY -> Triple(
-            "Makanan ini sudah melewati tanggal kedaluwarsa. Periksa kondisinya sebelum dikonsumsi.",
+            "Sepertinya sudah lewat tanggalnya. Cek dulu sebelum dikonsumsi ya!",
             if (isDark) ExpiredBgDark else ExpiredBgLight,
             if (isDark) ExpiredTextDark else ExpiredTextLight
         )
         FoodStatus.NEAR_EXPIRY -> Triple(
-            "Sebaiknya konsumsi makanan ini dalam waktu dekat.",
+            "Bahan ini sudah harus segera diolah biar nggak mubazir.",
             if (isDark) WarningBgDark else WarningBgLight,
             if (isDark) WarningTextDark else WarningTextLight
         )
         FoodStatus.SAFE -> Triple(
-            "Makanan ini masih aman disimpan.",
+            "Stok ini masih dalam kondisi segar dan aman disimpan.",
             if (isDark) SafeBgDark else SafeBgLight,
             if (isDark) SafeTextDark else SafeTextLight
         )

@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.components.AITipsSection
-import com.example.foodsaver.presentation.components.FoodItemCard
+import com.example.foodsaver.presentation.components.SwipeableFoodItem
 import com.example.foodsaver.presentation.components.getEmojiForCategory
 import com.example.foodsaver.presentation.theme.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -48,6 +48,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val categories = remember { listOf("Semua") + FoodItem.CATEGORIES }
 
     Scaffold(
         topBar = {
@@ -55,24 +56,24 @@ fun HomeScreen(
                 title = {
                     Column {
                         Text(
-                            "FoodSaver Inventory", 
+                            "Stok Makananmu", 
                             fontWeight = FontWeight.ExtraBold, 
                             fontSize = 20.sp, 
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            "Kelola stok makananmu sebelum kedaluwarsa",
+                            "Yuk cek apa yang harus segera dimasak!",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = onCalendarClick) {
-                        Icon(Icons.Outlined.CalendarMonth, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.primary)
-                    }
                     IconButton(onClick = onAIClick) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(onClick = onCalendarClick) {
+                        Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -101,6 +102,28 @@ fun HomeScreen(
                 onQueryChange = viewModel::onSearchQueryChange
             )
 
+            // Category Filter Chips
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories) { category ->
+                    FilterChip(
+                        selected = state.selectedCategory == category,
+                        onClick = { viewModel.onCategoryChange(category) },
+                        label = { Text(category) },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
@@ -109,7 +132,7 @@ fun HomeScreen(
                     )
                 } else if (state.error != null) {
                     ErrorState(
-                        message = state.error ?: "Terjadi kesalahan. Silakan coba lagi.", 
+                        message = state.error ?: "Waduh, ada kendala teknis. Coba lagi yuk!", 
                         onRetry = { viewModel.loadItems() }
                     )
                 } else if (state.items.isEmpty()) {
@@ -120,7 +143,7 @@ fun HomeScreen(
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
                         // In-App Notification / Urgent Reminder Banner
-                        if (state.urgentReminders.isNotEmpty() && state.searchQuery.isEmpty()) {
+                        if (state.urgentReminders.isNotEmpty() && state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 UrgentReminderBanner(
                                     reminders = state.urgentReminders,
@@ -130,29 +153,31 @@ fun HomeScreen(
                         }
 
                         // Summary Cards
-                        item {
-                            SummarySection(state)
+                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
+                            item {
+                                SummarySection(state)
+                            }
                         }
 
                         // Masak dari Stok Card
-                        if (state.searchQuery.isEmpty()) {
+                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 CookFromStockCard(onClick = onCookFromStockClick)
                             }
                         }
 
                         // AI Tips Card
-                        if (state.searchQuery.isEmpty()) {
+                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 AITipsSection(items = state.activeItems)
                             }
                         }
 
                         // Priority Section (Save Before Waste)
-                        if (state.searchQuery.isEmpty()) {
+                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 Text(
-                                    "Save Before Waste 🔥",
+                                    "Segera Masak! 🔥",
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
@@ -190,7 +215,7 @@ fun HomeScreen(
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Text(
-                                                "Tidak ada makanan yang perlu segera dikonsumsi.",
+                                                "Hebat! Stok makananmu masih aman semua.",
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
@@ -202,8 +227,13 @@ fun HomeScreen(
 
                         // All Food List
                         item {
+                            val headerTitle = when {
+                                state.searchQuery.isNotEmpty() -> "Hasil pencarianmu"
+                                state.selectedCategory != "Semua" -> "Koleksi ${state.selectedCategory}"
+                                else -> "Daftar Stok Makanan"
+                            }
                             Text(
-                                if (state.searchQuery.isEmpty()) "Semua Makanan" else "Hasil Pencarian",
+                                headerTitle,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
@@ -218,16 +248,17 @@ fun HomeScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        "Tidak ada makanan ditemukan", 
+                                        "Wah, yang kamu cari tidak ketemu nih", 
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         } else {
                             items(state.filteredItems, key = { it.id }) { item ->
-                                FoodItemCard(
+                                SwipeableFoodItem(
                                     item = item,
-                                    onClick = { onFoodClick(item.id) }
+                                    onDelete = { viewModel.deleteItem(it) },
+                                    onClick = { onFoodClick(it) }
                                 )
                             }
                         }
@@ -278,7 +309,7 @@ fun CookFromStockCard(onClick: () -> Unit) {
                     fontWeight = FontWeight.ExtraBold
                 )
                 Text(
-                    "Buat rekomendasi resep dari bahan yang tersedia di inventory kamu.",
+                    "Bikin resep lezat dari bahan yang sudah ada di rumah.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                 )
@@ -346,14 +377,14 @@ fun UrgentReminderBanner(reminders: List<FoodItem>, onFoodClick: (Long) -> Unit)
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (remainingDays == 0) "Expired Hari Ini!" else if (remainingDays < 0) "Sudah Expired!" else "Segera Kedaluwarsa!",
+                    text = if (remainingDays == 0) "Yah, Terakhir Hari Ini!" else if (remainingDays < 0) "Waduh, Sudah Lewat!" else "Ayo Segera Dimasak!",
                     fontWeight = FontWeight.ExtraBold,
                     color = finalTextColor,
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = if (remainingDays == 1) "${mostUrgent.name} akan expired besok. Yuk konsumsi sebelum terbuang."
-                           else if (remainingDays == 0) "${mostUrgent.name} expired hari ini. Segera cek kondisinya."
+                    text = if (remainingDays == 1) "${mostUrgent.name} segera habis besok. Yuk olah sekarang agar tidak terbuang."
+                           else if (remainingDays == 0) "${mostUrgent.name} terakhir hari ini. Cek kondisinya ya."
                            else "${mostUrgent.name} ${mostUrgent.getStatusLabel()}.",
                     color = finalTextColor,
                     style = MaterialTheme.typography.bodySmall,
@@ -386,7 +417,7 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        placeholder = { Text("Cari nama, kategori, atau lokasi...") },
+        placeholder = { Text("Cari bahan, kategori, atau lokasi...") },
         leadingIcon = { 
             Icon(
                 Icons.Default.Search, 
@@ -413,14 +444,14 @@ fun SummarySection(state: HomeUiState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryItem(
-                label = "Total",
+                label = "Total Stok",
                 count = state.totalItems.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
                 icon = Icons.Outlined.Inventory,
                 modifier = Modifier.weight(1f)
             )
             SummaryItem(
-                label = "Aman",
+                label = "Masih Aman",
                 count = state.safeCount.toString(),
                 color = MaterialTheme.colorScheme.primary,
                 icon = Icons.Outlined.CheckCircle,
@@ -433,14 +464,14 @@ fun SummarySection(state: HomeUiState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryItem(
-                label = "Hampir",
+                label = "Perlu Cek",
                 count = state.nearlyExpiredCount.toString(),
                 color = MaterialTheme.colorScheme.secondary,
                 icon = Icons.Outlined.Warning,
                 modifier = Modifier.weight(1f)
             )
             SummaryItem(
-                label = "Expired",
+                label = "Lewat Tanggal",
                 count = state.expiredCount.toString(),
                 color = MaterialTheme.colorScheme.error,
                 icon = Icons.Outlined.ErrorOutline,
@@ -577,7 +608,7 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Tambahkan makanan pertama kamu agar FoodSaver bisa membantu mengingatkan tanggal kedaluwarsa.",
+            "Yuk mulai catat stok makananmu biar FoodSaver bisa ingatkan kalau ada yang mau expired.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -589,7 +620,7 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
             shape = RoundedCornerShape(12.dp),
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
         ) {
-            Text("Tambah Makanan Pertama", fontWeight = FontWeight.Bold)
+            Text("Mulai Tambah Makanan", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -619,7 +650,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
             onClick = onRetry, 
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
-            Text("Coba Lagi", fontWeight = FontWeight.Bold)
+            Text("Coba Lagi Ya", fontWeight = FontWeight.Bold)
         }
     }
 }

@@ -42,11 +42,11 @@ data class FoodItem(
     fun getStatusLabel(): String {
         val daysRemaining = getDaysRemaining()
         return when {
-            daysRemaining < 0 -> "Expired ${abs(daysRemaining)} hari lalu"
-            daysRemaining == 0 -> "Expired hari ini"
-            daysRemaining == 1 -> "Akan expired besok"
-            daysRemaining in 2..3 -> "Akan expired dalam $daysRemaining hari"
-            else -> "Aman, $daysRemaining hari lagi"
+            daysRemaining < 0 -> "Sudah lewat ${abs(daysRemaining)} hari"
+            daysRemaining == 0 -> "Terakhir hari ini"
+            daysRemaining == 1 -> "Segera habis besok"
+            daysRemaining in 2..3 -> "$daysRemaining hari lagi"
+            else -> "Masih segar, $daysRemaining hari lagi"
         }
     }
 

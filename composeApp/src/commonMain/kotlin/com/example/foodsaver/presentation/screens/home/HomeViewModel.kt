@@ -18,6 +18,7 @@ data class HomeUiState(
     val priorityItems: List<FoodItem> = emptyList(),
     val urgentReminders: List<FoodItem> = emptyList(),
     val searchQuery: String = "",
+    val selectedCategory: String = "Semua",
     val totalItems: Int = 0,
     val safeCount: Int = 0,
     val nearlyExpiredCount: Int = 0,
@@ -50,7 +51,6 @@ class HomeViewModel(
                 enabled to days
             }.collect { (enabled, days) ->
                 _state.update { it.copy(notificationsEnabled = enabled, reminderDays = days) }
-                // Re-calculate reminders when preferences change
                 updateReminders()
             }
         }
@@ -77,7 +77,7 @@ class HomeViewModel(
                         isLoading = false, 
                         items = allItems,
                         activeItems = activeItems,
-                        filteredItems = filterItems(activeItems, it.searchQuery),
+                        filteredItems = filterItems(activeItems, it.searchQuery, it.selectedCategory),
                         priorityItems = priority,
                         totalItems = activeItems.size,
                         safeCount = safe,
@@ -108,20 +108,30 @@ class HomeViewModel(
         _state.update { 
             it.copy(
                 searchQuery = query,
-                filteredItems = filterItems(it.activeItems, query)
+                filteredItems = filterItems(it.activeItems, query, it.selectedCategory)
             )
         }
     }
 
-    private fun filterItems(items: List<FoodItem>, query: String): List<FoodItem> {
-        return if (query.isBlank()) {
-            items
-        } else {
-            items.filter { 
-                it.name.contains(query, ignoreCase = true) || 
-                it.category.contains(query, ignoreCase = true) ||
-                it.storageLocation.contains(query, ignoreCase = true)
-            }
+    fun onCategoryChange(category: String) {
+        _state.update {
+            it.copy(
+                selectedCategory = category,
+                filteredItems = filterItems(it.activeItems, it.searchQuery, category)
+            )
+        }
+    }
+
+    private fun filterItems(items: List<FoodItem>, query: String, category: String): List<FoodItem> {
+        return items.filter { item ->
+            val matchesQuery = query.isBlank() || 
+                    item.name.contains(query, ignoreCase = true) || 
+                    item.category.contains(query, ignoreCase = true) ||
+                    item.storageLocation.contains(query, ignoreCase = true)
+            
+            val matchesCategory = category == "Semua" || item.category == category
+            
+            matchesQuery && matchesCategory
         }
     }
 

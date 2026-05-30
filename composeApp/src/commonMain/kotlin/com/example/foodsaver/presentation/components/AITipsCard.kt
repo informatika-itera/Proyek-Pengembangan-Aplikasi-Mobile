@@ -70,18 +70,18 @@ private fun generateSimpleAITip(items: List<FoodItem>): String {
         val first = expiredOrNear.first()
         return when {
             first.getStatus() == FoodStatus.EXPIRED -> 
-                "Kamu punya ${first.name} yang sudah expired. Segera periksa kondisinya sebelum dibuang."
+                "Aduh, ${first.name} sudah lewat tanggalnya nih. Yuk cek dulu kondisinya sebelum dibuang."
             first.category == "Buah" -> 
-                "${first.name} hampir expired. Kamu bisa mengolahnya menjadi jus atau smoothie!"
+                "${first.name} sebentar lagi lewat masa segarnya. Enak lho kalau dijadikan jus atau smoothie hari ini!"
             first.category == "Roti" || first.name.contains("Roti", true) ->
-                "${first.name} hampir expired, enak jika dijadikan roti panggang hari ini."
+                "${first.name} sudah mau habis masanya, coba dijadikan roti panggang yuk biar tetap nikmat."
             else -> 
-                "AI menyarankan kamu mengonsumsi ${first.name} terlebih dahulu karena akan segera kedaluwarsa."
+                "Saran AI: Pakai ${first.name} duluan yuk dalam masakanmu biar nggak mubazir!"
         }
     }
     
     val buahCount = items.count { it.category == "Buah" }
-    if (buahCount > 0) return "Tips: Simpan buah di tempat sejuk atau kulkas agar tetap segar lebih lama."
+    if (buahCount > 0) return "Tips: Biar buah-buahanmu tetap segar, simpan di tempat sejuk atau kulkas ya."
     
-    return "Stok makananmu aman! Tetap catat belanjaan baru agar tidak ada yang terbuang."
+    return "Wah, stok makananmu aman semua! Tetap semangat masak biar nggak ada yang terbuang ya."
 }

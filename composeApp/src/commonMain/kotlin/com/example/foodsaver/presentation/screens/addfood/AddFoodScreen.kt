@@ -172,7 +172,7 @@ fun AddFoodScreen(
                             modifier = Modifier.padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Penyimpanan & Expired", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("Penyimpanan & Masa Kesegaran", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                             DropdownSelector(
                                 label = "Lokasi Penyimpanan",
@@ -184,7 +184,7 @@ fun AddFoodScreen(
                             OutlinedTextField(
                                 value = state.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),
                                 onValueChange = {},
-                                label = { Text("Tanggal Kadaluwarsa") },
+                                label = { Text("Estimasi Expired / Segar Hingga") },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 readOnly = true,
@@ -196,7 +196,10 @@ fun AddFoodScreen(
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     focusedLabelColor = MaterialTheme.colorScheme.primary
-                                )
+                                ),
+                                supportingText = {
+                                    Text("Aplikasi menyarankan tanggal berdasarkan kategori, kamu bisa mengubahnya manual.")
+                                }
                             )
                         }
                     }

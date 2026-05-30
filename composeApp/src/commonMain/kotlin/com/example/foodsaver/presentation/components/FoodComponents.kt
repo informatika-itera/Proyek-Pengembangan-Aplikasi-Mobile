@@ -1,10 +1,15 @@
 package com.example.foodsaver.presentation.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,6 +20,58 @@ import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.theme.*
 import com.example.foodsaver.core.util.formatQuantity
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeableFoodItem(
+    item: FoodItem,
+    onDelete: (Long) -> Unit,
+    onClick: (Long) -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = {
+            if (it == SwipeToDismissBoxValue.EndToStart) {
+                onDelete(item.id)
+                true
+            } else false
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            val color by animateColorAsState(
+                when (dismissState.targetValue) {
+                    SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
+                    else -> Color.Transparent
+                }
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .background(color, RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Hapus",
+                        modifier = Modifier.padding(end = 16.dp),
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        },
+        content = {
+            FoodItemCard(
+                item = item,
+                onClick = { onClick(item.id) }
+            )
+        }
+    )
+}
 
 @Composable
 fun FoodItemCard(
@@ -31,13 +88,20 @@ fun FoodItemCard(
         else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
+    // Expiry Highlight: subtle background tint for expired items
+    val cardBgColor = if (status == FoodStatus.EXPIRED || status == FoodStatus.EXPIRED_TODAY) {
+        statusColor.copy(alpha = 0.05f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = cardBgColor,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -49,7 +113,6 @@ fun FoodItemCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Food Icon/Emoji Box
             Surface(
                 modifier = Modifier.size(56.dp),
                 shape = RoundedCornerShape(12.dp),

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
@@ -14,7 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.foodsaver.domain.model.Recipe
 import org.koin.compose.viewmodel.koinViewModel
@@ -39,7 +42,7 @@ fun RecipeListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Rekomendasi Resep") },
+                title = { Text("Inspirasi Masak", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -56,8 +59,9 @@ fun RecipeListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Cari resep lainnya...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                placeholder = { Text("Lagi pengen masak apa hari ini?") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                shape = RoundedCornerShape(24.dp),
                 singleLine = true
             )
 
@@ -69,29 +73,23 @@ fun RecipeListScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    Icon(
-                        Icons.Default.FilterList,
-                        contentDescription = "Filter",
-                        modifier = Modifier.padding(top = 8.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
                 items(filters) { filter ->
                     FilterChip(
                         selected = state.activeFilter == filter,
                         onClick = { viewModel.onFilterSelect(filter) },
-                        label = { Text(filter) }
+                        label = { Text(filter) },
+                        shape = RoundedCornerShape(12.dp)
                     )
                 }
             }
 
             if (state.selectedIngredients.isNotEmpty() && state.searchQuery.isEmpty()) {
                 Text(
-                    text = "Berdasarkan bahan: ${state.selectedIngredients.joinToString(", ")}",
+                    text = "Bisa dimasak pakai: ${state.selectedIngredients.joinToString(", ")}",
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -100,15 +98,22 @@ fun RecipeListScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 } else if (state.error != null) {
                     Text(
-                        text = state.error ?: "Error",
+                        text = "Waduh, resepnya gagal dimuat nih. Coba lagi ya!",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Center).padding(16.dp)
                     )
                 } else if (state.filteredRecipes.isEmpty()) {
-                    Text(
-                        text = "Tidak ada resep ditemukan.",
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Resepnya belum ketemu nih.")
+                        Text(
+                            "Coba cari dengan kata kunci lain yuk!",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -134,6 +139,8 @@ fun RecipeItem(recipe: Recipe, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -147,31 +154,30 @@ fun RecipeItem(recipe: Recipe, onClick: () -> Unit) {
                 contentDescription = recipe.name,
                 modifier = Modifier
                     .size(80.dp)
-                    .padding(end = 12.dp),
+                    .androidx.compose.ui.draw.clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = recipe.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
                 if (recipe.category != null) {
                     Text(
                         text = recipe.category,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 if (recipe.matchPercentage > 0) {
-                    LinearProgressIndicator(
-                        progress = { recipe.matchPercentage / 100f },
-                        modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Cocok ${recipe.matchPercentage}%",
-                        style = MaterialTheme.typography.labelSmall
+                        text = "Cocok ${recipe.matchPercentage}% dengan stokmu",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }

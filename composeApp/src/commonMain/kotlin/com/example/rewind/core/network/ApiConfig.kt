@@ -17,4 +17,5 @@ expect object ApiConfig {
      * iOS: Diambil dari Info.plist atau hardcoded (untuk development)
      */
     val geminiApiKey: String
+    val tmdbApiKey: String
 }

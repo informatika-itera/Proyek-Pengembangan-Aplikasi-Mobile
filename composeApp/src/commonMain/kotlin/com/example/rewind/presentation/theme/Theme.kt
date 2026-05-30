@@ -5,28 +5,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 
-// ==================== REWIND CINEMA PALETTE ====================
+private val GoldAmberLight   = Color(0xFFF5C46A)
+private val CreamWarm        = Color(0xFFFFF8EE)
+private val CreamSurface     = Color(0xFFFFF1DC)
+private val RedContainer     = Color(0xFFFFDAD6)
+private val DarkBrown        = Color(0xFF3E1A0A)
+private val OutlineLight     = Color(0xFFB07830)
 
-// Derived Colors — Light Mode
-private val GoldAmberLight   = Color(0xFFF5C46A) // Lighter gold for containers
-private val CreamWarm        = Color(0xFFFFF8EE) // Off-white warm background
-private val CreamSurface     = Color(0xFFFFF1DC) // Slightly deeper cream surface
-private val RedContainer     = Color(0xFFFFDAD6) // Soft red container (light)
-private val DarkBrown        = Color(0xFF3E1A0A) // Deep warm dark for text on light
-private val OutlineLight     = Color(0xFFB07830) // Muted gold outline
-
-// Derived Colors — Dark Mode
-private val GoldDark         = Color(0xFFFFB951) // Brighter gold on dark bg
-private val RedContainerDark = Color(0xFF5C1010) // Dark red container
-private val OutlineDark      = Color(0xFF8B6020) // Subtle warm outline
+private val GoldDark         = Color(0xFFFFB951)
+private val RedContainerDark = Color(0xFF5C1010)
+private val OutlineDark      = Color(0xFF8B6020)
 
 private val White            = Color(0xFFFFFFFF)
 private val ErrorRed         = Color(0xFFCF6679)
 private val ErrorDarkText    = Color(0xFF680020)
-
-// ==================== LIGHT MODE ====================
 
 private val LightColorScheme = lightColorScheme(
     primary                = GoldAmber,
@@ -58,8 +53,6 @@ private val LightColorScheme = lightColorScheme(
     outline                = OutlineLight
 )
 
-// ==================== DARK MODE ====================
-
 private val DarkColorScheme = darkColorScheme(
     primary                = GoldDark,
     onPrimary              = BackgroundDark,
@@ -90,17 +83,18 @@ private val DarkColorScheme = darkColorScheme(
     outline                = OutlineDark
 )
 
-// ==================== THEME ====================
-
 @Composable
 fun RewindTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val rewindColors = if (darkTheme) DarkRewindColors else LightRewindColors
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(LocalRewindColors provides rewindColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

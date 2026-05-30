@@ -14,7 +14,8 @@ data class Movie(
     val totalEpisodes: Int? = null, // null jika tipe MOVIE
     val watchedEpisodes: Int = 0,
     val createdAt: Instant = Clock.System.now(),
-    val updatedAt: Instant = Clock.System.now()
+    val updatedAt: Instant = Clock.System.now(),
+    val posterUrl: String? = null
 ) {
     val isFavorite: Boolean
         get() = rating != null && rating >= 8.0f

@@ -2,8 +2,6 @@ package com.example.rewind.data.remote.dto
 
 import kotlinx.serialization.Serializable
 
-// ==================== REQUEST ====================
-
 @Serializable
 data class GeminiRequest(
     val contents: List<GeminiContent>,
@@ -36,8 +34,6 @@ data class SafetySetting(
     val threshold: String
 )
 
-// ==================== RESPONSE ====================
-
 @Serializable
 data class GeminiResponse(
     val candidates: List<GeminiCandidate>? = null,
@@ -47,7 +43,7 @@ data class GeminiResponse(
 
 @Serializable
 data class GeminiCandidate(
-    val content: GeminiContent,
+    val content: GeminiContent? = null,
     val finishReason: String? = null,
     val index: Int = 0,
     val safetyRatings: List<SafetyRating>? = null
@@ -71,8 +67,6 @@ data class GeminiError(
     val message: String,
     val status: String
 )
-
-// ==================== HELPER EXTENSIONS ====================
 
 fun GeminiResponse.getTextContent(): String? {
     return candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text

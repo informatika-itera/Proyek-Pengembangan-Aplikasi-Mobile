@@ -17,6 +17,15 @@ sealed interface Route {
 
     @Serializable
     data object AIAssistant : Route
+
+    @Serializable
+    data object Profile : Route
+
+    @Serializable
+    data object Settings : Route
+
+    @Serializable
+    data object Search : Route
 }
 
 interface NavigationActions {
@@ -24,5 +33,7 @@ interface NavigationActions {
     fun navigateToAddMovie(movieId: Long? = null)
     fun navigateToMovieDetail(movieId: Long)
     fun navigateToAIAssistant()
+    fun navigateToProfile()
+    fun navigateToSettings()
     fun navigateBack()
 }

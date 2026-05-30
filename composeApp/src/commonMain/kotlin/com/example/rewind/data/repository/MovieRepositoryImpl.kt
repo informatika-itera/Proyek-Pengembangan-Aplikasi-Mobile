@@ -50,14 +50,12 @@ class MovieRepositoryImpl(
         .map { list -> list.map { it.toMovie() } }
 
     override suspend fun insertMovie(movie: Movie): Long {
-        // Masukkan data ke tabel
         queries.insertMovie(
             movie.title, movie.genre.name, movie.type.name, movie.status.name,
             movie.rating?.toDouble(), movie.review, movie.totalEpisodes?.toLong(),
             movie.watchedEpisodes.toLong(), movie.createdAt.toEpochMilliseconds(),
-            movie.updatedAt.toEpochMilliseconds()
+            movie.updatedAt.toEpochMilliseconds(), movie.posterUrl
         )
-        // Kembalikan ID yang baru saja dibuat
         return queries.lastInsertRowId().executeAsOne()
     }
 
@@ -66,7 +64,7 @@ class MovieRepositoryImpl(
             movie.title, movie.genre.name, movie.type.name, movie.status.name,
             movie.rating?.toDouble(), movie.review, movie.totalEpisodes?.toLong(),
             movie.watchedEpisodes.toLong(), movie.updatedAt.toEpochMilliseconds(),
-            movie.id
+            movie.posterUrl, movie.id
         )
     }
 

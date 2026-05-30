@@ -16,6 +16,7 @@ fun MovieEntity.toMovie(): Movie {
         totalEpisodes = totalEpisodes?.toInt(),
         watchedEpisodes = watchedEpisodes.toInt(),
         createdAt = Instant.fromEpochMilliseconds(createdAt),
-        updatedAt = Instant.fromEpochMilliseconds(updatedAt)
+        updatedAt = Instant.fromEpochMilliseconds(updatedAt),
+        posterUrl = posterUrl
     )
 }

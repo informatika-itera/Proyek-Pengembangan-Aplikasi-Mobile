@@ -1,19 +1,28 @@
 package com.example.rewind.presentation.screens.ai
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +44,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
@@ -50,6 +60,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -58,16 +69,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.rewind.presentation.theme.BackgroundDark
-import com.example.rewind.presentation.theme.BorderGold
-import com.example.rewind.presentation.theme.BorderSubtle
 import com.example.rewind.presentation.theme.GoldAmber
 import com.example.rewind.presentation.theme.GoldAmberDim
-import com.example.rewind.presentation.theme.SurfaceDark
-import com.example.rewind.presentation.theme.SurfaceElevated
-import com.example.rewind.presentation.theme.TextMuted
-import com.example.rewind.presentation.theme.TextSecondary
-import com.example.rewind.presentation.theme.TextWarm
+import com.example.rewind.presentation.theme.LocalRewindColors
 import com.example.rewind.presentation.theme.TheaterRed
 import com.example.rewind.presentation.theme.VelvetRed
 import org.koin.compose.viewmodel.koinViewModel
@@ -115,10 +119,12 @@ fun AIAssistantScreen(
         }
     }
 
+    val bg = MaterialTheme.colorScheme.background
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(bg)
     ) {
         Box(
             modifier = Modifier
@@ -167,6 +173,7 @@ fun AIAssistantScreen(
                     onActionSelected = viewModel::onActionSelected
                 )
 
+                val rewindColors = LocalRewindColors.current
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -179,16 +186,22 @@ fun AIAssistantScreen(
                                 )
                             )
                         )
-                        .border(BorderStroke(1.dp, BorderGold.copy(alpha = 0.2f)), RoundedCornerShape(10.dp))
+                        .border(BorderStroke(1.dp, rewindColors.borderGold.copy(alpha = 0.2f)), RoundedCornerShape(10.dp))
                         .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
-                    Text(
-                        text = uiState.selectedAction.description,
-                        color = TextSecondary,
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Italic,
-                        lineHeight = 18.sp
-                    )
+                    AnimatedContent(
+                        targetState = uiState.selectedAction.description,
+                        transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
+                        label = "ActionDescriptionAnim"
+                    ) { description ->
+                        Text(
+                            text = description,
+                            color = rewindColors.textSecondary,
+                            fontSize = 12.sp,
+                            fontStyle = FontStyle.Italic,
+                            lineHeight = 18.sp
+                        )
+                    }
                 }
 
                 SectionLabel("YOUR INPUT")
@@ -198,7 +211,7 @@ fun AIAssistantScreen(
                     placeholder = {
                         Text(
                             "Type your text or question here...",
-                            color = TextMuted,
+                            color = rewindColors.textMuted,
                             fontSize = 14.sp
                         )
                     },
@@ -207,16 +220,16 @@ fun AIAssistantScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = GoldAmber.copy(alpha = 0.7f),
-                        unfocusedBorderColor = BorderSubtle,
-                        focusedTextColor = TextWarm,
-                        unfocusedTextColor = TextWarm,
+                        unfocusedBorderColor = rewindColors.borderSubtle,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                         cursorColor = GoldAmber,
-                        focusedContainerColor = SurfaceElevated,
-                        unfocusedContainerColor = SurfaceElevated
+                        focusedContainerColor = rewindColors.surfaceElevated,
+                        unfocusedContainerColor = rewindColors.surfaceElevated
                     ),
                     shape = RoundedCornerShape(14.dp),
                     textStyle = LocalTextStyle.current.copy(
-                        color = TextWarm,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 14.sp,
                         lineHeight = 22.sp
                     )
@@ -269,15 +282,28 @@ fun AIAssistantScreen(
 
 @Composable
 private fun AIHeader(onNavigateBack: () -> Unit) {
+    val rewindColors = LocalRewindColors.current
+    val bg = MaterialTheme.colorScheme.background
+    val surface = MaterialTheme.colorScheme.surface
+    val onBg = MaterialTheme.colorScheme.onBackground
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.9f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "BackBtnScale"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 Brush.verticalGradient(
                     colorStops = arrayOf(
-                        0f to SurfaceDark,
-                        0.7f to SurfaceDark.copy(alpha = 0.8f),
-                        1f to BackgroundDark
+                        0f to surface,
+                        0.7f to surface.copy(alpha = 0.8f),
+                        1f to bg
                     )
                 )
             )
@@ -292,9 +318,9 @@ private fun AIHeader(onNavigateBack: () -> Unit) {
                     Brush.horizontalGradient(
                         listOf(
                             Color.Transparent,
-                            BorderGold.copy(alpha = 0.4f),
+                            rewindColors.borderGold.copy(alpha = 0.4f),
                             GoldAmber.copy(alpha = 0.25f),
-                            BorderGold.copy(alpha = 0.4f),
+                            rewindColors.borderGold.copy(alpha = 0.4f),
                             Color.Transparent
                         )
                     )
@@ -304,10 +330,15 @@ private fun AIHeader(onNavigateBack: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(38.dp)
+                    .graphicsLayer(scaleX = scale, scaleY = scale)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(SurfaceElevated)
-                    .border(BorderStroke(1.dp, BorderSubtle), RoundedCornerShape(10.dp))
-                    .clickable(onClick = onNavigateBack),
+                    .background(rewindColors.surfaceElevated)
+                    .border(BorderStroke(1.dp, rewindColors.borderSubtle), RoundedCornerShape(10.dp))
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current,
+                        onClick = onNavigateBack
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text("←", color = GoldAmber, fontSize = 17.sp)
@@ -323,7 +354,7 @@ private fun AIHeader(onNavigateBack: () -> Unit) {
                 )
                 Text(
                     text = "Talk with Echo",
-                    color = TextWarm,
+                    color = onBg,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.3).sp
@@ -337,7 +368,7 @@ private fun AIHeader(onNavigateBack: () -> Unit) {
                     .background(
                         Brush.linearGradient(listOf(GoldAmberDim.copy(alpha = 0.2f), GoldAmber.copy(alpha = 0.1f)))
                     )
-                    .border(BorderStroke(1.dp, BorderGold.copy(alpha = 0.4f)), RoundedCornerShape(10.dp)),
+                    .border(BorderStroke(1.dp, rewindColors.borderGold.copy(alpha = 0.4f)), RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("🦉", fontSize = 18.sp)
@@ -348,6 +379,9 @@ private fun AIHeader(onNavigateBack: () -> Unit) {
 
 @Composable
 private fun AIWelcomeBanner() {
+    val rewindColors = LocalRewindColors.current
+    val surface = MaterialTheme.colorScheme.surface
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,15 +390,15 @@ private fun AIWelcomeBanner() {
                 Brush.linearGradient(
                     colorStops = arrayOf(
                         0f to VelvetRed.copy(alpha = 0.3f),
-                        0.5f to SurfaceElevated,
-                        1f to SurfaceDark
+                        0.5f to rewindColors.surfaceElevated,
+                        1f to surface
                     )
                 )
             )
             .border(
                 BorderStroke(
                     1.dp,
-                    Brush.horizontalGradient(listOf(GoldAmber.copy(alpha = 0.3f), BorderSubtle, Color.Transparent))
+                    Brush.horizontalGradient(listOf(GoldAmber.copy(alpha = 0.3f), rewindColors.borderSubtle, Color.Transparent))
                 ),
                 RoundedCornerShape(16.dp)
             )
@@ -396,7 +430,7 @@ private fun AIWelcomeBanner() {
                 )
                 Text(
                     text = "Ask anything about movies, series, or let the Echo help you write better reviews.",
-                    color = TextSecondary,
+                    color = rewindColors.textSecondary,
                     fontSize = 12.sp,
                     lineHeight = 18.sp
                 )
@@ -407,23 +441,38 @@ private fun AIWelcomeBanner() {
 
 @Composable
 private fun ActionChips(selectedAction: AIAction, onActionSelected: (AIAction) -> Unit) {
+    val rewindColors = LocalRewindColors.current
+    val bg = MaterialTheme.colorScheme.background
+    val surface = MaterialTheme.colorScheme.surface
+
     LazyRow(
         contentPadding = PaddingValues(vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(AIAction.entries) { action ->
             val isSelected = selectedAction == action
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+            val scale by animateFloatAsState(
+                targetValue = if (isPressed) 0.9f else 1f,
+                label = "ChipScale"
+            )
+
             if (isSelected) {
                 Box(
                     modifier = Modifier
+                        .graphicsLayer(scaleX = scale, scaleY = scale)
                         .clip(RoundedCornerShape(20.dp))
                         .background(Brush.horizontalGradient(listOf(GoldAmberDim, GoldAmber)))
-                        .clickable { onActionSelected(action) }
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = LocalIndication.current
+                        ) { onActionSelected(action) }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = action.displayName,
-                        color = BackgroundDark,
+                        color = bg,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.2.sp
@@ -432,15 +481,19 @@ private fun ActionChips(selectedAction: AIAction, onActionSelected: (AIAction) -
             } else {
                 Box(
                     modifier = Modifier
+                        .graphicsLayer(scaleX = scale, scaleY = scale)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(SurfaceDark)
-                        .border(BorderStroke(1.dp, BorderSubtle), RoundedCornerShape(20.dp))
-                        .clickable { onActionSelected(action) }
+                        .background(surface)
+                        .border(BorderStroke(1.dp, rewindColors.borderSubtle), RoundedCornerShape(20.dp))
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = LocalIndication.current
+                        ) { onActionSelected(action) }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = action.displayName,
-                        color = TextMuted,
+                        color = rewindColors.textMuted,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -452,6 +505,15 @@ private fun ActionChips(selectedAction: AIAction, onActionSelected: (AIAction) -
 
 @Composable
 private fun RunButton(isLoading: Boolean, canExecute: Boolean, onClick: () -> Unit) {
+    val bg = MaterialTheme.colorScheme.background
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed && canExecute && !isLoading) 0.95f else 1f,
+        label = "RunBtnScale"
+    )
+
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -469,6 +531,7 @@ private fun RunButton(isLoading: Boolean, canExecute: Boolean, onClick: () -> Un
         }
         Box(
             modifier = Modifier
+                .graphicsLayer(scaleX = scale, scaleY = scale)
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(14.dp))
@@ -480,7 +543,12 @@ private fun RunButton(isLoading: Boolean, canExecute: Boolean, onClick: () -> Un
                             listOf(GoldAmberDim.copy(alpha = 0.3f), GoldAmber.copy(alpha = 0.3f))
                         )
                 )
-                .clickable(enabled = canExecute && !isLoading, onClick = onClick),
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
+                    enabled = canExecute && !isLoading,
+                    onClick = onClick
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (isLoading) {
@@ -490,12 +558,12 @@ private fun RunButton(isLoading: Boolean, canExecute: Boolean, onClick: () -> Un
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
-                        color = BackgroundDark,
+                        color = bg,
                         strokeWidth = 2.dp
                     )
                     Text(
                         text = "Processing...",
-                        color = BackgroundDark,
+                        color = bg,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp
                     )
@@ -505,10 +573,10 @@ private fun RunButton(isLoading: Boolean, canExecute: Boolean, onClick: () -> Un
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("✦", color = BackgroundDark, fontSize = 14.sp)
+                    Text("✦", color = bg, fontSize = 14.sp)
                     Text(
                         text = "Run",
-                        color = BackgroundDark,
+                        color = bg,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
                         letterSpacing = 0.5.sp
@@ -526,6 +594,11 @@ private fun ResultCard(
     onCopy: () -> Unit,
     onApply: () -> Unit
 ) {
+    val rewindColors = LocalRewindColors.current
+    val bg = MaterialTheme.colorScheme.background
+    val surface = MaterialTheme.colorScheme.surface
+    val onBg = MaterialTheme.colorScheme.onBackground
+
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -542,7 +615,7 @@ private fun ResultCard(
             Box(
                 modifier = Modifier
                     .background(GoldAmber.copy(alpha = 0.08f), RoundedCornerShape(6.dp))
-                    .border(BorderStroke(0.5.dp, BorderGold.copy(alpha = 0.4f)), RoundedCornerShape(6.dp))
+                    .border(BorderStroke(0.5.dp, rewindColors.borderGold.copy(alpha = 0.4f)), RoundedCornerShape(6.dp))
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             ) {
                 Text(
@@ -559,11 +632,11 @@ private fun ResultCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(SurfaceElevated)
+                .background(rewindColors.surfaceElevated)
                 .border(
                     BorderStroke(
                         1.dp,
-                        Brush.verticalGradient(listOf(BorderGold.copy(alpha = 0.35f), BorderSubtle))
+                        Brush.verticalGradient(listOf(rewindColors.borderGold.copy(alpha = 0.35f), rewindColors.borderSubtle))
                     ),
                     RoundedCornerShape(16.dp)
                 )
@@ -589,7 +662,7 @@ private fun ResultCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = result,
-                    color = TextWarm,
+                    color = onBg,
                     fontSize = 14.sp,
                     lineHeight = 23.sp
                 )
@@ -598,36 +671,54 @@ private fun ResultCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    val copyInteractionSource = remember { MutableInteractionSource() }
+                    val copyPressed by copyInteractionSource.collectIsPressedAsState()
+                    val copyScale by animateFloatAsState(targetValue = if (copyPressed) 0.95f else 1f, label = "CopyScale")
+
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .height(42.dp)
+                            .graphicsLayer(scaleX = copyScale, scaleY = copyScale)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(SurfaceDark)
-                            .border(BorderStroke(1.dp, BorderSubtle), RoundedCornerShape(10.dp))
-                            .clickable(onClick = onCopy),
+                            .background(surface)
+                            .border(BorderStroke(1.dp, rewindColors.borderSubtle), RoundedCornerShape(10.dp))
+                            .clickable(
+                                interactionSource = copyInteractionSource,
+                                indication = LocalIndication.current,
+                                onClick = onCopy
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Copy",
-                            color = TextSecondary,
+                            color = rewindColors.textSecondary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
                     if (noteId != null) {
+                        val applyInteractionSource = remember { MutableInteractionSource() }
+                        val applyPressed by applyInteractionSource.collectIsPressedAsState()
+                        val applyScale by animateFloatAsState(targetValue = if (applyPressed) 0.95f else 1f, label = "ApplyScale")
+
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(42.dp)
+                                .graphicsLayer(scaleX = applyScale, scaleY = applyScale)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(Brush.horizontalGradient(listOf(GoldAmberDim, GoldAmber)))
-                                .clickable(onClick = onApply),
+                                .clickable(
+                                    interactionSource = applyInteractionSource,
+                                    indication = LocalIndication.current,
+                                    onClick = onApply
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "Apply",
-                                color = BackgroundDark,
+                                color = bg,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -641,9 +732,10 @@ private fun ResultCard(
 
 @Composable
 private fun SectionLabel(text: String) {
+    val rewindColors = LocalRewindColors.current
     Text(
         text = text,
-        color = TextMuted,
+        color = rewindColors.textMuted,
         fontSize = 9.sp,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = 2.5.sp

@@ -15,4 +15,5 @@ import com.example.rewind.BuildConfig
  */
 actual object ApiConfig {
     actual val geminiApiKey: String = BuildConfig.GEMINI_API_KEY
+    actual val tmdbApiKey: String = BuildConfig.TMDB_API_KEY
 }

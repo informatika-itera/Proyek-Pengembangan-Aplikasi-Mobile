@@ -1,11 +1,14 @@
 package com.example.travelplanner.presentation.screens.home
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,6 +33,9 @@ import com.example.travelplanner.core.service.CityImageService
 import com.example.travelplanner.core.util.LocalStrings
 import com.example.travelplanner.presentation.screens.planner.PantaiAnimatedScene
 import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 // ── Vibe localizer (used across screens) ─────────────────────────────
 fun String.localizeVibe(): String {
@@ -48,35 +55,6 @@ fun getDestinationGradient(destination: String): Pair<Color, Color> {
     }
 }
 
-// ── Immediate loremflickr placeholder (synchronous, no suspend needed) ─
-fun getDestinationPhotoUrl(destination: String): String {
-    val q = destination.lowercase().trim()
-    val seed = (q.hashCode().and(0x7FFFFFFF) % 500) + 1
-    val keywords = when {
-        q.contains("bali")                            -> "bali,temple,rice,terrace"
-        q.contains("yogya") || q.contains("jogja")   -> "borobudur,yogyakarta,java"
-        q.contains("jakarta")                         -> "jakarta,monas,city"
-        q.contains("bandung")                         -> "bandung,tangkuban,java"
-        q.contains("lombok")                          -> "lombok,rinjani,beach"
-        q.contains("raja ampat")                      -> "raja,ampat,island,sea"
-        q.contains("labuan bajo") || q.contains("komodo") -> "komodo,dragon,island"
-        q.contains("bromo")                           -> "mount,bromo,volcano,sunrise"
-        q.contains("toba")                            -> "lake,toba,sumatra"
-        q.contains("manado") || q.contains("bunaken") -> "bunaken,coral,reef"
-        q.contains("toraja")                          -> "toraja,tongkonan,sulawesi"
-        q.contains("singapore") || q.contains("singapura") -> "singapore,marina,bay"
-        q.contains("kuala lumpur")                    -> "kuala,lumpur,petronas"
-        q.contains("bangkok")                         -> "bangkok,temple,thailand"
-        q.contains("tokyo")                           -> "tokyo,shibuya,japan"
-        q.contains("paris")                           -> "paris,eiffel,france"
-        q.contains("london")                          -> "london,tower,bridge"
-        q.contains("dubai")                           -> "dubai,burj,khalifa"
-        q.contains("sydney")                          -> "sydney,opera,house"
-        q.contains("new york")                        -> "new,york,times,square"
-        else -> "${q.replace(" ", ",").take(30)},travel,city,landmark"
-    }
-    return "https://loremflickr.com/800/500/$keywords/all?lock=$seed"
-}
 
 // ══════════════════════════════════════════════════════════════════════
 //  DATA MODEL
@@ -112,22 +90,77 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
-            FloatingActionButton(
+            val infiniteTransition = rememberInfiniteTransition(label = "FABPulse")
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 0.98f,
+                targetValue = 1.04f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1400, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "fabScale"
+            )
+            val borderGlow by infiniteTransition.animateFloat(
+                initialValue = 0.4f,
+                targetValue = 0.9f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1400, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "borderGlow"
+            )
+
+            Surface(
                 onClick = onNavigateToGenerateTrip,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor   = MaterialTheme.colorScheme.onPrimary,
-                shape          = RoundedCornerShape(14.dp),
-                modifier       = Modifier.shadow(10.dp, RoundedCornerShape(14.dp))
+                modifier = Modifier
+                    .scale(scale)
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(28.dp),
+                        spotColor = MaterialTheme.colorScheme.secondary.copy(alpha = borderGlow)
+                    )
+                    .border(
+                        width = 1.5.dp,
+                        brush = Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.secondary.copy(alpha = borderGlow),
+                                MaterialTheme.colorScheme.primary.copy(alpha = borderGlow)
+                            )
+                        ),
+                        shape = RoundedCornerShape(28.dp)
+                    ),
+                shape = RoundedCornerShape(28.dp),
+                color = Color.Transparent
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
-                    verticalAlignment   = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                                )
+                            )
+                        )
+                        .padding(horizontal = 24.dp, vertical = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Text(s.planButton, fontWeight = FontWeight.SemiBold, letterSpacing = 0.3.sp,
-                        style = MaterialTheme.typography.labelLarge)
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = s.planButton.uppercase(),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp,
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }
@@ -139,10 +172,44 @@ fun HomeScreen(
             item { HeroSection() }
 
             item {
+                Button(
+                    onClick = onNavigateToGenerateTrip,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 24.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = if (s.seeAll == "See All") "Create New Travel Plan" else "Buat Rencana Liburan",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
+
+            item {
                 Row(
                     modifier = Modifier.fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 24.dp, bottom = 12.dp),
+                        .padding(top = 20.dp, bottom = 12.dp),
                     verticalAlignment   = Alignment.Bottom,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -175,16 +242,15 @@ fun HomeScreen(
                     val (gradStart, gradEnd) = remember(trip.destination) {
                         getDestinationGradient(trip.destination)
                     }
-                    // ── Prioritas foto: Wikipedia (via CityImageService) → loremflickr placeholder
-                    val photoUrl = uiState.cityImages[trip.destination]
-                        ?: getDestinationPhotoUrl(trip.destination)
+                    // ── Gambar kota diambil dari ViewModel state (sudah terisi instan dari cache/loremflickr)
+                    val photoUrl = uiState.cityImages[trip.destination] ?: ""
 
                     val visualTrip = remember(trip, photoUrl) {
                         DummyTrip(
                             id            = trip.id,
                             destination   = trip.destination,
                             country       = "Indonesia",
-                            dateRange     = "${trip.startDate} (${trip.duration})",
+                            dateRange     = "${trip.startDate} (${trip.duration.substringAfter("|")})",
                             vibe          = trip.vibe,
                             photoUrl      = photoUrl,
                             gradientStart = gradStart,
@@ -209,30 +275,75 @@ fun HomeScreen(
 @Composable
 fun HeroSection() {
     val s = LocalStrings.current
-    Box(modifier = Modifier.fillMaxWidth().height(230.dp)) {
+    
+    val currentHour = remember {
+        try {
+            Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .hour
+        } catch (e: Exception) {
+            12
+        }
+    }
+
+    val isEn = s.seeAll == "See All"
+
+    val greeting = when {
+        currentHour in 5..11 -> if (isEn) "Good Morning," else "Selamat Pagi,"
+        currentHour in 12..14 -> if (isEn) "Good Afternoon," else "Selamat Siang,"
+        currentHour in 15..17 -> if (isEn) "Good Afternoon," else "Selamat Sore,"
+        else -> if (isEn) "Good Evening," else "Selamat Malam,"
+    }
+
+    Box(modifier = Modifier.fillMaxWidth().height(270.dp)) {
         PantaiAnimatedScene(modifier = Modifier.fillMaxSize())
         Box(modifier = Modifier.fillMaxSize().background(
             Brush.verticalGradient(listOf(
-                Color(0xFF1B3A5C).copy(alpha = 0.55f),
-                Color(0xFF1B3A5C).copy(alpha = 0.28f),
-                Color(0xFF1B3A5C).copy(alpha = 0.68f)
+                Color(0xFF1B3A5C).copy(alpha = 0.40f),
+                Color(0xFF1B3A5C).copy(alpha = 0.20f),
+                Color(0xFF1B3A5C).copy(alpha = 0.70f)
             ))
         ))
-        Column(modifier = Modifier.align(Alignment.BottomStart)
-            .padding(horizontal = 24.dp, vertical = 24.dp)) {
-            Surface(shape = RoundedCornerShape(4.dp),
-                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.88f),
-                modifier = Modifier.padding(bottom = 8.dp)) {
-                Text("AI TRAVEL PLANNER",
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
-                    style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondary, letterSpacing = 1.5.sp)
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 20.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.verticalGradient(
+                            listOf(
+                                Color.White.copy(alpha = 0.25f),
+                                Color.White.copy(alpha = 0.05f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .padding(18.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "$greeting\nTraveler.",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White,
+                        lineHeight = 32.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = s.heroSubtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
-            Text(s.heroTitle, style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.SemiBold, color = Color.White, lineHeight = 36.sp)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(s.heroSubtitle, style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.80f))
         }
     }
 }

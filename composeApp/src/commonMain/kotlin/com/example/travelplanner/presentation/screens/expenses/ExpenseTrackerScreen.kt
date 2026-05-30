@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.sp
 import com.example.travelplanner.core.util.LocalStrings
 import com.example.travelplanner.domain.model.Expense
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
 import kotlinx.coroutines.delay
 
 // ══════════════════════════════════════════════════════════════════════
@@ -158,6 +160,12 @@ fun ExpenseTrackerScreen(
                         )
                     }
                     item {
+                        ExpenseInsightsCard(
+                            expenses = uiState.expenses,
+                            totalExpenses = uiState.totalExpenses
+                        )
+                    }
+                    item {
                         AIInputBox(
                             inputText = inputText,
                             onValueChange = { inputText = it },
@@ -235,46 +243,340 @@ fun ExpenseTrackerScreen(
 @Composable
 fun ExpenseSummaryCard(totalExpenses: Double, expenses: List<Expense>) {
     val s = LocalStrings.current
-    Card(modifier = Modifier.fillMaxWidth().shadow(6.dp, RoundedCornerShape(18.dp)),
+    val isEn = s.seeAll == "See All"
+    val animProgress = remember { Animatable(0f) }
+    LaunchedEffect(expenses) {
+        animProgress.snapTo(0f)
+        animProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(1200, easing = FastOutSlowInEasing)
+        )
+    }
+
+    val categorySums = remember(expenses) {
+        expenses.groupBy { it.kategori }.mapValues { it.value.sumOf { e -> e.nominal } }
+    }
+
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val strokeWidthPx = remember(density) { with(density) { 12.dp.toPx() } }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(18.dp)),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(s.expenseSummaryTitle, style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Text(
+                text = s.expenseSummaryTitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(formatRupiah(totalExpenses), style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(
+                text = formatRupiah(totalExpenses),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
             Spacer(modifier = Modifier.height(18.dp))
-            Text(s.expenseCategoryChart, style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), fontWeight = FontWeight.SemiBold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Canvas(modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp))) {
-                if (totalExpenses == 0.0) { drawRect(color = Color.LightGray.copy(alpha = 0.5f)); return@Canvas }
-                val categorySums = expenses.groupBy { it.kategori }.mapValues { it.value.sumOf { e -> e.nominal } }
-                var startX = 0f
-                val cw = size.width
-                categorySums.forEach { (cat, sum) ->
-                    val color = categoryColors[cat] ?: Color.Gray
-                    val bw = cw * (sum / totalExpenses).toFloat()
-                    drawRect(color = color, topLeft = androidx.compose.ui.geometry.Offset(startX, 0f),
-                        size = androidx.compose.ui.geometry.Size(bw, size.height))
-                    startX += bw
-                }
-            }
+            Text(
+                text = s.expenseCategoryChart,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                fontWeight = FontWeight.SemiBold
+            )
             Spacer(modifier = Modifier.height(12.dp))
-            // Legend — translate category key to current language label
-            val activeCategories = expenses.map { it.kategori }.distinct()
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                activeCategories.take(4).forEach { catKey ->
-                    val color = categoryColors[catKey] ?: Color.Gray
-                    val label = catKey.toCatLabel(s)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
-                        Text(label, style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), fontSize = 9.sp)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Donut Chart on Left
+                Box(
+                    modifier = Modifier.size(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        if (totalExpenses == 0.0) {
+                            drawArc(
+                                color = Color.LightGray.copy(alpha = 0.35f),
+                                startAngle = 0f,
+                                sweepAngle = 360f,
+                                useCenter = false,
+                                style = Stroke(width = strokeWidthPx)
+                            )
+                        } else {
+                            var currentStartAngle = -90f
+                            val gap = if (categorySums.size > 1) 3f else 0f
+                            categorySums.forEach { (cat, sum) ->
+                                val color = categoryColors[cat] ?: Color.Gray
+                                val rawSweep = 360f * (sum / totalExpenses).toFloat() * animProgress.value
+                                val sweepAngle = (rawSweep - gap).coerceAtLeast(0f)
+                                if (sweepAngle > 0f) {
+                                    drawArc(
+                                        color = color,
+                                        startAngle = currentStartAngle,
+                                        sweepAngle = sweepAngle,
+                                        useCenter = false,
+                                        style = Stroke(
+                                            width = strokeWidthPx,
+                                            cap = StrokeCap.Round
+                                        )
+                                    )
+                                }
+                                currentStartAngle += rawSweep
+                            }
+                        }
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = if (isEn) "Spent" else "Terpakai",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = if (totalExpenses >= 1_000_000) {
+                                "${(totalExpenses / 1_000_000).toString().take(4)}M"
+                            } else if (totalExpenses >= 1_000) {
+                                "${(totalExpenses / 1_000).toInt()}k"
+                            } else {
+                                totalExpenses.toInt().toString()
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 14.sp
+                        )
                     }
                 }
+
+                // Legend on Right
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (totalExpenses == 0.0) {
+                        Text(
+                            text = if (isEn) "No expense data yet" else "Belum ada data pengeluaran",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                        )
+                    } else {
+                        categorySums.forEach { (catKey, sum) ->
+                            val color = categoryColors[catKey] ?: Color.Gray
+                            val label = catKey.toCatLabel(s)
+                            val percentage = (sum / totalExpenses * 100).toInt()
+                            
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                                Text(
+                                    text = "$percentage%",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ExpenseInsightsCard(expenses: List<Expense>, totalExpenses: Double) {
+    val s = LocalStrings.current
+    val isEn = s.seeAll == "See All"
+
+    if (expenses.isEmpty()) return
+
+    val categorySums = remember(expenses) {
+        expenses.groupBy { it.kategori }.mapValues { it.value.sumOf { e -> e.nominal } }
+    }
+    val highestCategory = remember(categorySums) {
+        categorySums.maxByOrNull { it.value }
+    }
+
+    // Anomaly detector
+    val largestTransaction = remember(expenses) {
+        expenses.maxByOrNull { it.nominal }
+    }
+    val hasAnomaly = remember(expenses, totalExpenses, largestTransaction) {
+        largestTransaction != null && 
+        expenses.size >= 2 && 
+        largestTransaction.nominal > (totalExpenses * 0.45) && 
+        largestTransaction.nominal > 100_000
+    }
+
+    // Budget advice logic
+    val lodgingSum = categorySums[CategoryKey.LODGING] ?: 0.0
+    val transportSum = categorySums[CategoryKey.TRANSPORT] ?: 0.0
+    val lodgingAndTransportRatio = if (totalExpenses > 0.0) (lodgingSum + transportSum) / totalExpenses else 0.0
+
+    val budgetStatusText = when {
+        lodgingAndTransportRatio > 0.70 -> {
+            if (isEn) "Accommodation & transport make up over 70% of your expenses. Keep an eye on secondary spending like food and retail!"
+            else "Akomodasi & transportasi memakan >70% anggaran. Batasi pos belanja opsional seperti konsumsi/hiburan agar aman!"
+        }
+        totalExpenses > 3_000_000 -> {
+            if (isEn) "You have solid trip investments. Review category summaries to ensure no category is leaking funds unnecessarily."
+            else "Investasi liburan Anda cukup besar. Evaluasi ringkasan kategori untuk memastikan dana tersalurkan efektif."
+        }
+        else -> {
+            if (isEn) "Outstanding budget management! Your expenses are well-balanced and safe. Safe travels! ✓"
+            else "Manajemen pengeluaran luar biasa! Distribusi anggaran sangat seimbang dan sehat. Selamat berlibur! ✓"
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lightbulb,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = if (isEn) "Smart Expense Resume" else "Resume Keuangan Cerdas",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // 1. Highest spending
+            highestCategory?.let { (catKey, sum) ->
+                val percentage = (sum / totalExpenses * 100).toInt()
+                val color = categoryColors[catKey] ?: Color.Gray
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (isEn) "Highest Expenditure Category" else "Pengeluaran Terbanyak",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(color))
+                            Text(
+                                text = "${catKey.toCatLabel(s)} ($percentage%)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    Text(
+                        text = formatRupiah(sum),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            }
+
+            // 2. Anomaly Alert (if exists)
+            if (hasAnomaly && largestTransaction != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f))
+                        .border(0.5.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f), RoundedCornerShape(10.dp))
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                    )
+                    Column {
+                        Text(
+                            text = if (isEn) "Expenditure Anomaly Detected" else "Terdeteksi Anomali Pengeluaran",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = if (isEn) {
+                                "Single item \"${largestTransaction.namaItem}\" costs ${formatRupiah(largestTransaction.nominal)}, consuming ${(largestTransaction.nominal / totalExpenses * 100).toInt()}% of the entire trip's expenses."
+                            } else {
+                                "Item tunggal \"${largestTransaction.namaItem}\" memakan biaya ${formatRupiah(largestTransaction.nominal)} atau sekitar ${(largestTransaction.nominal / totalExpenses * 100).toInt()}% dari total pengeluaran liburan."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // 3. Smart Tips
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f))
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = budgetStatusText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }

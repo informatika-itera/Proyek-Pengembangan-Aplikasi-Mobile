@@ -86,7 +86,7 @@ class GenerateTripViewModel(
                     destination = destination,
                     startDate = startDate,
                     endDate = endDate,
-                    duration = duration,
+                    duration = "$departureCity|$duration",
                     vibe = vibe,
                     itineraryItems = items
                 )

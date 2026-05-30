@@ -338,24 +338,18 @@ fun GenerateTripScreen(
 
         // Loading overlay
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f))
-                .clickable(enabled = false) {}, contentAlignment = Alignment.Center) {
-                Card(shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    modifier = Modifier.padding(32.dp).shadow(12.dp, RoundedCornerShape(18.dp))) {
-                    Column(modifier = Modifier.padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(40.dp), strokeWidth = 3.5.dp)
-                        Text(s.aiGenerating, style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurface)
-                        Text(s.aiGeneratingBody,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center, lineHeight = 18.sp)
-                    }
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.70f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                FlightRadarLoading(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                )
             }
         }
     }

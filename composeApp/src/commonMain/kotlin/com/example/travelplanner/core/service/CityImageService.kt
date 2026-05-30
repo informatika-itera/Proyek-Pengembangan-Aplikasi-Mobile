@@ -31,15 +31,93 @@ class CityImageService(private val httpClient: HttpClient) {
     private val mutex = Mutex()
 
     /** Returns a city photo URL. Cached after first call. Never throws, never returns null. */
+    /** Returns a city photo URL. Cached after first call. Never throws, never returns null. */
     suspend fun getImageUrl(cityName: String): String {
-        // Fast path: return cached URL (covers mirroring across all screens)
-        mutex.withLock { cache[cityName] }?.let { return it }
+        val normalized = cityName.lowercase().trim()
 
-        // Slow path: fetch best available image
+        // 1. Curated static check first (instant, high-quality, stable)
+        val staticImg = getStaticImage(normalized)
+        if (staticImg != null) {
+            mutex.withLock { cache[normalized] = staticImg }
+            return staticImg
+        }
+
+        // 2. Fast path: return cached URL
+        mutex.withLock { cache[normalized] }?.let { return it }
+
+        // 3. Slow path: fetch best available image
         val url = fetchBestImage(cityName)
 
-        mutex.withLock { cache[cityName] = url }
+        mutex.withLock { cache[normalized] = url }
         return url
+    }
+
+    /** Returns cached Wikipedia photo URL immediately if available, otherwise deterministic loremflickr. */
+    fun getImmediateUrl(cityName: String): String {
+        val normalized = cityName.lowercase().trim()
+        val staticImg = getStaticImage(normalized)
+        if (staticImg != null) return staticImg
+        
+        return cache[normalized] ?: loremflickr(cityName)
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun getStaticImage(city: String): String? {
+        val q = city.lowercase().trim()
+        return when {
+            // Bali & Nusa Tenggara
+            q.contains("bali") && !q.contains("balikpapan")       -> "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=800&auto=format&fit=crop"
+            q.contains("ubud")                                     -> "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=800&auto=format&fit=crop"
+            q.contains("uluwatu")                                  -> "https://images.unsplash.com/photo-1542856391-010fb87dcfed?q=80&w=800&auto=format&fit=crop"
+            q.contains("kintamani")                                -> "https://images.unsplash.com/photo-1505993597083-3bd19f7c1f27?q=80&w=800&auto=format&fit=crop"
+            q.contains("lombok") || q.contains("gili")             -> "https://images.unsplash.com/photo-1588598126747-d5d1c312cb69?q=80&w=800&auto=format&fit=crop"
+            q.contains("labuan bajo") || q.contains("komodo")     -> "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"
+            q.contains("flores") || q.contains("kelimutu")         -> "https://images.unsplash.com/photo-1505993597083-3bd19f7c1f27?q=80&w=800&auto=format&fit=crop"
+            q.contains("sumba")                                    -> "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?q=80&w=800&auto=format&fit=crop"
+            
+            // Jawa
+            q.contains("jakarta") || q.contains("tangerang") || q.contains("bekasi") || q.contains("serpong") -> "https://images.unsplash.com/photo-1583037189850-1921ae7c6c22?q=80&w=800&auto=format&fit=crop"
+            q.contains("yogya") || q.contains("jogja") || q.contains("borobudur") || q.contains("prambanan") -> "https://images.unsplash.com/photo-1626266842869-d4c62bf6a246?q=80&w=800&auto=format&fit=crop"
+            q.contains("bandung") || q.contains("lembang") || q.contains("ciwidey") -> "https://images.unsplash.com/photo-1549468057-5b7fa1a41d7a?q=80&w=800&auto=format&fit=crop"
+            q.contains("bromo") || q.contains("malang")            -> "https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?q=80&w=800&auto=format&fit=crop"
+            q.contains("surabaya")                                 -> "https://images.unsplash.com/photo-1582298538104-fc76911790c3?q=80&w=800&auto=format&fit=crop"
+            q.contains("semarang") || q.contains("lawang sewu")    -> "https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=800&auto=format&fit=crop"
+            q.contains("dieng")                                    -> "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?q=80&w=800&auto=format&fit=crop"
+            q.contains("bogor")                                    -> "https://images.unsplash.com/photo-1582298538104-fc76911790c3?q=80&w=800&auto=format&fit=crop"
+            q.contains("solo") || q.contains("surakarta")         -> "https://images.unsplash.com/photo-1626266842869-d4c62bf6a246?q=80&w=800&auto=format&fit=crop"
+
+            // Sumatera
+            q.contains("toba") || q.contains("samosir")           -> "https://images.unsplash.com/photo-1627848604928-86d1bfd0b674?q=80&w=800&auto=format&fit=crop"
+            q.contains("medan")                                    -> "https://images.unsplash.com/photo-1616198943315-095bbabf090a?q=80&w=800&auto=format&fit=crop"
+            q.contains("padang") || q.contains("bukittinggi")      -> "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?q=80&w=800&auto=format&fit=crop"
+            q.contains("palembang")                                -> "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=800&auto=format&fit=crop"
+            q.contains("belitung") || q.contains("bangka")         -> "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"
+            q.contains("aceh") || q.contains("banda aceh")        -> "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=800&auto=format&fit=crop"
+            q.contains("lampung")                                  -> "https://images.unsplash.com/photo-1549468057-5b7fa1a41d7a?q=80&w=800&auto=format&fit=crop"
+
+            // Kalimantan & Sulawesi & Papua
+            q.contains("balikpapan") || q.contains("samarinda")   -> "https://images.unsplash.com/photo-1582298538104-fc76911790c3?q=80&w=800&auto=format&fit=crop"
+            q.contains("makassar")                                 -> "https://images.unsplash.com/photo-1597074866923-dc0589150358?q=80&w=800&auto=format&fit=crop"
+            q.contains("manado") || q.contains("bunaken")          -> "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop"
+            q.contains("raja ampat")                               -> "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?q=80&w=800&auto=format&fit=crop"
+            q.contains("toraja")                                   -> "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?q=80&w=800&auto=format&fit=crop"
+
+            // International
+            q.contains("singapore") || q.contains("singapura")    -> "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=800&auto=format&fit=crop"
+            q.contains("kuala lumpur") || q.contains("kl")        -> "https://images.unsplash.com/photo-1595438601894-6b9415714392?q=80&w=800&auto=format&fit=crop"
+            q.contains("bangkok")                                  -> "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=800&auto=format&fit=crop"
+            q.contains("tokyo")                                    -> "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=800&auto=format&fit=crop"
+            q.contains("kyoto")                                    -> "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800&auto=format&fit=crop"
+            q.contains("osaka")                                    -> "https://images.unsplash.com/photo-1590253205779-7a08b5329381?q=80&w=800&auto=format&fit=crop"
+            q.contains("seoul")                                    -> "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800&auto=format&fit=crop"
+            q.contains("paris")                                    -> "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=800&auto=format&fit=crop"
+            q.contains("london")                                   -> "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=800&auto=format&fit=crop"
+            q.contains("rome") || q.contains("roma")              -> "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=800&auto=format&fit=crop"
+            q.contains("dubai")                                    -> "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=800&auto=format&fit=crop"
+            q.contains("sydney")                                   -> "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=800&auto=format&fit=crop"
+            q.contains("new york")                                 -> "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=800&auto=format&fit=crop"
+            else                                                   -> null
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────

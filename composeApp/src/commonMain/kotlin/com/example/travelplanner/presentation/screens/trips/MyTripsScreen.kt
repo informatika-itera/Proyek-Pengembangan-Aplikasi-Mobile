@@ -20,7 +20,7 @@ import com.example.travelplanner.core.util.LocalStrings
 import com.example.travelplanner.presentation.screens.home.TripCard
 import com.example.travelplanner.presentation.screens.home.DummyTrip
 import com.example.travelplanner.presentation.screens.home.getDestinationGradient
-import com.example.travelplanner.presentation.screens.home.getDestinationPhotoUrl
+
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -112,15 +112,14 @@ fun MyTripsScreen(
                     items(filteredTrips, key = { it.id }) { trip ->
                         var showConfirmDelete by remember { mutableStateOf(false) }
                         val (gradStart, gradEnd) = remember(trip.destination) { getDestinationGradient(trip.destination) }
-                        // Wikipedia image via CityImageService; loremflickr fallback while loading
-                        val photoUrl: String = uiState.cityImages[trip.destination]
-                            ?: getDestinationPhotoUrl(trip.destination)
+                        // Gambar kota diambil dari ViewModel state (sudah terisi instan dari cache/loremflickr)
+                        val photoUrl: String = uiState.cityImages[trip.destination] ?: ""
                         val visualTrip = remember(trip, photoUrl) {
                             DummyTrip(
                                 id = trip.id,
                                 destination = trip.destination,
                                 country = "Indonesia",
-                                dateRange = "${trip.startDate} (${trip.duration})",
+                                dateRange = "${trip.startDate} (${trip.duration.substringAfter("|")})",
                                 vibe = trip.vibe,
                                 photoUrl = photoUrl,
                                 gradientStart = gradStart,

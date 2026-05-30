@@ -37,9 +37,30 @@ class MyTripsViewModel(
                     _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal memuat: ${e.message}") }
                 }
                 .collect { trips ->
-                    _uiState.update { it.copy(isLoading = false, trips = trips, errorMessage = null) }
-                    val alreadyLoaded = _uiState.value.cityImages.keys
-                    val needed = trips.map { it.destination }.distinct().filter { it !in alreadyLoaded }
+                    // 1. Calculate needed BEFORE updating _uiState with placeholders.
+                    val alreadyLoaded = _uiState.value.cityImages
+                        .filterValues { !it.contains("loremflickr.com") }
+                        .keys
+                        .map { it.lowercase().trim() }
+                        .toSet()
+
+                    val needed = trips.map { it.destination }
+                        .distinct()
+                        .filter { it.lowercase().trim() !in alreadyLoaded }
+
+                    // 2. Populate cityImages immediately with cache/loremflickr (preserving existing cache)
+                    val immediateImages = trips.associate { trip ->
+                        trip.destination to cityImageService.getImmediateUrl(trip.destination)
+                    } + _uiState.value.cityImages
+
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            trips = trips,
+                            cityImages = immediateImages,
+                            errorMessage = null
+                        )
+                    }
                     if (needed.isNotEmpty()) fetchImages(needed)
                 }
         }
@@ -53,7 +74,7 @@ class MyTripsViewModel(
             }
             val results = deferred.map { it.await() }.toMap()
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(cityImages = results) }
+                _uiState.update { it.copy(cityImages = it.cityImages + results) }
             }
         }
     }

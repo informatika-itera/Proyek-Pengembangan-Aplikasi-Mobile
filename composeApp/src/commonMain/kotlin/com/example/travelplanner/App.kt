@@ -53,7 +53,8 @@ fun App(networkMonitor: NetworkMonitorInterface? = null) {
                         if (showBottomBar) {
                             BottomNavigationBar(navController = navController, currentRoute = currentRoute)
                         }
-                    }
+                    },
+                    contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
                 ) { paddingValues ->
                     Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                         // ── Offline banner (slides from top) ───────────────

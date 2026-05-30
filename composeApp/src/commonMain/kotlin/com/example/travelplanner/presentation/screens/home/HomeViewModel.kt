@@ -43,13 +43,34 @@ class HomeViewModel(
                     _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal memuat: ${e.message}") }
                 }
                 .collect { trips ->
-                    // .update{} reads-modify-write atomically → cityImages never lost
-                    _uiState.update { it.copy(isLoading = false, recentTrips = trips, errorMessage = null) }
+                    // 1. Calculate needed BEFORE updating _uiState with placeholders.
+                    // We only treat a city as "already loaded" if it has a real Wikipedia or Unsplash image.
+                    // Placeholder images (containing loremflickr.com) are treated as NOT loaded so they can be upgraded.
+                    val alreadyLoaded = _uiState.value.cityImages
+                        .filterValues { !it.contains("loremflickr.com") }
+                        .keys
+                        .map { it.lowercase().trim() }
+                        .toSet()
 
-                    // Only fetch images for cities not yet loaded — prevents repeated wikiSearch calls
-                    val alreadyLoaded = _uiState.value.cityImages.keys
                     val needed = trips.take(5).map { it.destination }
-                        .distinct().filter { it !in alreadyLoaded }
+                        .distinct()
+                        .filter { it.lowercase().trim() !in alreadyLoaded }
+
+                    // 2. Populate cityImages immediately with cache/loremflickr (preserving existing cache)
+                    val immediateImages = trips.associate { trip ->
+                        trip.destination to cityImageService.getImmediateUrl(trip.destination)
+                    } + _uiState.value.cityImages
+
+                    // .update{} reads-modify-write atomically → cityImages never lost
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            recentTrips = trips,
+                            cityImages = immediateImages,
+                            errorMessage = null
+                        )
+                    }
+
                     if (needed.isNotEmpty()) {
                         fetchImages(needed)
                     }
@@ -69,7 +90,7 @@ class HomeViewModel(
             }
             val results = deferred.map { it.await() }.toMap()
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(cityImages = results) }
+                _uiState.update { it.copy(cityImages = it.cityImages + results) }
             }
         }
     }

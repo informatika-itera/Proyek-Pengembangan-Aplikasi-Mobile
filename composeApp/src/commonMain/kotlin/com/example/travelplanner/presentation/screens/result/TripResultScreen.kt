@@ -38,6 +38,8 @@ import com.example.travelplanner.presentation.screens.planner.PantaiAnimatedScen
 import com.example.travelplanner.presentation.screens.expenses.formatRupiah
 import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,6 +105,12 @@ fun TripResultScreen(
             }
             else -> {
                 val trip = uiState.trip!!
+                val departureCity = remember(trip.duration) {
+                    if (trip.duration.contains("|")) trip.duration.substringBefore("|") else "Jakarta"
+                }
+                val cleanDuration = remember(trip.duration) {
+                    trip.duration.substringAfter("|")
+                }
                 // Stagger visibility: each item becomes visible with a delay
                 val itemVisibility = remember(trip.itineraryItems.size) {
                     List(trip.itineraryItems.size) { false }.toMutableStateList()
@@ -128,7 +136,7 @@ fun TripResultScreen(
                         HeroTripCard(
                                 destination = trip.destination,
                                 vibe        = trip.vibe,
-                                dateRange   = "${trip.startDate} (${trip.duration})",
+                                dateRange   = "${trip.startDate} ($cleanDuration)",
                                 photoUrl    = uiState.cityPhotoUrl,
                                 modifier    = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
                             )
@@ -143,7 +151,7 @@ fun TripResultScreen(
                                     slideInVertically(tween(500, delayMillis = 150)) { -30 }
                         ) {
                             StatsRow(
-                                duration       = trip.duration,
+                                duration       = cleanDuration,
                                 activityCount  = trip.itineraryItems.size,
                                 totalExpenses  = uiState.totalExpenses,
                                 modifier       = Modifier.padding(horizontal = 24.dp)
@@ -151,6 +159,22 @@ fun TripResultScreen(
                         }
                     }
 
+                    // ── TRANSIT CARD (Design B) ───────────────────────────
+                    item {
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(tween(450, delayMillis = 200)) +
+                                    slideInVertically(tween(450, delayMillis = 200)) { -25 }
+                        ) {
+                            TransitHeroCard(
+                                departureCity = departureCity,
+                                destination = trip.destination,
+                                startDate = trip.startDate,
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
+ 
                     // ── TIMELINE TITLE ────────────────────────────────────
                     item {
                         AnimatedVisibility(
@@ -405,6 +429,291 @@ fun TimelineItem(item: ItineraryItem, isLast: Boolean, modifier: Modifier = Modi
                     }
                 }
             }
+        }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  TRANSIT & TICKETING COMPONENT (Design B & C)
+// ══════════════════════════════════════════════════════════════════════
+
+@Composable
+fun TransitHeroCard(
+    departureCity: String,
+    destination: String,
+    startDate: String,
+    modifier: Modifier = Modifier
+) {
+    var showSheet by remember { mutableStateOf(false) }
+
+    val isFlightRecommended = remember(destination, departureCity) {
+        val q = destination.lowercase().trim()
+        val dep = departureCity.lowercase().trim()
+        
+        val isLandRoute = (dep.contains("jakarta") && q.contains("bandung")) ||
+                (dep.contains("bandung") && q.contains("jakarta")) ||
+                (dep.contains("surabaya") && q.contains("malang")) ||
+                (dep.contains("solo") && q.contains("yogya")) ||
+                (dep.contains("yogyakarta") && q.contains("solo")) ||
+                (dep.contains("semarang") && q.contains("yogya"))
+        
+        !isLandRoute && (
+            q.contains("bali") || q.contains("lombok") || q.contains("raja ampat") ||
+            q.contains("singapore") || q.contains("tokyo") || q.contains("paris") ||
+            q.contains("london") || q.contains("new york") || q.contains("phuket") ||
+            q.contains("bangkok") || q.contains("seoul") || q.contains("dubai") ||
+            q.contains("manado") || q.contains("raja ampat") || q.contains("labuan bajo") ||
+            q.contains("komodo") || q.contains("medan") || q.contains("padang") ||
+            q.contains("palembang") || q.contains("balikpapan") || q.contains("makassar")
+        )
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isFlightRecommended) Icons.Default.FlightTakeoff else Icons.Default.Train,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (isFlightRecommended) "Rekomendasi Penerbangan" else "Rekomendasi Tiket Kereta/Bus",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${departureCity.trim()} ➔ ${destination.trim()}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Berangkat: $startDate",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Button(
+                onClick = { showSheet = true },
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                Text("Cari Tiket", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+
+    if (showSheet) {
+        TransitBookingBottomSheet(
+            departureCity = departureCity,
+            destination = destination,
+            startDate = startDate,
+            isFlight = isFlightRecommended,
+            onDismiss = { showSheet = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TransitBookingBottomSheet(
+    departureCity: String,
+    destination: String,
+    startDate: String,
+    isFlight: Boolean,
+    onDismiss: () -> Unit
+) {
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    
+    val originEncoded = departureCity.trim().replace(" ", "%20")
+    val destEncoded = destination.trim().replace(" ", "%20")
+    
+    val tiketPesawatUrl = "https://www.tiket.com/pesawat/search?d=$originEncoded&a=$destEncoded&dDate=2026-06-15&adult=1"
+    val tiketKeretaUrl = "https://www.tiket.com/kereta-api/search?d=$originEncoded&a=$destEncoded&dDate=2026-06-15"
+    
+    val travelokaPesawatUrl = "https://www.traveloka.com/id-id/flight/full-search?ap=${originEncoded}.${destEncoded}"
+    val travelokaBusUrl = "https://www.traveloka.com/id-id/tiket-bus-travel"
+    
+    val agodaPesawatUrl = "https://www.agoda.com/id-id/flights"
+    val redbusUrl = "https://www.redbus.id"
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 48.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Bandingkan & Pesan Tiket",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Pilih platform untuk mencari tiket ${if (isFlight) "pesawat" else "kereta/bus"} dari ${departureCity} ke ${destination}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            if (isFlight) {
+                OtaItem(
+                    name = "Traveloka Flights",
+                    subtitle = "Platform Terbesar di Indonesia",
+                    icon = "✈️",
+                    onClick = {
+                        uriHandler.openUri(travelokaPesawatUrl)
+                        onDismiss()
+                    }
+                )
+                OtaItem(
+                    name = "Tiket.com Pesawat",
+                    subtitle = "Banyak Promo Menarik",
+                    icon = "🎫",
+                    onClick = {
+                        uriHandler.openUri(tiketPesawatUrl)
+                        onDismiss()
+                    }
+                )
+                OtaItem(
+                    name = "Agoda Flights",
+                    subtitle = "Bagus untuk Rute Internasional",
+                    icon = "🏨",
+                    onClick = {
+                        uriHandler.openUri(agodaPesawatUrl)
+                        onDismiss()
+                    }
+                )
+            } else {
+                OtaItem(
+                    name = "Tiket.com Kereta Api",
+                    subtitle = "Pesan Tiket KAI Instan",
+                    icon = "🚆",
+                    onClick = {
+                        uriHandler.openUri(tiketKeretaUrl)
+                        onDismiss()
+                    }
+                )
+                OtaItem(
+                    name = "Traveloka Kereta & Bus",
+                    subtitle = "Lengkap KAI, Whoosh, & Bus",
+                    icon = "🚌",
+                    onClick = {
+                        uriHandler.openUri(travelokaBusUrl)
+                        onDismiss()
+                    }
+                )
+                OtaItem(
+                    name = "RedBus Indonesia",
+                    subtitle = "Pesan Tiket Bus & Travel Terbaik",
+                    icon = "🚍",
+                    onClick = {
+                        uriHandler.openUri(redbusUrl)
+                        onDismiss()
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OtaItem(
+    name: String,
+    subtitle: String,
+    icon: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(icon, fontSize = 18.sp)
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         }
     }
 }

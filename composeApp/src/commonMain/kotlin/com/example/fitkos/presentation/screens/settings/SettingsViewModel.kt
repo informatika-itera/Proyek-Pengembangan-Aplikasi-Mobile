@@ -46,6 +46,14 @@ class SettingsViewModel(
             userPreferences.setWaterTarget(target)
         }
     }
+
+    fun logout() {
+        viewModelScope.launch {
+            userPreferences.setUserName("")
+            // Bisa juga reset target air jika perlu
+            userPreferences.setWaterTarget(8)
+        }
+    }
 }
 
 data class SettingsUiState(

@@ -2,30 +2,17 @@ package com.example.fitkos.presentation.screens.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -65,7 +52,7 @@ fun DashboardScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            HeaderSection(uiState)
+            HeaderSection(uiState, onNavigateToAI)
 
             SummaryGrid(
                 uiState = uiState,
@@ -76,13 +63,16 @@ fun DashboardScreen(
             )
 
             TargetHarianSection(uiState)
+
+            DashboardTipsSection()
         }
     }
 }
 
 @Composable
 private fun HeaderSection(
-    uiState: DashboardUiState
+    uiState: DashboardUiState,
+    onNavigateToAI: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -106,14 +96,15 @@ private fun HeaderSection(
         }
 
         IconButton(
-            onClick = { },
+            onClick = onNavigateToAI,
             modifier = Modifier
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
         ) {
             Icon(
-                imageVector = Icons.Default.NotificationsNone,
-                contentDescription = "Notifikasi"
+                imageVector = Icons.Outlined.AutoAwesome,
+                contentDescription = "Tanya AI",
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -153,23 +144,7 @@ private fun SummaryGrid(
             )
 
             SummaryCard(
-                title = "Catatan Makan",
-                value = "${uiState.mealCount}",
-                unit = "catatan",
-                icon = "🍽️",
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { onNavigateToMealLog() },
-                color = Color(0xFFF1F8E9)
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SummaryCard(
-                title = "Olahraga Hari Ini",
+                title = "Olahraga",
                 value = uiState.exerciseMinutes.toString(),
                 unit = "menit",
                 icon = "🏃",
@@ -178,12 +153,28 @@ private fun SummaryGrid(
                     .clickable { onNavigateToExercise() },
                 color = Color(0xFFFFF3E0)
             )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SummaryCard(
+                title = "Catatan Makan",
+                value = "${uiState.mealCount}",
+                unit = "hari ini",
+                icon = "🍽️",
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onNavigateToMealLog() },
+                color = Color(0xFFF1F8E9)
+            )
 
             SummaryCard(
-                title = "Langsung Tanya Asisten AI",
+                title = "Tanya AI",
                 value = "AI",
-                unit = "Tanya AI",
-                icon = "🤖",
+                unit = "Asisten Sehat",
+                icon = "✨",
                 modifier = Modifier
                     .weight(1f)
                     .clickable { onNavigateToAI() },
@@ -350,3 +341,65 @@ private fun TargetItem(
         )
     }
 }
+
+@Composable
+private fun DashboardTipsSection() {
+    val tips = listOf(
+        DashboardTip("💡", "Masak Nasi Sendiri", "Hemat & lebih higienis.", Color(0xFFE8F5E9)),
+        DashboardTip("💧", "Air Putih", "Minum 1 gelas setelah bangun.", Color(0xFFE3F2FD)),
+        DashboardTip("🍎", "Cemilan Buah", "Ganti gorengan dengan buah.", Color(0xFFFFF3E0)),
+        DashboardTip("🧘", "Peregangan", "Stretching tiap 2 jam duduk.", Color(0xFFF3E5F5)),
+        DashboardTip("🥛", "Minum Susu", "Kalsium untuk tulang kuat.", Color(0xFFF1F8E9)),
+        DashboardTip("😴", "Tidur Cukup", "7-8 jam untuk pemulihan.", Color(0xFFE8EAF6)),
+        DashboardTip("🍳", "Sarapan Protein", "Telur rebus sangat praktis.", Color(0xFFFFF9C4)),
+        DashboardTip("🚲", "Jalan Kaki", "Gunakan tangga daripada lift.", Color(0xFFE0F2F1)),
+        DashboardTip("🥗", "Sayur Mayur", "Selalu sertakan sayur di makan siang.", Color(0xFFF1F8E9)),
+        DashboardTip("🍵", "Teh Hijau", "Antioksidan alami tanpa gula.", Color(0xFFE8F5E9)),
+        DashboardTip("📵", "Digital Detox", "Kurangi gadget sebelum tidur.", Color(0xFFECEFF1)),
+        DashboardTip("🏃", "Lari Pagi", "Udara pagi bagus untuk paru-paru.", Color(0xFFFFF3E0)),
+        DashboardTip("🥤", "Kurangi Manis", "Pilih minuman tanpa gula tambahan.", Color(0xFFFFEBEE)),
+        DashboardTip("🍗", "Protein Cukup", "Ayam atau tempe sangat bagus.", Color(0xFFFFF3E0)),
+        DashboardTip("🧠", "Meditasi", "Luangkan 5 menit untuk relaksasi.", Color(0xFFE8EAF6)),
+        DashboardTip("🚶", "10 Ribu Langkah", "Target jalan kaki setiap hari.", Color(0xFFE0F2F1)),
+        DashboardTip("🧹", "Bersih Kamar", "Kamar rapi, pikiran tenang.", Color(0xFFF1F8E9)),
+        DashboardTip("📖", "Baca Buku", "Nutrisi untuk pikiran kamu.", Color(0xFFFFF9C4)),
+        DashboardTip("🌞", "Sinar Matahari", "Dapatkan vitamin D di pagi hari.", Color(0xFFFFF3E0)),
+        DashboardTip("🧂", "Kurangi Garam", "Menghindari risiko darah tinggi.", Color(0xFFFFEBEE))
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Tips Sehat Anak Kos",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            items(tips) { tip ->
+                Card(
+                    modifier = Modifier.width(200.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = tip.color)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(tip.icon, fontSize = 24.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(tip.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                            Text(tip.desc, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private data class DashboardTip(val icon: String, val title: String, val desc: String, val color: Color)

@@ -25,6 +25,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onNavigateBack: () -> Unit = {},
+    onLogout: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -34,7 +36,8 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             FitKosTopBar(
-                title = "Pengaturan"
+                title = "Pengaturan",
+                onNavigateBack = onNavigateBack
             )
         }
     ) { paddingValues ->
@@ -86,6 +89,23 @@ fun SettingsScreen(
                 subtitle = "Versi 1.0.0"
             )
             
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { 
+                    viewModel.logout()
+                    onLogout()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Keluar / Ganti Nama")
+            }
+
             Spacer(modifier = Modifier.weight(1f))
         }
     }

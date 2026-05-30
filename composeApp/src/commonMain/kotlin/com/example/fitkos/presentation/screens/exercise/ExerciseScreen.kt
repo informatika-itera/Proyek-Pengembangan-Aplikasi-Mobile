@@ -1,37 +1,27 @@
 package com.example.fitkos.presentation.screens.exercise
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.fitkos.presentation.components.FitKosTopBar
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -50,158 +40,134 @@ fun ExerciseScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            FitKosTopBar(
-                title = "Olahraga Ringan",
-                onNavigateBack = onNavigateBack
-            )
-        }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            StopwatchCard(
-                formattedTime = uiState.formattedTime,
+            Text(
+                text = "Olahraga",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Circular Stopwatch UI
+            CircularStopwatch(
+                formattedTime = uiState.formattedTime.substringBefore("."), // Hanya HH:MM:SS
                 isRunning = uiState.isRunning,
+                progress = (uiState.elapsedMillis % 60000) / 60000f, // Progress per menit
                 onStart = viewModel::startTimer,
                 onPause = viewModel::pauseTimer,
-                onReset = viewModel::resetTimer,
-                onSave = viewModel::saveSession
+                onReset = viewModel::resetTimer
             )
-
-            DailyExerciseTargetCard(
-                totalMinutesToday = uiState.totalMinutesToday,
-                dailyTargetMinutes = uiState.dailyTargetMinutes,
-                progress = uiState.progress
-            )
-
-            ExerciseTipsSection()
-
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-    }
-}
-
-@Composable
-private fun StopwatchCard(
-    formattedTime: String,
-    isRunning: Boolean,
-    onStart: () -> Unit,
-    onPause: () -> Unit,
-    onReset: () -> Unit,
-    onSave: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(18.dp)
-        ) {
-            Text(
-                text = "STOPWATCH",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = formattedTime,
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Button(
-                    onClick = if (isRunning) onPause else onStart,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text(if (isRunning) "Pause" else "Start")
-                }
-
-                OutlinedButton(
-                    onClick = onReset,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text("Reset")
-                }
-            }
 
             Button(
-                onClick = onSave,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
+                onClick = viewModel::saveSession,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
             ) {
-                Text("Simpan Durasi")
+                Text("Simpan Durasi", fontWeight = FontWeight.Bold)
             }
+
+            ExerciseTipsSection()
+            
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Composable
-private fun DailyExerciseTargetCard(
-    totalMinutesToday: Int,
-    dailyTargetMinutes: Int,
-    progress: Float
+private fun CircularStopwatch(
+    formattedTime: String,
+    isRunning: Boolean,
+    progress: Float,
+    onStart: () -> Unit,
+    onPause: () -> Unit,
+    onReset: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
-        )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        Text(
+            text = "Waktu Olahraga",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(240.dp)
         ) {
-            Text(
-                text = "Target Olahraga Hari Ini",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            // Background Circle
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawCircle(
+                    color = Color.LightGray.copy(alpha = 0.3f),
+                    style = Stroke(width = 12.dp.toPx(), cap = StrokeCap.Round)
+                )
+            }
 
-            Text(
-                text = "$totalMinutesToday / $dailyTargetMinutes menit",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            // Progress Arc
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawArc(
+                    color = Color(0xFF2E7D32),
+                    startAngle = -90f,
+                    sweepAngle = 360f * progress,
+                    useCenter = false,
+                    style = Stroke(width = 12.dp.toPx(), cap = StrokeCap.Round)
+                )
+            }
 
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = formattedTime,
+                    fontSize = 44.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Menit : Detik",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
-            Text(
-                text = if (totalMinutesToday >= dailyTargetMinutes) {
-                    "Target olahraga hari ini sudah tercapai."
-                } else {
-                    "Sisa ${dailyTargetMinutes - totalMinutesToday} menit lagi untuk mencapai target."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Start/Pause Button
+            IconButton(
+                onClick = if (isRunning) onPause else onStart,
+                modifier = Modifier.size(64.dp).background(if (isRunning) Color(0xFFFFB74D) else Color(0xFF2E7D32), CircleShape)
+            ) {
+                Icon(
+                    imageVector = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // Reset Button
+            IconButton(
+                onClick = onReset,
+                modifier = Modifier.size(56.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 }
@@ -209,96 +175,96 @@ private fun DailyExerciseTargetCard(
 @Composable
 private fun ExerciseTipsSection() {
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Tips Olahraga Anak Kos",
+            text = "Tips olahraga singkat",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
 
-        ExerciseTipCard(
-            title = "Stretching Ringan",
-            duration = "5 menit",
-            description = "Lakukan peregangan leher, bahu, tangan, pinggang, dan kaki. Cocok dilakukan setelah bangun tidur atau setelah duduk lama."
+        ExerciseTipItem(
+            icon = "🧘",
+            title = "Stretching 5 menit",
+            desc = "Lakukan peregangan ringan untuk tubuh lebih rileks."
         )
 
-        ExerciseTipCard(
-            title = "Squat",
-            duration = "5 menit",
-            description = "Latihan kaki tanpa alat. Lakukan perlahan dengan posisi punggung tetap tegak dan lutut tidak terlalu maju."
+        ExerciseTipItem(
+            icon = "🧱",
+            title = "Plank 1 menit",
+            desc = "Perkuat otot inti dan tingkatkan stabilitas."
         )
 
-        ExerciseTipCard(
-            title = "Wall Push-up",
-            duration = "5 menit",
-            description = "Versi push-up yang lebih ringan. Cocok untuk pemula dan bisa dilakukan di kamar kos dengan bantuan dinding."
+        ExerciseTipItem(
+            icon = "🚶",
+            title = "Jalan cepat 10 menit",
+            desc = "Tingkatkan detak jantung dan stamina."
         )
 
-        ExerciseTipCard(
-            title = "Plank",
-            duration = "1-2 menit",
-            description = "Latihan core sederhana. Mulai dari 20-30 detik per sesi, lalu ulangi beberapa kali sesuai kemampuan."
+        ExerciseTipItem(
+            icon = "💪",
+            title = "Push-up 10x",
+            desc = "Latih kekuatan tubuh bagian atas dengan mudah."
         )
 
-        ExerciseTipCard(
-            title = "Jalan di Tempat",
-            duration = "10 menit",
-            description = "Alternatif cardio ringan tanpa keluar kamar. Bisa dilakukan sambil mendengarkan musik."
+        ExerciseTipItem(
+            icon = "🪑",
+            title = "Squat 15x",
+            desc = "Bagus untuk otot kaki dan metabolisme tubuh."
+        )
+
+        ExerciseTipItem(
+            icon = "🏠",
+            title = "Bersih Kos",
+            desc = "Aktivitas fisik ringan yang juga bikin kamar rapi."
+        )
+
+        ExerciseTipItem(
+            icon = "🪜",
+            title = "Naik Tangga",
+            desc = "Latihan kardio gratis di gedung atau area kos."
+        )
+
+        ExerciseTipItem(
+            icon = "🤸",
+            title = "Jumping Jacks 20x",
+            desc = "Meningkatkan detak jantung dengan gerakan cepat."
         )
     }
 }
 
 @Composable
-private fun ExerciseTipCard(
+private fun ExerciseTipItem(
+    icon: String,
     title: String,
-    duration: String,
-    description: String
+    desc: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
     ) {
-        Column(
+        Row(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = duration,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                Box(contentAlignment = Alignment.Center) {
+                    Text(icon, fontSize = 24.sp)
                 }
-
-                Text(
-                    text = "🏃",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.End
-                )
             }
-
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column {
+                Text(title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                Text(desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

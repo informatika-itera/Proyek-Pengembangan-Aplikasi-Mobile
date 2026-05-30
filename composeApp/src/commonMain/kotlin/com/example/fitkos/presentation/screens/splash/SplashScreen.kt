@@ -1,112 +1,119 @@
 package com.example.fitkos.presentation.screens.splash
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitkos.data.local.datastore.UserPreferences
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun SplashScreen(
     onNavigateToDashboard: () -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        delay(2000)
-        onNavigateToDashboard()
+    val userPreferences: UserPreferences = koinInject()
+    val scope = rememberCoroutineScope()
+    var showInput by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
+    
+    // Perbaikan: gunakan 'initial' bukan 'initialValue' untuk collectAsState
+    val savedName by userPreferences.userName.collectAsState(initial = "")
+
+    LaunchedEffect(savedName) {
+        if (savedName.isNotEmpty() && savedName != "Sobat Kos") {
+            delay(1500)
+            onNavigateToDashboard()
+        } else {
+            delay(1500)
+            showInput = true
+        }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
-        Spacer(modifier = Modifier.height(100.dp))
-
-        // Logo Section
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(24.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Spa,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(56.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "FitKos",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = (-1).sp
-            )
-        }
-        
-        Text(
-            text = "Hidup sehat ala anak kos",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-        )
-
-        Spacer(modifier = Modifier.height(60.dp))
-        
-        // Illustration Section
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(320.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            // Lingkaran dekorasi di belakang
-            Box(
-                modifier = Modifier
-                    .size(260.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                modifier = Modifier.size(80.dp)
             )
             
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.FitnessCenter, 
-                    contentDescription = null, 
-                    modifier = Modifier.size(140.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Gunakan file gambar\n'splash_illustration.png'\ndi sini",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                    textAlign = TextAlign.Center
-                )
+            Text(
+                text = "FitKos",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "Hidup sehat di kos, mudah setiap hari.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            AnimatedVisibility(
+                visible = showInput,
+                enter = fadeIn() + slideInVertically()
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Selamat datang!\nMasukkan nama kamu untuk memulai.",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        placeholder = { Text("Masukkan nama...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Button(
+                        onClick = {
+                            if (name.isNotBlank()) {
+                                scope.launch {
+                                    userPreferences.setUserName(name)
+                                    onNavigateToDashboard()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Mulai")
+                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Default.ArrowForward, null)
+                    }
+                }
             }
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Progress indicator at bottom
-        LinearProgressIndicator(
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .height(6.dp),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-        )
-        
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }

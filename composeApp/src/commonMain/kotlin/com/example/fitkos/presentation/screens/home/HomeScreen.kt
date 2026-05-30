@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -143,6 +145,8 @@ fun HomeScreen(
                 }
 
                 is HomeUiState.Success -> {
+                    TanyaAICard(onNavigateToAI = onNavigateToAI)
+                    Spacer(modifier = Modifier.height(16.dp))
                     MealList(
                         notes = state.notes,
                         onNoteClick = onNavigateToDetail
@@ -150,6 +154,8 @@ fun HomeScreen(
                 }
 
                 is HomeUiState.Empty -> {
+                    TanyaAICard(onNavigateToAI = onNavigateToAI)
+                    Spacer(modifier = Modifier.height(16.dp))
                     EmptyMealState(
                         isFiltered = state.query.isNotBlank() || state.category != null
                     )
@@ -287,6 +293,54 @@ private fun CategoryFilterRow(
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
+        }
+    }
+}
+
+@Composable
+private fun TanyaAICard(
+    onNavigateToAI: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onNavigateToAI),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column {
+                Text(
+                    text = "Tanya Asisten AI FitKos",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Butuh saran makanan sehat & murah?",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

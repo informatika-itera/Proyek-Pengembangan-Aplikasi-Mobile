@@ -83,6 +83,12 @@ kotlin {
             // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+
+            // Backend
+            implementation(libs.supabase.postgrest)
+            implementation(libs.supabase.auth)
+            implementation(libs.supabase.realtime)
+            implementation(libs.supabase.storage)
         }
         
         commonTest.dependencies {
@@ -122,6 +128,10 @@ android {
             "GEMINI_API_KEY",
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
+
+        // Backend API keys
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperties.getProperty("SUPABASE_ANON_KEY", "")}\"")
     }
     
     packaging {

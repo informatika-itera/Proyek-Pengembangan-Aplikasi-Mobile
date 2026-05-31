@@ -51,3 +51,6 @@ SELECT COUNT(*) FROM ItemEntity;
 
 countAvailable:
 SELECT COUNT(*) FROM ItemEntity WHERE available_stock > 0;
+
+deleteAll:
+DELETE FROM ItemEntity;

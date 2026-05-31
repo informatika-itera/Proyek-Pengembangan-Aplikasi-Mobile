@@ -1,204 +1,109 @@
 package com.example.inventra.presentation.screens.dashboard
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Inventory
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Outbound
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.inventra.domain.model.ItemCategory
-import com.example.inventra.presentation.components.CategoryChip
+import com.example.inventra.domain.model.BorrowRecord
+import com.example.inventra.domain.model.BorrowStatus
+import com.example.inventra.presentation.components.GlassCard
+import com.example.inventra.presentation.components.InventRaBottomNav
 import com.example.inventra.presentation.components.LoadingIndicator
-import com.example.inventra.presentation.components.StatsCard
+import com.example.inventra.presentation.util.formatDateOnly
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onNavigateToAddItem: () -> Unit,
-    onNavigateToDetail: (Long) -> Unit,
-    onNavigateToCatalog: () -> Unit,
-    onNavigateToAI: () -> Unit,
-    viewModel: DashboardViewModel = koinViewModel()
+    currentRoute: String,
+    onNavigate: (String) -> Unit,
+    onNavigateToAddItem: () -> Unit
 ) {
+    val viewModel: DashboardViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "InventRa",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("InventRa", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(
-                            Icons.Outlined.AutoAwesome,
-                            contentDescription = "AI Assistant",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    IconButton(onClick = { /* TODO: Search */ }) {
+                        Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.outline)
                     }
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications")
-                    }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+                )
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAddItem) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Item")
-            }
-        }
+        bottomBar = {
+            InventRaBottomNav(currentRoute = currentRoute, onNavigate = onNavigate)
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        when (val state = uiState) {
-            is DashboardUiState.Loading -> LoadingIndicator()
-            is DashboardUiState.Success -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    item {
-                        Text(
-                            "Dashboard Overview",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+        AnimatedContent(
+            targetState = uiState,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "dashboard_content"
+        ) { state ->
+            when (state) {
+                is DashboardUiState.Loading -> {
+                    LoadingIndicator(modifier = Modifier.padding(paddingValues))
+                }
 
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            StatsCard(
-                                title = "Total Items",
-                                value = state.totalItems.toString(),
-                                icon = Icons.Outlined.Inventory,
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.weight(1f)
-                            )
-                            StatsCard(
-                                title = "Borrowed",
-                                value = state.borrowedItems.toString(),
-                                icon = Icons.Outlined.Schedule,
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                    
-                    item {
-                        StatsCard(
-                            title = "Overdue",
-                            value = state.overdueItems.toString(),
-                            icon = Icons.Outlined.Warning,
-                            containerColor = Color(0xFFFFEBEE),
-                            contentColor = Color(0xFFC62828),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    item {
-                        AIBannerCard(onNavigateToAI = onNavigateToAI)
-                    }
-
-                    item {
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    "Kategori Populer",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                TextButton(onClick = onNavigateToCatalog) {
-                                    Text("Lihat Semua")
-                                }
-                            }
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(ItemCategory.entries.filter { it != ItemCategory.ALL }) { category ->
-                                    CategoryChip(
-                                        label = category.displayName,
-                                        selected = false,
-                                        onClick = onNavigateToCatalog
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Text(
-                            "Status Peminjaman Aktif",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    if (state.activeBorrowings.isEmpty()) {
-                        item {
+                is DashboardUiState.Error -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                "Tidak ada peminjaman aktif",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.padding(vertical = 16.dp)
+                                text = "Gagal memuat data",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.error
                             )
-                        }
-                    } else {
-                        items(state.activeBorrowings) { record ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = { onNavigateToDetail(record.itemId) }
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(record.itemName, fontWeight = FontWeight.Bold)
-                                        Text("Peminjam: ${record.borrowerName}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                    Text(
-                                        "Hingga: ${record.dueDate}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = state.message,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
                         }
                     }
                 }
-            }
-            is DashboardUiState.Error -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.message)
+
+                is DashboardUiState.Success -> {
+                    DashboardContent(
+                        state = state,
+                        paddingValues = paddingValues,
+                        onNavigateToAddItem = onNavigateToAddItem
+                    )
                 }
             }
         }
@@ -206,45 +111,260 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun AIBannerCard(onNavigateToAI: () -> Unit) {
-    Card(
-        onClick = onNavigateToAI,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary
-        ),
-        shape = MaterialTheme.shapes.medium
+private fun DashboardContent(
+    state: DashboardUiState.Success,
+    paddingValues: PaddingValues,
+    onNavigateToAddItem: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 24.dp)
     ) {
+        // Hero Section
+        Text(
+            text = "Dashboard Overview",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = "Manage your assets and tracking efficiently.",
+            color = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+        )
+
+        // Overdue Alert — tampil hanya jika ada yang overdue
+        if (state.overdueItems > 0) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            "${state.overdueItems} peminjaman overdue!",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Text(
+                            "Segera tindak lanjuti barang yang terlambat.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Bento Stats Grid
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Total Items
+            StatCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Inventory,
+                iconTint = MaterialTheme.colorScheme.primary,
+                label = "TOTAL ITEMS",
+                value = state.totalItems.toString()
+            )
+
+            // Borrowed Count
+            StatCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Outbound,
+                iconTint = MaterialTheme.colorScheme.secondary,
+                label = "ITEMS BORROWED",
+                value = state.borrowedItems.toString()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Available vs Overdue Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            StatCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.CheckCircle,
+                iconTint = Color(0xFF4CAF50),
+                label = "TERSEDIA",
+                value = (state.totalItems - state.borrowedItems).toString()
+            )
+            StatCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Warning,
+                iconTint = MaterialTheme.colorScheme.error,
+                label = "OVERDUE",
+                value = state.overdueItems.toString()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Quick Action Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.AddCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Register New Item",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    "Quickly add new stock into the inventory database.",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onNavigateToAddItem,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Get Started", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        // Active Borrowings Section
+        if (state.activeBorrowings.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "Peminjaman Aktif",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            state.activeBorrowings.forEach { record ->
+                ActiveBorrowingCard(record = record)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    iconTint: Color,
+    label: String,
+    value: String
+) {
+    GlassCard(modifier = modifier.height(130.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Icon(
-                Icons.Outlined.AutoAwesome,
+                imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = iconTint,
+                modifier = Modifier.size(28.dp)
             )
-            Column(modifier = Modifier.weight(1f)) {
+            Column {
                 Text(
-                    "AI Inventaris",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    text = label,
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "Analisis stok, saran pengadaan & laporan peminjaman",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
+                    text = value,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = iconTint
                 )
             }
-            Text(
-                "Buka →",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveBorrowingCard(record: BorrowRecord) {
+    val isOverdue = record.status == BorrowStatus.OVERDUE
+    val borderColor = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isOverdue)
+                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+            else
+                MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = record.itemName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Peminjam: ${record.borrowerName}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = "Jatuh tempo: ${record.dueDate.formatDateOnly()}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+                )
+            }
+
+            Surface(
+                color = if (isOverdue) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(6.dp)
+            ) {
+                Text(
+                    text = if (isOverdue) "OVERDUE" else "AKTIF",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
         }
     }
 }

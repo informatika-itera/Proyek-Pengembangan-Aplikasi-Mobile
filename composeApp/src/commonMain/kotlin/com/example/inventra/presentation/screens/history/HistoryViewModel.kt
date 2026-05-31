@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed interface HistoryUiState {
     data object Loading : HistoryUiState
@@ -16,7 +17,7 @@ sealed interface HistoryUiState {
 }
 
 class HistoryViewModel(
-    borrowRepository: BorrowRepository
+    private val borrowRepository: BorrowRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<HistoryUiState> = borrowRepository.getAllRecords()
@@ -29,4 +30,16 @@ class HistoryViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = HistoryUiState.Loading
         )
+
+    fun approveRequest(recordId: Long) {
+        viewModelScope.launch {
+            borrowRepository.approveRequest(recordId)
+        }
+    }
+
+    fun returnItem(recordId: Long) {
+        viewModelScope.launch {
+            borrowRepository.returnItem(recordId)
+        }
+    }
 }

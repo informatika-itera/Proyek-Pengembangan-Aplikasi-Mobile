@@ -12,4 +12,5 @@ interface ItemRepository {
     suspend fun insertItem(item: Item): Long
     suspend fun updateItem(item: Item)
     suspend fun deleteItem(id: Long)
+    suspend fun uploadItemImage(imageBytes: ByteArray, fileName: String): Result<String>
 }

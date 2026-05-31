@@ -14,4 +14,4 @@ data class BorrowRecord(
     val fineAmount: Long = 0
 )
 
-enum class BorrowStatus { ACTIVE, RETURNED, OVERDUE }
+enum class BorrowStatus { PENDING, ACTIVE, RETURNED, OVERDUE }

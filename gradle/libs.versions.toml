@@ -13,6 +13,7 @@ okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+supabase = "3.0.2"
 
 # Testing
 turbine = "1.2.0"
@@ -64,6 +65,12 @@ coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", v
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+
+# Backend
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
+supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
+supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
+supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt", version.ref = "supabase" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

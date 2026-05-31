@@ -3,6 +3,7 @@ package com.example.inventra.presentation.screens.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inventra.domain.model.BorrowRecord
+import com.example.inventra.domain.model.BorrowStatus
 import com.example.inventra.domain.model.Item
 import com.example.inventra.domain.repository.BorrowRepository
 import com.example.inventra.domain.repository.ItemRepository
@@ -31,6 +32,7 @@ class ItemDetailViewModel(
             if (item != null) ItemDetailUiState.Success(item)
             else ItemDetailUiState.NotFound
         }
+        .catch { e -> emit(ItemDetailUiState.Error(e.message ?: "Terjadi kesalahan")) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -44,31 +46,31 @@ class ItemDetailViewModel(
         }
     }
 
-    fun borrowItem(borrowerName: String, onSuccess: () -> Unit) {
+    /**
+     * Buat permintaan peminjaman dengan status PENDING.
+     * Admin (Nabila) perlu approve dari HistoryScreen.
+     */
+    fun requestBorrow(borrowerName: String, borrowerDivision: String, onSuccess: () -> Unit) {
         val currentState = uiState.value
-        if (currentState is ItemDetailUiState.Success) {
-            viewModelScope.launch {
-                val item = currentState.item
-                if (item.availableStock > 0) {
-                    val now = Clock.System.now()
-                    val dueDate = now.plus(2, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
-                    
-                    val record = BorrowRecord(
-                        itemId = item.id,
-                        itemName = item.name,
-                        borrowerName = borrowerName,
-                        borrowDate = now,
-                        dueDate = dueDate
-                    )
-                    
-                    borrowRepository.borrowItem(record)
-                    
-                    // Update item stock
-                    itemRepository.updateItem(
-                        item.copy(availableStock = item.availableStock - 1)
-                    )
-                    onSuccess()
-                }
+        if (currentState !is ItemDetailUiState.Success) return
+
+        viewModelScope.launch {
+            val item = currentState.item
+            if (item.availableStock > 0) {
+                val now = Clock.System.now()
+                val dueDate = now.plus(2, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+
+                val record = BorrowRecord(
+                    itemId = item.id,
+                    itemName = item.name,
+                    borrowerName = "$borrowerName ($borrowerDivision)",
+                    borrowDate = now,
+                    dueDate = dueDate,
+                    status = BorrowStatus.PENDING
+                )
+
+                borrowRepository.borrowItem(record)
+                onSuccess()
             }
         }
     }

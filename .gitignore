@@ -47,3 +47,5 @@ daemon/
 kotlin-profile/
 native/
 wrapper/
+
+inventra-backend/

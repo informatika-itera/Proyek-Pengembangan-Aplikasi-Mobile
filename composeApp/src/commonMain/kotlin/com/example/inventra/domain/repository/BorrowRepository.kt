@@ -8,4 +8,5 @@ interface BorrowRepository {
     fun getActiveRecords(): Flow<List<BorrowRecord>>
     suspend fun borrowItem(record: BorrowRecord): Long
     suspend fun returnItem(recordId: Long)
+    suspend fun approveRequest(recordId: Long)
 }

@@ -10,6 +10,10 @@ import com.example.edumate.presentation.screens.add.AddEditScreen
 import com.example.edumate.presentation.screens.ai.AIAssistantScreen
 import com.example.edumate.presentation.screens.detail.DetailScreen
 import com.example.edumate.presentation.screens.home.HomeScreen
+import com.example.edumate.presentation.screens.timer.TimerScreen
+import com.example.edumate.presentation.screens.statistics.StatisticsScreen
+import com.example.edumate.presentation.screens.settings.SettingsScreen
+import com.example.edumate.presentation.screens.profile.ProfileScreen
 
 @Composable
 fun AppNavHost(
@@ -25,7 +29,11 @@ fun AppNavHost(
             HomeScreen(
                 onNavigateToAdd = { navController.navigate(Route.AddEditTask()) },
                 onNavigateToDetail = { taskId -> navController.navigate(Route.TaskDetail(taskId)) },
-                onNavigateToAIAssistant = { navController.navigate(Route.AIAssistant()) }
+                onNavigateToAIAssistant = { navController.navigate(Route.AIAssistant()) },
+                onNavigateToTimer = { navController.navigate(Route.FocusTimer) },
+                onNavigateToStatistics = { navController.navigate(Route.Statistics) },
+                onNavigateToSettings = { navController.navigate(Route.Settings) },
+                onNavigateToProfile = { navController.navigate(Route.Profile) }
             )
         }
 
@@ -57,6 +65,30 @@ fun AppNavHost(
             AIAssistantScreen(
                 noteId = route.taskId,
                 initialText = route.initialText,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.FocusTimer> {
+            TimerScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.Statistics> {
+            StatisticsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.Settings> {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.Profile> {
+            ProfileScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

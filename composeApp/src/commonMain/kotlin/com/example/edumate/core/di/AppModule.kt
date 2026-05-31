@@ -9,8 +9,10 @@ import com.example.edumate.presentation.screens.home.HomeViewModel
 import com.example.edumate.data.repository.AIRepositoryImpl
 import com.example.edumate.domain.repository.AIRepository
 import com.example.edumate.presentation.screens.ai.AIAssistantViewModel
+import com.example.edumate.presentation.screens.timer.TimerViewModel
+import com.example.edumate.presentation.screens.statistics.StatisticsViewModel
+import com.example.edumate.presentation.screens.settings.SettingsViewModel
 
-// Semua import ini sekarang menggunakan edumate
 import com.example.edumate.core.network.HttpClientFactory
 import com.example.edumate.core.util.DatabaseDriverFactory
 import com.example.edumate.data.local.datastore.DataStoreFactory
@@ -52,6 +54,9 @@ val viewModelModule = module {
     factory { (taskId: Long?) -> AddEditViewModel(get(), taskId) }
     factory { (taskId: Long) -> DetailViewModel(get(), taskId) }
     factory { AIAssistantViewModel(get()) }
+    factory { TimerViewModel() }
+    factory { StatisticsViewModel(get()) }
+    factory { SettingsViewModel(get()) }
 }
 
 val sharedModules = listOf(networkModule, databaseModule, preferencesModule, repositoryModule, viewModelModule)

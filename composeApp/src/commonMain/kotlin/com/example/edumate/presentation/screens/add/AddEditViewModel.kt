@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.days
 
 data class AddEditUiState(
     val title: String = "",
@@ -40,6 +42,10 @@ class AddEditViewModel(
     init {
         if (taskId != null) {
             loadTask(taskId)
+        } else {
+            // Mengatur default deadline ke 1 minggu dari sekarang
+            val oneWeekFromNow = Clock.System.now() + 7.days
+            _uiState.update { it.copy(deadlineText = oneWeekFromNow.toDateText()) }
         }
     }
 

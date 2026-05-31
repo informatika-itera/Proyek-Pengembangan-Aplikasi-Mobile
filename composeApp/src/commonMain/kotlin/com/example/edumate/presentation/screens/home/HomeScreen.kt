@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -61,6 +62,7 @@ fun HomeScreen(
     onNavigateToAIAssistant: () -> Unit,
     onNavigateToTimer: () -> Unit,
     onNavigateToStatistics: () -> Unit,
+    onNavigateToSettings: () -> Unit, // Parameter Settings yang sebelumnya hilang
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,12 +74,19 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("EduMate") },
                 actions = {
+                    // Tombol Settings (Pengaturan)
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    // Tombol Timer (Fokus Belajar)
                     IconButton(onClick = onNavigateToTimer) {
                         Icon(Icons.Default.Timer, contentDescription = "Fokus Belajar", tint = MaterialTheme.colorScheme.primary)
                     }
+                    // Tombol Statistik
                     TextButton(onClick = onNavigateToStatistics) {
                         Text("Statistik", color = MaterialTheme.colorScheme.primary)
                     }
+                    // Tombol AI
                     TextButton(onClick = onNavigateToAIAssistant) {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(6.dp))
@@ -97,6 +106,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Kolom Pencarian
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.updateSearchQuery(it) },
@@ -120,6 +130,7 @@ fun HomeScreen(
                 )
             )
 
+            // Baris Filter
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,6 +146,7 @@ fun HomeScreen(
                 }
             }
 
+            // Area Konten Tugas
             Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 when (val state = uiState) {
                     is HomeUiState.Loading -> {

@@ -272,11 +272,13 @@ private fun SummaryCard(
     modifier: Modifier = Modifier,
     color: Color = Color.White
 ) {
+    val contentColor = Color(0xFF1C1B1F)
     Card(
         modifier = modifier.height(110.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = color
+            containerColor = color,
+            contentColor = contentColor
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -289,7 +291,8 @@ private fun SummaryCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = contentColor
             )
 
             Row(
@@ -306,13 +309,14 @@ private fun SummaryCard(
                     Text(
                         text = value,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = contentColor
                     )
 
                     Text(
                         text = unit,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = contentColor.copy(alpha = 0.75f)
                     )
                 }
             }

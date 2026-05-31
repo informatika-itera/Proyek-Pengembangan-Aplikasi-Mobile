@@ -16,7 +16,23 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material3.*
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +69,11 @@ fun AppNavHost(
 ) {
     val navigationActions = createNavigationActions(navController)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route?.substringAfterLast(".")
+
+    // Jangan pakai substringAfterLast(".") karena route typed-navigation bisa punya argumen.
+    // Pakai raw route lalu cek dengan contains().
+    val currentRoute = navBackStackEntry?.destination?.route
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val userPreferences: UserPreferences = koinInject()
@@ -61,10 +81,11 @@ fun AppNavHost(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = currentRoute.shouldShowBottomBar(),
+        gesturesEnabled = currentRoute.shouldEnableDrawerGesture(),
         drawerContent = {
             ModalDrawerSheet {
                 Spacer(Modifier.height(12.dp))
+
                 Column(
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
                 ) {
@@ -81,23 +102,27 @@ fun AppNavHost(
                             )
                         }
                     }
+
                     Spacer(Modifier.height(12.dp))
+
                     Text(
                         text = userName,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
+
                     Text(
                         text = "Jaga sehat, produktif!",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                
+
                 NavigationDrawerItem(
                     label = { Text("Beranda") },
-                    selected = currentRoute == "Dashboard",
+                    selected = currentRoute.isRoute("Dashboard"),
                     onClick = {
                         scope.launch { drawerState.close() }
                         navigationActions.navigateToDashboard()
@@ -105,9 +130,10 @@ fun AppNavHost(
                     icon = { Icon(Icons.Default.Home, null) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Catatan Makan") },
-                    selected = currentRoute == "Home",
+                    selected = currentRoute.isRoute("Home"),
                     onClick = {
                         scope.launch { drawerState.close() }
                         navigationActions.navigateToHome()
@@ -115,9 +141,10 @@ fun AppNavHost(
                     icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Tracker Air") },
-                    selected = currentRoute == "WaterTracker",
+                    selected = currentRoute.isRoute("WaterTracker"),
                     onClick = {
                         scope.launch { drawerState.close() }
                         navigationActions.navigateToWaterTracker()
@@ -125,9 +152,10 @@ fun AppNavHost(
                     icon = { Icon(Icons.Default.WaterDrop, null) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Olahraga") },
-                    selected = currentRoute == "Exercise",
+                    selected = currentRoute.isRoute("Exercise"),
                     onClick = {
                         scope.launch { drawerState.close() }
                         navigationActions.navigateToExercise()
@@ -135,9 +163,10 @@ fun AppNavHost(
                     icon = { Icon(Icons.Default.Timer, null) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Asisten AI") },
-                    selected = currentRoute == "AIAssistant",
+                    selected = currentRoute.isRoute("AIAssistant"),
                     onClick = {
                         scope.launch { drawerState.close() }
                         navigationActions.navigateToAIAssistant()
@@ -145,9 +174,10 @@ fun AppNavHost(
                     icon = { Icon(Icons.Outlined.AutoAwesome, null) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Settings") },
-                    selected = currentRoute == "Settings",
+                    selected = currentRoute.isRoute("Settings"),
                     onClick = {
                         scope.launch { drawerState.close() }
                         navigationActions.navigateToSettings()
@@ -160,23 +190,33 @@ fun AppNavHost(
     ) {
         Scaffold(
             topBar = {
-                if (currentRoute.shouldShowBottomBar()) {
+                if (currentRoute.shouldShowAppTopBar()) {
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                "FitKos",
+                                text = "FitKos",
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         },
                         navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, "Menu")
+                            IconButton(
+                                onClick = {
+                                    scope.launch { drawerState.open() }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Menu"
+                                )
                             }
                         },
                         actions = {
                             IconButton(onClick = { }) {
-                                Icon(Icons.Default.NotificationsNone, "Notifikasi")
+                                Icon(
+                                    imageVector = Icons.Default.NotificationsNone,
+                                    contentDescription = "Notifikasi"
+                                )
                             }
                         }
                     )
@@ -202,23 +242,34 @@ fun AppNavHost(
                     SplashScreen(
                         onNavigateToDashboard = {
                             navController.navigate(Route.Dashboard) {
-                                popUpTo(Route.Splash) { inclusive = true }
+                                popUpTo(Route.Splash) {
+                                    inclusive = true
+                                }
                             }
                         }
                     )
                 }
+
                 composable<Route.Dashboard> {
                     DashboardScreen(
-                        onNavigateToMealLog = { navigationActions.navigateToHome() },
-                        onNavigateToAddMeal = { navigationActions.navigateToAddNote() },
-                        onNavigateToWaterTracker = { navigationActions.navigateToWaterTracker() },
-                        onNavigateToExercise = { navigationActions.navigateToExercise() },
+                        onNavigateToMealLog = {
+                            navigationActions.navigateToHome()
+                        },
+                        onNavigateToAddMeal = {
+                            navigationActions.navigateToAddNote()
+                        },
+                        onNavigateToWaterTracker = {
+                            navigationActions.navigateToWaterTracker()
+                        },
+                        onNavigateToExercise = {
+                            navigationActions.navigateToExercise()
+                        },
                         onNavigateToAI = {
                             navigationActions.navigateToAIAssistant(
                                 initialText = """
-                        Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
-                        Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
-                    """.trimIndent()
+                                    Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
+                                    Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
+                                """.trimIndent()
                             )
                         }
                     )
@@ -226,39 +277,57 @@ fun AppNavHost(
 
                 composable<Route.Home> {
                     HomeScreen(
-                        onNavigateToAddNote = { navigationActions.navigateToAddNote() },
-                        onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                        onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                        onNavigateToAddNote = {
+                            navigationActions.navigateToAddNote()
+                        },
+                        onNavigateToDetail = { noteId ->
+                            navigationActions.navigateToNoteDetail(noteId)
+                        },
+                        onNavigateToAI = {
+                            navigationActions.navigateToAIAssistant()
+                        }
                     )
                 }
 
                 composable<Route.WaterTracker> {
                     WaterTrackerScreen(
-                        onNavigateBack = { navigationActions.navigateBack() }
+                        onNavigateBack = {
+                            navigationActions.navigateBack()
+                        }
                     )
                 }
 
                 composable<Route.Exercise> {
                     ExerciseScreen(
-                        onNavigateBack = { navigationActions.navigateBack() }
+                        onNavigateBack = {
+                            navigationActions.navigateBack()
+                        }
                     )
                 }
 
                 composable<Route.Settings> {
                     SettingsScreen(
-                        onNavigateBack = { navigationActions.navigateBack() },
+                        onNavigateBack = {
+                            navigationActions.navigateBack()
+                        },
                         onLogout = {
                             navController.navigate(Route.Splash) {
-                                popUpTo(Route.Dashboard) { inclusive = true }
+                                popUpTo(Route.Dashboard) {
+                                    inclusive = true
+                                }
                             }
                         }
                     )
                 }
+
                 composable<Route.AddNote> { backStackEntry ->
                     val route: Route.AddNote = backStackEntry.toRoute()
+
                     AddNoteScreen(
                         noteId = route.noteId,
-                        onNavigateBack = { navigationActions.navigateBack() },
+                        onNavigateBack = {
+                            navigationActions.navigateBack()
+                        },
                         onNavigateToAI = { text ->
                             navigationActions.navigateToAIAssistant(
                                 noteId = route.noteId,
@@ -270,20 +339,28 @@ fun AppNavHost(
 
                 composable<Route.NoteDetail> { backStackEntry ->
                     val route: Route.NoteDetail = backStackEntry.toRoute()
+
                     NoteDetailScreen(
                         noteId = route.noteId,
-                        onNavigateBack = { navigationActions.navigateBack() },
-                        onNavigateToEdit = { navigationActions.navigateToAddNote(route.noteId) },
+                        onNavigateBack = {
+                            navigationActions.navigateBack()
+                        },
+                        onNavigateToEdit = {
+                            navigationActions.navigateToAddNote(route.noteId)
+                        },
                         onShare = { _ -> }
                     )
                 }
 
                 composable<Route.AIAssistant> { backStackEntry ->
                     val route: Route.AIAssistant = backStackEntry.toRoute()
+
                     AIAssistantScreen(
                         noteId = route.noteId,
                         initialText = route.initialText,
-                        onNavigateBack = { navigationActions.navigateBack() },
+                        onNavigateBack = {
+                            navigationActions.navigateBack()
+                        },
                         onApplyResult = null
                     )
                 }
@@ -332,12 +409,12 @@ private fun FitKosBottomBar(
 
     NavigationBar {
         items.forEach { item ->
-            val selected = currentRoute == item.routeKey
-
             NavigationBarItem(
-                selected = selected,
+                selected = currentRoute.isRoute(item.routeKey),
                 onClick = {
-                    item.route?.let { onNavigate(it) }
+                    item.route?.let { route ->
+                        onNavigate(route)
+                    }
                 },
                 icon = {
                     Icon(
@@ -360,14 +437,30 @@ private data class BottomBarItem(
     val routeKey: String
 )
 
+private fun String?.isRoute(routeKey: String): Boolean {
+    return this?.contains(routeKey) == true
+}
+
 private fun String?.shouldShowBottomBar(): Boolean {
-    val route = this ?: return false
-    return route == "Dashboard" ||
-            route == "Home" ||
-            route == "WaterTracker" ||
-            route == "AIAssistant" ||
-            route == "Exercise" ||
-            route == "Settings"
+    return this.isRoute("Dashboard") ||
+            this.isRoute("Home") ||
+            this.isRoute("WaterTracker") ||
+            this.isRoute("AIAssistant") ||
+            this.isRoute("Exercise") ||
+            this.isRoute("Settings")
+}
+
+private fun String?.shouldEnableDrawerGesture(): Boolean {
+    return this.isRoute("Dashboard") ||
+            this.isRoute("Home") ||
+            this.isRoute("WaterTracker") ||
+            this.isRoute("AIAssistant") ||
+            this.isRoute("Exercise") ||
+            this.isRoute("Settings")
+}
+
+private fun String?.shouldShowAppTopBar(): Boolean {
+    return this.isRoute("Dashboard")
 }
 
 private fun NavHostController.navigateTopLevel(route: Route) {
@@ -408,12 +501,13 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
         }
 
         override fun navigateToExercise() {
-            navController.navigate(Route.Exercise)
+            navController.navigateTopLevel(Route.Exercise)
         }
 
         override fun navigateToSettings() {
             navController.navigateTopLevel(Route.Settings)
         }
+
         override fun navigateBack() {
             navController.popBackStack()
         }

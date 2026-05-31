@@ -1,0 +1,388 @@
+package com.example.travelplanner.core.util
+
+import androidx.compose.runtime.compositionLocalOf
+
+data class AppStrings(
+    // ── Generic ──────────────────────────────────────────────────────
+    val appName: String,
+    val cancel: String,
+    val delete: String,
+    val loading: String,
+    val search: String,
+    val save: String,
+    val back: String,
+
+    // ── Bottom Navigation ─────────────────────────────────────────────
+    val navHome: String,
+    val navTrips: String,
+    val navFinance: String,
+    val navProfile: String,
+
+    // ── HomeScreen ────────────────────────────────────────────────────
+    val heroTitle: String,
+    val heroSubtitle: String,
+    val recentTripsTitle: String,
+    val recentTripsSubtitle: (Int) -> String,
+    val seeAll: String,
+    val planButton: String,
+    val emptyStateTitle: String,
+    val emptyStateBody: String,
+    val tipTitle: String,
+    val tipBody: String,
+
+    // ── MyTripsScreen ─────────────────────────────────────────────────
+    val myTripsTitle: String,
+    val searchPlaceholder: String,
+    val noTripsTitle: String,
+    val noTripsBody: String,
+    val noSearchResultTitle: String,
+    val noSearchResultBody: String,
+    val deleteThisTrip: String,
+    val deleteConfirm: String,
+
+    // ── GenerateTripScreen ────────────────────────────────────────────
+    val planTripTitle: String,
+    val sectionRoute: String,
+    val departureCity: String,
+    val departureCityPlaceholder: String,
+    val destinationCity: String,
+    val destinationCityPlaceholder: String,
+    val sectionSchedule: String,
+    val depart: String,
+    val returnDate: String,
+    val pickDate: String,
+    val pickDateAction: String,
+    val sectionGroup: String,
+    val numberOfPeople: String,
+    val sectionBudget: String,
+    val sectionBudgetSubtitle: String,
+    val budgetOrSpecific: String,
+    val budgetExample: String,
+    val sectionVibe: String,
+    val sectionVibeSubtitle: String,
+    val sectionNotes: String,
+    val sectionNotesSubtitle: String,
+    val notesPlaceholder: String,
+    val generateButton: String,
+    val fillAllFields: String,
+    val aiGenerating: String,
+    val aiGeneratingBody: String,
+
+    // ── Vibe Labels ───────────────────────────────────────────────────
+    val vibeNature: String,
+    val vibeNatureSub: String,
+    val vibeBeach: String,
+    val vibeBeachSub: String,
+    val vibeCulinary: String,
+    val vibeCulinarySub: String,
+    val vibeHistory: String,
+    val vibeHistorySub: String,
+    val vibeRelax: String,
+    val vibeRelaxSub: String,
+    val vibeAdventure: String,
+    val vibeAdventureSub: String,
+
+    // ── Budget Presets ────────────────────────────────────────────────
+    val budgetSavings: String,
+    val budgetMedium: String,
+    val budgetComfort: String,
+    val budgetLuxury: String,
+
+    // ── TripResultScreen ──────────────────────────────────────────────
+    val itineraryTitle: String,
+    val dailyPlan: String,
+    val statTime: String,
+    val statDestination: String,
+    val statCost: String,
+    val recordCost: String,
+    val openMaps: String,
+    val failedLoad: String,
+
+    // ── ExpenseTrackerScreen ──────────────────────────────────────────
+    val expenseTitle: String,
+    val totalBudget: String,
+    val totalSpent: String,
+    val remaining: String,
+    val addExpense: String,
+    val noExpenses: String,
+    val noExpensesBody: String,
+    val expenseName: String,
+    val expenseNamePlaceholder: String,
+    val expenseAmount: String,
+    val expenseCategory: String,
+    val expenseDate: String,
+    // Expense category names
+    val catAll: String,
+    val catFood: String,
+    val catTourism: String,
+    val catLodging: String,
+    val catTransport: String,
+    val catEntertainment: String,
+    val catOther: String,
+    // AI expense input
+    val aiInputTitle: String,
+    val aiInputPlaceholder: String,
+    val aiInputSend: String,
+    // Summary card
+    val expenseSummaryTitle: String,
+    val expenseCategoryChart: String,
+    // Voice assistant
+    val voiceListening: String,
+    val voiceSpeakNow: String,
+    val voiceTranscribing: String,
+
+    // ── ProfileScreen ─────────────────────────────────────────────────
+    val profileTitle: String,
+    val premiumTraveler: String,
+    val statTrips: String,
+    val statCities: String,
+    val statCountries: String,
+    val menuAccountActivity: String,
+    val menuFavorites: String,
+    val menuFavoritesSub: String,
+    val menuHistory: String,
+    val menuHistorySub: String,
+    val menuFinanceSummary: String,
+    val menuFinanceSummarySub: String,
+    val menuOthers: String,
+    val menuHelp: String,
+    val menuHelpSub: String,
+    val menuAbout: String,
+    val menuAboutSub: String,
+
+    // ── SettingsScreen ────────────────────────────────────────────────
+    val settingsTitle: String,
+    val sectionDisplay: String,
+    val darkMode: String,
+    val language: String,
+    val languageValue: String,
+    val sectionNotification: String,
+    val travelReminder: String,
+    val appVersion: String,
+    val switchToLanguage: String,
+
+    // ── Expense empty state ───────────────────────────────────────────
+    val noActiveTripTitle: String,
+    val noActiveTripBody: String,
+    val goToTrips: String
+)
+
+// ══════════════════════════════════════════════════════════════════════
+//  BAHASA INDONESIA
+// ══════════════════════════════════════════════════════════════════════
+
+val StringsID = AppStrings(
+    appName = "AI Travel Planner",
+    cancel = "Batal", delete = "Hapus", loading = "Memuat...",
+    search = "Cari", save = "Simpan", back = "Kembali",
+
+    navHome = "Utama", navTrips = "Perjalanan",
+    navFinance = "Keuangan", navProfile = "Profil",
+
+    heroTitle = "Selamat Datang,\nTraveler.",
+    heroSubtitle = "Ke mana kita pergi selanjutnya?",
+    recentTripsTitle = "Perjalanan Terbaru",
+    recentTripsSubtitle = { n -> "$n rencana liburan aktif" },
+    seeAll = "Lihat Semua", planButton = "Rencanakan",
+    emptyStateTitle = "Belum Ada Rencana Perjalanan",
+    emptyStateBody = "Mulai rencanakan perjalanan impianmu\nbersama AI kami.",
+    tipTitle = "Tips Perjalanan Cerdas",
+    tipBody = "Isi detail perjalanan selengkap mungkin agar AI dapat menyusun itinerary yang lebih personal.",
+
+    myTripsTitle = "Semua Perjalanan",
+    searchPlaceholder = "Cari kota tujuan atau vibe...",
+    noTripsTitle = "Belum Ada Perjalanan Tersimpan",
+    noTripsBody = "Mulailah membuat rencana baru dengan AI dari halaman Utama.",
+    noSearchResultTitle = "Perjalanan Tidak Ditemukan",
+    noSearchResultBody = "Coba cari dengan kata kunci lain.",
+    deleteThisTrip = "Hapus perjalanan ini?", deleteConfirm = "Hapus",
+
+    planTripTitle = "Rancang Perjalanan",
+    sectionRoute = "Rute Perjalanan",
+    departureCity = "Kota Keberangkatan", departureCityPlaceholder = "Jakarta",
+    destinationCity = "Kota Tujuan", destinationCityPlaceholder = "Bali, Yogyakarta...",
+    sectionSchedule = "Jadwal Perjalanan",
+    depart = "Berangkat", returnDate = "Kembali",
+    pickDate = "Pilih tanggal", pickDateAction = "Pilih",
+    sectionGroup = "Detail Rombongan", numberOfPeople = "Jumlah Orang",
+    sectionBudget = "Estimasi Budget", sectionBudgetSubtitle = "Pilih kisaran atau masukkan nominal",
+    budgetOrSpecific = "Atau nominal spesifik (opsional)", budgetExample = "Contoh: 3.500.000",
+    sectionVibe = "Gaya Perjalanan",
+    sectionVibeSubtitle = "Pilih satu yang paling mencerminkan perjalananmu",
+    sectionNotes = "Catatan Perjalanan",
+    sectionNotesSubtitle = "Preferensi khusus, kebutuhan, atau permintaan tambahan",
+    notesPlaceholder = "Contoh: vegetarian, ada balita, hindari tempat ramai...",
+    generateButton = "Buat Itinerary dengan AI",
+    fillAllFields = "* Lengkapi semua kolom wajib untuk melanjutkan",
+    aiGenerating = "AI Sedang Menyusun Itinerary...",
+    aiGeneratingBody = "Menghubungi AI Gemini untuk merancang petualangan terbaik Anda. Mohon tunggu sebentar...",
+
+    vibeNature = "Alam", vibeNatureSub = "Pegunungan & hutan",
+    vibeBeach = "Pantai", vibeBeachSub = "Laut & tepi pantai",
+    vibeCulinary = "Kuliner", vibeCulinarySub = "Wisata cita rasa",
+    vibeHistory = "Sejarah", vibeHistorySub = "Budaya & peninggalan",
+    vibeRelax = "Santai", vibeRelaxSub = "Slow travel & rehat",
+    vibeAdventure = "Petualangan", vibeAdventureSub = "Adrenalin & outdoor",
+
+    budgetSavings = "Hemat", budgetMedium = "Sedang",
+    budgetComfort = "Nyaman", budgetLuxury = "Mewah",
+
+    itineraryTitle = "Itinerary Perjalanan", dailyPlan = "Rencana Aktivitas Harian",
+    statTime = "Durasi", statDestination = "Aktivitas", statCost = "Pengeluaran",
+    recordCost = "Catat Biaya", openMaps = "Buka di Google Maps ↗",
+    failedLoad = "Gagal memuat rencana perjalanan.",
+
+    expenseTitle = "Catat Pengeluaran",
+    totalBudget = "Total Budget", totalSpent = "Total Pengeluaran", remaining = "Sisa",
+    addExpense = "Tambah Pengeluaran",
+    noExpenses = "Belum Ada Catatan Biaya",
+    noExpensesBody = "Tap tombol + untuk mencatat pengeluaran pertama Anda.",
+    expenseName = "Nama Pengeluaran",
+    expenseNamePlaceholder = "Contoh: Makan siang, Tiket masuk...",
+    expenseAmount = "Jumlah (Rp)", expenseCategory = "Kategori", expenseDate = "Tanggal",
+
+    catAll = "Semua", catFood = "Konsumsi", catTourism = "Wisata",
+    catLodging = "Penginapan", catTransport = "Transportasi",
+    catEntertainment = "Hiburan", catOther = "Lainnya",
+
+    aiInputTitle = "Catat Cepat via AI Gemini",
+    aiInputPlaceholder = "Ketik: 'sarapan sushi 120k'...",
+    aiInputSend = "Kirim",
+    expenseSummaryTitle = "Total Pengeluaran Liburan",
+    expenseCategoryChart = "Proporsi Berdasarkan Kategori",
+
+    voiceListening = "Mendengarkan suara Anda...",
+    voiceSpeakNow = "Bicara sekarang...",
+    voiceTranscribing = "Mentranskripsi...",
+
+    profileTitle = "Profil", premiumTraveler = "✈️  Premium Traveler",
+    statTrips = "Trip", statCities = "Kota", statCountries = "Negara",
+    menuAccountActivity = "AKUN & AKTIVITAS",
+    menuFavorites = "Destinasi Favorit", menuFavoritesSub = "Simpan & kelola kota impianmu",
+    menuHistory = "Riwayat Perjalanan", menuHistorySub = "Semua itinerary yang pernah dibuat",
+    menuFinanceSummary = "Ringkasan Keuangan", menuFinanceSummarySub = "Total pengeluaran semua trip",
+    menuOthers = "LAINNYA",
+    menuHelp = "Bantuan & FAQ", menuHelpSub = "Panduan penggunaan aplikasi",
+    menuAbout = "Tentang Aplikasi", menuAboutSub = "Versi 1.0.0 · Powered by Gemini AI",
+
+    settingsTitle = "Pengaturan", sectionDisplay = "TAMPILAN",
+    darkMode = "Mode Gelap", language = "Bahasa", languageValue = "Indonesia (ID)",
+    sectionNotification = "NOTIFIKASI", travelReminder = "Pengingat Perjalanan",
+    appVersion = "AI Travel Planner v1.0.0\nPowered by Google Gemini 1.5 Flash",
+    switchToLanguage = "Switch to English",
+
+    noActiveTripTitle = "Belum Ada Perjalanan Aktif",
+    noActiveTripBody = "Buat rencana liburan dari menu Rencanakan, lalu catat pengeluaran dari halaman detail perjalanan.",
+    goToTrips = "Lihat Perjalanan Saya"
+)
+
+// ══════════════════════════════════════════════════════════════════════
+//  ENGLISH
+// ══════════════════════════════════════════════════════════════════════
+
+val StringsEN = AppStrings(
+    appName = "AI Travel Planner",
+    cancel = "Cancel", delete = "Delete", loading = "Loading...",
+    search = "Search", save = "Save", back = "Back",
+
+    navHome = "Home", navTrips = "Trips",
+    navFinance = "Finance", navProfile = "Profile",
+
+    heroTitle = "Welcome,\nTraveler.",
+    heroSubtitle = "Where shall we go next?",
+    recentTripsTitle = "Recent Trips",
+    recentTripsSubtitle = { n -> "$n active travel plan${if (n != 1) "s" else ""}" },
+    seeAll = "See All", planButton = "Plan Trip",
+    emptyStateTitle = "No Travel Plans Yet",
+    emptyStateBody = "Start planning your dream trip\nwith our AI assistant.",
+    tipTitle = "Smart Travel Tips",
+    tipBody = "Fill in trip details as completely as possible so the AI can build a more personalized itinerary.",
+
+    myTripsTitle = "All Trips",
+    searchPlaceholder = "Search destination or vibe...",
+    noTripsTitle = "No Saved Trips",
+    noTripsBody = "Start creating a new plan with AI from the Home screen.",
+    noSearchResultTitle = "Trip Not Found",
+    noSearchResultBody = "Try searching with a different keyword.",
+    deleteThisTrip = "Delete this trip?", deleteConfirm = "Delete",
+
+    planTripTitle = "Plan a Trip",
+    sectionRoute = "Route",
+    departureCity = "Departure City", departureCityPlaceholder = "Jakarta",
+    destinationCity = "Destination", destinationCityPlaceholder = "Bali, Yogyakarta...",
+    sectionSchedule = "Schedule",
+    depart = "Depart", returnDate = "Return",
+    pickDate = "Pick a date", pickDateAction = "Select",
+    sectionGroup = "Group Details", numberOfPeople = "Number of Travelers",
+    sectionBudget = "Budget Estimate", sectionBudgetSubtitle = "Choose a range or enter a specific amount",
+    budgetOrSpecific = "Or enter a specific amount (optional)", budgetExample = "e.g. 3,500,000",
+    sectionVibe = "Travel Style",
+    sectionVibeSubtitle = "Choose the one that best reflects your trip",
+    sectionNotes = "Travel Notes",
+    sectionNotesSubtitle = "Special preferences, needs, or additional requests",
+    notesPlaceholder = "e.g. vegetarian, toddler on board, avoid crowds...",
+    generateButton = "Create Itinerary with AI",
+    fillAllFields = "* Fill in all required fields to continue",
+    aiGenerating = "AI is Building Your Itinerary...",
+    aiGeneratingBody = "Contacting Gemini AI to craft your best adventure. Please wait a moment...",
+
+    vibeNature = "Nature", vibeNatureSub = "Mountains & forests",
+    vibeBeach = "Beach", vibeBeachSub = "Sea & coastline",
+    vibeCulinary = "Culinary", vibeCulinarySub = "Food & flavors",
+    vibeHistory = "History", vibeHistorySub = "Culture & heritage",
+    vibeRelax = "Relaxed", vibeRelaxSub = "Slow travel & leisure",
+    vibeAdventure = "Adventure", vibeAdventureSub = "Adrenaline & outdoor",
+
+    budgetSavings = "Budget", budgetMedium = "Moderate",
+    budgetComfort = "Comfort", budgetLuxury = "Luxury",
+
+    itineraryTitle = "Trip Itinerary", dailyPlan = "Daily Activity Plan",
+    statTime = "Duration", statDestination = "Activities", statCost = "Expenses",
+    recordCost = "Track Cost", openMaps = "Open in Google Maps ↗",
+    failedLoad = "Failed to load trip plan.",
+
+    expenseTitle = "Track Expenses",
+    totalBudget = "Total Budget", totalSpent = "Total Spent", remaining = "Remaining",
+    addExpense = "Add Expense",
+    noExpenses = "No Expenses Recorded",
+    noExpensesBody = "Tap + to record your first expense.",
+    expenseName = "Expense Name",
+    expenseNamePlaceholder = "e.g. Lunch, Entrance ticket...",
+    expenseAmount = "Amount (Rp)", expenseCategory = "Category", expenseDate = "Date",
+
+    catAll = "All", catFood = "Food", catTourism = "Sightseeing",
+    catLodging = "Lodging", catTransport = "Transport",
+    catEntertainment = "Entertainment", catOther = "Others",
+
+    aiInputTitle = "Quick Log via Gemini AI",
+    aiInputPlaceholder = "Type: 'lunch sushi 120k'...",
+    aiInputSend = "Send",
+    expenseSummaryTitle = "Total Trip Expenses",
+    expenseCategoryChart = "Proportion by Category",
+
+    voiceListening = "Listening to your voice...",
+    voiceSpeakNow = "Speak now...",
+    voiceTranscribing = "Transcribing...",
+
+    profileTitle = "Profile", premiumTraveler = "✈️  Premium Traveler",
+    statTrips = "Trips", statCities = "Cities", statCountries = "Countries",
+    menuAccountActivity = "ACCOUNT & ACTIVITY",
+    menuFavorites = "Favorite Destinations", menuFavoritesSub = "Save & manage your dream cities",
+    menuHistory = "Trip History", menuHistorySub = "All previously created itineraries",
+    menuFinanceSummary = "Financial Summary", menuFinanceSummarySub = "Total expenses across all trips",
+    menuOthers = "MORE",
+    menuHelp = "Help & FAQ", menuHelpSub = "App usage guide",
+    menuAbout = "About App", menuAboutSub = "Version 1.0.0 · Powered by Gemini AI",
+
+    settingsTitle = "Settings", sectionDisplay = "DISPLAY",
+    darkMode = "Dark Mode", language = "Language", languageValue = "English (EN)",
+    sectionNotification = "NOTIFICATIONS", travelReminder = "Travel Reminder",
+    appVersion = "AI Travel Planner v1.0.0\nPowered by Google Gemini 1.5 Flash",
+    switchToLanguage = "Ganti ke Indonesia",
+
+    noActiveTripTitle = "No Active Trip",
+    noActiveTripBody = "Plan a trip first using the Plan button, then track expenses from the trip detail page.",
+    goToTrips = "Go to My Trips"
+)
+
+val LocalStrings = compositionLocalOf<AppStrings> { StringsID }

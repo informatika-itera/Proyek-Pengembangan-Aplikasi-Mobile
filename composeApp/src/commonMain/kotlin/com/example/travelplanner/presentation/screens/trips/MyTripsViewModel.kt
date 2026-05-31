@@ -1,4 +1,4 @@
-package com.example.travelplanner.presentation.screens.home
+package com.example.travelplanner.presentation.screens.trips
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,35 +7,29 @@ import com.example.travelplanner.domain.model.Trip
 import com.example.travelplanner.domain.repository.TripRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class HomeUiState(
+data class MyTripsUiState(
     val isLoading: Boolean = false,
-    val recentTrips: List<Trip> = emptyList(),
+    val trips: List<Trip> = emptyList(),
     val cityImages: Map<String, String> = emptyMap(),
     val errorMessage: String? = null
 )
 
-class HomeViewModel(
+class MyTripsViewModel(
     private val tripRepository: TripRepository,
     private val cityImageService: CityImageService
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(MyTripsUiState())
+    val uiState: StateFlow<MyTripsUiState> = _uiState.asStateFlow()
 
-    // NOTE: No init{} here — loadRecentTrips() is triggered only by LaunchedEffect in HomeScreen
-    // Prevents double-loading race condition where two coroutines overwrite each other's cityImages.
+    // No init{} — avoids double-loading. Triggered by LaunchedEffect in screen.
 
-    fun loadRecentTrips() {
+    fun loadTrips() {
         viewModelScope.launch {
-            // Atomic update using StateFlow.update{} — thread-safe CAS operation
             _uiState.update { it.copy(isLoading = true) }
 
             tripRepository.getAllTrips()
@@ -44,15 +38,13 @@ class HomeViewModel(
                 }
                 .collect { trips ->
                     // 1. Calculate needed BEFORE updating _uiState with placeholders.
-                    // We only treat a city as "already loaded" if it has a real Wikipedia or Unsplash image.
-                    // Placeholder images (containing loremflickr.com) are treated as NOT loaded so they can be upgraded.
                     val alreadyLoaded = _uiState.value.cityImages
                         .filterValues { !it.contains("loremflickr.com") }
                         .keys
                         .map { it.lowercase().trim() }
                         .toSet()
 
-                    val needed = trips.take(5).map { it.destination }
+                    val needed = trips.map { it.destination }
                         .distinct()
                         .filter { it.lowercase().trim() !in alreadyLoaded }
 
@@ -61,27 +53,19 @@ class HomeViewModel(
                         trip.destination to cityImageService.getImmediateUrl(trip.destination)
                     } + _uiState.value.cityImages
 
-                    // .update{} reads-modify-write atomically → cityImages never lost
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            recentTrips = trips,
+                            trips = trips,
                             cityImages = immediateImages,
                             errorMessage = null
                         )
                     }
-
-                    if (needed.isNotEmpty()) {
-                        fetchImages(needed)
-                    }
+                    if (needed.isNotEmpty()) fetchImages(needed)
                 }
         }
     }
 
-    /**
-     * Fetch images on IO dispatcher. Results applied atomically — concurrent state updates
-     * from the Flow collector will never erase already-loaded cityImages.
-     */
     private fun fetchImages(destinations: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             val unique = destinations.distinct()
@@ -91,6 +75,16 @@ class HomeViewModel(
             val results = deferred.map { it.await() }.toMap()
             withContext(Dispatchers.Main) {
                 _uiState.update { it.copy(cityImages = it.cityImages + results) }
+            }
+        }
+    }
+
+    fun deleteTrip(tripId: String) {
+        viewModelScope.launch {
+            try {
+                tripRepository.deleteTrip(tripId)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = "Gagal menghapus perjalanan: ${e.message}") }
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.example.noteai.data.remote.dto
+package com.example.travelplanner.data.remote.dto
 
 import kotlinx.serialization.Serializable
 

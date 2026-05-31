@@ -1,7 +1,8 @@
 # Gradle
 .gradle/
 build/
-!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # IntelliJ IDEA / Android Studio
 .idea/
@@ -39,11 +40,8 @@ DerivedData/
 # Misc
 *.class
 *.jar
-!gradle/wrapper/gradle-wrapper.jar
 
 .tmp/
-caches/
-daemon/
-kotlin-profile/
-native/
-wrapper/
+# caches/  <-- careful with these broad ignores
+# daemon/
+# native/

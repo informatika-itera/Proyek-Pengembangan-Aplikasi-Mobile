@@ -68,20 +68,6 @@ Aplikasi Android modern yang menampilkan berita tentang program Makan Bergizi Gr
 * **AI**: Google Gemini API
 * **Image Loading**: Coil
 * **Navigation**: Jetpack Navigation Compose
-=======
-```
-
-### Tech Stack
-- **Language**: Kotlin
-- **UI**: Jetpack Compose + Material 3
-- **Architecture**: MVVM + Clean Architecture
-- **DI**: Koin
-- **Database**: Room (offline caching)
-- **Networking**: Retrofit + OkHttp
-- **AI**: Google Gemini API
-- **Image Loading**: Coil
-- **Navigation**: Jetpack Navigation Compose
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 
 ## 📦 Dependencies
 
@@ -115,16 +101,12 @@ implementation("io.coil-kt:coil-compose:2.5.0")
 
 // AI
 implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
-<<<<<<< HEAD
 
-=======
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 ```
 
 ## 🚀 Cara Menjalankan
 
 ### Prerequisites
-<<<<<<< HEAD
 
 * Android Studio Hedgehog atau lebih baru
 * JDK 17
@@ -133,14 +115,6 @@ implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 
 ### Build & Install
 
-=======
-- Android Studio Hedgehog atau lebih baru
-- JDK 17
-- Android SDK 34
-- Gradle 8.5+
-
-### Build & Install
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 ```bash
 # Clone repository
 git clone <repository-url>
@@ -153,7 +127,6 @@ cd Proyek-Pengembangan-Aplikasi-Mobile
 
 # Install ke device/emulator
 ./gradlew installDebug
-<<<<<<< HEAD
 
 ```
 
@@ -163,21 +136,12 @@ Project ini menggunakan:
 
 * **NewsAPI**: Untuk mengambil berita
 * **Google Gemini AI**: Untuk analisis sentimen
-=======
-```
-
-### API Keys
-Project ini menggunakan:
-- **NewsAPI**: Untuk mengambil berita
-- **Google Gemini AI**: Untuk analisis sentimen
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 
 API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `local.properties`.
 
 ## 📱 Screenshots
 
 ### Home Screen
-<<<<<<< HEAD
 
 * Search bar dengan neumorphic design
 * Category filter tabs (Semua, Pro, Kontra, Netral)
@@ -200,36 +164,11 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 * Notifications toggle
 * Cache management
 * App information
-=======
-- Search bar dengan neumorphic design
-- Category filter tabs
-- Article cards dengan bookmark button
-- AI sentiment indicator (Pro/Kontra/Netral)
-
-### Bookmark Screen
-- List artikel tersimpan
-- Delete functionality
-- Empty state UI
-
-### Settings Screen
-- Dark mode toggle
-- Notifications toggle
-- Cache management
-- App information
-
-### Detail Screen
-- WebView untuk artikel lengkap
-- Share button
-- Bookmark button
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 
 ## 🧪 Testing
 
 ### Test Offline Mode
-<<<<<<< HEAD
 
-=======
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 1. Buka app dengan internet
 2. Browse beberapa artikel
 3. Aktifkan airplane mode
@@ -237,19 +176,13 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 5. ✅ Artikel muncul dari cache
 
 ### Test Search
-<<<<<<< HEAD
 
-=======
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 1. Ketik di search bar
 2. Tunggu 500ms
 3. ✅ Hasil ter-filter
 
 ### Test Bookmarks
-<<<<<<< HEAD
 
-=======
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 1. Tap bookmark icon
 2. Buka Bookmark screen
 3. ✅ Artikel tersimpan
@@ -259,11 +192,7 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 ## 📊 Sprint 3 Deliverables
 
 | Requirement | Status | Implementation |
-<<<<<<< HEAD
 | --- | --- | --- |
-=======
-|-------------|--------|----------------|
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 | Search/Filter | ✅ | Search bar + category tabs |
 | API Integration | ✅ | NewsAPI + Gemini AI |
 | Offline Support | ✅ | Room caching + fallback |
@@ -273,11 +202,7 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 ## 🎯 Rubrik Penilaian
 
 | Komponen | Bobot | Status |
-<<<<<<< HEAD
 | --- | --- | --- |
-=======
-|----------|-------|--------|
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 | Search/Filter | 25% | ✅ Complete |
 | API/Enhanced Local | 25% | ✅ Complete |
 | Offline Support | 20% | ✅ Complete |
@@ -288,17 +213,10 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 
 ## 📝 Dokumentasi
 
-<<<<<<< HEAD
 * `SPRINT3_FEATURES.md` - Detail fitur Sprint 3
 * `IMPLEMENTATION_GUIDE.md` - Panduan implementasi
 * `SPRINT3_SUMMARY.md` - Ringkasan executive
 * `FIXES_APPLIED.md` - Daftar perbaikan error
-=======
-- `SPRINT3_FEATURES.md` - Detail fitur Sprint 3
-- `IMPLEMENTATION_GUIDE.md` - Panduan implementasi
-- `SPRINT3_SUMMARY.md` - Ringkasan executive
-- `FIXES_APPLIED.md` - Daftar perbaikan error
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 
 ## 🐛 Known Issues
 
@@ -308,7 +226,6 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 
 ## 🔮 Future Enhancements
 
-<<<<<<< HEAD
 * [ ] Implement DataStore untuk Settings persistence
 * [ ] Add WorkManager untuk background sync
 * [ ] Implement actual dark mode theme
@@ -323,22 +240,6 @@ API keys sudah di-hardcode untuk development. Untuk production, pindahkan ke `lo
 * **Institution**: Institut Teknologi Sumatera (ITERA)
 * **Course**: Pengembangan Aplikasi Mobile
 * **Sprint**: 3
-=======
-- [ ] Implement DataStore untuk Settings persistence
-- [ ] Add WorkManager untuk background sync
-- [ ] Implement actual dark mode theme
-- [ ] Add push notifications
-- [ ] Add article read history
-- [ ] Export/import bookmarks
-- [ ] Add article comments/notes
-
-## 👥 Team
-
-- **Developer**: [Your Name]
-- **Institution**: Institut Teknologi Sumatera (ITERA)
-- **Course**: Pengembangan Aplikasi Mobile
-- **Sprint**: 3
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 
 ## 📄 License
 
@@ -346,26 +247,16 @@ This project is for educational purposes.
 
 ## 🙏 Acknowledgments
 
-<<<<<<< HEAD
 * NewsAPI.org untuk news data
 * Google Gemini AI untuk sentiment analysis
 * Material Design 3 untuk UI components
 * Jetpack Compose untuk modern Android UI
-=======
-- NewsAPI.org untuk news data
-- Google Gemini AI untuk sentiment analysis
-- Material Design 3 untuk UI components
-- Jetpack Compose untuk modern Android UI
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff
 
 ---
 
 **Status**: ✅ Ready for Submission
 **Last Updated**: May 24, 2026
 **Version**: 1.0.0 (Sprint 3)
-<<<<<<< HEAD
 
 ```
 
-=======
->>>>>>> 9a9c6649318d1492878917390aec362d9b3000ff

@@ -4,14 +4,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     
     <application
-        android:name=".NewsApplication"
+        android:name="com.itera.news.NewsApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.NewsApp">
         
         <activity
-            android:name=".MainActivity"
+            android:name="com.itera.news.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.NewsApp">
             <intent-filter>

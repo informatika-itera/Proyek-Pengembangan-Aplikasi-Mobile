@@ -16,13 +16,14 @@ import com.itera.news.presentation.screens.home.HomeScreen
 import com.itera.news.presentation.screens.bookmark.BookmarkScreen
 import com.itera.news.presentation.screens.add.AddEditScreen
 import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route // Mulai langsung dari Home
+        startDestination = Screen.Home.route
     ) {
         composable(Screen.Splash.route) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Splash Screen") }
@@ -30,7 +31,9 @@ fun NavGraph(navController: NavHostController) {
         composable(Screen.Home.route) {
             HomeScreen(
                 navigateToDetail = { url ->
-                    navController.navigate(Screen.Detail.createRoute(url))
+                    // Encode URL agar karakter '/' tidak merusak navigasi
+                    val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                    navController.navigate(Screen.Detail.createRoute(encodedUrl))
                 },
                 navigateToBookmark = {
                     navController.navigate(Screen.Bookmark.route)
@@ -50,10 +53,12 @@ fun NavGraph(navController: NavHostController) {
         composable(Screen.Bookmark.route) {
             BookmarkScreen(
                 onNavigateToDetail = { url ->
-                    navController.navigate(Screen.Detail.createRoute(url))
+                    val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                    navController.navigate(Screen.Detail.createRoute(encodedUrl))
                 },
                 onNavigateToAddEdit = { url ->
-                    navController.navigate(Screen.AddEdit.createRoute(url))
+                    val encodedUrl = url?.let { URLEncoder.encode(it, StandardCharsets.UTF_8.toString()) }
+                    navController.navigate(Screen.AddEdit.createRoute(encodedUrl ?: ""))
                 }
             )
         }
@@ -68,7 +73,8 @@ fun NavGraph(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val encodedUrl = backStackEntry.arguments?.getString("articleUrl")
-            val decodedUrl = encodedUrl?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
+            // Tambahkan pengecekan jika encodedUrl kosong string (karena navigasi tambah data baru)
+            val decodedUrl = if (encodedUrl.isNullOrEmpty()) null else URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
             AddEditScreen(
                 url = decodedUrl,
                 onNavigateBack = { navController.popBackStack() }

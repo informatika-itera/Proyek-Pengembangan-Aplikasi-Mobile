@@ -9,12 +9,13 @@ package com.example.pantaujompo.core.network
  * expect: Deklarasi tanpa implementasi (di commonMain)
  * actual: Implementasi spesifik platform (di androidMain/iosMain)
  */
-expect object ApiConfig {
     /**
      * Gemini API Key
      * 
      * Android: Diambil dari BuildConfig (local.properties)
      * iOS: Diambil dari Info.plist atau hardcoded (untuk development)
      */
-    val geminiApiKey: String
-}
+    expect object ApiConfig {
+        val geminiApiKeyNutrisi: String
+        val geminiApiKeyChat: String
+    }

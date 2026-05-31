@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#121212"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- Drop Shadow for Neon Ring -->
+    <path
+        android:fillColor="#66000000"
+        android:pathData="M54,23.5 C37.155,23.5 23.5,37.155 23.5,54 C23.5,70.845 37.155,84.5 54,84.5 C70.845,84.5 84.5,70.845 84.5,54 C84.5,37.155 70.845,23.5 54,23.5 Z M54,27.5 C68.636,27.5 80.5,39.364 80.5,54 C80.5,68.636 68.636,80.5 54,80.5 C39.364,80.5 27.5,68.636 27.5,54 C27.5,39.364 39.364,27.5 54,27.5 Z" />
+    <!-- Neon Cyan/Green Ring - perfectly sized within safe zone -->
+    <path
+        android:pathData="M54,22 C36.327,22 22,36.327 22,54 C22,71.673 36.327,86 54,86 C71.673,86 86,71.673 86,54 C86,36.327 71.673,22 54,22 Z M54,26 C69.464,26 82,38.536 82,54 C82,69.464 69.464,82 54,82 C38.536,82 26,69.464 26,54 C26,38.536 38.536,26 54,26 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="32"
+                android:type="radial">
+                <item android:color="#00E676" android:offset="0.0" />
+                <item android:color="#00B359" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- 3D Glass Sheen Reflection overlaying the top half -->
+    <path
+        android:pathData="M22,54 C22,36.327 36.327,22 54,22 C71.673,22 86,36.327 86,54 C86,54 60,35 22,54 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="22"
+                android:startY="22"
+                android:endX="86"
+                android:endY="54"
+                android:type="linear">
+                <item android:color="#88FFFFFF" android:offset="0.0" />
+                <item android:color="#00FFFFFF" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

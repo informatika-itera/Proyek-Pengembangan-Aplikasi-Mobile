@@ -3,23 +3,42 @@
     
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
-        android:name=".NoteAIApplication"
+        android:name=".PantauJompoApplication"
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NoteAI">
+        android:theme="@style/Theme.PantauJompo">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="TARUH_API_KEY_GOOGLE_MAPS_LO_DISINI" />
         
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.NoteAI">
+            android:theme="@style/Theme.PantauJompo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- Foreground Service untuk GPS Background Tracking -->
+        <service
+            android:name=".core.location.LocationTrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
         
     </application>
     

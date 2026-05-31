@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pantaujompo.data.local.datastore.UserPreferences
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -15,21 +15,28 @@ class ProfilViewModel(
     private val userPreferences: UserPreferences
 ) : ViewModel() {
 
-    var nama by mutableStateOf("Pradana Figo Ariasya")
-    var usia by mutableStateOf("22")
-    var beratKg by mutableStateOf("63")
-    var tinggiCm by mutableStateOf("165")
+    var nama by mutableStateOf("")
+    var usia by mutableStateOf("")
+    var beratKg by mutableStateOf("")
+    var tinggiCm by mutableStateOf("")
+    var gender by mutableStateOf("Laki-laki")
 
     init {
-        loadProfileFromStorage()
-    }
-
-    private fun loadProfileFromStorage() {
+        // PAKE collectLatest BIAR DATANYA UPDATE REAL-TIME!
         viewModelScope.launch {
-            nama = userPreferences.userName.first()
-            usia = userPreferences.userAge.first()
-            beratKg = userPreferences.userWeight.first()
-            tinggiCm = userPreferences.userHeight.first()
+            userPreferences.userName.collectLatest { nama = it }
+        }
+        viewModelScope.launch {
+            userPreferences.userAge.collectLatest { usia = if (it != 0) it.toString() else "" }
+        }
+        viewModelScope.launch {
+            userPreferences.userWeight.collectLatest { beratKg = if (it != 0f) it.toString() else "" }
+        }
+        viewModelScope.launch {
+            userPreferences.userHeight.collectLatest { tinggiCm = if (it != 0f) it.toString() else "" }
+        }
+        viewModelScope.launch {
+            userPreferences.userGender.collectLatest { gender = it }
         }
     }
 
@@ -56,7 +63,13 @@ class ProfilViewModel(
 
     fun saveProfile() {
         viewModelScope.launch {
-            userPreferences.saveProfile(nama, usia, beratKg, tinggiCm)
+            userPreferences.saveProfile(
+                name = nama,
+                age = usia.toIntOrNull() ?: 0,
+                weight = beratKg.toFloatOrNull() ?: 0f,
+                height = tinggiCm.toFloatOrNull() ?: 0f,
+                gender = gender
+            )
         }
     }
 }

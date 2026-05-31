@@ -5,7 +5,7 @@ import com.example.pantaujompo.BuildConfig
 /**
  * Android implementation of ApiConfig
  * 
- * Mengambil API key dari BuildConfig yang di-generate
+ * Mengambil API key Ganda dari BuildConfig yang di-generate
  * dari local.properties saat build time.
  * 
  * Setup:
@@ -14,5 +14,6 @@ import com.example.pantaujompo.BuildConfig
  * 3. Build project (API key akan di-inject ke BuildConfig)
  */
 actual object ApiConfig {
-    actual val geminiApiKey: String = BuildConfig.GEMINI_API_KEY
+    actual val geminiApiKeyNutrisi: String = BuildConfig.GEMINI_API_KEY_NUTRISI
+    actual val geminiApiKeyChat: String = BuildConfig.GEMINI_API_KEY_CHAT
 }

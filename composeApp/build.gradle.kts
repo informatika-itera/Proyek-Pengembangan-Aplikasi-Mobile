@@ -9,6 +9,9 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+
+    // 🔥 1. PLUGIN KSP
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
 }
 
 // Load local.properties for API keys
@@ -38,12 +41,10 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            // Kotlin
+            // Kotlin & Ktor
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-
-            // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
@@ -54,24 +55,23 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            // SQLDelight
+            // SQLDelight & DataStore
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-
-            // DataStore + Okio
             implementation(libs.datastore.preferences)
             implementation(libs.okio)
 
-            // Lifecycle & ViewModel
+            // Lifecycle & Navigation
             implementation(libs.lifecycle.viewmodel)
             implementation(libs.lifecycle.runtime.compose)
-
-            // Navigation
             implementation(libs.navigation.compose)
 
             // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+
+            // LIBRARY GEMINI AI
+            //implementation("dev.shreyaspatil.generativeai:generativeai-google:0.9.0-1.1.0")
         }
 
         commonTest.dependencies {
@@ -85,8 +85,27 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+
+            // ==========================================
+            // 🔥 LIBRARY KHUSUS ANDROID DI SINI 🔥
+            // ==========================================
+            implementation("com.google.android.gms:play-services-location:21.2.0")
+
+            // Room Database Runtime & KTX
+            val room_version = "2.6.1"
+            implementation("androidx.room:room-runtime:$room_version")
+            implementation("androidx.room:room-ktx:$room_version")
+
+            implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+            implementation("dev.shreyaspatil.generativeai:generativeai-google:0.9.0-1.1.0")
         }
     }
+}
+
+// 🔥 2. KSP COMPILER ROOM
+dependencies {
+    add("kspAndroid", "androidx.room:room-compiler:2.6.1")
 }
 
 android {
@@ -100,10 +119,16 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
+        // Narik DUA API Key dari local.properties biar aman
         buildConfigField(
             "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
+            "GEMINI_API_KEY_NUTRISI",
+            "\"${localProperties.getProperty("GEMINI_API_KEY_NUTRISI", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY_CHAT",
+            "\"${localProperties.getProperty("GEMINI_API_KEY_CHAT", "")}\""
         )
     }
 

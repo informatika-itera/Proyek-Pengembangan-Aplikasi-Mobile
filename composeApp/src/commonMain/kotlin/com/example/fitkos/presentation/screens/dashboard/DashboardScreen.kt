@@ -54,6 +54,10 @@ fun DashboardScreen(
         ) {
             HeaderSection(uiState, onNavigateToAI)
 
+            QuickActionSection(
+                onNavigateToAddMeal = onNavigateToAddMeal
+            )
+
             SummaryGrid(
                 uiState = uiState,
                 onNavigateToMealLog = onNavigateToMealLog,
@@ -106,6 +110,81 @@ private fun HeaderSection(
                 contentDescription = "Tanya AI",
                 tint = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+}
+
+@Composable
+private fun QuickActionSection(
+    onNavigateToAddMeal: () -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "Aksi Cepat",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        QuickActionCard(
+            title = "Tambah Makan",
+            subtitle = "Catat makanan baru hari ini",
+            icon = "➕",
+            modifier = Modifier.weight(1f),
+            color = Color(0xFFE8F5E9),
+            onClick = onNavigateToAddMeal
+        )
+    }
+}
+
+@Composable
+private fun QuickActionCard(
+    title: String,
+    subtitle: String,
+    icon: String,
+    modifier: Modifier = Modifier,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .height(92.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = color
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = icon,
+                fontSize = 26.sp
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // ==================== COLORS (FitKos Palette) ====================
-private val FitKosGreen = Color(0xFF2E7D32)         // Hijau Utama
-private val FitKosGreenLight = Color(0xFF009688)    // Hijau Toska
-private val FitKosOrange = Color(0xFFFFB74D)       // Orange Aksen
-private val FitKosBg = Color(0xFFF1F8F4)           // Background Hijau Sangat Muda
+private val FitKosGreen = Color(0xFF2E7D32)
+private val FitKosGreenLight = Color(0xFF009688)
+private val FitKosOrange = Color(0xFFFFB74D)
+private val FitKosBg = Color(0xFFF1F8F4)
 
 private val LightColorScheme = lightColorScheme(
     primary = FitKosGreen,
@@ -37,12 +37,12 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun NoteAITheme(
+fun FitKosTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    
+
     MaterialTheme(
         colorScheme = colorScheme,
         content = content

@@ -212,12 +212,7 @@ fun AppNavHost(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { }) {
-                                Icon(
-                                    imageVector = Icons.Default.NotificationsNone,
-                                    contentDescription = "Notifikasi"
-                                )
-                            }
+                            // Kosongkan bagian actions untuk menghapus ikon lonceng
                         }
                     )
                 }

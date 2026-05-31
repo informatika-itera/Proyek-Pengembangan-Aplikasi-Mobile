@@ -34,6 +34,8 @@ fun SettingsScreen(
     var showWaterTargetDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             FitKosTopBar(
                 title = "Pengaturan",

@@ -3,7 +3,10 @@ package com.example.fitkos.presentation.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,6 +82,7 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // Hapus insets internal agar tidak double gap
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddNote,
@@ -98,7 +102,7 @@ fun HomeScreen(
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
-                    top = 6.dp
+                    top = 16.dp
                 )
         ) {
             HomeHeaderSection(

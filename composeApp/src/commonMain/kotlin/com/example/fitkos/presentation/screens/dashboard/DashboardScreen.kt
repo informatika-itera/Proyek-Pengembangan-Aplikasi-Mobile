@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -36,21 +35,18 @@ fun DashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 6.dp,
-                    bottom = 120.dp
-                ),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 20.dp)
+                .padding(top = 0.dp, bottom = 8.dp), // Hapus gap atas dan kurangi gap bawah
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Merapatkan jarak antar seksi
         ) {
             HeaderSection(uiState, onNavigateToAI)
 
@@ -79,7 +75,9 @@ private fun HeaderSection(
     onNavigateToAI: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp), // Jarak minimal dari Top Bar agar tidak "kepotong" tapi tetap rapat
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -119,7 +117,7 @@ private fun QuickActionSection(
     onNavigateToAddMeal: () -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
             text = "Aksi Cepat",
@@ -131,7 +129,7 @@ private fun QuickActionSection(
             title = "Tambah Makan",
             subtitle = "Catat makanan baru hari ini",
             icon = "➕",
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             color = Color(0xFFE8F5E9),
             onClick = onNavigateToAddMeal
         )
@@ -198,7 +196,7 @@ private fun SummaryGrid(
     onNavigateToExercise: () -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "Ringkasan Hari Ini",
@@ -274,7 +272,7 @@ private fun SummaryCard(
 ) {
     val contentColor = Color(0xFF1C1B1F)
     Card(
-        modifier = modifier.height(110.dp),
+        modifier = modifier.height(108.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = color,
@@ -450,7 +448,7 @@ private fun DashboardTipsSection() {
         DashboardTip("🧂", "Kurangi Garam", "Menghindari risiko darah tinggi.", Color(0xFFFFEBEE))
     )
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
             text = "Tips Sehat Anak Kos",
             style = MaterialTheme.typography.titleMedium,
@@ -460,7 +458,7 @@ private fun DashboardTipsSection() {
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 0.dp) // Hapus gap bawah berlebih
         ) {
             items(tips) { tip ->
                 Card(

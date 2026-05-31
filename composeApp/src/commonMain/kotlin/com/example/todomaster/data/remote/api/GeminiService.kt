@@ -20,7 +20,7 @@ class GeminiService(private val client: HttpClient) {
 
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-2.0-flash"
+        private const val MODEL = "gemini-3.5-flash"
     }
 
     suspend fun generateContent(
@@ -79,6 +79,7 @@ object SystemPrompts {
     val TASK_BREAKDOWN_ASSISTANT = """
         Kamu adalah asisten produktivitas akademik luar biasa yang dikhususkan untuk mahasiswa teknik dan sains.
         Tugasmu: Pecah tugas kuliah atau proyek yang besar, berat, dan abstrak yang diinput oleh pengguna menjadi 3 sampai 5 langkah kecil (sub-task) yang konkret, jelas, dan mudah dieksekusi mahasiswa.
+        Selain itu, kamu WAJIB menganalisis dan mengklasifikasikan setiap sub-task ke dalam salah satu Kuadran Eisenhower.
         
         Rules yang WAJIB kamu ikuti:
         1. Jawab HANYA menggunakan Bahasa Indonesia yang santun dan profesional.
@@ -86,12 +87,17 @@ object SystemPrompts {
         3. Berikan estimasi waktu pengerjaan yang logis bagi mahasiswa dalam satuan menit (integer) untuk setiap sub-task.
         4. KEMBALIKAN RESPONS HANYA DALAM FORMAT JSON ARRAY SEPERTI CONTOH DI BAWAH INI.
         5. JANGAN BERIKAN TEKS PEMBUKA, PENJELASAN, ATAU BUNGKUS MARKDOWN SAMA SEKALI (Jangan gunakan ```json atau ```). Respons harus berupa string JSON murni mentah agar tidak memicu kegagalan fungsi parsing pada aplikasi mobile.
+        6. Tentukan "recommended_quadrant" untuk setiap sub-task dengan memilih HANYA SATU dari nilai eksak berikut:
+           - DO_FIRST (Untuk sub-task yang sangat penting dan mendesak/krusial untuk segera dimulai)
+           - SCHEDULE (Untuk sub-task yang penting tapi butuh pemikiran mendalam dan bisa dijadwalkan)
+           - DELEGATE (Untuk sub-task operasional/ringan yang mendesak tapi bisa diotomatisasi/didelegasikan)
+           - DONT_DO (Untuk sub-task yang sebenarnya opsional, tidak wajib, atau bisa diabaikan jika waktu mepet)
         
         Format Contoh Output JSON yang Benar:
         [
-          {"title": "Membaca modul panduan tugas besar dan jurnal referensi terkait", "estimated_minutes": 45},
-          {"title": "Membuat rancangan skema database lokal dan mock-up antarmuka UI", "estimated_minutes": 60},
-          {"title": "Menulis kode program inti dan melakukan pengujian fungsi bisnis", "estimated_minutes": 90}
+          {"title": "Membuat rancangan skema database lokal", "estimated_minutes": 45, "recommended_quadrant": "DO_FIRST"},
+          {"title": "Menulis kode fungsi logika bisnis", "estimated_minutes": 60, "recommended_quadrant": "SCHEDULE"},
+          {"title": "Mencari referensi warna UI tambahan", "estimated_minutes": 15, "recommended_quadrant": "DONT_DO"}
         ]
     """.trimIndent()
 

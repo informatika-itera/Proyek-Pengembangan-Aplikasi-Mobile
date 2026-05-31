@@ -18,6 +18,11 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 
+data class SelectableSubTask(
+    val response: SubTaskResponse,
+    val isSelected: Boolean = true
+)
+
 class AddTaskViewModel(
     private val addTaskUseCase: AddTaskUseCase,
     private val repository: TaskRepository,
@@ -31,7 +36,7 @@ class AddTaskViewModel(
 
     // VARIABEL AI YANG ERROR TADI ADA DI SINI
     var isLoadingAi by mutableStateOf(false)
-    var generatedSubTasks by mutableStateOf<List<SubTaskResponse>>(emptyList())
+    var generatedSubTasks by mutableStateOf<List<SelectableSubTask>>(emptyList())
     var showAiDialog by mutableStateOf(false)
 
     private var editingTaskId by mutableStateOf<Long?>(null)
@@ -50,7 +55,6 @@ class AddTaskViewModel(
         }
     }
 
-    // FUNGSI AI YANG ERROR TADI ADA DI SINI
     fun breakdownTaskWithAI() {
         if (title.isBlank()) {
             error = "Isi judul tugas terlebih dahulu sebelum meminta bantuan AI!"
@@ -61,21 +65,76 @@ class AddTaskViewModel(
             isLoadingAi = true
             error = null
 
+            kotlinx.coroutines.delay(1500)
+
+            val mockResponses = listOf(
+                SubTaskResponse(
+                    title = "Merancangkan arsitektur data dan wireframe UI utama",
+                    estimatedMinutes = 90,
+                    recommended_quadrant = "DO_FIRST"
+                ),
+                SubTaskResponse(
+                    title = "Membuat skema tabel database lokal (TaskEntity)",
+                    estimatedMinutes = 45,
+                    recommended_quadrant = "SCHEDULE"
+                ),
+                SubTaskResponse(
+                    title = "Mengimplementasikan fungsi CRUD di TaskRepository",
+                    estimatedMinutes = 120,
+                    recommended_quadrant = "DO_FIRST"
+                ),
+                SubTaskResponse(
+                    title = "Mencari aset ikon pendukung dan ilustrasi gratis",
+                    estimatedMinutes = 30,
+                    recommended_quadrant = "DELEGATE"
+                )
+            )
+
+            generatedSubTasks = mockResponses.map { SelectableSubTask(it) }
+            isLoadingAi = false
+
             geminiService.generateContent(
                 prompt = "Tolong uraikan tugas kuliah berikut: $title",
                 systemPrompt = SystemPrompts.TASK_BREAKDOWN_ASSISTANT
             ).onSuccess { jsonResult ->
                 try {
-                    val parsedList = Json.decodeFromString<List<SubTaskResponse>>(jsonResult)
-                    generatedSubTasks = parsedList
-                    showAiDialog = true
+                    var cleanJson = jsonResult
+                        .replace("```json", "")
+                        .replace("```", "")
+                        .trim()
+
+                    val startIndex = cleanJson.indexOf('[')
+                    val endIndex = cleanJson.lastIndexOf(']')
+
+                    if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+                        cleanJson = cleanJson.substring(startIndex, endIndex + 1)
+                    }
+
+                    cleanJson = cleanJson.replace(",\\s*(?=\\s*[}\\]])".toRegex(), "")
+
+                    val jsonParser = Json {
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                    }
+
+                    val parsedList = jsonParser.decodeFromString<List<SubTaskResponse>>(cleanJson)
+                    generatedSubTasks = parsedList.map { SelectableSubTask(it) }
                 } catch (e: Exception) {
-                    error = "Gagal membaca format data AI. Coba klik lagi."
+                    println("RESPONS MURNI GEMINI: $jsonResult")
+                    error = "Gagal parsing: ${e.message}"
                 }
             }.onFailure { e ->
                 error = "Koneksi gagal: ${e.message}"
             }
             isLoadingAi = false
+        }
+    }
+
+    fun toggleSubTaskSelection(index: Int, isChecked: Boolean) {
+        val newList = generatedSubTasks.toMutableList()
+        if (index in newList.indices) {
+            newList[index] = newList[index].copy(isSelected = isChecked)
+            generatedSubTasks = newList
         }
     }
 
@@ -86,7 +145,7 @@ class AddTaskViewModel(
             if (description.isNotBlank()) builder.append("\n\n")
             builder.append("📋 Rekomendasi Sub-Task (AI):\n")
             generatedSubTasks.forEachIndexed { index, sub ->
-                builder.append("${index + 1}. ${sub.title} (${sub.estimatedMinutes} mnt)\n")
+                builder.append("${index + 1}. ${sub.response.title} (${sub.response.estimatedMinutes} mnt)\n")
             }
             description = builder.toString()
         }
@@ -100,7 +159,7 @@ class AddTaskViewModel(
         }
 
         viewModelScope.launch {
-            val newTask = Task(
+            val parentTask = Task(
                 id = editingTaskId ?: 0,
                 title = title,
                 description = description,
@@ -109,19 +168,49 @@ class AddTaskViewModel(
                 isCompleted = false,
                 isPinned = false,
                 subTasks = emptyList(),
-                createdAt = Clock.System.now().toEpochMilliseconds()
+                createdAt = Clock.System.now().toEpochMilliseconds(),
+                isAiGenerated = false,
+                parentTaskTitle = null
             )
 
             if (editingTaskId != null) {
-                repository.updateTask(newTask)
-                _uiEvent.emit(UiEvent.SaveSuccess)
+                repository.updateTask(parentTask)
             } else {
-                addTaskUseCase(newTask).onSuccess {
-                    _uiEvent.emit(UiEvent.SaveSuccess)
-                }.onFailure { e ->
+                addTaskUseCase(parentTask).onFailure { e ->
                     error = e.message
+                    return@launch
                 }
             }
+
+            val selectedAiTasks = generatedSubTasks.filter { it.isSelected }
+
+            selectedAiTasks.forEach { selectable ->
+                val sub = selectable.response
+
+                val aiQuadrant = try {
+                    Quadrant.valueOf(sub.recommended_quadrant)
+                } catch (e: Exception) {
+                    Quadrant.SCHEDULE
+                }
+
+                val childTask = Task(
+                    id = 0,
+                    title = sub.title,
+                    description = "Estimasi: ${sub.estimatedMinutes} menit\n(Bagian dari: $title)",
+                    priority = aiQuadrant,
+                    dueDate = 0,
+                    isCompleted = false,
+                    isPinned = false,
+                    subTasks = emptyList(),
+                    createdAt = Clock.System.now().toEpochMilliseconds(),
+                    isAiGenerated = true,
+                    parentTaskTitle = title
+                )
+
+                addTaskUseCase(childTask)
+            }
+
+            _uiEvent.emit(UiEvent.SaveSuccess)
         }
     }
 

@@ -9,5 +9,7 @@ data class Task(
     val isCompleted: Boolean = false,
     val isPinned: Boolean = false,
     val subTasks: List<String> = emptyList(),
-    val createdAt: Long
+    val createdAt: Long,
+    val isAiGenerated: Boolean = false,
+    val parentTaskTitle: String? = null
 )

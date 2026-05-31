@@ -45,7 +45,9 @@ class TaskRepositoryImpl(
             is_completed = if (task.isCompleted) 1L else 0L,
             is_pinned = if (task.isPinned) 1L else 0L,
             sub_tasks = task.subTasks.joinToString(","),
-            created_at = task.createdAt
+            created_at = task.createdAt,
+            isAiGenerated = if (task.isAiGenerated) 1L else 0L,
+            parentTaskTitle = task.parentTaskTitle
         )
     }
 
@@ -58,6 +60,8 @@ class TaskRepositoryImpl(
             is_completed = if (task.isCompleted) 1L else 0L,
             is_pinned = if (task.isPinned) 1L else 0L,
             sub_tasks = task.subTasks.joinToString(","),
+            isAiGenerated = if (task.isAiGenerated) 1L else 0L,
+            parentTaskTitle = task.parentTaskTitle,
             id = task.id
         )
     }

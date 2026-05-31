@@ -1,13 +1,18 @@
 package com.example.todomaster.presentation.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
@@ -27,6 +32,19 @@ fun TaskItem(
     onToggleComplete: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (task.isCompleted) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(durationMillis = 500),
+        label = "BgColorAnimation"
+    )
+
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (task.isCompleted) 0.5f else 1f,
+        animationSpec = tween(durationMillis = 500),
+        label = "AlphaAnimation"
+    )
+
     val quadrantColor = when (task.priority) {
         Quadrant.DO_FIRST -> ColorDoFirst
         Quadrant.SCHEDULE -> ColorSchedule
@@ -40,14 +58,15 @@ fun TaskItem(
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = backgroundColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(12.dp)
+                .alpha(contentAlpha),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(

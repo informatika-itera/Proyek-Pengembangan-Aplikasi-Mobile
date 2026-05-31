@@ -29,6 +29,13 @@
 | <img src="https://github.com/user-attachments/assets/73e93f3e-577e-465a-b0d0-245bb872399b" width="250" alt="Screenshot Add Task" /> | <img src="https://github.com/user-attachments/assets/243f2317-6448-4020-9389-1c1a7aef9f75" width="250" alt="Screenshot Task Detail" /> |
 | **Input tugas dengan validasi kuota *Do First*.** | **Melihat detail, mengedit, atau menghapus.** |
 
+| AI Task Breakdown | |
+| :---: | :---: |
+| <img width="349" height="630" alt="Screenshot 2026-05-31 183441" src="https://github.com/user-attachments/assets/aca723f3-9d86-4b4d-b1f2-fb519e675100" /> | |
+| **Pemecahan otomatis sub-tugas dari Gemini AI.** | |
+
+---
+
 ---
 
 ## ✨ Fitur Utama Aplikasi
@@ -39,6 +46,8 @@ Aplikasi TodoMaster dirancang dengan beberapa fitur utama berikut:
 3. **Sinkronisasi Data Real-Time:** Memastikan bahwa setiap perubahan status tugas akan langsung tersinkronisasi sehingga pengelolaan waktu tetap akurat.
 4. **Penyimpanan Lokal (SQLDelight):** Mengimplementasikan database lokal yang tangguh untuk menjamin aplikasi tetap bisa beroperasi dengan cepat meskipun tanpa koneksi internet.
 5. **Dukungan Lintas Platform:** Dibangun di atas arsitektur KMP, memungkinkan aplikasi ini dijalankan dengan performa native di perangkat Android maupun iOS menggunakan satu basis kode utama.
+6. **AI Task Breakdown (Integrasi Gemini AI):** Fitur cerdas yang memungkinkan pengguna memecah tugas kuliah yang besar/kompleks menjadi daftar *sub-task* yang terukur, lengkap dengan estimasi waktu dan rekomendasi kuadran Eisenhower.
+7. **Interactive Sub-task Selection:** Antarmuka dinamis dengan animasi *strikethrough* untuk memilih sub-tugas hasil *generate* AI mana saja yang ingin dimasukkan secara *batch* (sekaligus) ke dalam database lokal.
 
 ---
 

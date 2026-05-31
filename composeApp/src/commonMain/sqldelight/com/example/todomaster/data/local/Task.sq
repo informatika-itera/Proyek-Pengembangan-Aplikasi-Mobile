@@ -7,7 +7,9 @@ CREATE TABLE TaskEntity (
     is_completed INTEGER NOT NULL DEFAULT 0,
     is_pinned INTEGER NOT NULL DEFAULT 0,
     sub_tasks TEXT,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    isAiGenerated INTEGER NOT NULL DEFAULT 0,
+    parentTaskTitle TEXT DEFAULT NULL
 );
 
 selectAllTasks:
@@ -27,13 +29,14 @@ SELECT COUNT(*) FROM TaskEntity
 WHERE priority_type = 1 AND is_completed = 0 AND created_at >= ?;
 
 insertTask:
-INSERT INTO TaskEntity(title, description, priority_type, due_date, is_completed, is_pinned, sub_tasks, created_at)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO TaskEntity(title, description, priority_type, due_date, is_completed, is_pinned, sub_tasks, created_at, isAiGenerated, parentTaskTitle)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateTask:
 UPDATE TaskEntity SET
     title = ?, description = ?, priority_type = ?, due_date = ?,
-    is_completed = ?, is_pinned = ?, sub_tasks = ?
+    is_completed = ?, is_pinned = ?, sub_tasks = ?,
+    isAiGenerated = ?, parentTaskTitle = ?
 WHERE id = ?;
 
 deleteTaskById:

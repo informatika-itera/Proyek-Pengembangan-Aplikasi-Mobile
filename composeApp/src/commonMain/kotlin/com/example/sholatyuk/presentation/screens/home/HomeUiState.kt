@@ -1,7 +1,10 @@
 package com.example.sholatyuk.presentation.screens.home
 
-sealed interface HomeUiState {
-    data object Loading : HomeUiState
-    data object Success : HomeUiState
-    data class Error(val message: String) : HomeUiState
-}
+import com.example.sholatyuk.domain.model.PrayerTime
+
+data class HomeUiState(
+    val prayerTime: PrayerTime? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val showGpsDialog: Boolean = false
+)

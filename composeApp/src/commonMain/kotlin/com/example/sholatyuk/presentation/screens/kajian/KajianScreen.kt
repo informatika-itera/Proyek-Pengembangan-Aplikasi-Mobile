@@ -28,15 +28,17 @@ import com.example.sholatyuk.presentation.theme.*
 @Composable
 fun KajianScreen(
     onNavigateToHome: () -> Unit = {},
-    onNavigateToShalat: () -> Unit = {}
+    onNavigateToShalat: () -> Unit = {},
+    onNavigateToIslamAI: () -> Unit = {}
 ) {
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
-                currentRoute = "islamAI",
+                currentRoute = "doa", // Diubah menjadi "doa"
                 onHomeClick = onNavigateToHome,
                 onShalatClick = onNavigateToShalat,
-                onIslamAIClick = {}
+                onDoaClick = {}, // Kosong karena sedang berada di halaman ini
+                onIslamAIClick = onNavigateToIslamAI
             )
         },
         containerColor = DeepBlue

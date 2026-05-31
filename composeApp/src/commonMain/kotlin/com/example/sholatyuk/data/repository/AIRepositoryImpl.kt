@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class AIRepositoryImpl(
-    private val database: SholatYukDatabase,
+    database: SholatYukDatabase,
     private val geminiService: GeminiService
 ) : AIRepository {
 
@@ -32,17 +32,13 @@ class AIRepositoryImpl(
     // ── AI Call ───────────────────────────────────────────────────
 
     override suspend fun askIslamAI(question: String): Result<String> {
-        val systemPrompt = """
-            Kamu adalah asisten Islam yang berpengetahuan luas.
-            Jawab pertanyaan seputar Islam dengan sopan, akurat, dan sesuai Al-Quran & Hadits.
-            Gunakan Bahasa Indonesia yang baik dan mudah dipahami.
-            Jika pertanyaan di luar topik Islam, arahkan kembali ke topik Islam dengan baik.
-        """.trimIndent()
-
-        return geminiService.generateContent(
-            prompt = question,
-            systemPrompt = systemPrompt
-        )
+        return try {
+            // Memanggil fungsi generateResponse yang ada di GeminiService.kt
+            val answer = geminiService.generateResponse(prompt = question)
+            Result.success(answer)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     // ── Write ─────────────────────────────────────────────────────

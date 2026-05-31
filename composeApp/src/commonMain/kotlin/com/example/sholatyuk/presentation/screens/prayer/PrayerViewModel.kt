@@ -22,35 +22,42 @@ class PrayerViewModel(
     val uiState: StateFlow<PrayerUiState> = _uiState.asStateFlow()
 
     init {
-        loadPrayerTime()
+        loadPrayerTimes()
     }
 
-    fun loadPrayerTime() {
+    fun loadPrayerTimes() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val location = locationService.getCurrentLocation()
-                if (location == null) {
-                    _uiState.update { it.copy(isLoading = false, error = "Lokasi tidak tersedia. Pastikan izin lokasi sudah diberikan.") }
-                    return@launch
+
+            val hasPermission = locationService.hasLocationPermission()
+            if (!hasPermission) {
+                _uiState.update {
+                    it.copy(isLoading = false, error = "Izin lokasi belum diberikan.")
                 }
-                val today = Clock.System.now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                return@launch
+            }
+
+            val location = locationService.getCurrentLocation()
+            if (location != null) {
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
                 prayerRepository.fetchAndSavePrayerTime(
                     latitude = location.latitude,
                     longitude = location.longitude,
                     date = today
-                ).onSuccess { prayerTime ->
-                    _uiState.update { it.copy(isLoading = false, prayerTime = prayerTime) }
-                }.onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message) }
+                ).fold(
+                    onSuccess = { data ->
+                        _uiState.update { it.copy(isLoading = false, prayerTime = data) }
+                    },
+                    onFailure = { exception ->
+                        _uiState.update { it.copy(isLoading = false, error = exception.message) }
+                    }
+                )
+            } else {
+                _uiState.update {
+                    it.copy(isLoading = false, error = "Gagal mengambil lokasi GPS.")
                 }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
     }
-
-    fun retry() = loadPrayerTime()
 }

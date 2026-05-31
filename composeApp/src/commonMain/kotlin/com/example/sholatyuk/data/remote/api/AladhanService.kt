@@ -8,20 +8,24 @@ import io.ktor.client.request.parameter
 
 class AladhanService(private val client: HttpClient) {
 
-    companion object {
-        private const val BASE_URL = "https://api.aladhan.com/v1"
-        private const val METHOD = 20
-    }
+    // Mengambil jadwal sholat berdasarkan hari ini dan titik koordinat
+    suspend fun getTimingsByLocation(
+        lat: Double,
+        lng: Double,
+        method: Int = 20 // Method 20 adalah standar Kemenag RI
+    ): Result<AladhanResponse> {
+        return try {
+            val response = client.get("https://api.aladhan.com/v1/timings") {
+                parameter("latitude", lat)
+                parameter("longitude", lng)
+                parameter("method", method)
+            }
 
-    suspend fun getPrayerTimes(
-        latitude: Double,
-        longitude: Double,
-        date: String
-    ): Result<AladhanResponse> = runCatching {
-        client.get("$BASE_URL/timings/$date") {
-            parameter("latitude", latitude)
-            parameter("longitude", longitude)
-            parameter("method", METHOD)
-        }.body()
+            // Mengubah format JSON dari API menjadi objek Kotlin (AladhanResponse)
+            val aladhanResponse: AladhanResponse = response.body()
+            Result.success(aladhanResponse)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

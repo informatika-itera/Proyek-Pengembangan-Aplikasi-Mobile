@@ -12,6 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,19 +24,60 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sholatyuk.domain.model.PrayerTime
 import com.example.sholatyuk.presentation.theme.*
+// 👇 Import ProfileViewModel ditambahkan di sini
+import com.example.sholatyuk.presentation.screens.profile.ProfileViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeScreen(
     onNavigateToShalat: () -> Unit = {},
-    onNavigateToIslamAI: () -> Unit = {}
+    onNavigateToDoa: () -> Unit = {},
+    onNavigateToIslamAI: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    viewModel: HomeViewModel = koinViewModel(),
+    profileViewModel: ProfileViewModel = koinViewModel() // 👇 ProfileViewModel diinjeksi di sini
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    // 👇 Mengambil data nama pengguna dari ProfileViewModel
+    val userName by profileViewModel.userName.collectAsState()
+
+    // Pop-up Dialog GPS
+    if (uiState.showGpsDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissGpsDialog() },
+            title = { Text(text = "GPS Belum Aktif", fontWeight = FontWeight.Bold) },
+            text = { Text("Aplikasi SholatYuk membutuhkan lokasi (GPS) untuk menghitung jadwal sholat yang akurat di tempat Anda berdiri. Mohon aktifkan GPS sekarang.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.onOpenGpsSettings()
+                        viewModel.dismissGpsDialog()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentYellow)
+                ) {
+                    Text("Buka Pengaturan", color = DeepBlue, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissGpsDialog() }) {
+                    Text("Nanti Saja", color = Color.Gray)
+                }
+            },
+            containerColor = Color.White,
+            titleContentColor = DeepBlue,
+            textContentColor = Color.DarkGray
+        )
+    }
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
                 currentRoute = "home",
                 onHomeClick = {},
                 onShalatClick = onNavigateToShalat,
+                onDoaClick = onNavigateToDoa,
                 onIslamAIClick = onNavigateToIslamAI
             )
         },
@@ -43,6 +86,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(paddingValues)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(DarkTeal, DeepBlue),
@@ -52,13 +96,73 @@ fun HomeScreen(
                 )
         ) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+                modifier = Modifier.fillMaxSize()
             ) {
-                item { HeaderSection() }
-                item { PrayerClockCard() }
-                item { PrayerTimesRow() }
+                // 👇 Oper userName ke dalam HeaderSection
+                item {
+                    HeaderSection(
+                        userName = userName,
+                        onProfileClick = onNavigateToProfile
+                    )
+                }
+
+                // SMART BANNER: Ketuk untuk Refresh
+                if (uiState.isLoading) {
+                    item {
+                        Text(
+                            text = "Mencari lokasi dan jadwal sholat...",
+                            color = AccentYellow,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else if (uiState.error != null) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 8.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { viewModel.fetchPrayerTimes() },
+                            colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f)),
+                            border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.3f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = AccentYellow,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = uiState.error ?: "Terjadi kesalahan",
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 13.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Ketuk area ini untuk mencoba lagi",
+                                    color = AccentYellow,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item { PrayerClockCard(uiState.prayerTime) }
+                item { PrayerTimesRow(uiState.prayerTime) }
+
                 item { VideoBanner() }
                 item { MenuGrid() }
                 item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -67,8 +171,17 @@ fun HomeScreen(
     }
 }
 
+// ====================================================================
+
 @Composable
-fun HeaderSection() {
+fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = {}) { // 👇 Parameter userName ditambahkan
+    // 👇 Logika untuk mengambil maksimal 2 huruf inisial dari nama
+    val initials = userName.split(" ")
+        .take(2)
+        .mapNotNull { it.firstOrNull()?.uppercase() }
+        .joinToString("")
+        .takeIf { it.isNotEmpty() } ?: "U"
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,11 +216,12 @@ fun HeaderSection() {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.Black),
+                    .background(Color.Black)
+                    .clickable { onProfileClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "UF",
+                    text = initials, // 👇 Gunakan inisial dinamis di sini
                     color = Color.White,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -118,7 +232,7 @@ fun HeaderSection() {
 }
 
 @Composable
-fun PrayerClockCard() {
+fun PrayerClockCard(prayerTime: PrayerTime?) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,12 +251,13 @@ fun PrayerClockCard() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Sabtu, 16 Mei 2026", color = TextWhite.copy(alpha = 0.9f), fontSize = 13.sp)
-                Text("29 Dhu Al-Qi'dah 1447H", color = TextWhite.copy(alpha = 0.9f), fontSize = 13.sp)
+                Text(prayerTime?.cityName ?: "Mencari Lokasi...", color = TextWhite.copy(alpha = 0.9f), fontSize = 13.sp)
+                Text(prayerTime?.date?.toString() ?: "-", color = TextWhite.copy(alpha = 0.9f), fontSize = 13.sp)
             }
             Spacer(modifier = Modifier.height(20.dp))
+
             Text(
-                text = "20:36",
+                text = prayerTime?.dhuhr ?: "--:--",
                 color = TextWhite,
                 fontSize = 80.sp,
                 fontWeight = FontWeight.Bold,
@@ -158,7 +273,7 @@ fun PrayerClockCard() {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "± 8 jam 4 menit lagi menuju waktu Subuh",
+                    text = "Waktu Dzuhur Hari Ini",
                     color = TextWhite.copy(alpha = 0.9f),
                     fontSize = 13.sp
                 )
@@ -168,18 +283,18 @@ fun PrayerClockCard() {
 }
 
 @Composable
-fun PrayerTimesRow() {
+fun PrayerTimesRow(prayerTime: PrayerTime?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        PrayerTimeItem("Subuh", "04:41", Icons.Default.WbSunny, isNext = true)
-        PrayerTimeItem("Dzuhur", "11:58", Icons.Default.WbSunny)
-        PrayerTimeItem("Ashar", "15:21", Icons.Default.Cloud)
-        PrayerTimeItem("Maghrib", "17:54", Icons.Default.Waves)
-        PrayerTimeItem("Isya", "19:07", Icons.Default.NightsStay)
+        PrayerTimeItem("Subuh", prayerTime?.fajr ?: "--:--", Icons.Default.WbSunny)
+        PrayerTimeItem("Dzuhur", prayerTime?.dhuhr ?: "--:--", Icons.Default.WbSunny)
+        PrayerTimeItem("Ashar", prayerTime?.asr ?: "--:--", Icons.Default.Cloud)
+        PrayerTimeItem("Maghrib", prayerTime?.maghrib ?: "--:--", Icons.Default.Waves)
+        PrayerTimeItem("Isya", prayerTime?.isha ?: "--:--", Icons.Default.NightsStay)
     }
 }
 
@@ -327,8 +442,8 @@ fun BottomNavigationBar(
     currentRoute: String,
     onHomeClick: () -> Unit = {},
     onShalatClick: () -> Unit = {},
-    onIslamAIClick: () -> Unit = {},
-    onLainnyaClick: () -> Unit = {}
+    onDoaClick: () -> Unit = {},
+    onIslamAIClick: () -> Unit = {}
 ) {
     NavigationBar(
         containerColor = DeepBlue,
@@ -354,10 +469,19 @@ fun BottomNavigationBar(
             icon = { Icon(Icons.Default.Mosque, contentDescription = null) },
             label = { Text("Shalat") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow,
-                selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                selectedIconColor = AccentYellow, selectedTextColor = AccentYellow,
+                unselectedIconColor = TextWhite.copy(alpha = 0.5f), unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                indicatorColor = Color.Transparent
+            )
+        )
+        NavigationBarItem(
+            selected = currentRoute == "doa",
+            onClick = onDoaClick,
+            icon = { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null) },
+            label = { Text("Doa") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = AccentYellow, selectedTextColor = AccentYellow,
+                unselectedIconColor = TextWhite.copy(alpha = 0.5f), unselectedTextColor = TextWhite.copy(alpha = 0.5f),
                 indicatorColor = Color.Transparent
             )
         )
@@ -367,23 +491,8 @@ fun BottomNavigationBar(
             icon = { Icon(Icons.Default.AutoAwesome, contentDescription = null) },
             label = { Text("IslamAI") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow,
-                selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
-                indicatorColor = Color.Transparent
-            )
-        )
-        NavigationBarItem(
-            selected = currentRoute == "lainnya",
-            onClick = onLainnyaClick,
-            icon = { Icon(Icons.Default.Apps, contentDescription = null) },
-            label = { Text("Lainnya") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow,
-                selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                selectedIconColor = AccentYellow, selectedTextColor = AccentYellow,
+                unselectedIconColor = TextWhite.copy(alpha = 0.5f), unselectedTextColor = TextWhite.copy(alpha = 0.5f),
                 indicatorColor = Color.Transparent
             )
         )

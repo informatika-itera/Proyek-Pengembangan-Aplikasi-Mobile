@@ -77,6 +77,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     var showSortMenu by remember { mutableStateOf(false) }
 
@@ -119,14 +121,8 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            val query = when (val state = uiState) {
-                is HomeUiState.Success -> state.query
-                is HomeUiState.Empty -> state.query
-                else -> ""
-            }
-
             MealSearchField(
-                query = query,
+                query = searchQuery,
                 onQueryChange = viewModel::onSearchQueryChange,
                 onClear = viewModel::clearSearch
             )
@@ -134,11 +130,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
-                    else -> null
-                },
+                selectedCategory = selectedCategory,
                 onCategorySelected = viewModel::onCategorySelected
             )
 
@@ -162,7 +154,7 @@ fun HomeScreen(
                     TanyaAICard(onNavigateToAI = onNavigateToAI)
                     Spacer(modifier = Modifier.height(16.dp))
                     EmptyMealState(
-                        isFiltered = state.query.isNotBlank() || state.category != null
+                        isFiltered = searchQuery.isNotBlank() || selectedCategory != null
                     )
                 }
 

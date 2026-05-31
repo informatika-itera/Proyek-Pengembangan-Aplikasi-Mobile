@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class HomeViewModel(
@@ -28,15 +29,17 @@ class HomeViewModel(
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val repository: NoteRepository
 ) : ViewModel() {
-    
+
     private val _searchQuery = MutableStateFlow("")
     private val _selectedCategory = MutableStateFlow<NoteCategory?>(null)
     private val _sortBy = MutableStateFlow(NoteSortBy.UPDATED_DESC)
     private val _isLoading = MutableStateFlow(false)
-    
+
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    val selectedCategory: StateFlow<NoteCategory?> = _selectedCategory.asStateFlow()
+    val sortBy: StateFlow<NoteSortBy> = _sortBy.asStateFlow()
+
     private val debouncedSearchQuery = _searchQuery.debounce(300)
-    
-    val sortBy: StateFlow<NoteSortBy> = _sortBy
     
     val uiState: StateFlow<HomeUiState> = combine(
         debouncedSearchQuery,

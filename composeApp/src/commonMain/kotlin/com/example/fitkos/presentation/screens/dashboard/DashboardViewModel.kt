@@ -29,10 +29,11 @@ class DashboardViewModel(
     }
 
     private fun observeData() {
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val dateString = "${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}"
+        val dateString = getTodayDateString()
 
         viewModelScope.launch {
+            userPreferences.resetExerciseIfNewDay(dateString)
+
             combine(
                 repository.getAllNotes(),
                 waterRepository.getWaterLogByDate(dateString),
@@ -55,6 +56,11 @@ class DashboardViewModel(
                 _uiState.value = newState
             }
         }
+    }
+
+    private fun getTodayDateString(): String {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        return "${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}"
     }
 }
 

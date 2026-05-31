@@ -38,6 +38,7 @@ class UserPreferences(
         val AI_CACHED_UPDATED_AT = stringPreferencesKey("ai_cached_updated_at")
 
         val EXERCISE_MINUTES_TODAY = intPreferencesKey("exercise_minutes_today")
+        val EXERCISE_LAST_DATE = stringPreferencesKey("exercise_last_date")
     }
     
     // ==================== PROFILE ====================
@@ -108,6 +109,17 @@ class UserPreferences(
     suspend fun resetExerciseMinutesToday() {
         dataStore.edit { prefs ->
             prefs[Keys.EXERCISE_MINUTES_TODAY] = 0
+        }
+    }
+
+    suspend fun resetExerciseIfNewDay(todayDate: String) {
+        dataStore.edit { prefs ->
+            val lastDate = prefs[Keys.EXERCISE_LAST_DATE]
+
+            if (lastDate != todayDate) {
+                prefs[Keys.EXERCISE_MINUTES_TODAY] = 0
+                prefs[Keys.EXERCISE_LAST_DATE] = todayDate
+            }
         }
     }
 

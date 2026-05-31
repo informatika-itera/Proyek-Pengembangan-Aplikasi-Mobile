@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class ExerciseViewModel(
     private val userPreferences: UserPreferences
@@ -21,7 +24,14 @@ class ExerciseViewModel(
     private var timerJob: Job? = null
 
     init {
+        resetExerciseIfNewDay()
         observeExerciseMinutes()
+    }
+
+    private fun resetExerciseIfNewDay() {
+        viewModelScope.launch {
+            userPreferences.resetExerciseIfNewDay(getTodayDateString())
+        }
     }
 
     private fun observeExerciseMinutes() {
@@ -43,9 +53,9 @@ class ExerciseViewModel(
 
         timerJob = viewModelScope.launch {
             while (_uiState.value.isRunning) {
-                delay(10)
+                delay(1000)
                 _uiState.update {
-                    it.copy(elapsedMillis = it.elapsedMillis + 10)
+                    it.copy(elapsedSeconds = it.elapsedSeconds + 1)
                 }
             }
         }
@@ -66,7 +76,7 @@ class ExerciseViewModel(
 
         _uiState.update {
             it.copy(
-                elapsedMillis = 0L,
+                elapsedSeconds = 0,
                 isRunning = false,
                 message = null
             )
@@ -74,23 +84,24 @@ class ExerciseViewModel(
     }
 
     fun saveSession() {
-        val millis = _uiState.value.elapsedMillis
+        val seconds = _uiState.value.elapsedSeconds
 
-        if (millis <= 0L) {
+        if (seconds <= 0) {
             _uiState.update {
                 it.copy(message = "Mulai stopwatch dulu sebelum menyimpan.")
             }
             return
         }
 
-        val minutes = ((millis + 59_999) / 60_000).toInt().coerceAtLeast(1)
+        val minutes = ((seconds + 59) / 60).coerceAtLeast(1)
 
         viewModelScope.launch {
+            userPreferences.resetExerciseIfNewDay(getTodayDateString())
             userPreferences.addExerciseMinutesToday(minutes)
 
             _uiState.update {
                 it.copy(
-                    elapsedMillis = 0L,
+                    elapsedSeconds = 0,
                     isRunning = false,
                     message = "Berhasil menyimpan $minutes menit olahraga."
                 )
@@ -107,6 +118,11 @@ class ExerciseViewModel(
         }
     }
 
+    private fun getTodayDateString(): String {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        return "${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}"
+    }
+
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
@@ -114,7 +130,7 @@ class ExerciseViewModel(
 }
 
 data class ExerciseUiState(
-    val elapsedMillis: Long = 0L,
+    val elapsedSeconds: Int = 0,
     val totalMinutesToday: Int = 0,
     val dailyTargetMinutes: Int = 30,
     val isRunning: Boolean = false,
@@ -129,13 +145,8 @@ data class ExerciseUiState(
 
     val formattedTime: String
         get() {
-            val totalSeconds = elapsedMillis / 1000
-            val minutes = totalSeconds / 60
-            val seconds = totalSeconds % 60
-            val milliseconds = elapsedMillis % 1000
-
-            return "${minutes.toString().padStart(2, '0')}:" +
-                    "${seconds.toString().padStart(2, '0')}." +
-                    milliseconds.toString().padStart(3, '0')
+            val minutes = elapsedSeconds / 60
+            val seconds = elapsedSeconds % 60
+            return "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
         }
 }

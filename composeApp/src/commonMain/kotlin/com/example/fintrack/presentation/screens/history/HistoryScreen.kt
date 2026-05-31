@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CurrencyExchange
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Notifications
@@ -33,23 +34,7 @@ import com.example.fintrack.presentation.theme.*
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.roundToLong
 
-// Helper for formatting currencies
-private fun formatAmount(amount: Double, currency: String): String {
-    val isNegative = amount < 0
-    val absAmount = if (isNegative) -amount else amount
-    val formatted = if (currency == "USD") {
-        val rounded = (absAmount * 100).roundToLong() / 100.0
-        val str = rounded.toString()
-        val parts = str.split(".")
-        val whole = parts[0]
-        val decimal = if (parts.size > 1) parts[1].padEnd(2, '0').take(2) else "00"
-        "$$whole.$decimal"
-    } else {
-        val rounded = absAmount.roundToLong()
-        "Rp $rounded"
-    }
-    return if (isNegative) "-$formatted" else formatted
-}
+import com.example.fintrack.core.util.CurrencyFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,20 +45,18 @@ fun HistoryScreen(
     onNavigateToExchange: () -> Unit,
     viewModel: HistoryViewModel = koinViewModel()
 ) {
-    val transactions by viewModel.transactions.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredTransactions by viewModel.filteredTransactions.collectAsState()
+    val lastIdrRate by viewModel.lastIdrRate.collectAsState()
     var selectedFilter by remember { mutableStateOf("All") } // "All", "Income", "Expense"
 
-    val filteredTransactions = remember(transactions, searchQuery, selectedFilter) {
-        transactions.filter { tx ->
-            val matchesSearch = tx.title.contains(searchQuery, ignoreCase = true) ||
-                    tx.category.contains(searchQuery, ignoreCase = true)
-            val matchesFilter = when (selectedFilter) {
+    val displayedTransactions = remember(filteredTransactions, selectedFilter) {
+        filteredTransactions.filter { tx ->
+            when (selectedFilter) {
                 "Income" -> tx.type == TransactionType.INCOME
                 "Expense" -> tx.type == TransactionType.EXPENSE
                 else -> true
             }
-            matchesSearch && matchesFilter
         }
     }
 
@@ -97,143 +80,153 @@ fun HistoryScreen(
             }
         }
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // Header with Back button and Title
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = TextGray,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { onNavigateToDashboard() }
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    "All Transactions",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = TextWhite,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Search by title or category...", color = TextMuted) },
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = TextGray)
-                },
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FinTrackGreen,
-                    unfocusedBorderColor = DarkSurfaceVariant,
-                    focusedContainerColor = DarkCard,
-                    unfocusedContainerColor = DarkCard,
-                    cursorColor = FinTrackGreen,
-                    focusedTextColor = TextWhite,
-                    unfocusedTextColor = TextWhite
-                ),
-                singleLine = true
-            )
-
-            // Category Filter Chips
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val filters = listOf("All", "Income", "Expense")
-                filters.forEach { filter ->
-                    val isSelected = selectedFilter == filter
-                    Surface(
-                        modifier = Modifier.clickable { selectedFilter = filter },
-                        shape = RoundedCornerShape(10.dp),
-                        color = if (isSelected) FinTrackGreen.copy(alpha = 0.15f) else DarkCard,
-                        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
-                            brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                                if (isSelected) listOf(FinTrackGreen, FinTrackGreen)
-                                else listOf(DarkSurfaceVariant, DarkSurfaceVariant)
-                            )
-                        )
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Header with Back button and Title
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = TextGray,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { onNavigateToDashboard() }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = filter,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = if (isSelected) FinTrackGreen else TextGray,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            "All Transactions",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = TextWhite,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                    // Search Bar — bound to ViewModel
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChanged(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        placeholder = { Text("Search by title or category...", color = TextMuted) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null, tint = TextGray)
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.clearSearch() }) {
+                                    Icon(
+                                        Icons.Default.Clear,
+                                        contentDescription = "Clear search",
+                                        tint = TextGray
+                                    )
+                                }
+                            }
+                        },
+                        shape = RoundedCornerShape(14.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = FinTrackGreen,
+                            unfocusedBorderColor = DarkSurfaceVariant,
+                            focusedContainerColor = DarkCard,
+                            unfocusedContainerColor = DarkCard,
+                            cursorColor = FinTrackGreen,
+                            focusedTextColor = TextWhite,
+                            unfocusedTextColor = TextWhite
+                        ),
+                        singleLine = true
+                    )
 
-            // Transaction List
-            if (filteredTransactions.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Category Filter Chips
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val filters = listOf("All", "Income", "Expense")
+                        filters.forEach { filter ->
+                            val isSelected = selectedFilter == filter
+                            Surface(
+                                modifier = Modifier.clickable { selectedFilter = filter },
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) FinTrackGreen.copy(alpha = 0.15f) else DarkCard,
+                                border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                        if (isSelected) listOf(FinTrackGreen, FinTrackGreen)
+                                        else listOf(DarkSurfaceVariant, DarkSurfaceVariant)
+                                    )
+                                )
+                            ) {
+                                Text(
+                                    text = filter,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = if (isSelected) FinTrackGreen else TextGray,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (displayedTransactions.isEmpty()) {
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(DarkSurfaceVariant),
+                                .fillMaxWidth()
+                                .padding(32.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Outlined.Description,
-                                contentDescription = null,
-                                tint = TextGray,
-                                modifier = Modifier.size(32.dp)
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(72.dp)
+                                        .clip(CircleShape)
+                                        .background(DarkSurfaceVariant),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Description,
+                                        contentDescription = null,
+                                        tint = TextGray,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    "No Transactions Found",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = TextWhite,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Try adjusting your search query or filters.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextGray,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "No Transactions Found",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = TextWhite,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Try adjusting your search query or filters.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextGray,
-                            textAlign = TextAlign.Center
-                        )
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(filteredTransactions, key = { it.id }) { transaction ->
+            }
+
+            if (displayedTransactions.isNotEmpty()) {
+                items(displayedTransactions, key = { it.id }) { transaction ->
+                    Box(modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp)) {
                         TransactionItem(
                             transaction = transaction,
+                            idrRate = lastIdrRate,
                             onClick = { onNavigateToDetail(transaction.id) }
                         )
                     }
@@ -272,7 +265,11 @@ private fun HistoryTopBar() {
 }
 
 @Composable
-private fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
+private fun TransactionItem(
+    transaction: Transaction,
+    idrRate: Double,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -310,15 +307,21 @@ private fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
             )
         }
         val prefix = if (transaction.type == TransactionType.INCOME) "+" else "-"
-        val formattedAmount = remember(transaction.amount, transaction.currency) {
-            formatAmount(transaction.amount, transaction.currency)
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                "$prefix${CurrencyFormatter.formatCurrency(transaction.amount, "USD").removePrefix("$")}",
+                style = MaterialTheme.typography.titleMedium,
+                color = if (transaction.type == TransactionType.INCOME) FinTrackGreen else TextWhite,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                "≈ ${CurrencyFormatter.formatCurrency(transaction.amount * idrRate, "IDR")}",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextGray,
+                fontWeight = FontWeight.Normal
+            )
         }
-        Text(
-            "$prefix$formattedAmount",
-            style = MaterialTheme.typography.titleMedium,
-            color = if (transaction.type == TransactionType.INCOME) FinTrackGreen else TextWhite,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

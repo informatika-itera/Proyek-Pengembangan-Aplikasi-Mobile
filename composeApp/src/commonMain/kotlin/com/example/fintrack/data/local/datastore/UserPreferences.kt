@@ -1,8 +1,9 @@
-﻿package com.example.fintrack.data.local.datastore
+package com.example.fintrack.data.local.datastore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,10 @@ class UserPreferences(
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val LAST_IDR_RATE = doublePreferencesKey("last_idr_rate")
+        val LAST_EXCHANGE_BASE = stringPreferencesKey("last_exchange_base")
+        val LAST_EXCHANGE_DATE = stringPreferencesKey("last_exchange_date")
+        val LAST_EXCHANGE_RATES = stringPreferencesKey("last_exchange_rates")
     }
     
     // ==================== DARK MODE ====================
@@ -118,6 +123,47 @@ class UserPreferences(
     suspend fun setOnboardingCompleted() {
         dataStore.edit { prefs ->
             prefs[Keys.ONBOARDING_COMPLETED] = true
+        }
+    }
+
+    // ==================== LAST IDR RATE ====================
+
+    /**
+     * Observe the last successfully fetched USD -> IDR exchange rate.
+     * Falls back to 16000.0 if no API data has been cached yet.
+     */
+    val lastIdrRate: Flow<Double> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_IDR_RATE] ?: 16000.0
+    }
+
+    /**
+     * Persist the latest USD -> IDR rate returned by the API.
+     */
+    suspend fun setLastIdrRate(rate: Double) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LAST_IDR_RATE] = rate
+        }
+    }
+
+    // ==================== OFFLINE EXCHANGE RATES CACHE ====================
+
+    val lastExchangeBase: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_EXCHANGE_BASE] ?: "USD"
+    }
+
+    val lastExchangeDate: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_EXCHANGE_DATE] ?: "Unknown Date"
+    }
+
+    val lastExchangeRates: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.LAST_EXCHANGE_RATES] ?: ""
+    }
+
+    suspend fun saveCachedRates(base: String, date: String, ratesString: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LAST_EXCHANGE_BASE] = base
+            prefs[Keys.LAST_EXCHANGE_DATE] = date
+            prefs[Keys.LAST_EXCHANGE_RATES] = ratesString
         }
     }
 }

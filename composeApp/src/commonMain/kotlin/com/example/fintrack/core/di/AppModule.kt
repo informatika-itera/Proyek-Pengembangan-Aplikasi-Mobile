@@ -6,6 +6,7 @@ import com.example.fintrack.data.local.FinTrackDatabase
 import com.example.fintrack.data.local.datastore.DataStoreFactory
 import com.example.fintrack.data.local.datastore.UserPreferences
 import com.example.fintrack.data.local.datastore.create
+import com.example.fintrack.data.remote.api.ExchangeApiService
 import com.example.fintrack.data.remote.api.GeminiService
 import com.example.fintrack.data.repository.AIRepositoryImpl
 import com.example.fintrack.data.repository.TransactionRepositoryImpl
@@ -15,6 +16,7 @@ import com.example.fintrack.presentation.screens.add_edit.AddEditViewModel
 import com.example.fintrack.presentation.screens.home.HomeViewModel
 import com.example.fintrack.presentation.screens.history.HistoryViewModel
 import com.example.fintrack.presentation.screens.detail.DetailViewModel
+import com.example.fintrack.presentation.screens.exchange.ExchangeViewModel
 import com.example.fintrack.presentation.screens.settings.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModelOf
@@ -30,6 +32,7 @@ import org.koin.dsl.module
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
     singleOf(::GeminiService)
+    singleOf(::ExchangeApiService)
 }
 
 // ==================== DATABASE MODULE ====================
@@ -69,6 +72,7 @@ val viewModelModule = module {
     viewModelOf(::HistoryViewModel)
     viewModelOf(::DetailViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::ExchangeViewModel)
 }
 
 // ==================== SHARED MODULES ====================

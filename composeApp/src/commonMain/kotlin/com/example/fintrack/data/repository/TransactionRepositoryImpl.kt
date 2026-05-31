@@ -10,7 +10,9 @@ import com.example.fintrack.domain.repository.TransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 
 class TransactionRepositoryImpl(
@@ -24,6 +26,7 @@ class TransactionRepositoryImpl(
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { entities -> entities.map { it.toDomainModel() } }
+            .flowOn(Dispatchers.IO)
     }
     
     override fun getRecentTransactions(limit: Long): Flow<List<Transaction>> {
@@ -31,6 +34,7 @@ class TransactionRepositoryImpl(
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { entities -> entities.map { it.toDomainModel() } }
+            .flowOn(Dispatchers.IO)
     }
     
     override fun getTransactionById(id: Long): Flow<Transaction?> {
@@ -38,6 +42,7 @@ class TransactionRepositoryImpl(
             .asFlow()
             .mapToOneOrNull(Dispatchers.IO)
             .map { it?.toDomainModel() }
+            .flowOn(Dispatchers.IO)
     }
     
     override fun getTotalBalance(): Flow<Double> {
@@ -45,9 +50,10 @@ class TransactionRepositoryImpl(
             .asFlow()
             .mapToOneOrNull(Dispatchers.IO)
             .map { it?.SUM ?: 0.0 }
+            .flowOn(Dispatchers.IO)
     }
     
-    override suspend fun insertTransaction(transaction: Transaction): Long {
+    override suspend fun insertTransaction(transaction: Transaction): Long = withContext(Dispatchers.IO) {
         queries.insertTransaction(
             title = transaction.title,
             amount = transaction.amount,
@@ -58,10 +64,10 @@ class TransactionRepositoryImpl(
             updated_at = transaction.updatedAt.toEpochMilliseconds(),
             currency = transaction.currency
         )
-        return queries.lastInsertId().executeAsOne()
+        queries.lastInsertId().executeAsOne()
     }
     
-    override suspend fun updateTransaction(transaction: Transaction) {
+    override suspend fun updateTransaction(transaction: Transaction): Unit = withContext(Dispatchers.IO) {
         queries.updateTransaction(
             id = transaction.id,
             title = transaction.title,
@@ -74,7 +80,7 @@ class TransactionRepositoryImpl(
         )
     }
     
-    override suspend fun deleteTransaction(id: Long) {
+    override suspend fun deleteTransaction(id: Long): Unit = withContext(Dispatchers.IO) {
         queries.deleteTransactionById(id)
     }
     

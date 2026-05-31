@@ -29,23 +29,7 @@ import com.example.fintrack.presentation.theme.*
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.roundToLong
 
-// Helper for formatting currencies
-private fun formatAmount(amount: Double, currency: String): String {
-    val isNegative = amount < 0
-    val absAmount = if (isNegative) -amount else amount
-    val formatted = if (currency == "USD") {
-        val rounded = (absAmount * 100).roundToLong() / 100.0
-        val str = rounded.toString()
-        val parts = str.split(".")
-        val whole = parts[0]
-        val decimal = if (parts.size > 1) parts[1].padEnd(2, '0').take(2) else "00"
-        "$$whole.$decimal"
-    } else {
-        val rounded = absAmount.roundToLong()
-        "Rp $rounded"
-    }
-    return if (isNegative) "-$formatted" else formatted
-}
+import com.example.fintrack.core.util.CurrencyFormatter
 
 // Helper for formatting instants
 private fun formatInstant(instant: kotlinx.datetime.Instant): String {
@@ -266,9 +250,9 @@ private fun TransactionHeaderCard(transaction: Transaction) {
             Spacer(modifier = Modifier.height(8.dp))
 
             val prefix = if (transaction.type == TransactionType.INCOME) "+" else "-"
-            val formatted = formatAmount(transaction.amount, transaction.currency)
+            val formatted = CurrencyFormatter.formatCurrency(transaction.amount, transaction.currency)
             Text(
-                "$prefix$formatted",
+                "$prefix${formatted.removePrefix("$").removePrefix("Rp ")}", // Custom clean formatting for hero card
                 style = MaterialTheme.typography.headlineLarge,
                 color = if (transaction.type == TransactionType.INCOME) FinTrackGreen else TextWhite,
                 fontWeight = FontWeight.Bold,
@@ -340,7 +324,7 @@ private fun TransactionDetailsSection(transaction: Transaction) {
             colors = CardDefaults.cardColors(containerColor = DarkCard)
         ) {
             Text(
-                "This is an ${transaction.type.name.lowercase()} transaction of ${formatAmount(transaction.amount, transaction.currency)} categorized under '${transaction.category}'.",
+                "This is an ${transaction.type.name.lowercase()} transaction of ${CurrencyFormatter.formatCurrency(transaction.amount, transaction.currency)} categorized under '${transaction.category}'.",
                 modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextGray,

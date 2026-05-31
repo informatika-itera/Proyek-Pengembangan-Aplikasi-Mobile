@@ -12,17 +12,17 @@ import kotlinx.datetime.Clock
 
 class WorkspaceViewModel(
     private val saveTranslationUseCase: SaveTranslationUseCase,
-    private val repository: TranslationRepository // Tambahkan repository untuk Read by ID
+    private val repository: TranslationRepository
 ) : ViewModel() {
 
-    var currentTranslationId: Long? = null // Penanda apakah ini mode Edit atau Create
+    var currentTranslationId: Long? = null
 
     var sourceText = mutableStateOf("")
     var translatedText = mutableStateOf("")
     var sourceLanguage = mutableStateOf("Indonesia")
     var targetLanguage = mutableStateOf("Inggris")
+    var category = mutableStateOf("Umum") // <-- STATE KATEGORI BARU
 
-    // Fungsi baru untuk memuat data saat mode Edit
     fun loadTranslation(id: Long) {
         viewModelScope.launch {
             currentTranslationId = id
@@ -32,6 +32,7 @@ class WorkspaceViewModel(
                 translatedText.value = translation.translatedText
                 sourceLanguage.value = translation.sourceLanguage
                 targetLanguage.value = translation.targetLanguage
+                category.value = translation.category // <-- LOAD KATEGORI
             }
         }
     }
@@ -39,12 +40,13 @@ class WorkspaceViewModel(
     fun saveTranslation(onSaveSuccess: () -> Unit) {
         viewModelScope.launch {
             val newTranslation = Translation(
-                id = currentTranslationId ?: 0L, // Jika null berarti ID 0 (Insert), jika ada ID (Update)
+                id = currentTranslationId ?: 0L,
                 sourceText = sourceText.value,
                 translatedText = if (translatedText.value.isBlank()) "belum bisa menerjemahkan" else translatedText.value,
                 sourceLanguage = sourceLanguage.value,
                 targetLanguage = targetLanguage.value,
-                createdAt = Clock.System.now().toEpochMilliseconds(), // Di dunia nyata, createdAt dipertahankan saat update
+                category = category.value, // <-- SIMPAN KATEGORI
+                createdAt = Clock.System.now().toEpochMilliseconds(),
                 updatedAt = Clock.System.now().toEpochMilliseconds()
             )
             saveTranslationUseCase(newTranslation)

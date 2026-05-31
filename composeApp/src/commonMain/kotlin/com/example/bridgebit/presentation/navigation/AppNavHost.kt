@@ -1,6 +1,5 @@
 package com.example.bridgebit.presentation.navigation
 
-// --- SEMUA IMPORT WAJIB COMPOSE, ROUTING, DAN KOIN ---
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -16,12 +15,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-
-// --- IMPORT LAYOUT SCREEN DAN PREFERENCES PROYEK ---
 import com.example.bridgebit.data.local.datastore.UserPreferences
 import com.example.bridgebit.presentation.screens.dashboard.DashboardScreen
 import com.example.bridgebit.presentation.screens.detail.TranslationDetailScreen
 import com.example.bridgebit.presentation.screens.workspace.WorkspaceScreen
+import com.example.bridgebit.presentation.screens.vault.VaultScreen
+import com.example.bridgebit.presentation.screens.insights.InsightsScreen
 
 @Composable
 fun AppNavHost(
@@ -36,7 +35,6 @@ fun AppNavHost(
         modifier = modifier
     ) {
 
-        // 1. DASHBOARD SCREEN (RIWAYAT)
         composable<Route.Dashboard> {
             DashboardScreen(
                 onNavigateToWorkspace = { navigationActions.navigateToWorkspace() },
@@ -45,78 +43,66 @@ fun AppNavHost(
             )
         }
 
-        // 2. WORKSPACE SCREEN (INPUT & EDIT TERJEMAHAN)
         composable<Route.Workspace> { backStackEntry ->
             val route: Route.Workspace = backStackEntry.toRoute()
             WorkspaceScreen(
-                translationId = route.translationId, // Mengirimkan ID jika dalam mode Edit
+                translationId = route.translationId,
                 onNavigateBack = { navigationActions.navigateBack() }
             )
         }
 
-        // 3. TRANSLATION DETAIL SCREEN (LAYAR KETIGA)
         composable<Route.TranslationDetail> { backStackEntry ->
             val route: Route.TranslationDetail = backStackEntry.toRoute()
             TranslationDetailScreen(
                 translationId = route.translationId,
                 onNavigateBack = { navigationActions.navigateBack() },
-                onNavigateToEdit = { id -> navigationActions.navigateToWorkspace(id) } // Aksi Edit dirutekan ke Workspace
+                onNavigateToEdit = { id -> navigationActions.navigateToWorkspace(id) }
             )
         }
 
-        // 4. VAULT SCREEN (SKELETON)
         composable<Route.Vault> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Phrase Vault Screen (Tempat Menyimpan Kosakata Penting)")
-            }
+            VaultScreen(
+                onNavigateToDetail = { id -> navigationActions.navigateToTranslationDetail(id) }
+            )
         }
 
-        // 5. INSIGHTS SCREEN (SKELETON)
         composable<Route.Insights> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Learning Insights Screen (Statistik & Grafik Belajar)")
-            }
+            InsightsScreen()
         }
 
-        // 6. SETTINGS SCREEN (PROFIL, MODE, DAN SETTING SISTEM)
         composable<Route.Settings> {
             val userPreferences: UserPreferences = koinInject()
             val isDarkMode by userPreferences.isDarkMode.collectAsState(initial = false)
             val coroutineScope = rememberCoroutineScope()
 
-            // State Komponen 1: Profil
             var profileName by remember { mutableStateOf("Ar'rauf Setiawan M. Jabar") }
             var profileEmail by remember { mutableStateOf("ar'rauf.123140032@student.itera.ac.id") }
             var profileNim by remember { mutableStateOf("123140032") }
             var isEditingProfile by remember { mutableStateOf(false) }
-
-            // State Komponen 3: Pengaturan Tambahan
             var isNotificationEnabled by remember { mutableStateOf(true) }
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .statusBarsPadding() // TAMBAHAN PENTING AGAR TIDAK NABRAK STATUS BAR
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
                     Text(
                         text = "Pengaturan",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
 
-                // =========================================================
-                // 👤 KOMPONEN 1: PROFIL (Bisa Edit Data Pengguna)
-                // =========================================================
                 item {
                     Text(text = "Akun & Profil", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(4.dp))
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             if (!isEditingProfile) {
-                                // Mode Read (Tampilan Profil)
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -132,7 +118,6 @@ fun AppNavHost(
                                     }
                                 }
                             } else {
-                                // Mode Update (Formulir Pengubahan)
                                 OutlinedTextField(
                                     value = profileName,
                                     onValueChange = { profileName = it },
@@ -155,21 +140,14 @@ fun AppNavHost(
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Button(onClick = { isEditingProfile = false }) {
-                                        Text("Simpan")
-                                    }
-                                    TextButton(onClick = { isEditingProfile = false }) {
-                                        Text("Batal")
-                                    }
+                                    Button(onClick = { isEditingProfile = false }) { Text("Simpan") }
+                                    TextButton(onClick = { isEditingProfile = false }) { Text("Batal") }
                                 }
                             }
                         }
                     }
                 }
 
-                // =========================================================
-                // 🌓 KOMPONEN 2: MODE (Pengaturan Dark Mode)
-                // =========================================================
                 item {
                     Text(text = "Tampilan", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -193,25 +171,18 @@ fun AppNavHost(
                             Switch(
                                 checked = isDarkMode,
                                 onCheckedChange = { checked ->
-                                    coroutineScope.launch {
-                                        userPreferences.setDarkMode(checked)
-                                    }
+                                    coroutineScope.launch { userPreferences.setDarkMode(checked) }
                                 }
                             )
                         }
                     }
                 }
 
-                // =========================================================
-                // ⚙️ KOMPONEN 3: SETTING (Notifikasi & Manajemen Data Terjemahan)
-                // =========================================================
                 item {
                     Text(text = "Aplikasi & Data", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(4.dp))
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-
-                            // Opsi Notifikasi
                             Row(
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -226,10 +197,7 @@ fun AppNavHost(
                                     onCheckedChange = { isNotificationEnabled = it }
                                 )
                             }
-
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                            // Opsi Hapus Data Terjemahan
                             Row(
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -242,21 +210,19 @@ fun AppNavHost(
                                         Text(text = "Data lokal akan dibersihkan permanen", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                                     }
                                 }
-                                TextButton(onClick = { /* Menjalankan Aksi Clear Database */ }) {
+                                TextButton(onClick = { /* Aksi Clear Database */ }) {
                                     Text("Bersihkan", color = MaterialTheme.colorScheme.error)
                                 }
                             }
                         }
                     }
                 }
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
 }
 
-// ==========================================
-// KUMPULAN FUNGSI NAVIGASI TYPE-SAFE
-// ==========================================
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
         override fun navigateToDashboard() {
@@ -268,9 +234,7 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
         override fun navigateToTranslationDetail(translationId: Long) {
             navController.navigate(Route.TranslationDetail(translationId))
         }
-        override fun navigateToAI(translationId: Long?, initialText: String?) {
-            // Ditangani pada Sprint 3
-        }
+        override fun navigateToAI(translationId: Long?, initialText: String?) {}
         override fun navigateToVault() { navController.navigate(Route.Vault) }
         override fun navigateToInsights() { navController.navigate(Route.Insights) }
         override fun navigateToSettings() { navController.navigate(Route.Settings) }

@@ -19,10 +19,11 @@ fun TranslationCard(
     translation: Translation,
     onClick: () -> Unit,
     onVaultClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -50,7 +51,6 @@ fun TranslationCard(
                     )
                 }
 
-                // Tombol Aksi
                 Row {
                     IconButton(onClick = onVaultClick) {
                         Icon(

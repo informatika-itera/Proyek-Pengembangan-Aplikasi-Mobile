@@ -8,11 +8,15 @@ import com.example.bridgebit.data.local.datastore.UserPreferences
 import com.example.bridgebit.data.local.datastore.create
 import com.example.bridgebit.data.remote.api.GeminiService
 import com.example.bridgebit.data.repository.TranslationRepositoryImpl
+import com.example.bridgebit.data.repository.AIRepositoryImpl
+import com.example.bridgebit.domain.repository.AIRepository
 import com.example.bridgebit.domain.repository.TranslationRepository
 import com.example.bridgebit.domain.usecase.*
 import com.example.bridgebit.presentation.screens.dashboard.DashboardViewModel
 import com.example.bridgebit.presentation.screens.workspace.WorkspaceViewModel
 import com.example.bridgebit.presentation.screens.detail.TranslationDetailViewModel // Import baru
+import com.example.bridgebit.presentation.screens.vault.VaultViewModel
+import com.example.bridgebit.presentation.screens.insights.InsightsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -40,6 +44,7 @@ val preferencesModule = module {
 
 val repositoryModule = module {
     singleOf(::TranslationRepositoryImpl) bind TranslationRepository::class
+    singleOf(::AIRepositoryImpl) bind AIRepository::class
 }
 
 val useCaseModule = module {
@@ -57,6 +62,8 @@ val viewModelModule = module {
 
     // ViewModel Detail sudah dihidupkan
     viewModelOf(::TranslationDetailViewModel)
+    viewModelOf(::VaultViewModel)
+    viewModelOf(::InsightsViewModel)
 }
 
 val sharedModules = listOf(

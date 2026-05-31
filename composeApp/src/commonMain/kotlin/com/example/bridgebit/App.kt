@@ -1,10 +1,11 @@
 package com.example.bridgebit
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Settings
@@ -15,10 +16,12 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.bridgebit.data.local.datastore.UserPreferences
 import com.example.bridgebit.presentation.navigation.AppNavHost
 import com.example.bridgebit.presentation.navigation.Route
 import com.example.bridgebit.presentation.theme.NoteAITheme
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 
 // Data class untuk membantu definisi item navbar bawah
 data class BottomNavItem(
@@ -30,24 +33,25 @@ data class BottomNavItem(
 @Composable
 fun App() {
     KoinContext {
-        NoteAITheme {
+        val userPreferences: UserPreferences = koinInject()
+        val isDarkModePref by userPreferences.isDarkMode.collectAsState(initial = isSystemInDarkTheme())
+
+        NoteAITheme(darkTheme = isDarkModePref) {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 
-            // Daftar halaman yang akan tampil di bottom bar
+            // DAFTAR HALAMAN YANG SUDAH DIPERBAIKI (Tidak ada error parameter lagi)
             val navigationItems = remember {
                 listOf(
                     BottomNavItem("Riwayat", Icons.Default.History, Route.Dashboard),
-                    BottomNavItem("Terjemah", Icons.Default.Translate, Route.Workspace()),
+                    BottomNavItem("Terjemah", Icons.Default.Edit, Route.Workspace(translationId = null)),
                     BottomNavItem("Vault", Icons.Default.Star, Route.Vault),
                     BottomNavItem("Statistik", Icons.Default.BarChart, Route.Insights),
                     BottomNavItem("Pengaturan", Icons.Default.Settings, Route.Settings)
                 )
             }
 
-            // Cari tahu apakah halaman saat ini termasuk salah satu item navbar bawah
-            // Jika user membuka DetailScreen atau AIScreen, Navbar otomatis tersembunyi
             val showBottomBar = navigationItems.any { item ->
                 currentDestination?.hasRoute(item.route::class) == true
             }
@@ -69,7 +73,6 @@ fun App() {
                                     onClick = {
                                         if (!isSelected) {
                                             navController.navigate(item.route) {
-                                                // Menghindari penumpukan tumpukan backstack halaman
                                                 popUpTo(navController.graph.findStartDestination().id) {
                                                     saveState = true
                                                 }
@@ -89,10 +92,9 @@ fun App() {
                     }
                 }
             ) { paddingValues ->
-                // Memasukkan paddingValues navbar ke NavHost agar UI tidak terpotong navbar bawah
                 AppNavHost(
                     navController = navController,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
                 )
             }
         }

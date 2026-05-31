@@ -17,35 +17,22 @@ import kotlinx.datetime.Clock
 
 class TranslationRepositoryImpl(private val database: BridgeBitDatabase) : TranslationRepository {
 
-    // Objek queries di-generate otomatis dari BridgeBit.sq
     private val queries = database.bridgeBitQueries
 
     override fun getAllHistory(): Flow<List<Translation>> {
-        return queries.getAllHistory()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
+        return queries.getAllHistory().asFlow().mapToList(Dispatchers.Default).map { it.toDomainList() }
     }
 
     override fun getVaultPhrases(): Flow<List<Translation>> {
-        return queries.getVaultPhrases()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
+        return queries.getVaultPhrases().asFlow().mapToList(Dispatchers.Default).map { it.toDomainList() }
     }
 
     override fun searchHistory(query: String): Flow<List<Translation>> {
-        return queries.searchHistory(query, query)
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { entities -> entities.toDomainList() }
+        return queries.searchHistory(query, query).asFlow().mapToList(Dispatchers.Default).map { it.toDomainList() }
     }
 
     override fun getTranslationById(id: Long): Flow<Translation?> {
-        return queries.getTranslationById(id)
-            .asFlow()
-            .mapToOneOrNull(Dispatchers.Default)
-            .map { entity -> entity?.toDomain() }
+        return queries.getTranslationById(id).asFlow().mapToOneOrNull(Dispatchers.Default).map { it?.toDomain() }
     }
 
     override suspend fun insertTranslation(translation: Translation): Long = withContext(Dispatchers.Default) {
@@ -55,11 +42,11 @@ class TranslationRepositoryImpl(private val database: BridgeBitDatabase) : Trans
             translated_text = values.translatedText,
             source_language = values.sourceLanguage,
             target_language = values.targetLanguage,
+            category = values.category, // <-- TAMBAHAN KATEGORI
             is_vaulted = if (values.isVaulted) 1L else 0L,
             created_at = values.createdAt,
             updated_at = values.updatedAt
         )
-        // Mengembalikan ID dari baris yang baru saja dimasukkan
         queries.lastInsertId().executeAsOne()
     }
 
@@ -71,6 +58,7 @@ class TranslationRepositoryImpl(private val database: BridgeBitDatabase) : Trans
             translated_text = values.translatedText,
             source_language = values.sourceLanguage,
             target_language = values.targetLanguage,
+            category = values.category, // <-- TAMBAHAN KATEGORI
             is_vaulted = if (values.isVaulted) 1L else 0L,
             updated_at = Clock.System.now().toEpochMilliseconds()
         )
@@ -81,10 +69,7 @@ class TranslationRepositoryImpl(private val database: BridgeBitDatabase) : Trans
     }
 
     override suspend fun toggleVaultStatus(id: Long) = withContext(Dispatchers.Default) {
-        queries.toggleVaultStatus(
-            id = id,
-            updated_at = Clock.System.now().toEpochMilliseconds()
-        )
+        queries.toggleVaultStatus(id = id, updated_at = Clock.System.now().toEpochMilliseconds())
     }
 
     override suspend fun deleteTranslationsByIds(ids: List<Long>) = withContext(Dispatchers.Default) {

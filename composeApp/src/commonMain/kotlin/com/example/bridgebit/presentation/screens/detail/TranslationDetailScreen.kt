@@ -3,30 +3,39 @@ package com.example.bridgebit.presentation.screens.detail
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TranslationDetailScreen(
     translationId: Long,
     onNavigateBack: () -> Unit,
-    onNavigateToEdit: (Long) -> Unit, // Aksi untuk masuk ke mode edit Workspace
+    onNavigateToEdit: (Long) -> Unit,
     viewModel: TranslationDetailViewModel = koinViewModel()
 ) {
-    // Muat data saat layar pertama kali dibuka
     LaunchedEffect(translationId) {
         viewModel.loadTranslationDetails(translationId)
     }
 
     val state by viewModel.uiState.collectAsState()
 
+    // Tools untuk Extra Feature: Copy to Clipboard
+    val clipboardManager = LocalClipboardManager.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }, // Untuk notif copy
         topBar = {
             TopAppBar(
                 title = { Text("Detail Terjemahan") },
@@ -36,6 +45,22 @@ fun TranslationDetailScreen(
                     }
                 },
                 actions = {
+                    // Tombol Salin
+                    if (state is DetailUiState.Success) {
+                        val translation = (state as DetailUiState.Success).translation
+                        IconButton(onClick = {
+                            val textToCopy = "Terjemahan (${translation.sourceLanguage} ➔ ${translation.targetLanguage}):\n${translation.sourceText}\n\nArtinya:\n${translation.translatedText}"
+                            clipboardManager.setText(buildAnnotatedString { append(textToCopy) })
+
+                            // Munculkan notifikasi
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Berhasil disalin ke Clipboard")
+                            }
+                        }) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = "Salin")
+                        }
+                    }
+                    // Tombol Edit
                     IconButton(onClick = { onNavigateToEdit(translationId) }) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit Terjemahan")
                     }

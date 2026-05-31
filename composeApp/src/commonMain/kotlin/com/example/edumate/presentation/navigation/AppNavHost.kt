@@ -12,7 +12,8 @@ import com.example.edumate.presentation.screens.detail.DetailScreen
 import com.example.edumate.presentation.screens.home.HomeScreen
 import com.example.edumate.presentation.screens.timer.TimerScreen
 import com.example.edumate.presentation.screens.statistics.StatisticsScreen
-import com.example.edumate.presentation.screens.settings.SettingsScreen // Tambahkan Import
+import com.example.edumate.presentation.screens.settings.SettingsScreen
+import com.example.edumate.presentation.screens.profile.ProfileScreen
 
 @Composable
 fun AppNavHost(
@@ -31,7 +32,8 @@ fun AppNavHost(
                 onNavigateToAIAssistant = { navController.navigate(Route.AIAssistant()) },
                 onNavigateToTimer = { navController.navigate(Route.FocusTimer) },
                 onNavigateToStatistics = { navController.navigate(Route.Statistics) },
-                onNavigateToSettings = { navController.navigate(Route.Settings) } // Inject navigasi
+                onNavigateToSettings = { navController.navigate(Route.Settings) },
+                onNavigateToProfile = { navController.navigate(Route.Profile) }
             )
         }
 
@@ -79,9 +81,14 @@ fun AppNavHost(
             )
         }
 
-        // Komponen Navigasi Pengaturan
         composable<Route.Settings> {
             SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.Profile> {
+            ProfileScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

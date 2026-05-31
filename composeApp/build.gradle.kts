@@ -9,6 +9,13 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 // Load local.properties for API keys
@@ -152,6 +159,9 @@ sqldelight {
     databases {
         create("StudyHubDatabase") {
             packageName.set("com.studyhub.database")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+            migrationOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
+            verifyMigrations.set(true)
         }
     }
 }

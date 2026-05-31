@@ -12,13 +12,13 @@ class TaskRepositoryImpl(
     private val localDataSource: LocalTaskDataSource
 ) : TaskRepository {
     override suspend fun addTask(task: Task) = localDataSource.insertTask(task)
-    override suspend fun getTaskById(taskId: String) = localDataSource.selectById(taskId)
-    override suspend fun getAllTasks() = localDataSource.selectAllTasks()
-    override suspend fun getActiveTasks() = localDataSource.selectActiveTasks()
-    override suspend fun getCompletedTasks() = localDataSource.selectCompletedTasks()
-    override suspend fun getTasksByDate(date: LocalDate) =
+    override fun getTaskById(taskId: String) = localDataSource.selectById(taskId)
+    override fun getAllTasks() = localDataSource.selectAllTasks()
+    override fun getActiveTasks() = localDataSource.selectActiveTasks()
+    override fun getCompletedTasks() = localDataSource.selectCompletedTasks()
+    override fun getTasksByDate(date: LocalDate) =
         localDataSource.selectByDate(date.atStartOfDayMillis(), date.atEndOfDayMillis() + 1)
-    override suspend fun getTasksBySubject(subject: String) =
+    override fun getTasksBySubject(subject: String) =
         localDataSource.selectBySubject(subject)
     override suspend fun getOverdueCount(now: Long) =
         localDataSource.selectOverdueCount(now).toInt()

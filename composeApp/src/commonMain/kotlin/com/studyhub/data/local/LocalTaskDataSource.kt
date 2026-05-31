@@ -1,14 +1,22 @@
 package com.studyhub.data.local
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.studyhub.database.StudyHubDatabase
 import com.studyhub.database.TaskEntity
 import com.studyhub.domain.model.Task
 import com.studyhub.domain.model.Priority
 import com.studyhub.domain.model.TaskStatus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 class LocalTaskDataSource(private val database: StudyHubDatabase) {
 
-    fun insertTask(task: Task) {
+    suspend fun insertTask(task: Task) = withContext(Dispatchers.IO) {
         database.taskEntityQueries.insertTask(
             id = task.id,
             title = task.title,
@@ -27,29 +35,41 @@ class LocalTaskDataSource(private val database: StudyHubDatabase) {
         )
     }
 
-    fun selectAllTasks(): List<Task> =
+    fun selectAllTasks(): Flow<List<Task>> =
         database.taskEntityQueries.selectAllTasks()
-            .executeAsList().map { it.toTask() }
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { list -> list.map { it.toTask() } }
 
-    fun selectActiveTasks(): List<Task> =
+    fun selectActiveTasks(): Flow<List<Task>> =
         database.taskEntityQueries.selectActiveTasks()
-            .executeAsList().map { it.toTask() }
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { list -> list.map { it.toTask() } }
 
-    fun selectCompletedTasks(): List<Task> =
+    fun selectCompletedTasks(): Flow<List<Task>> =
         database.taskEntityQueries.selectCompletedTasks()
-            .executeAsList().map { it.toTask() }
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { list -> list.map { it.toTask() } }
 
-    fun selectById(taskId: String): Task? =
+    fun selectById(taskId: String): Flow<Task?> =
         database.taskEntityQueries.selectById(taskId)
-            .executeAsOneOrNull()?.toTask()
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.IO)
+            .map { it?.toTask() }
 
-    fun selectByDate(start: Long, end: Long): List<Task> =
+    fun selectByDate(start: Long, end: Long): Flow<List<Task>> =
         database.taskEntityQueries.selectByDate(start, end)
-            .executeAsList().map { it.toTask() }
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { list -> list.map { it.toTask() } }
 
-    fun selectBySubject(subject: String): List<Task> =
+    fun selectBySubject(subject: String): Flow<List<Task>> =
         database.taskEntityQueries.selectBySubject(subject)
-            .executeAsList().map { it.toTask() }
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { list -> list.map { it.toTask() } }
 
     fun selectOverdueCount(now: Long): Long =
         database.taskEntityQueries.selectOverdueCount(now)
@@ -59,7 +79,7 @@ class LocalTaskDataSource(private val database: StudyHubDatabase) {
         database.taskEntityQueries.selectCompletedCountInRange(start, end)
             .executeAsOne()
 
-    fun updateTask(task: Task) {
+    suspend fun updateTask(task: Task) = withContext(Dispatchers.IO) {
         database.taskEntityQueries.updateTask(
             title = task.title,
             description = task.description,
@@ -75,11 +95,11 @@ class LocalTaskDataSource(private val database: StudyHubDatabase) {
         )
     }
 
-    fun updateStatus(taskId: String, status: String, now: Long, completedAt: Long?) {
+    suspend fun updateStatus(taskId: String, status: String, now: Long, completedAt: Long?) = withContext(Dispatchers.IO) {
         database.taskEntityQueries.updateStatus(status, now, completedAt, taskId)
     }
 
-    fun softDelete(taskId: String, now: Long) {
+    suspend fun softDelete(taskId: String, now: Long) = withContext(Dispatchers.IO) {
         database.taskEntityQueries.softDelete(now, taskId)
     }
 

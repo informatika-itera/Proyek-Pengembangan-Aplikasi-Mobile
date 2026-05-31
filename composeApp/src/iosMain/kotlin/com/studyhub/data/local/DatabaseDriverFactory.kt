@@ -6,5 +6,8 @@ import com.studyhub.database.StudyHubDatabase
 
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver =
-        NativeSqliteDriver(StudyHubDatabase.Schema, "studyhub.db")
+        NativeSqliteDriver(
+            schema = StudyHubDatabase.Schema,
+            name = "studyhub.db"
+        )
 }

@@ -1,6 +1,7 @@
 package com.studyhub.core.util
 
 import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -9,6 +10,8 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
 // ==================== DATE/TIME EXTENSIONS ====================
+
+fun currentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()
 
 fun LocalDate.atStartOfDayMillis(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
     return this.atStartOfDayIn(timeZone).toEpochMilliseconds()
@@ -21,6 +24,13 @@ fun LocalDate.atEndOfDayMillis(timeZone: TimeZone = TimeZone.currentSystemDefaul
 
 fun Long.toLocalDate(timeZone: TimeZone = TimeZone.currentSystemDefault()): LocalDate {
     return Instant.fromEpochMilliseconds(this).toLocalDateTime(timeZone).date
+}
+
+fun Long.toLocalMillisFromUtc(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
+    // DatePicker returns UTC millis. We convert it to LocalDate in UTC, 
+    // then back to start of day millis in our local timezone.
+    val utcDate = Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC).date
+    return utcDate.atStartOfDayMillis(timeZone)
 }
 
 fun Instant.formatToDisplay(): String {

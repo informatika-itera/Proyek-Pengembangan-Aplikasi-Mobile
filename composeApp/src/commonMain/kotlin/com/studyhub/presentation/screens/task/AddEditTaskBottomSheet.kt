@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studyhub.domain.model.Priority
 import com.studyhub.domain.model.TaskStatus
+import com.studyhub.core.util.toLocalMillisFromUtc
 import com.studyhub.presentation.theme.*
 import kotlinx.datetime.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -44,27 +45,43 @@ fun AddEditTaskBottomSheet(
     var status by remember { mutableStateOf(TaskStatus.TODO) }
     var dueDate by remember { mutableStateOf(initialDate ?: Clock.System.now().toEpochMilliseconds()) }
     var estimatedMinutes by remember { mutableStateOf(60) }
+    var isInitialized by remember { mutableStateOf(false) }
     
     var showDatePicker by remember { mutableStateOf(false) }
     var showAddSubjectDialog by remember { mutableStateOf(false) }
     var newSubjectName by remember { mutableStateOf("") }
 
     LaunchedEffect(taskId) {
+        isInitialized = false
+        viewModel.resetState() 
         viewModel.loadSubjects()
         if (taskId != null) {
             viewModel.loadTask(taskId)
+        } else {
+            // Reset local state for new task
+            title = ""
+            description = ""
+            selectedSubject = "Mathematics"
+            priority = Priority.MEDIUM
+            status = TaskStatus.TODO
+            dueDate = initialDate ?: Clock.System.now().toEpochMilliseconds()
+            estimatedMinutes = 60
+            isInitialized = true
         }
     }
 
     LaunchedEffect(uiState.existingTask) {
-        uiState.existingTask?.let { task ->
-            title = task.title
-            description = task.description
-            selectedSubject = task.subject
-            priority = task.priority
-            status = task.status
-            dueDate = task.dueDate
-            estimatedMinutes = task.estimatedMinutes
+        if (!isInitialized && uiState.existingTask != null) {
+            uiState.existingTask?.let { task ->
+                title = task.title
+                description = task.description
+                selectedSubject = task.subject
+                priority = task.priority
+                status = task.status
+                dueDate = task.dueDate
+                estimatedMinutes = task.estimatedMinutes
+                isInitialized = true
+            }
         }
     }
 
@@ -383,6 +400,7 @@ fun AddEditTaskBottomSheet(
                             description = description,
                             subject = selectedSubject,
                             priority = priority,
+                            status = status,
                             dueDate = dueDate,
                             estimatedMinutes = estimatedMinutes
                         )
@@ -414,7 +432,9 @@ fun AddEditTaskBottomSheet(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { dueDate = it }
+                    datePickerState.selectedDateMillis?.let { utcMillis -> 
+                        dueDate = utcMillis.toLocalMillisFromUtc() 
+                    }
                     showDatePicker = false
                 }) { Text("OK") }
             },

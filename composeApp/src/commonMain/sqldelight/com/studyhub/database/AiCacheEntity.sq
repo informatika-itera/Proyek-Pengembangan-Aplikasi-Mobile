@@ -1,0 +1,21 @@
+CREATE TABLE AiCacheEntity (
+    cacheKey TEXT NOT NULL PRIMARY KEY,
+    result TEXT NOT NULL,
+    promptType TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    expiresAt INTEGER NOT NULL
+);
+
+selectValidCache:
+SELECT * FROM AiCacheEntity
+WHERE cacheKey = ? AND expiresAt > ?;
+
+insertCache:
+INSERT OR REPLACE INTO AiCacheEntity
+VALUES (?, ?, ?, ?, ?);
+
+deleteExpiredCache:
+DELETE FROM AiCacheEntity WHERE expiresAt < ?;
+
+deleteByType:
+DELETE FROM AiCacheEntity WHERE promptType = ?;

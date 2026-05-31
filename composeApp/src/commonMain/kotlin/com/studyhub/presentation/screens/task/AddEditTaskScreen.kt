@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.studyhub.domain.model.Priority
+import com.studyhub.domain.model.TaskStatus
 import com.studyhub.presentation.theme.Spacing
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -38,6 +39,7 @@ fun AddEditTaskScreen(
     var description by remember { mutableStateOf("") }
     var selectedSubject by remember { mutableStateOf("Umum") }
     var priority by remember { mutableStateOf(Priority.MEDIUM) }
+    var status by remember { mutableStateOf(TaskStatus.TODO) }
     var dueDate by remember { 
         mutableStateOf(date?.toLongOrNull() ?: Clock.System.now().toEpochMilliseconds()) 
     }
@@ -58,6 +60,7 @@ fun AddEditTaskScreen(
             description = task.description
             selectedSubject = task.subject
             priority = task.priority
+            status = task.status
             dueDate = task.dueDate
             estimatedMinutes = task.estimatedMinutes
         }
@@ -160,6 +163,20 @@ fun AddEditTaskScreen(
                 }
             }
 
+            Text("Status", style = MaterialTheme.typography.titleSmall)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small)
+            ) {
+                TaskStatus.entries.forEach { s ->
+                    FilterChip(
+                        selected = status == s,
+                        onClick = { status = s },
+                        label = { Text(s.value.replace("_", " ").replaceFirstChar { it.uppercase() }) }
+                    )
+                }
+            }
+
             OutlinedTextField(
                 value = Instant.fromEpochMilliseconds(dueDate)
                     .toLocalDateTime(TimeZone.currentSystemDefault())
@@ -193,6 +210,7 @@ fun AddEditTaskScreen(
                         description = description,
                         subject = selectedSubject,
                         priority = priority,
+                        status = status,
                         dueDate = dueDate,
                         estimatedMinutes = estimatedMinutes
                     )

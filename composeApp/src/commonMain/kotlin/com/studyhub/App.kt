@@ -15,7 +15,7 @@ fun App() {
     KoinContext {
         val themeViewModel: ThemeViewModel = koinViewModel()
         val isDarkMode by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
-        
+
         SystemAppearance(isDarkMode = isDarkMode)
         
         StudyHubTheme(darkTheme = isDarkMode) {

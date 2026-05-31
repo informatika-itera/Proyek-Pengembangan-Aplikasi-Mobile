@@ -14,6 +14,7 @@ import com.studyhub.domain.usecase.task.UpdateTaskUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -40,8 +41,8 @@ class AddEditTaskViewModel(
     fun loadTask(taskId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val task = getTaskByIdUseCase(taskId)
             val subjects = getAllSubjectsUseCase()
+            val task = getTaskByIdUseCase(taskId).firstOrNull()
             _uiState.update { it.copy(isLoading = false, existingTask = task, subjects = subjects) }
         }
     }
@@ -51,6 +52,10 @@ class AddEditTaskViewModel(
             val subjects = getAllSubjectsUseCase()
             _uiState.update { it.copy(subjects = subjects) }
         }
+    }
+
+    fun resetState() {
+        _uiState.update { AddEditTaskUiState(isSuccess = false) }
     }
 
     fun addSubject(name: String) {
@@ -77,6 +82,7 @@ class AddEditTaskViewModel(
         description: String,
         subject: String,
         priority: Priority,
+        status: TaskStatus,
         dueDate: Long,
         estimatedMinutes: Int
     ) {
@@ -90,13 +96,13 @@ class AddEditTaskViewModel(
                     description = description,
                     subject = subject,
                     priority = priority,
-                    status = _uiState.value.existingTask?.status ?: TaskStatus.TODO,
+                    status = status,
                     dueDate = dueDate,
                     dueTime = null,
                     tags = emptyList(),
                     estimatedMinutes = estimatedMinutes,
                     isDeleted = false,
-                    completedAt = null,
+                    completedAt = if (status == TaskStatus.DONE) now else null,
                     createdAt = _uiState.value.existingTask?.createdAt ?: now,
                     updatedAt = now
                 )

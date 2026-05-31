@@ -39,7 +39,15 @@ Berikut adalah fondasi teknis yang telah diimplementasikan dalam pengembangan sa
 - **Implementasi Clean Architecture**: Pemisahan layer Data, Domain, dan Presentation untuk kode yang lebih terstruktur, skalabel, dan mudah diuji.
 - **Local Persistence & Settings**: Penggunaan **SQLDelight** untuk penyimpanan database tugas offline dan **Jetpack DataStore** untuk manajemen preferensi tema.
 - **Dependency Injection**: Konfigurasi modul Koin (`AppModule`) untuk manajemen dependensi yang efisien di seluruh platform.
-- **Multi-platform Theming**: Sistem tema Dark/Light mode yang adaptif secara native di Android dan iOS.
+
+### Sprint 3 — Advanced Features (Current Progress)
+- **AI Token Management Infrastructure**: Sistem manajemen token AI dengan kompresi data, caching (SQLDelight), dan pembatasan kuota harian untuk efisiensi biaya.
+- **Smart Priority & Reminder Logic**: Implementasi Repository dan Use Case untuk pengurutan tugas cerdas dan pengingat adaptif berbasis pola pengerjaan pengguna.
+- **Enhanced Task Visualization**: Indikator visual otomatis untuk tugas yang terlambat (*overdue*) dengan styling khusus (merah, strike-through) untuk meningkatkan kesadaran deadline.
+- **CI/CD Optimization**: Konfigurasi otomatisasi build GitHub Actions dan analisis kode statis menggunakan **Detekt**.
+- **Sprint 3 Navigation & UI**: Penambahan rute navigasi untuk fitur Smart Priority, Progress, dan Pomodoro, serta integrasi shortcut AI di beranda.
+- **Database Migration System**: Implementasi skema migrasi SQLDelight untuk mendukung pembaruan struktur database secara aman pada perangkat pengguna.
+- **Advanced Task Management**: Perbaikan sistem *state reset* pada form tambah/edit tugas dan sentralisasi aksi tambah tugas untuk UX yang lebih konsisten.
 
 ---
 
@@ -51,18 +59,3 @@ Berikut adalah fondasi teknis yang telah diimplementasikan dalam pengembangan sa
 
 ---
 
-## 🤖 Rencana Selanjutnya (AI Integration Roadmap)
-
-### 1. Domain AI & Analisis Prioritas
-Pengembangan layer domain khusus AI yang mampu menganalisis daftar tugas berdasarkan deadline, estimasi beban kerja, dan tingkat kesulitan untuk memberikan rekomendasi urutan pengerjaan yang paling optimal.
-
-### 2. Jadwal Reminder Adaptif
-Sistem pengingat yang mempelajari pola produktivitas pengguna. AI akan menentukan waktu terbaik untuk mengirimkan pengingat agar tidak mengganggu waktu fokus pengerjaan.
-
-### 3. Notification Reminder via AI
-Implementasi notifikasi pengingat yang dihasilkan secara dinamis oleh AI (menggunakan model seperti Groq/Gemini). Pesan pengingat akan bersifat persuasif dan motivasional, disesuaikan dengan konteks tugas.
-
-### 4. Tampilan Rekomendasi Prioritas
-Penambahan dashboard khusus atau komponen UI yang secara visual menonjolkan "Rekomendasi Utama" hasil analisis AI, membantu mahasiswa fokus pada tugas terpenting setiap harinya.
-
----

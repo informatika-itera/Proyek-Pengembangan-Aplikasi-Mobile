@@ -61,21 +61,21 @@ Lalu edit `local.properties`:
 # Windows:
 # sdk.dir=C\:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
 
-# Google Gemini API Key (lihat langkah 4)
-GEMINI_API_KEY=AIzaSy....your_real_key....
+# OpenCode Go API Key (lihat langkah 4)
+OPENCODE_API_KEY=your_real_key_here
 ```
 
-> Tanpa `GEMINI_API_KEY` aplikasi tetap **bisa dibuka**, tetapi fitur AI (ringkas,
+> Tanpa `OPENCODE_API_KEY` aplikasi tetap **bisa dibuka**, tetapi fitur AI (ringkas,
 > generate ide, perbaiki tulisan, dll) akan gagal dengan error 401/403.
 
 ---
 
-## 4. Dapatkan Gemini API Key
+## 4. Dapatkan OpenCode Go API Key
 
-1. Buka https://aistudio.google.com
-2. Login dengan akun Google.
-3. Klik **Get API Key** → **Create API Key** → pilih project (atau buat baru).
-4. Copy key dan tempel ke `local.properties` di baris `GEMINI_API_KEY=`.
+1. Buka https://opencode.ai/go
+2. Login dan subscribe ke OpenCode Go.
+3. Copy API key dari console OpenCode.
+4. Copy key dan tempel ke `local.properties` di baris `OPENCODE_API_KEY=`.
 
 > ⚠️ **Jangan share / commit API key.** File `local.properties` sudah di-ignore.
 
@@ -207,7 +207,7 @@ Checklist setelah app jalan:
 | Gejala                                                 | Solusi                                                            |
 | ------------------------------------------------------ | ------------------------------------------------------------------ |
 | `SDK location not found`                               | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis. |
-| `GEMINI_API_KEY` kosong / 401 Unauthorized             | Periksa baris `GEMINI_API_KEY=...` di `local.properties` lalu rebuild. |
+| `OPENCODE_API_KEY` kosong / 401 Unauthorized             | Periksa baris `OPENCODE_API_KEY=...` di `local.properties` lalu rebuild. |
 | `Cannot resolve symbol 'NoteDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
 | Gradle sync lambat sekali pertama kali                 | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil. |
 | `Daemon ... was terminated` saat build                 | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`. |
@@ -262,4 +262,4 @@ Pryk-PAM/
 - [SQLDelight](https://cashapp.github.io/sqldelight/)
 - [Koin DI](https://insert-koin.io/)
 - [Ktor Client](https://ktor.io/docs/welcome.html)
-- [Google Gemini API](https://ai.google.dev/docs)
+- [OpenCode Go API](https://opencode.ai/docs/go/)

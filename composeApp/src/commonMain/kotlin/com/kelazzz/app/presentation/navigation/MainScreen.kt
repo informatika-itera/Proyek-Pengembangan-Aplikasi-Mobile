@@ -275,7 +275,7 @@ fun MainScreen(
                 PresensiScreen()
             }
             composable<Route.AIAsisten> {
-                AIScreen()
+                AIScreen(viewModel = koinViewModel())
             }
             composable<Route.Kalender> {
                 JadwalListScreen(

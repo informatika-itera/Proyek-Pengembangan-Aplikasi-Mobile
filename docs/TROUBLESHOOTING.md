@@ -35,7 +35,7 @@ rm -rf .gradle
 
 **Gejala:**
 ```
-GEMINI_API_KEY is empty
+OPENCODE_API_KEY is empty
 API call failed: 401 Unauthorized
 ```
 
@@ -44,11 +44,11 @@ API call failed: 401 Unauthorized
 1. Pastikan file `local.properties` ada di root project:
 ```properties
 sdk.dir=/path/to/android/sdk
-GEMINI_API_KEY=your_actual_api_key_here
+OPENCODE_API_KEY=your_actual_api_key_here
 ```
 
 2. Pastikan API key valid:
-   - Buka https://aistudio.google.com/
+   - Buka https://opencode.ai/go
    - Cek API key masih aktif
    - Generate key baru jika perlu
 
@@ -213,7 +213,7 @@ Connection timeout
 2. Cek URL endpoint:
 ```kotlin
 // Pastikan URL benar
-private val baseUrl = "https://generativelanguage.googleapis.com/v1beta"
+private val endpoint = "https://opencode.ai/zen/go/v1/chat/completions"
 ```
 
 3. Tambahkan logging:

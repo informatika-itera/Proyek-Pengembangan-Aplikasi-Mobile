@@ -300,12 +300,12 @@ composeApp/src/commonMain/kotlin/
 // JANGAN hapus atau ubah pattern expect/actual
 // File expect di commonMain:
 expect object ApiConfig {
-    val geminiApiKey: String
+    val openCodeApiKey: String
 }
 
 // File actual di androidMain/iosMain:
 actual object ApiConfig {
-    actual val geminiApiKey: String = ...
+    actual val openCodeApiKey: String = ...
 }
 ```
 
@@ -375,7 +375,7 @@ Sebelum mengubah template, pastikan:
 - [ ] Tambah method di `AIRepository` interface
 - [ ] Implement di `AIRepositoryImpl`
 - [ ] Buat use case jika diperlukan
-- [ ] Tambah system prompt di `GeminiService`
+- [ ] Tambah system prompt di `OpenCodeGoService`
 - [ ] Update AI screen/ViewModel
 
 ---

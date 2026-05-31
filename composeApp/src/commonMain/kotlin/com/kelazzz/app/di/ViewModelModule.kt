@@ -1,5 +1,6 @@
 package com.kelazzz.app.di
 
+import com.kelazzz.app.presentation.screens.ai.AIViewModel
 import com.kelazzz.app.presentation.screens.home.HomeViewModel
 import com.kelazzz.app.presentation.screens.jadwal.JadwalListViewModel
 import com.kelazzz.app.presentation.screens.jadwal.detail.JadwalDetailViewModel
@@ -7,6 +8,7 @@ import com.kelazzz.app.presentation.screens.jadwal.addedit.JadwalAddEditViewMode
 import com.kelazzz.app.presentation.screens.login.LoginViewModel
 import com.kelazzz.app.presentation.screens.profile.ProfileViewModel
 import com.kelazzz.app.presentation.screens.rekap.RekapViewModel
+import com.kelazzz.app.presentation.screens.presensi.PresensiViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -24,14 +26,11 @@ val viewModelModule = module {
     viewModelOf(::JadwalDetailViewModel)
     viewModelOf(::JadwalAddEditViewModel)
     viewModelOf(::RekapViewModel)
-    // TODO: Sprint 2 — more ViewModels
-    // viewModelOf(::HomeViewModel)
     
-    // TODO: Sprint 3
-    // viewModelOf(::PresensiViewModel)
-    // viewModelOf(::DaftarPresensiViewModel)
+    // ==================== Sprint 3 ====================
+    viewModelOf(::PresensiViewModel)
     
-    // TODO: Sprint 4
-    // viewModelOf(::KalenderViewModel)
-    // viewModelOf(::AIAsistenViewModel)
+    // ==================== Sprint 4 — AI ====================
+    viewModelOf(::AIViewModel)
 }
+

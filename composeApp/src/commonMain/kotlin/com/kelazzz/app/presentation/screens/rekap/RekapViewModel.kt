@@ -57,7 +57,7 @@ class RekapViewModel(
 
     init {
         loadKelas()
-        syncKelas()
+        syncPresensi()
     }
 
     /**
@@ -91,19 +91,21 @@ class RekapViewModel(
     }
 
     /**
-     * Melakukan sinkronisasi daftar kelas terbaru dari API ke database lokal
+     * Melakukan sinkronisasi daftar kelas dan detail presensi terbaru ke database lokal.
      */
-    fun syncKelas() {
+    fun syncPresensi() {
+        if (_uiState.value.isSyncing) return
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSyncing = true, syncSuccess = false) }
-            val result = repository.syncKelas()
+            val result = repository.syncPresensi()
             if (result.isSuccess) {
                 _uiState.update { it.copy(isSyncing = false, syncSuccess = true, error = null) }
             } else {
                 _uiState.update {
                     it.copy(
                         isSyncing = false,
-                        error = result.exceptionOrNull()?.message ?: "Gagal memperbarui kelas."
+                        error = result.exceptionOrNull()?.message ?: "Gagal memperbarui data presensi."
                     )
                 }
             }

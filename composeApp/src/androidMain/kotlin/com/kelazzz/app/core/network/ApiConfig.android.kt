@@ -10,9 +10,9 @@ import com.kelazzz.app.BuildConfig
  * 
  * Setup:
  * 1. Buat file local.properties di root project
- * 2. Tambahkan: GEMINI_API_KEY=your_api_key_here
+ * 2. Tambahkan: OPENCODE_API_KEY=your_api_key_here
  * 3. Build project (API key akan di-inject ke BuildConfig)
  */
 actual object ApiConfig {
-    actual val geminiApiKey: String = BuildConfig.GEMINI_API_KEY
+    actual val openCodeApiKey: String = BuildConfig.OPENCODE_API_KEY
 }

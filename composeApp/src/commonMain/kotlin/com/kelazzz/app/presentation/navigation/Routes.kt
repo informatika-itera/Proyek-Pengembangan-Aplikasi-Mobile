@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * 3. Daftar Presensi — Rekap kehadiran per mata kuliah + analytics
  * 4. Presensi — QR scan (ML Kit) + input token manual
  * 5. Kalender Akademik — Buat dan kelola jadwal pribadi secara offline
- * 6. AI Asisten — Chatbot akademik berbasis Gemini API
+ * 6. AI Asisten — Chatbot akademik berbasis OpenCode Go API
  * 7. Notifikasi — Pusat notifikasi class reminder dan attendance warning
  */
 sealed interface Route {

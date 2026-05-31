@@ -11,10 +11,10 @@ package com.kelazzz.app.core.network
  */
 expect object ApiConfig {
     /**
-     * Gemini API Key
+     * OpenCode Go API Key
      * 
      * Android: Diambil dari BuildConfig (local.properties)
      * iOS: Diambil dari Info.plist atau hardcoded (untuk development)
      */
-    val geminiApiKey: String
+    val openCodeApiKey: String
 }

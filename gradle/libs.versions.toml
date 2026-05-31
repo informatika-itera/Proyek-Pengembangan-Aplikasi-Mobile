@@ -8,11 +8,14 @@ kotlinx-datetime = "0.6.1"
 ktor = "3.0.1"
 koin = "4.0.0"
 sqldelight = "2.0.2"
-datastore = "1.1.1"
+datastore = "1.1.7"
 okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+camerax = "1.4.2"
+mlkit-barcode = "18.3.1"
+graphics-path = "1.1.0"
 
 # Testing
 turbine = "1.2.0"
@@ -60,6 +63,14 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 # Coil (Image Loading)
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+
+# CameraX & ML Kit
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+mlkit-barcode-scanning = { group = "com.google.android.gms", name = "play-services-mlkit-barcode-scanning", version.ref = "mlkit-barcode" }
+androidx-graphics-path = { group = "androidx.graphics", name = "graphics-path", version.ref = "graphics-path" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }

@@ -96,6 +96,16 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+
+            // CameraX & ML Kit for QR Scanner
+            implementation(libs.androidx.camera.core)
+            implementation(libs.androidx.camera.camera2)
+            implementation(libs.androidx.camera.lifecycle)
+            implementation(libs.androidx.camera.view)
+            implementation(libs.mlkit.barcode.scanning)
+
+            // Keep transitive native libraries compatible with Android 15+ 16 KB pages.
+            implementation(libs.androidx.graphics.path)
         }
         
 //        iosMain.dependencies {
@@ -119,8 +129,8 @@ android {
         // Inject API key from local.properties
         buildConfigField(
             "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
+            "OPENCODE_API_KEY",
+            "\"${localProperties.getProperty("OPENCODE_API_KEY", "")}\""
         )
     }
     

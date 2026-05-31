@@ -26,9 +26,9 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class PocketMeta(
-    val message: String,
-    val status: Boolean,
-    val code: Int
+    val message: String = "",
+    val status: Boolean = false,
+    val code: Int = 0
 )
 
 @Serializable
@@ -37,10 +37,61 @@ data class KelasResponse(
     val data: List<KelasData> = emptyList()
 )
 
-@Serializable
+@Serializable(with = TokenResponseSerializer::class)
 data class TokenResponse(
     val meta: PocketMeta
 )
+
+@Serializable
+private class TokenResponseSurrogate(
+    val meta: PocketMeta
+)
+
+object TokenResponseSerializer : KSerializer<TokenResponse> {
+    override val descriptor: SerialDescriptor = TokenResponseSurrogate.serializer().descriptor
+
+    override fun serialize(encoder: Encoder, value: TokenResponse) {
+        val surrogate = TokenResponseSurrogate(value.meta)
+        encoder.encodeSerializableValue(TokenResponseSurrogate.serializer(), surrogate)
+    }
+
+    override fun deserialize(decoder: Decoder): TokenResponse {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("Only JSON format is supported")
+        val jsonElement = jsonDecoder.decodeJsonElement()
+
+        return if (jsonElement is JsonObject) {
+            when {
+                jsonElement.containsKey("meta") -> {
+                    // Format bersarang (nested): {"meta": {...}}
+                    val surrogate = jsonDecoder.json.decodeFromJsonElement(TokenResponseSurrogate.serializer(), jsonElement)
+                    TokenResponse(surrogate.meta)
+                }
+                jsonElement.containsKey("msg") -> {
+                    // Format datar dengan "msg": {"msg": "Absensi Berhasil"}
+                    val msg = (jsonElement["msg"] as? kotlinx.serialization.json.JsonPrimitive)?.content ?: ""
+                    val status = (msg.contains("berhasil", ignoreCase = true) ||
+                                 msg.contains("sukses", ignoreCase = true) ||
+                                 msg.contains("valid", ignoreCase = true)) &&
+                                 !msg.contains("gagal", ignoreCase = true) &&
+                                 !msg.contains("salah", ignoreCase = true) &&
+                                 !msg.contains("tidak", ignoreCase = true) &&
+                                 !msg.contains("kadaluarsa", ignoreCase = true) &&
+                                 !msg.contains("expired", ignoreCase = true) &&
+                                 !msg.contains("error", ignoreCase = true)
+                    TokenResponse(PocketMeta(message = msg, status = status, code = if (status) 200 else 400))
+                }
+                else -> {
+                    // Format datar (flat): {"message": "...", "status": true, "code": 200}
+                    val meta = jsonDecoder.json.decodeFromJsonElement(PocketMeta.serializer(), jsonElement)
+                    TokenResponse(meta)
+                }
+            }
+        } else {
+            throw SerializationException("Expected JSON object")
+        }
+    }
+}
 
 @Serializable
 data class KelasData(
@@ -280,13 +331,40 @@ class PocketApiService(private val client: HttpClient) {
                 header("Authorization", token)
                 header("X-Device-Id", deviceId)
             }
-            Result.success(response.body<TokenResponse>())
+            val responseText = response.bodyAsText()
+            try {
+                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; isLenient = true }
+                val parsed = json.decodeFromString<TokenResponse>(responseText)
+                Result.success(parsed)
+            } catch (e: Exception) {
+                Result.failure(Exception("Gagal mengurai respons otorisasi. JSON Mentah: '$responseText'. Error: ${e.message}"))
+            }
         } catch (e: HttpRequestTimeoutException) {
             Result.failure(Exception("Koneksi timeout saat registrasi token."))
         } catch (e: ClientRequestException) {
             val errorMessage = try {
-                val errorBody = e.response.body<TokenResponse>()
-                errorBody.meta.message
+                val responseText = e.response.bodyAsText()
+                if (responseText.isNotBlank() && !responseText.contains("<!DOCTYPE html", ignoreCase = true) && responseText.length < 150) {
+                    try {
+                        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; isLenient = true }
+                        val parsed = json.decodeFromString<TokenResponse>(responseText)
+                        parsed.meta.message.ifBlank { "Gagal otorisasi token. Sesi tidak valid." }
+                    } catch (_: Exception) {
+                        val msgRegex = "\"msg\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+                        val match = msgRegex.find(responseText)
+                        if (match != null) {
+                            match.groupValues[1]
+                        } else {
+                            if (!responseText.trim().startsWith("{") && !responseText.trim().startsWith("[")) {
+                                responseText.trim()
+                            } else {
+                                "Gagal otorisasi token. Sesi tidak valid."
+                            }
+                        }
+                    }
+                } else {
+                    "Gagal otorisasi token. Sesi tidak valid."
+                }
             } catch (_: Exception) {
                 "Gagal otorisasi token. Sesi tidak valid."
             }
@@ -346,6 +424,79 @@ class PocketApiService(private val client: HttpClient) {
             Result.failure(Exception("Server mengembalikan format presensi yang tidak valid."))
         } catch (e: IOException) {
             Result.failure(Exception("Tidak ada koneksi internet untuk memperbarui detail presensi."))
+        } catch (e: Exception) {
+            Result.failure(Exception("Terjadi kesalahan: ${e.message ?: "Kesalahan tidak diketahui"}"))
+        }
+    }
+
+    /**
+     * Submit token presensi mahasiswa ke API resmi ITERA.
+     *
+     * URL: https://api.itera.ac.id/v2/presensi/kelas
+     * Method: POST (application/x-www-form-urlencoded)
+     *
+     * @param token Token presensi (contoh: 35906-180984-a1c6db)
+     * @param nim NIM mahasiswa yang login
+     */
+    suspend fun submitPresensi(
+        token: String,
+        nim: String
+    ): Result<TokenResponse> {
+        return try {
+            val response = client.submitForm(
+                url = "$BASE_URL/presensi/kelas",
+                formParameters = Parameters.build {
+                    append("token", token)
+                    append("nim", nim)
+                }
+            ) {
+                header("User-Agent", USER_AGENT)
+                header("Accept", "application/json")
+            }
+            val responseText = response.bodyAsText()
+            try {
+                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; isLenient = true }
+                val parsed = json.decodeFromString<TokenResponse>(responseText)
+                Result.success(parsed)
+            } catch (e: Exception) {
+                Result.failure(Exception("Gagal mengurai respons presensi. JSON Mentah: '$responseText'. Error: ${e.message}"))
+            }
+        } catch (e: HttpRequestTimeoutException) {
+            Result.failure(Exception("Koneksi timeout saat mengirim token presensi."))
+        } catch (e: ClientRequestException) {
+            val errorMessage = try {
+                val responseText = e.response.bodyAsText()
+                if (responseText.isNotBlank() && !responseText.contains("<!DOCTYPE html", ignoreCase = true) && responseText.length < 150) {
+                    try {
+                        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; isLenient = true }
+                        val parsed = json.decodeFromString<TokenResponse>(responseText)
+                        parsed.meta.message.ifBlank { "Gagal melakukan presensi. Token presensi salah atau tidak valid." }
+                    } catch (_: Exception) {
+                        val msgRegex = "\"msg\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+                        val match = msgRegex.find(responseText)
+                        if (match != null) {
+                            match.groupValues[1]
+                        } else {
+                            if (!responseText.trim().startsWith("{") && !responseText.trim().startsWith("[")) {
+                                responseText.trim()
+                            } else {
+                                "Gagal melakukan presensi. Token presensi salah atau tidak valid."
+                            }
+                        }
+                    }
+                } else {
+                    "Gagal melakukan presensi. Token presensi salah atau tidak valid."
+                }
+            } catch (_: Exception) {
+                "Gagal melakukan presensi. Token presensi salah atau tidak valid."
+            }
+            Result.failure(Exception(errorMessage))
+        } catch (e: ServerResponseException) {
+            Result.failure(Exception("Server ITERA sedang gangguan saat mengirim presensi (${e.response.status.value})."))
+        } catch (e: SerializationException) {
+            Result.failure(Exception("Server mengembalikan format presensi yang tidak valid."))
+        } catch (e: IOException) {
+            Result.failure(Exception("Tidak ada koneksi internet untuk mengirim presensi."))
         } catch (e: Exception) {
             Result.failure(Exception("Terjadi kesalahan: ${e.message ?: "Kesalahan tidak diketahui"}"))
         }

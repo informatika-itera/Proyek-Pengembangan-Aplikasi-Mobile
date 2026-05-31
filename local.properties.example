@@ -15,7 +15,7 @@
 #   - Windows: sdk.dir=C\:\\Users\\<USERNAME>\\AppData\\Local\\Android\\Sdk
 #sdk.dir=
 
-# Google Gemini API Key
-# Dapatkan API key gratis di: https://aistudio.google.com/
+# OpenCode Go API Key
+# Dapatkan API key setelah subscribe di: https://opencode.ai/go
 # Tanpa key ini, fitur AI tidak akan berjalan (app tetap bisa dibuka).
-GEMINI_API_KEY=your_api_key_here
+OPENCODE_API_KEY=your_api_key_here

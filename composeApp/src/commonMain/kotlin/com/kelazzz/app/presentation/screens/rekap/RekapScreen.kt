@@ -60,7 +60,7 @@ fun RekapScreen(
 
     LaunchedEffect(uiState.syncSuccess) {
         if (uiState.syncSuccess) {
-            snackbarHostState.showSnackbar("Daftar kelas berhasil diperbarui!")
+            snackbarHostState.showSnackbar("Data presensi berhasil disinkronkan!")
             viewModel.clearSyncSuccess()
         }
     }
@@ -69,7 +69,7 @@ fun RekapScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { viewModel.syncKelas() },
+                onClick = { viewModel.syncPresensi() },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
@@ -83,7 +83,7 @@ fun RekapScreen(
                 } else {
                     Icon(
                         imageVector = Icons.Default.CloudSync,
-                        contentDescription = "Sinkronisasi data kelas"
+                        contentDescription = "Sinkronisasi data presensi"
                     )
                 }
             }
@@ -161,7 +161,7 @@ fun RekapScreen(
                     uiState.filteredKelasList.isEmpty() -> {
                         EmptyStateView(
                             searchQuery = uiState.searchQuery,
-                            onSyncClick = { viewModel.syncKelas() }
+                            onSyncClick = { viewModel.syncPresensi() }
                         )
                     }
 
@@ -340,7 +340,7 @@ private fun KelasCardItem(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "Presensi belum disinkronisasi. Klik detail untuk sinkron.",
+                            text = "Presensi belum tersinkron. Tekan tombol sinkronisasi untuk memperbarui data.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -373,7 +373,7 @@ private fun EmptyStateView(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = if (searchQuery.isEmpty()) "Belum ada data kelas" else "Mata kuliah tidak ditemukan",
+            text = if (searchQuery.isEmpty()) "Belum ada data presensi" else "Mata kuliah tidak ditemukan",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -383,7 +383,7 @@ private fun EmptyStateView(
 
         Text(
             text = if (searchQuery.isEmpty()) {
-                "Data kelas lokal kosong. Silakan sinkronisasikan dengan akun Pocket ITERA Anda."
+                "Data lokal kosong. Silakan sinkronisasikan kelas dan presensi dari akun Pocket ITERA Anda."
             } else {
                 "Tidak ada mata kuliah yang cocok dengan pencarian \"$searchQuery\"."
             },
@@ -404,7 +404,7 @@ private fun EmptyStateView(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Sinkronisasi Kelas Sekarang")
+                Text("Sinkronisasi Presensi")
             }
         }
     }
@@ -664,4 +664,3 @@ private fun PertemuanItemRow(
         }
     }
 }
-

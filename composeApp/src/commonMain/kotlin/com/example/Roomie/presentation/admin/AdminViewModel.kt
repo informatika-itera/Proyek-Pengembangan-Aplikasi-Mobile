@@ -26,6 +26,7 @@ sealed interface AdminUiState {
         val filteredBookings: List<Booking>,
         val buildings: List<Building>,
         val rooms: List<Room>,
+        val auditLogs: List<AuditLog>,
         val pendingCount: Int,
         val highUrgencyCount: Int,
         val filter: AdminFilterState = AdminFilterState()
@@ -39,8 +40,10 @@ class AdminViewModel(
     private val updateRoomStatusUseCase: UpdateRoomStatusUseCase,
     private val postAnnouncementUseCase: PostAnnouncementUseCase,
     private val getBuildingsUseCase: GetBuildingsUseCase,
-    private val getRoomsByBuildingUseCase: GetRoomsByBuildingUseCase,
+    private val searchRoomsUseCase: SearchRoomsUseCase,
     private val getAllBookingsUseCase: GetAllBookingsUseCase,
+    private val getAuditLogsUseCase: GetAuditLogsUseCase,
+    private val addAuditLogUseCase: AddAuditLogUseCase,
     private val bookingRepository: BookingRepository,
     private val notificationRepository: NotificationRepository
 ) : ViewModel() {
@@ -57,13 +60,21 @@ class AdminViewModel(
         viewModelScope.launch {
             _uiState.value = AdminUiState.Loading
             
+            @Suppress("UNCHECKED_CAST")
             combine(
                 getAllReportsUseCase(),
                 getBuildingsUseCase(),
-                getRoomsByBuildingUseCase("GKU2"),
+                searchRoomsUseCase(""),
                 getAllBookingsUseCase(),
+                getAuditLogsUseCase(),
                 _filterState
-            ) { reports, buildings, rooms, bookings, filter ->
+            ) { array ->
+                val reports = array[0] as List<Report>
+                val buildings = array[1] as List<Building>
+                val rooms = array[2] as List<Room>
+                val bookings = array[3] as List<Booking>
+                val auditLogs = array[4] as List<AuditLog>
+                val filter = array[5] as AdminFilterState
                 
                 val filteredReports = reports.filter { 
                     (filter.reportStatusFilter == null || it.status == filter.reportStatusFilter) &&
@@ -82,6 +93,7 @@ class AdminViewModel(
                     filteredBookings = filteredBookings,
                     buildings = buildings,
                     rooms = rooms,
+                    auditLogs = auditLogs.reversed(),
                     pendingCount = reports.count { it.status == ReportStatus.PENDING },
                     highUrgencyCount = reports.count { it.urgency == UrgencyLevel.HIGH },
                     filter = filter
@@ -120,6 +132,21 @@ class AdminViewModel(
                 status = RoomStatus.BOOKED,
                 borrowerName = booking.subject ?: "Peminjaman Mahasiswa"
             )
+
+            // Automatic Recording to Audit Logs
+            addAuditLogUseCase(
+                AuditLog(
+                    id = "LOG-${Clock.System.now().toEpochMilliseconds()}",
+                    roomId = booking.roomId,
+                    roomName = booking.roomName,
+                    userId = booking.userId ?: "UNKNOWN",
+                    userName = booking.userId ?: "Mahasiswa",
+                    action = "APPROVED",
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
+                    details = "Disetujui untuk: ${booking.subject}"
+                )
+            )
+
             notificationRepository.addNotification(
                 Notification(
                     id = Clock.System.now().toEpochMilliseconds().toString(),
@@ -152,6 +179,20 @@ class AdminViewModel(
                 status = status,
                 maintenanceDescription = if (status == RoomStatus.MAINTENANCE) note else null,
                 borrowerName = if (status == RoomStatus.BOOKED) note else null
+            )
+
+            // Automatic Recording for Admin Override
+            addAuditLogUseCase(
+                AuditLog(
+                    id = "LOG-OVERRIDE-${Clock.System.now().toEpochMilliseconds()}",
+                    roomId = roomId,
+                    roomName = roomId.split("-").lastOrNull() ?: roomId,
+                    userId = "ADMIN",
+                    userName = "Administrator",
+                    action = "OVERRIDE_${status.name}",
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
+                    details = note ?: "Manual status change"
+                )
             )
         }
     }

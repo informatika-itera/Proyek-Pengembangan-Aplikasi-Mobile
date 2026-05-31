@@ -29,6 +29,7 @@ class FacilityViewModelTest {
         repository = FakeFacilityRepository()
         bookingRepository = FakeBookingRepository()
         viewModel = FacilityViewModel(repository, bookingRepository)
+        viewModel.initBuilding("GKU2")
     }
 
     @AfterTest

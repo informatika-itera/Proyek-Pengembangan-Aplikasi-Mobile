@@ -1,25 +1,34 @@
 package com.example.Roomie.presentation.admin
 
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.Roomie.domain.model.*
+import kotlinx.datetime.*
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -32,68 +41,351 @@ fun AdminDashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Laporan", "Approval", "Kontrol")
+    var currentView by remember { mutableStateOf("OVERVIEW") }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("CONTROL CENTER", fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp) },
+                title = {
+                    Text(
+                        if (currentView == "OVERVIEW") "COMMAND CENTER" else currentView,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.primary)
+                    if (currentView != "OVERVIEW") {
+                        IconButton(onClick = { currentView = "OVERVIEW" }) {
+                            Icon(Icons.Default.Close, "Back to Hub", tint = MaterialTheme.colorScheme.primary)
+                        }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.primary,
-                indicator = { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = MaterialTheme.colorScheme.primary
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            when (val state = uiState) {
+                is AdminUiState.Loading -> CircularProgressIndicator(
+                    Modifier.align(Alignment.Center),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                is AdminUiState.Success -> {
+                    AnimatedContent(
+                        targetState = currentView,
+                        transitionSpec = {
+                            fadeIn() + slideInHorizontally() togetherWith fadeOut() + slideOutHorizontally()
+                        }
+                    ) { view ->
+                        when (view) {
+                            "OVERVIEW" -> AdminOverviewHub(
+                                state = state,
+                                onNavigate = { currentView = it }
+                            )
+                            "LAPORAN" -> ReportManagementTab(state, viewModel, onActionSuccess = { msg ->
+                                scope.launch { snackbarHostState.showSnackbar(msg) }
+                            })
+                            "APPROVAL" -> ApprovalTab(state, viewModel, onActionSuccess = { msg ->
+                                scope.launch { snackbarHostState.showSnackbar(msg) }
+                            })
+                            "KONTROL" -> SystemControlTab(viewModel, onActionSuccess = { msg ->
+                                scope.launch { snackbarHostState.showSnackbar(msg) }
+                            })
+                            "HISTORY" -> HistoryTab(state)
+                        }
+                    }
+                }
+                is AdminUiState.Error -> Text(
+                    state.message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminOverviewHub(
+    state: AdminUiState.Success,
+    onNavigate: (String) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    var showFacilitySheet by remember { mutableStateOf(false) }
+    var showReportBreakdown by remember { mutableStateOf(false) }
+
+    // --- ACCURACY LOGIC: REAL-TIME SYNC ---
+    val tz = TimeZone.currentSystemDefault()
+    val now = Clock.System.now()
+    val today = now.toLocalDateTime(tz).date
+    
+    // 1. Calculate Facility Health (Synchronized with Facility menu logic)
+    // A room is considered "Unavailable" if:
+    // - Its status is MAINTENANCE in database
+    // - OR there is an APPROVED booking on TODAY'S date
+    val totalRoomsCount = state.rooms.size.coerceAtLeast(1)
+    
+    val busyRoomIds = state.allBookings
+        .filter { booking ->
+            val bookingDate = Instant.fromEpochMilliseconds(booking.startTime)
+                .toLocalDateTime(tz).date
+            booking.status == BookingStatus.APPROVED && bookingDate == today
+        }
+        .map { it.roomId }
+        .toSet()
+
+    val availableRoomsCount = state.rooms.count { room ->
+        // Mirroring FacilityViewModel logic: 
+        // 1. Maintenance is always unavailable
+        // 2. Otherwise, check if there's a booking TODAY
+        room.status != RoomStatus.MAINTENANCE && !busyRoomIds.contains(room.id)
+    }
+    
+    val facilityHealth = availableRoomsCount.toFloat() / totalRoomsCount
+
+    // 2. Calculate Report Resolution
+    val totalReportsCount = state.allReports.size.coerceAtLeast(1)
+    val solvedReportsCount = state.allReports.count { it.status == ReportStatus.DONE }
+    val reportResolution = solvedReportsCount.toFloat() / totalReportsCount
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // 1. Dual Gauges (Fixed UI: Centered, Better Proportions)
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                GaugeCard(
+                    title = "FACILITY HEALTH",
+                    value = "${(facilityHealth * 100).toInt()}%",
+                    progress = facilityHealth,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                    onClick = { showFacilitySheet = true }
+                )
+                GaugeCard(
+                    title = "RESOLVED RATE",
+                    value = "${(reportResolution * 100).toInt()}%",
+                    progress = reportResolution,
+                    color = Color(0xFFB22222), // Itera Red
+                    modifier = Modifier.weight(1f),
+                    onClick = { showReportBreakdown = !showReportBreakdown }
+                )
+            }
+        }
+
+        // Urgency Breakdown (Expandable)
+        if (showReportBreakdown) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                ) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Urgency Breakdown", fontWeight = FontWeight.Bold)
+                        UrgencyItem("High Priority", state.allReports.count { it.urgency == UrgencyLevel.HIGH }, Color(0xFFB22222))
+                        UrgencyItem("Medium Priority", state.allReports.count { it.urgency == UrgencyLevel.MEDIUM }, MaterialTheme.colorScheme.primary)
+                        UrgencyItem("Low Priority", state.allReports.count { it.urgency == UrgencyLevel.LOW }, Color.Gray)
+                    }
+                }
+            }
+        }
+
+        // 2. Menu Hub
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("MANAGEMENT HUB", fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    HubTile(
+                        title = "Approvals",
+                        count = state.allBookings.count { it.status == BookingStatus.PENDING }.toString(),
+                        icon = Icons.AutoMirrored.Filled.FactCheck,
+                        color = Color(0xFF4CAF50),
+                        modifier = Modifier.weight(1f),
+                        onClick = { onNavigate("APPROVAL") }
+                    )
+                    HubTile(
+                        title = "Reports",
+                        count = state.pendingCount.toString(),
+                        icon = Icons.Default.ReportProblem,
+                        color = Color(0xFFB22222),
+                        modifier = Modifier.weight(1f),
+                        onClick = { onNavigate("LAPORAN") }
                     )
                 }
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = { Text(title, fontWeight = FontWeight.Bold) }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    HubTile(
+                        title = "Control",
+                        count = "LIVE",
+                        icon = Icons.Default.Campaign,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onNavigate("KONTROL") }
+                    )
+                    HubTile(
+                        title = "Audit Log",
+                        count = state.auditLogs.size.toString(),
+                        icon = Icons.Default.HistoryEdu,
+                        color = Color.Gray,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onNavigate("HISTORY") }
                     )
                 }
             }
+        }
+    }
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (val state = uiState) {
-                    is AdminUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
-                    is AdminUiState.Success -> {
-                        when (selectedTab) {
-                            0 -> ReportManagementTab(state, viewModel, onActionSuccess = { msg ->
-                                scope.launch { snackbarHostState.showSnackbar(msg) }
-                            })
-                            1 -> ApprovalTab(state, viewModel, onActionSuccess = { msg ->
-                                scope.launch { snackbarHostState.showSnackbar(msg) }
-                            })
-                            else -> SystemControlTab(
-                                state = state,
-                                viewModel = viewModel,
-                                onActionSuccess = { message ->
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(message)
-                                    }
-                                }
-                            )
+    if (showFacilitySheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFacilitySheet = false },
+            sheetState = sheetState,
+            dragHandle = { BottomSheetDefaults.DragHandle() },
+            containerColor = MaterialTheme.colorScheme.surface
+        ) {
+            FacilityStatusContent(state.rooms, state.allBookings)
+        }
+    }
+}
+
+@Composable
+fun GaugeCard(
+    title: String,
+    value: String,
+    progress: Float,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.03f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.1f))
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(110.dp)) {
+                CircularProgressIndicator(
+                    progress = { 1f },
+                    modifier = Modifier.fillMaxSize(),
+                    color = color.copy(alpha = 0.1f),
+                    strokeWidth = 12.dp
+                )
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxSize(),
+                    color = color,
+                    strokeWidth = 12.dp,
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                )
+                Text(
+                    value, 
+                    fontWeight = FontWeight.Black, 
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 24.sp
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                title, 
+                style = MaterialTheme.typography.labelSmall, 
+                fontWeight = FontWeight.ExtraBold, 
+                color = color.copy(alpha = 0.8f),
+                letterSpacing = 1.sp,
+                fontSize = 10.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun UrgencyItem(label: String, count: Int, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+        Spacer(Modifier.width(12.dp))
+        Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+        Text(count.toString(), fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun FacilityStatusContent(rooms: List<Room>, allBookings: List<Booking>) {
+    val tz = TimeZone.currentSystemDefault()
+    val now = Clock.System.now()
+    val today = now.toLocalDateTime(tz).date
+    
+    // Identify truly busy rooms (Booked today)
+    val currentlyBookedIds = allBookings
+        .filter { booking ->
+            val bookingDate = Instant.fromEpochMilliseconds(booking.startTime)
+                .toLocalDateTime(tz).date
+            booking.status == BookingStatus.APPROVED && bookingDate == today
+        }
+        .map { it.roomId }
+        .toSet()
+
+    val nonAvailable = rooms.filter { room ->
+        room.status == RoomStatus.MAINTENANCE || currentlyBookedIds.contains(room.id)
+    }
+    
+    Column(Modifier.fillMaxWidth().padding(bottom = 40.dp, start = 24.dp, end = 24.dp)) {
+        Text("Status Fasilitas Saat Ini", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+        Text("Daftar ruangan yang sedang digunakan atau dalam perbaikan", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        Spacer(Modifier.height(24.dp))
+        
+        if (nonAvailable.isEmpty()) {
+            Box(Modifier.height(200.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("Semua ruangan tersedia", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.heightIn(max = 450.dp)) {
+                items(nonAvailable) { room ->
+                    val isInMaintenance = room.status == RoomStatus.MAINTENANCE
+                    val isCurrentlyBooked = currentlyBookedIds.contains(room.id)
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val icon = if (isInMaintenance) Icons.Default.Build else Icons.Default.LockClock
+                        val color = if (isInMaintenance) MaterialTheme.colorScheme.primary else Color(0xFFB22222)
+                        val statusText = if (isInMaintenance) "MAINTENANCE" else "IN USE (BOOKED)"
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(color.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(icon, null, tint = color, modifier = Modifier.size(22.dp))
+                        }
+                        Spacer(Modifier.width(16.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(room.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                            Text(statusText, style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.ExtraBold)
                         }
                     }
-                    is AdminUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
                 }
             }
         }
@@ -101,68 +393,152 @@ fun AdminDashboardScreen(
 }
 
 @Composable
-fun ApprovalTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
-    val pendingBookings = state.filteredBookings.filter { it.status == BookingStatus.PENDING }
-    
-    Column(modifier = Modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = state.filter.bookingQuery,
-            onValueChange = viewModel::onBookingSearch,
-            placeholder = { Text("Cari ruangan atau tujuan...") },
-            leadingIcon = { Icon(Icons.Default.Search, null) },
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            shape = RoundedCornerShape(12.dp),
-            singleLine = true
-        )
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+fun HubTile(
+    title: String,
+    count: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.height(130.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.05f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.1f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxSize(), 
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (pendingBookings.isEmpty()) {
-                item {
-                    Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Tidak ada pengajuan pinjam", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+            Box(
+                modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(color.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
+            }
+            Spacer(Modifier.height(12.dp))
+            Text(count, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = color)
+            Text(title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun ApprovalTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
+    val pendingBookings = state.allBookings.filter { it.status == BookingStatus.PENDING }
+    
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text("Pengajuan Menunggu", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+            Text("Review permohonan peminjaman ruangan mahasiwa", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Spacer(Modifier.height(8.dp))
+        }
+
+        if (pendingBookings.isEmpty()) {
+            item {
+                Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Semua pengajuan sudah diproses", color = Color.Gray)
                 }
-            } else {
-                items(pendingBookings) { booking ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    ) {
-                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Pengajuan Ruangan", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                                Text(booking.id, style = MaterialTheme.typography.labelSmall)
+            }
+        } else {
+            items(pendingBookings) { booking ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                ) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Person, null, tint = MaterialTheme.colorScheme.primary)
                             }
-                            Text("${booking.buildingName} - Ruang ${booking.roomName}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Tujuan: ${booking.subject}", style = MaterialTheme.typography.bodyMedium)
-                            
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                                Button(
-                                    onClick = { 
-                                        viewModel.approveBooking(booking)
-                                        onActionSuccess("Peminjaman disetujui & Status Ruang diupdate")
-                                    },
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) { Text("SETUJUI") }
-                                
-                                OutlinedButton(
-                                    onClick = { 
-                                        viewModel.rejectBooking(booking)
-                                        onActionSuccess("Peminjaman ditolak")
-                                    },
-                                    modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) { Text("TOLAK") }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(booking.subject ?: "Tanpa Judul", fontWeight = FontWeight.Bold)
+                                Text("Ruang ${booking.roomName}", style = MaterialTheme.typography.bodySmall)
                             }
                         }
+                        
+                        HorizontalDivider(modifier = Modifier.alpha(0.1f), color = MaterialTheme.colorScheme.onSurface)
+                        
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                onClick = { viewModel.approveBooking(booking); onActionSuccess("Berhasil disetujui") },
+                                modifier = Modifier.weight(1f).height(44.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                            ) { Text("SETUJUI", fontWeight = FontWeight.Bold) }
+                            
+                            OutlinedButton(
+                                onClick = { viewModel.rejectBooking(booking); onActionSuccess("Berhasil ditolak") },
+                                modifier = Modifier.weight(1f).height(44.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) { Text("TOLAK", color = MaterialTheme.colorScheme.error) }
+                        }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SystemControlTab(
+    viewModel: AdminViewModel,
+    onActionSuccess: (String) -> Unit
+) {
+    var announceTitle by remember { mutableStateOf("") }
+    var announceMsg by remember { mutableStateOf("") }
+
+    Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Text("System Broadcast", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+        
+        Card(
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        ) {
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Campaign, null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Kirim Pengumuman Global", fontWeight = FontWeight.Bold)
+                }
+                
+                OutlinedTextField(
+                    value = announceTitle, 
+                    onValueChange = { announceTitle = it }, 
+                    label = { Text("Judul Pengumuman") }, 
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp)
+                )
+                OutlinedTextField(
+                    value = announceMsg, 
+                    onValueChange = { announceMsg = it }, 
+                    label = { Text("Isi Pesan") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    minLines = 3
+                )
+                
+                Button(
+                    onClick = {
+                        viewModel.broadcastMessage(announceTitle, announceMsg)
+                        onActionSuccess("Pengumuman Terkirim!")
+                        announceTitle = ""; announceMsg = ""
+                    },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = announceTitle.isNotBlank() && announceMsg.isNotBlank()
+                ) {
+                    Text("KIRIM BROADCAST", fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -171,351 +547,93 @@ fun ApprovalTab(state: AdminUiState.Success, viewModel: AdminViewModel, onAction
 
 @Composable
 fun ReportManagementTab(state: AdminUiState.Success, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = state.filter.reportQuery,
-                    onValueChange = viewModel::onReportSearch,
-                    placeholder = { Text("Cari deskripsi atau lokasi...") },
-                    leadingIcon = { Icon(Icons.Default.Search, null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    singleLine = true
-                )
-                
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        selected = state.filter.reportStatusFilter == null,
-                        onClick = { viewModel.onReportStatusFilter(null) },
-                        label = { Text("Semua") }
-                    )
-                    FilterChip(
-                        selected = state.filter.reportStatusFilter == ReportStatus.PENDING,
-                        onClick = { viewModel.onReportStatusFilter(ReportStatus.PENDING) },
-                        label = { Text("Pending") }
-                    )
-                    FilterChip(
-                        selected = state.filter.reportStatusFilter == ReportStatus.IN_PROGRESS,
-                        onClick = { viewModel.onReportStatusFilter(ReportStatus.IN_PROGRESS) },
-                        label = { Text("Proses") }
-                    )
-                }
-            }
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AdminStatCard("PENDING", state.pendingCount.toString(), MaterialTheme.colorScheme.primary, Modifier.weight(1f))
-                    AdminStatCard("URGENT", state.highUrgencyCount.toString(), MaterialTheme.colorScheme.error, Modifier.weight(1f))
-                }
-            }
-            items(state.filteredReports) { report ->
-                ReportAdminCard(report, viewModel, onActionSuccess)
-            }
-        }
-    }
-}
-
-private enum class PickerStage { BUILDING, FLOOR, ROOM }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SystemControlTab(
-    state: AdminUiState.Success,
-    viewModel: AdminViewModel,
-    onActionSuccess: (String) -> Unit
-) {
-    var announceTitle by remember { mutableStateOf("") }
-    var announceMsg by remember { mutableStateOf("") }
-    var selectedRoom by remember { mutableStateOf<Room?>(null) }
-    var roomNote by remember { mutableStateOf("") }
-    var showRoomPicker by remember { mutableStateOf(false) }
-    var currentStage by remember { mutableStateOf(PickerStage.BUILDING) }
-    var tempBuilding by remember { mutableStateOf<Building?>(null) }
-    var tempFloor by remember { mutableStateOf<Int?>(null) }
-
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-            ) {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Broadcast Pengumuman", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    OutlinedTextField(
-                        value = announceTitle, 
-                        onValueChange = { announceTitle = it }, 
-                        label = { Text("Judul Pengumuman") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    OutlinedTextField(
-                        value = announceMsg, 
-                        onValueChange = { announceMsg = it }, 
-                        label = { Text("Isi Pesan") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    Button(
-                        onClick = {
-                            viewModel.broadcastMessage(announceTitle, announceMsg)
-                            onActionSuccess("Pengumuman berhasil disiarkan!")
-                            announceTitle = ""; announceMsg = ""
-                        },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        enabled = announceTitle.isNotBlank() && announceMsg.isNotBlank()
-                    ) { Text("SIARKAN SEKARANG", fontWeight = FontWeight.Bold) }
-                }
-            }
+            Text("Laporan Kerusakan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+            Spacer(Modifier.height(8.dp))
         }
 
-        item {
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-            ) {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Override Fasilitas", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                    
-                    Surface(
-                        onClick = { 
-                            currentStage = PickerStage.BUILDING
-                            showRoomPicker = true 
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-                    ) {
-                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.MeetingRoom, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                text = selectedRoom?.let { "Ruang ${it.name} - Lt ${it.floor}" } ?: "Pilih Ruangan Target...",
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    OutlinedTextField(
-                        value = roomNote, 
-                        onValueChange = { roomNote = it }, 
-                        label = { Text("Catatan Status (Opsional)") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(
-                                onClick = { 
-                                    selectedRoom?.let {
-                                        viewModel.overrideRoomStatus(it.id, RoomStatus.BOOKED, roomNote)
-                                        onActionSuccess("Status ${it.name} diubah ke PENUH")
-                                        selectedRoom = null; roomNote = "" 
-                                    }
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                                enabled = selectedRoom != null,
-                                shape = RoundedCornerShape(12.dp)
-                            ) { Text("SET FULL", fontWeight = FontWeight.Bold) }
-                            Button(
-                                onClick = { 
-                                    selectedRoom?.let {
-                                        viewModel.overrideRoomStatus(it.id, RoomStatus.MAINTENANCE, roomNote)
-                                        onActionSuccess("Status ${it.name} diubah ke PERBAIKAN")
-                                        selectedRoom = null; roomNote = "" 
-                                    }
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                enabled = selectedRoom != null,
-                                shape = RoundedCornerShape(12.dp)
-                            ) { Text("SET REPAIR", fontWeight = FontWeight.Bold) }
-                        }
-                        
-                        if (selectedRoom != null) {
-                            OutlinedButton(
-                                onClick = {
-                                    selectedRoom?.let {
-                                        viewModel.overrideRoomStatus(it.id, RoomStatus.AVAILABLE, null)
-                                        onActionSuccess("Status ${it.name} kembali TERSEDIA")
-                                        selectedRoom = null; roomNote = ""
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) { Text("RESET KE TERSEDIA", fontWeight = FontWeight.Bold) }
-                        }
-                    }
-                }
-            }
+        items(state.filteredReports) { report ->
+            ReportAdminCard(report, viewModel, onActionSuccess)
         }
-    }
-
-    if (showRoomPicker) {
-        AlertDialog(
-            onDismissRequest = { showRoomPicker = false },
-            title = { 
-                Text(
-                    when(currentStage) {
-                        PickerStage.BUILDING -> "Pilih Gedung"
-                        PickerStage.FLOOR -> "Pilih Lantai"
-                        PickerStage.ROOM -> "Pilih Ruangan"
-                    },
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.ExtraBold
-                ) 
-            },
-            text = {
-                Box(Modifier.height(350.dp)) {
-                    LazyColumn {
-                        when (currentStage) {
-                            PickerStage.BUILDING -> {
-                                items(state.buildings) { building ->
-                                    ListItem(
-                                        headlineContent = { Text(building.name, fontWeight = FontWeight.Bold) },
-                                        supportingContent = { Text(if (building.isAvailable) "Aktif" else "Segera") },
-                                        modifier = Modifier.clickable(enabled = building.isAvailable) { 
-                                            tempBuilding = building
-                                            currentStage = PickerStage.FLOOR
-                                        }
-                                    )
-                                }
-                            }
-                            PickerStage.FLOOR -> {
-                                items((1..4).toList()) { floor ->
-                                    ListItem(
-                                        headlineContent = { Text("Lantai $floor", fontWeight = FontWeight.Bold) },
-                                        modifier = Modifier.clickable { 
-                                            tempFloor = floor
-                                            currentStage = PickerStage.ROOM
-                                        }
-                                    )
-                                }
-                            }
-                            PickerStage.ROOM -> {
-                                val filteredRooms = state.rooms.filter { 
-                                    it.id.startsWith(tempBuilding?.id ?: "") && it.floor == tempFloor 
-                                }
-                                items(filteredRooms) { room ->
-                                    ListItem(
-                                        headlineContent = { Text("Ruang ${room.name}", fontWeight = FontWeight.Bold) },
-                                        trailingContent = { Text(room.status.name, style = MaterialTheme.typography.labelSmall) },
-                                        modifier = Modifier.clickable { 
-                                            selectedRoom = room
-                                            showRoomPicker = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                if (currentStage != PickerStage.BUILDING) {
-                    TextButton(onClick = { 
-                        currentStage = if (currentStage == PickerStage.ROOM) PickerStage.FLOOR else PickerStage.BUILDING 
-                    }) { Text("KEMBALI", color = MaterialTheme.colorScheme.primary) }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showRoomPicker = false }) { Text("BATAL") }
-            }
-        )
     }
 }
 
 @Composable
-fun ReportAdminCard(
-    report: Report,
-    viewModel: AdminViewModel,
-    onActionSuccess: (String) -> Unit
-) {
+fun ReportAdminCard(report: Report, viewModel: AdminViewModel, onActionSuccess: (String) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
     ) {
-        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp)) {
-                    Text(report.category, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), shape = CircleShape) {
+                    Text(report.category, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
-                Text(report.status.name, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(report.status.name, fontWeight = FontWeight.Black, style = MaterialTheme.typography.labelSmall)
             }
-            Column {
-                Text(report.description, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(report.location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Text(report.description, fontWeight = FontWeight.Bold)
             
             if (report.imageUrl != null) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    AsyncImage(
-                        model = report.imageUrl,
-                        contentDescription = "Bukti Kerusakan",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                    )
-                }
+                AsyncImage(
+                    model = report.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth().height(150.dp).clip(RoundedCornerShape(16.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                Button(
-                    onClick = { 
-                        viewModel.updateReportStatus(report.id, ReportStatus.IN_PROGRESS) 
-                        onActionSuccess("Laporan sedang diproses")
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = report.status == ReportStatus.PENDING,
-                    shape = RoundedCornerShape(12.dp)
-                ) { Text("PROSES") }
-                OutlinedButton(
-                    onClick = { 
-                        viewModel.updateReportStatus(report.id, ReportStatus.DONE)
-                        onActionSuccess("Laporan telah selesai")
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = report.status != ReportStatus.DONE,
-                    shape = RoundedCornerShape(12.dp)
-                ) { Text("SELESAI") }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (report.status == ReportStatus.PENDING) {
+                    Button(
+                        onClick = { viewModel.updateReportStatus(report.id, ReportStatus.IN_PROGRESS); onActionSuccess("Diproses") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) { Text("PROSES") }
+                }
+                if (report.status != ReportStatus.DONE) {
+                    OutlinedButton(
+                        onClick = { viewModel.updateReportStatus(report.id, ReportStatus.DONE); onActionSuccess("Selesai") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) { Text("SELESAI") }
+                }
             }
         }
     }
 }
 
 @Composable
-fun AdminStatCard(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
-        color = color.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
+fun HistoryTab(state: AdminUiState.Success) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(value, style = MaterialTheme.typography.displaySmall, color = color, fontWeight = FontWeight.ExtraBold)
-            Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        item { Text("Riwayat Aktivitas", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) }
+        
+        items(state.auditLogs) { log ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(12.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                Spacer(Modifier.width(16.dp))
+                Card(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(log.action, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("Oleh: ${log.userName}", style = MaterialTheme.typography.bodySmall)
+                        log.details?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray) }
+                    }
+                }
+            }
         }
     }
 }

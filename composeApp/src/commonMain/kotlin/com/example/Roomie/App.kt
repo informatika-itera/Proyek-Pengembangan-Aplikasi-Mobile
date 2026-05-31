@@ -237,15 +237,17 @@ fun App(
                 composable(Screen.Facility.route) {
                     BuildingListScreen(
                         onBuildingClick = { building ->
-                            if (building.id == "GKU2") {
-                                navController.navigate(Screen.RoomSelection.route)
-                            }
+                            navController.navigate("room_selection/${building.id}")
                         }
                     )
                 }
 
-                composable(Screen.RoomSelection.route) {
+                composable(
+                    route = "room_selection/{buildingId}"
+                ) { backStackEntry ->
+                    val buildingId = backStackEntry.arguments?.getString("buildingId") ?: "GKU2"
                     FacilityGridScreen(
+                        buildingId = buildingId,
                         onNavigateToDetail = { roomId, date ->
                             navController.navigate(Screen.RoomDetail.createRoute(roomId, date))
                         },

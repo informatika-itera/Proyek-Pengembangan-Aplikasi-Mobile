@@ -36,4 +36,8 @@ val domainModule = module {
     // Notification UseCases
     factoryOf(::GetAllNotificationsUseCase)
     factoryOf(::MarkNotificationAsReadUseCase)
+
+    // Audit UseCases
+    factoryOf(::GetAuditLogsUseCase)
+    factoryOf(::AddAuditLogUseCase)
 }

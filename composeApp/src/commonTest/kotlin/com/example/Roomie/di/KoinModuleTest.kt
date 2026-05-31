@@ -60,6 +60,12 @@ class KoinModuleTest : KoinTest {
                     override suspend fun markAsRead(id: String) {}
                 }
             }
+            single<AuditRepository> {
+                object : AuditRepository {
+                    override fun getAuditLogs() = flowOf(emptyList<com.example.Roomie.domain.model.AuditLog>())
+                    override suspend fun addAuditLog(log: com.example.Roomie.domain.model.AuditLog) = Result.success(Unit)
+                }
+            }
             single<SupabaseClient> { 
                 createSupabaseClient("https://fake.com", "fake") {}
             }

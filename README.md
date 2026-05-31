@@ -75,7 +75,7 @@ composeApp/src/commonMain/kotlin/com/example/Roomie/
     - Base Setup Java JDK 17
     - Mock `local.properties` creation for secure build
     - Execution permission management
-    - **Unit Testing:** Menjalankan 11 unit tests validasi logic
+    - **Unit Testing:** Menjalankan 11 unit tests validasi logic (All Passed ✅)
     - **Build:** Otomatis menghasilkan Debug APK
 - **Static Analysis:** Terintegrasi dengan **Detekt** untuk menjaga kualitas kode.
 
@@ -87,13 +87,13 @@ composeApp/src/commonMain/kotlin/com/example/Roomie/
 |---|---|---|---|
 | **Sprint 1** | Infrastructure | Repository Setup, Koin DI, SQLDelight, GitHub Actions CI/CD | ✅ Done |
 | **Sprint 2** | Core Features | Login RBAC, Multi-Select Grid, Booking Logic, Supabase Cloud Storage | ✅ Done |
-| **Sprint 3** | Advanced Logic | Ktor API Integration, Reactive Search, Offline-First Support, UX Animations | 🚀 Planned |
+| **Sprint 3** | Advanced Logic | Offline-First, Real-time Sync, NTP Time, Command Center UI | ✅ Done |
 | **Sprint 4** | Quality Control | Systematic Bug Fixing, Unit & UI Testing, UI Polish, Performance Profiling | 🚀 Planned |
 | **Sprint 5** | Final Delivery | Signed APK Generation, Demo Scripting, Backup Plan, UAS Demo Day Prep | 🏁 Final |
 
 ---
 
-## 📑 Detail Progress Pengembangan (Sprint 1 & 2)
+## 📑 Detail Progress Pengembangan (Sprint 1 - 3)
 
 | Sprint | Kriteria | Status | Detail / Bukti Implementasi |
 |:---:|---|:---:|---|
@@ -111,6 +111,12 @@ composeApp/src/commonMain/kotlin/com/example/Roomie/
 | | UI States (L/S/E) | ✅ | Penanganan state reaktif (Loading, Success, Error) di seluruh layar utama. |
 | | App Accessibility | ✅ | Alur navigasi tertutup (no dead ends), user dapat menjelajah seluruh fitur app. |
 | | API Integration | ✅ | Integrasi Supabase SDK (DB/Auth/Realtime) & Ktor Client (Server Time Sync). |
+| **3** | Search/Filter | ✅ | Implementasi filter kapasitas cerdas & pencarian reaktif di sisi Mahasiswa & Admin. |
+| | Offline-First Support | ✅ | Arsitektur data hibrida (Local SQLite via SQLDelight + Remote Supabase Sync). |
+| | Additional Screens | ✅ | Hub Dashboard Admin, Layar Notifikasi, dan Manajemen Profil User. |
+| | Bonus Feature | ✅ | Integrasi Peekaboo Image Picker & NTP Anti-Fraud System Time Synchronization. |
+| | Extra Feature | ✅ | Interactive Command Center (Gauges interaktif) & Seamless Real-time WebSocket. |
+| | Regression Test | ✅ | Validasi seluruh fitur utama Sprint 2 tetap stabil (11 Unit Tests PASSED). |
 
 ---
 

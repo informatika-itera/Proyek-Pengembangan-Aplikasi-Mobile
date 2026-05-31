@@ -113,46 +113,67 @@ fun HomeContent(
     ) {
         // 1. Header & Greeting
         item {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Transparent
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (state.userAvatar != null) {
-                        AsyncImage(
-                            model = state.userAvatar,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            Icons.Default.Person, 
-                            contentDescription = null, 
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    )
+                                )
+                            )
+                            .padding(2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (state.userAvatar != null) {
+                            AsyncImage(
+                                model = state.userAvatar,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
                     }
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = "Halo, ${state.userName}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = AppStrings.HOME_SUB_GREETING,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    Column {
+                        Text(
+                            text = "Halo, ${state.userName}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = (-0.5).sp
+                        )
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = AppStrings.HOME_SUB_GREETING,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -161,45 +182,74 @@ fun HomeContent(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                shape = RoundedCornerShape(32.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Box(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .background(
-                            brush = Brush.horizontalGradient(
+                            brush = Brush.linearGradient(
                                 colors = listOf(
                                     MaterialTheme.colorScheme.primary,
-                                    Color(0xFF8B7500)
+                                    Color(0xFF8B7500),
+                                    Color(0xFF5F4F00)
                                 )
                             )
                         )
-                        .padding(24.dp)
+                        .padding(28.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = AppStrings.HOME_STATS_TITLE,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "${state.reportCountInProgress} Laporan Aktif",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.ExtraBold
-                            )
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column {
+                                Text(
+                                    text = AppStrings.HOME_STATS_TITLE.uppercase(),
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.5.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${state.reportCountInProgress} Laporan Aktif",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = (-1).sp
+                                )
+                            }
+                            Surface(
+                                modifier = Modifier.size(48.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                color = Color.White.copy(alpha = 0.2f)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.TrendingUp,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+                            }
                         }
-                        Icon(
-                            Icons.AutoMirrored.Filled.TrendingUp,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(48.dp).alpha(0.7f)
+                        
+                        LinearProgressIndicator(
+                            progress = { 0.7f },
+                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
+                            color = Color.White,
+                            trackColor = Color.White.copy(alpha = 0.2f)
+                        )
+                        
+                        Text(
+                            text = "Ayo jaga fasilitas bersama, Itera!",
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -346,27 +396,33 @@ fun QuickActionItem(
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Surface(
-            modifier = Modifier.size(64.dp),
-            shape = RoundedCornerShape(20.dp),
-            color = color.copy(alpha = 0.15f),
-            border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
+            modifier = Modifier.size(72.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = color.copy(alpha = 0.1f),
+            border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(28.dp))
+                Icon(
+                    icon, 
+                    contentDescription = label, 
+                    tint = color, 
+                    modifier = Modifier.size(30.dp)
+                )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            letterSpacing = 0.5.sp
         )
     }
 }

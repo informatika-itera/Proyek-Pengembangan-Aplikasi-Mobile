@@ -10,6 +10,9 @@ import com.example.Roomie.domain.repository.*
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -33,10 +36,12 @@ val dataModule = module {
     single { RoomieDatabase(get<DatabaseDriverFactory>().createDriver()) }
     
     // Repositories
+    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
     singleOf(::SupabaseAuthRepositoryImpl) bind AuthRepository::class
-    singleOf(::SupabaseBookingRepositoryImpl) bind BookingRepository::class
+    single<BookingRepository> { BookingRepositoryImpl(get(), get(), get(), get(), get()) }
     singleOf(::SupabaseReportRepositoryImpl) bind ReportRepository::class
     singleOf(::SupabaseFacilityRepositoryImpl) bind FacilityRepository::class
+    singleOf(::SupabaseAuditRepositoryImpl) bind AuditRepository::class
     singleOf(::AnnouncementRepositoryImpl) bind AnnouncementRepository::class
     singleOf(::NotificationRepositoryImpl) bind NotificationRepository::class
 }

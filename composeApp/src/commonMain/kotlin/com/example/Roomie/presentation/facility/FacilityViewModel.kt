@@ -28,6 +28,7 @@ class FacilityViewModel(
     private val facilityRepository: FacilityRepository,
     private val bookingRepository: BookingRepository
 ) : ViewModel() {
+    private var currentBuildingId: String = "GKU2"
     private val _selectedFloor = MutableStateFlow(1)
     private val _selectedDate = MutableStateFlow(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
     
@@ -41,16 +42,20 @@ class FacilityViewModel(
     private fun initData() {
         viewModelScope.launch {
             (facilityRepository as? FacilityRepositoryImpl)?.seedData()
-            observeGKU2RoomsWithDate()
         }
     }
 
-    private fun observeGKU2RoomsWithDate() {
+    fun initBuilding(buildingId: String) {
+        currentBuildingId = buildingId
+        observeRoomsWithDate()
+    }
+
+    private fun observeRoomsWithDate() {
         viewModelScope.launch {
             _uiState.value = FacilityUiState.Loading
             
             combine(
-                facilityRepository.getRoomsByBuilding("GKU2"),
+                facilityRepository.getRoomsByBuilding(currentBuildingId),
                 bookingRepository.getAllBookings(),
                 _selectedFloor,
                 _selectedDate

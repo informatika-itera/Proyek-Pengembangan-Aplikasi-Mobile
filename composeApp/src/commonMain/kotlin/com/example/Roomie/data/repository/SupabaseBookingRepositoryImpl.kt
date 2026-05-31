@@ -13,7 +13,7 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BookingDto(
+data class SupabaseBookingDto(
     val id: String,
     val room_id: String,
     val room_name: String,
@@ -32,7 +32,7 @@ class SupabaseBookingRepositoryImpl(
     @OptIn(SupabaseExperimental::class)
     override fun getAllBookings(): Flow<List<Booking>> {
         return client.postgrest["bookings"].selectAsFlow(
-            primaryKey = BookingDto::id
+            primaryKey = SupabaseBookingDto::id
         ).map { list ->
             list.map { it.toDomain() }
         }
@@ -86,7 +86,7 @@ class SupabaseBookingRepositoryImpl(
                     eq("status", BookingStatus.APPROVED.name)
                 }
             }
-            val approvedBookings = response.decodeList<BookingDto>()
+            val approvedBookings = response.decodeList<SupabaseBookingDto>()
             
             // Logic Overlap: (StartA < EndB) AND (EndA > StartB)
             approvedBookings.any { it.start_time < endTime && it.end_time > startTime }
@@ -104,7 +104,7 @@ class SupabaseBookingRepositoryImpl(
         return 0 
     }
 
-    private fun BookingDto.toDomain() = Booking(
+    private fun SupabaseBookingDto.toDomain() = Booking(
         id = id,
         roomId = room_id,
         roomName = room_name,
@@ -116,7 +116,7 @@ class SupabaseBookingRepositoryImpl(
         userId = user_id
     )
 
-    private fun Booking.toDto() = BookingDto(
+    private fun Booking.toDto() = SupabaseBookingDto(
         id = id,
         room_id = roomId,
         room_name = roomName,

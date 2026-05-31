@@ -33,12 +33,17 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FacilityGridScreen(
+    buildingId: String,
     onNavigateToDetail: (String, String) -> Unit, // Updated with date
     onNavigateToMultiBooking: (List<String>) -> Unit,
     onBack: () -> Unit,
     viewModel: FacilityViewModel = koinViewModel(),
     appViewModel: AppViewModel = koinViewModel()
 ) {
+    LaunchedEffect(buildingId) {
+        viewModel.initBuilding(buildingId)
+    }
+
     val uiState by viewModel.uiState.collectAsState()
     val currentUser by appViewModel.currentUser.collectAsState()
     val isAdmin = currentUser?.role == UserRole.ADMIN

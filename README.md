@@ -1,6 +1,6 @@
 # 🐬 StudyMate
 
-[![Android Build & Test Pipeline](https://github.com/ThDptr/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=sprint_2)](https://github.com/ThDptr/Proyek-Pengembangan-Aplikasi-Mobile/actions)
+[![Android Build & Test Pipeline](https://github.com/joyapul119140157/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=project%2F123140043-119140157-StudyMate)](https://github.com/joyapul119140157/Proyek-Pengembangan-Aplikasi-Mobile/actions)
 
 <img width="1024" height="543" alt="image" src="https://github.com/user-attachments/assets/c7546e6c-321d-4f36-9086-34ee10f5dcb2" />
 

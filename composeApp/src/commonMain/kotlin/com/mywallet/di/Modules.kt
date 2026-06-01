@@ -1,3 +1,3 @@
 package com.mywallet.di
 
-val appModule = listOf(dataModule, viewModelModule)
+val appModule = listOf(platformModule, dataModule, viewModelModule)

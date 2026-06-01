@@ -4,6 +4,8 @@ import com.mywallet.presentation.screens.add.AddTransactionViewModel
 import com.mywallet.presentation.screens.detail.DetailViewModel
 import com.mywallet.presentation.screens.home.HomeViewModel
 import com.mywallet.presentation.screens.profile.ProfileViewModel
+import com.mywallet.presentation.screens.savings.SavingsGoalViewModel
+import com.mywallet.presentation.screens.stats.StatisticsViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -12,4 +14,6 @@ val viewModelModule = module {
     viewModelOf(::DetailViewModel)
     viewModelOf(::AddTransactionViewModel)
     viewModelOf(::ProfileViewModel)
+    viewModelOf(::StatisticsViewModel)
+    viewModelOf(::SavingsGoalViewModel)
 }

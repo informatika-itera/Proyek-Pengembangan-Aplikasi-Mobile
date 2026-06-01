@@ -23,11 +23,13 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 
 ## Video Demo
 
-▶️ [Demo Sprint 2 My-Wallet](https://drive.google.com/file/d/1FeOSdrNuSRtN2vJ53XGHaajSZcirldII/view?usp=drive_link)
-▶️ [Demo Sprint 3 My-Wallet](https://drive.google.com/file/d/187kRjo8srat9RaCW-ozL4qeWrPrYVMTU/view?usp=drive_link)
+- ▶️ [Demo Sprint 2 My-Wallet](https://drive.google.com/file/d/1FeOSdrNuSRtN2vJ53XGHaajSZcirldII/view?usp=drive_link)
+- ▶️ [Demo Sprint 3 My-Wallet](https://drive.google.com/file/d/187kRjo8srat9RaCW-ozL4qeWrPrYVMTU/view?usp=drive_link)
+- ▶️ Demo Sprint 4 My-Wallet (akan ditambahkan)
+
+---
 
 ## Fitur
-
 ### Minimum
 - [x] Catat pengeluaran dengan kategori
 - [x] Lihat daftar transaksi
@@ -36,17 +38,17 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 - [x] Minimal 5 screen dengan navigasi
 - [x] State management dengan StateFlow + MVVM
 - [x] Dependency Injection dengan Koin
-- [ ] Statistik pengeluaran per kategori dan per bulan
-- [ ] Local database dengan SQLDelight
-- [ ] Minimal 10 unit tests, 3 UI tests, coverage lebih dari 50%
+- [x] Statistik pengeluaran per kategori dan per bulan
+- [x] Local database dengan SQLDelight
+- [x] Minimal 10 unit tests, 3 UI tests, coverage lebih dari 50%
 
 ### Bonus
-- [ ] iOS Support 
+- [ ] iOS Support
 - [ ] AI Integration dengan Gemini API
-- [ ] Offline First 
-- [ ] Dark Mode 
-- [ ] Animations 
-- [x] CI/CD 
+- [x] Offline First
+- [x] Dark Mode
+- [ ] Animations
+- [x] CI/CD
 - [ ] Play Store Ready
 
 ---
@@ -67,79 +69,99 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 
 ## Arsitektur
 
-PRESENTATION LAYER - UI (Composables), ViewModels, UI State
+Clean Architecture dengan pola MVVM:
 
-DOMAIN LAYER - Use Cases, Domain Models, Repository Interfaces
-
-DATA LAYER - Repository Impl, Data Sources (Local), DTOs
-
----
-
-## Struktur Folder
-
-composeApp/src/commonMain/kotlin/com/mywallet/
-- App.kt
-- di/ (Koin.kt, DataModule.kt, ViewModelModule.kt, Modules.kt)
-- data/local/ (TransactionLocalDataSource.kt)
-- data/repository/ (TransactionRepositoryImpl.kt)
-- data/model/ (TransactionEntity.kt)
-- domain/model/ (Transaction.kt)
-- domain/repository/ (TransactionRepository.kt)
-- domain/usecase/
-- navigation/ (NavGraph.kt, Screen.kt)
-- presentation/add/ (AddTransactionScreen.kt, AddTransactionViewModel.kt, EditTransactionScreen.kt)
-- presentation/components/ (TransactionItem.kt)
-- presentation/detail/ (DetailScreen.kt, DetailViewModel.kt)
-- presentation/home/ (HomeScreen.kt, HomeUiState.kt, HomeViewModel.kt)
-- presentation/screens/history/ (HistoryScreen.kt)
+```
+commonMain/kotlin/com/mywallet/
+├── data/
+│   ├── local/         # SQLDelight database
+│   ├── remote/        # Ktor API service
+│   └── repository/    # Repository implementations
+├── domain/
+│   ├── model/         # Data models
+│   └── repository/    # Repository interfaces
+└── presentation/
+    ├── screens/       # UI screens + ViewModels
+    └── components/    # Reusable composables
+```
 
 ---
 
-## Setup
+## Setup & Cara Menjalankan
+
+```bash
+# Clone repository
 git clone https://github.com/HANIFAHHASANAH-123140082/123140082-123140069-MyWallet.git
 cd 123140082-123140069-MyWallet
+
+# Checkout branch tugas
 git checkout project/123140082-123140069-MyWallet
-.\gradlew.bat :composeApp:assembleDebug
+
+# Build debug APK
+./gradlew assembleDebug
+
+# Install ke device/emulator
+./gradlew installDebug
+```
 
 ---
 
-## Sprint Plan
+## Cara Menjalankan Tests
 
-| Sprint | Minggu | Target |
-|--------|--------|--------|
-| Sprint 1 | W11 | Planning, setup repo, CI/CD, arsitektur dasar |
-| Sprint 2 | W12 | Core features: screens, navigasi, data layer, CRUD |
-| Sprint 3 | W13 | Statistik, integrasi API, local DB |
-| Sprint 4 | W14 | UI polish, bug fixes, testing |
-| Sprint 5 | W15 | Final preparation, demo prep |
-| UAS | W16 | Final Demo Day |
+### Unit Tests
+```bash
+# Jalankan semua unit tests
+./gradlew test
 
----
+# Jalankan unit test spesifik
+./gradlew :composeApp:testDebugUnitTest
+```
 
-## Task Assignment Sprint 1
+### UI Tests (Instrumented)
+```bash
+# Pastikan emulator/device sudah terhubung, lalu jalankan:
+./gradlew :composeApp:connectedAndroidTest
+```
 
-| Task |
-|------|
-| Setup GitHub repository |
-| Setup KMP project structure |
-| Clean Architecture folder |
-| Koin DI setup |
-| GitHub Actions CI |
-| README documentation |
+### Coverage Report
+```bash
+# Generate laporan coverage
+./gradlew koverHtmlReport
 
-## Task Assignment Sprint 2
-
-| Task |
-|------|
-| HomeScreen + ViewModel |
-| DetailScreen + ViewModel |
-| AddTransactionScreen + ViewModel |
-| EditTransactionScreen |
-| HistoryScreen |
-| Navigation setup |
-| Data layer + Repository |
-| UI Design improvement |
+# Hasil tersimpan di:
+# composeApp/build/reports/kover/html/index.html
+```
 
 ---
 
-Pengembangan Aplikasi Mobile (RA)
+## Struktur Tests
+
+### Unit Tests (commonTest) - 10 Tests
+| File | Jumlah Test | Yang Diuji |
+|------|-------------|------------|
+| HomeViewModelTest | 4 tests | State loading, balance calculation, search filter, type filter |
+| StatisticsViewModelTest | 3 tests | State loading, income/expense totals, category breakdown |
+| SavingsGoalViewModelTest | 3 tests | Add goal, update amount, delete goal |
+
+### UI Tests (androidInstrumentedTest) - 6 Tests
+| File | Jumlah Test | Yang Diuji |
+|------|-------------|------------|
+| HomeScreenUiTest | 3 tests | App launch, navigate to history, navigate to profile |
+| SavingsGoalUiTest | 2 tests | Navigate to savings, add goal dialog |
+| StatisticsUiTest | 1 test | Navigate to statistics |
+
+---
+
+## Sprint Progress
+
+| Sprint | Minggu | Target | Status |
+|--------|--------|--------|------|
+| Sprint 1 | W11 | Planning, setup repo, CI/CD, arsitektur dasar | Done |
+| Sprint 2 | W12 | Core features: screens, navigasi, data layer, CRUD | Done |
+| Sprint 3 | W13 | API integration, search, offline support, dark mode | Done |
+| Sprint 4 | W14 | UI polish, bug fixes, testing | Done |
+| Sprint 5 | W15 | Final preparation, demo prep | Upcoming |
+| UAS | W16 | Final Demo Day | Upcoming |
+
+---
+

@@ -1,4 +1,4 @@
-package com.mywallet.presentation.screens.profile
+﻿package com.mywallet.presentation.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mywallet.domain.repository.TransactionRepository
 import com.mywallet.domain.repository.UserRepository
+import com.mywallet.utils.formatCurrency
 import kotlinx.coroutines.flow.*
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -39,7 +40,7 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val transactionCount by viewModel.transactionCount.collectAsState()
     val isDark = isSystemInDarkTheme()
-    val headerTextColor = if (isDark) Color.Black else Color.White
+    val headerTextColor = Color.White
     
     var showEditDialog by remember { mutableStateOf(false) }
     var tempName by remember { mutableStateOf("") }
@@ -176,6 +177,42 @@ fun ProfileScreen(
                     title = "Pengaturan Akun",
                     onClick = { onNavigateToSettings("Pengaturan Akun") }
                 )
+                
+                // Biometric Toggle Item
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(imageVector = Icons.Default.Fingerprint, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Keamanan Biometrik",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = if (uiState.isBiometricEnabled) "Aktif" else "Nonaktif",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (uiState.isBiometricEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            )
+                        }
+                        Switch(
+                            checked = uiState.isBiometricEnabled,
+                            onCheckedChange = { viewModel.toggleBiometric(it) }
+                        )
+                    }
+                }
+
                 ProfileMenuItem(
                     icon = Icons.Default.Security, 
                     title = "Keamanan",
@@ -264,7 +301,7 @@ fun ProfileScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.updateProfile(tempName, tempBio, tempPhone, tempEmail)
+                    viewModel.updateProfile(tempName, tempBio, tempPhone, tempEmail, uiState.isBiometricEnabled)
                     showEditDialog = false
                 }) {
                     Text("Simpan")
@@ -339,7 +376,8 @@ data class ProfileUiState(
     val name: String = "Zahwa Natasya Hamzah",
     val bio: String = "Mahasiswa Teknik Informatika ITERA",
     val phone: String = "0812-3456-7890",
-    val email: String = "zahwa.123140069@student.itera.ac.id"
+    val email: String = "zahwa.123140069@student.itera.ac.id",
+    val isBiometricEnabled: Boolean = false // Added biometric security setting
 )
 
 class ProfileViewModel(
@@ -352,7 +390,11 @@ class ProfileViewModel(
         .map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    fun updateProfile(name: String, bio: String, phone: String, email: String) {
-        userRepository.updateProfile(name, bio, phone, email)
+    fun updateProfile(name: String, bio: String, phone: String, email: String, biometric: Boolean) {
+        userRepository.updateProfile(name, bio, phone, email, biometric)
+    }
+
+    fun toggleBiometric(enabled: Boolean) {
+        userRepository.toggleBiometric(enabled)
     }
 }

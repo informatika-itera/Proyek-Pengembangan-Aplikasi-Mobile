@@ -9,6 +9,8 @@ data class Transaction(
     val title: String,
     val amount: Double,
     val type: TransactionType,
+    val category: String, // Added category field
     val date: String,
-    val time: String // Added time field
+    val time: String,
+    val isRecurring: Boolean = false // Added recurring field
 )

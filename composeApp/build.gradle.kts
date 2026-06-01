@@ -1,6 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -8,13 +7,21 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.kover)
+}
+
+sqldelight {
+    databases {
+        create("WalletDatabase") {
+            packageName.set("com.mywallet.db")
+        }
+    }
 }
 
 kotlin {
     androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
     }
     
     listOf(
@@ -41,11 +48,36 @@ kotlin {
     }
     
     sourceSets {
+        val iosMain by creating {
+            dependencies {
+                implementation(libs.sqldelight.native.driver)
+                implementation(libs.ktor.client.darwin)
+            }
+        }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
+
+        val jsMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.driver.webworker)
+            }
+        }
+
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.driver.webworker)
+            }
+        }
+
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(compose.materialIconsExtended)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.splashscreen)
             implementation(libs.koin.android)
+            implementation(libs.androidx.datastore.preferences)
+            implementation(libs.sqldelight.android.driver)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -61,13 +93,23 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.navigation.compose)
+            implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.kotlinx.datetime)
+            
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.sqldelight.sqlite.driver)
         }
     }
 }
@@ -101,6 +143,8 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
 
 compose.desktop {

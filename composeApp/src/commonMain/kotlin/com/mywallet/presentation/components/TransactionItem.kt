@@ -14,10 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mywallet.domain.model.Transaction
 import com.mywallet.domain.model.TransactionType
+import com.mywallet.theme.Spacing
+import com.mywallet.utils.formatCurrency
+import com.mywallet.utils.formatIsoDateToDisplay
 
 @Composable
 fun TransactionItem(
@@ -28,13 +32,13 @@ fun TransactionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(Spacing.md),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(Spacing.md)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -48,7 +52,7 @@ fun TransactionItem(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(Spacing.sm + Spacing.xs))
                     .background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
@@ -56,11 +60,11 @@ fun TransactionItem(
                     imageVector = icon,
                     contentDescription = null,
                     tint = itemColor,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(Spacing.lg)
                 )
             }
             
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(Spacing.md))
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -69,41 +73,30 @@ fun TransactionItem(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     ),
-                    maxLines = 2
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${transaction.date} • ${transaction.time}",
+                    text = "${formatIsoDateToDisplay(transaction.date)} • ${transaction.time}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(Spacing.sm))
             
             Text(
-                text = (if (isIncome) "+" else "-") + " Rp. ${formatCurrency(transaction.amount)}",
+                text = (if (isIncome) "+" else "-") + " Rp ${formatCurrency(transaction.amount)}",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Black,
-                    color = itemColor
+                    color = itemColor,
+                    fontSize = 14.sp
                 ),
-                modifier = Modifier.align(Alignment.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically),
+                maxLines = 1
             )
         }
     }
-}
-
-private fun formatCurrency(amount: Double): String {
-    val longAmount = amount.toLong()
-    val str = longAmount.toString()
-    val result = StringBuilder()
-    var count = 0
-    for (i in str.length - 1 downTo 0) {
-        result.append(str[i])
-        count++
-        if (count == 3 && i != 0) {
-            result.append('.')
-            count = 0
-        }
-    }
-    return result.reverse().toString()
 }

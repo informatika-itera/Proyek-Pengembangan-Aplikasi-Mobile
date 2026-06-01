@@ -1,10 +1,10 @@
-package com.mywallet.presentation.screens.detail
+﻿package com.mywallet.presentation.screens.detail
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +18,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import com.mywallet.presentation.components.LoadingIndicator
+import com.mywallet.utils.formatCurrency
+import com.mywallet.utils.formatIsoDateToDisplay
 import com.mywallet.theme.DarkNavy
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +33,7 @@ fun DetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsState()
     val isDark = isSystemInDarkTheme()
-    val headerTextColor = if (isDark) Color.Black else Color.White
+    val headerTextColor = Color.White
 
     LaunchedEffect(transactionId) {
         viewModel.loadTransaction(transactionId)
@@ -51,7 +53,7 @@ fun DetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = headerTextColor)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = headerTextColor)
                     }
                 },
                 actions = {
@@ -103,7 +105,7 @@ fun DetailScreen(
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Box(modifier = Modifier.weight(1f)) {
-                            DetailCard(label = "Tanggal", value = transaction.date)
+                            DetailCard(label = "Tanggal", value = formatIsoDateToDisplay(transaction.date))
                         }
                         Box(modifier = Modifier.weight(1f)) {
                             DetailCard(label = "Waktu", value = transaction.time)
@@ -167,20 +169,4 @@ fun DetailCard(
             )
         }
     }
-}
-
-private fun formatCurrency(amount: Double): String {
-    val longAmount = amount.toLong()
-    val str = longAmount.toString()
-    val result = StringBuilder()
-    var count = 0
-    for (i in str.length - 1 downTo 0) {
-        result.append(str[i])
-        count++
-        if (count == 3 && i != 0) {
-            result.append('.')
-            count = 0
-        }
-    }
-    return result.reverse().toString()
 }

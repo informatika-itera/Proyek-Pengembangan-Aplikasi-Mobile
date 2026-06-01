@@ -1,0 +1,28 @@
+CREATE TABLE SavingsGoalDbEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    targetAmount REAL NOT NULL,
+    currentAmount REAL NOT NULL DEFAULT 0.0,
+    category TEXT NOT NULL, -- Changed from color
+    color TEXT NOT NULL,    -- Keeping color as well for UI
+    deadline TEXT
+);
+
+insertGoal:
+INSERT INTO SavingsGoalDbEntity(title, targetAmount, currentAmount, category, color, deadline)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAllGoals:
+SELECT * FROM SavingsGoalDbEntity;
+
+selectGoalById:
+SELECT * FROM SavingsGoalDbEntity WHERE id = ?;
+
+updateGoal:
+UPDATE SavingsGoalDbEntity SET title = ?, targetAmount = ?, currentAmount = ?, category = ?, color = ?, deadline = ? WHERE id = ?;
+
+updateCurrentAmount:
+UPDATE SavingsGoalDbEntity SET currentAmount = ? WHERE id = ?;
+
+deleteGoal:
+DELETE FROM SavingsGoalDbEntity WHERE id = ?;

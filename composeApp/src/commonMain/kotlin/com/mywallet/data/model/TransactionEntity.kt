@@ -8,8 +8,10 @@ data class TransactionEntity(
     val title: String,
     val amount: Double,
     val type: String,
+    val category: String,
     val date: String,
-    val time: String
+    val time: String,
+    val isRecurring: Boolean = false // Added recurring field
 )
 
 fun TransactionEntity.toDomain() = Transaction(
@@ -17,8 +19,10 @@ fun TransactionEntity.toDomain() = Transaction(
     title = title,
     amount = amount,
     type = TransactionType.valueOf(type),
+    category = category,
     date = date,
-    time = time
+    time = time,
+    isRecurring = isRecurring
 )
 
 fun Transaction.toEntity() = TransactionEntity(
@@ -26,6 +30,8 @@ fun Transaction.toEntity() = TransactionEntity(
     title = title,
     amount = amount,
     type = type.name,
+    category = category,
     date = date,
-    time = time
+    time = time,
+    isRecurring = isRecurring
 )

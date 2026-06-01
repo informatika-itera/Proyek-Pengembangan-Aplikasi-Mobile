@@ -1,45 +1,52 @@
 package com.mywallet.data.local
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
+import app.cash.sqldelight.db.SqlDriver
 import com.mywallet.data.model.TransactionEntity
-import com.mywallet.domain.model.TransactionType
+import com.mywallet.db.WalletDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-class TransactionLocalDataSource {
-    private val transactions = MutableStateFlow<List<TransactionEntity>>(
-        listOf(
-            TransactionEntity(1, "Kiriman Orang Tua", 5000000.0, TransactionType.INCOME.name, "01 Oct 2023", "09:38"),
-            TransactionEntity(2, "Transfer UKT", 3500000.0, TransactionType.EXPENSE.name, "02 Oct 2023", "14:20"),
-            TransactionEntity(3, "Makan Siang", 50000.0, TransactionType.EXPENSE.name, "03 Oct 2023", "12:15")
-        )
-    )
+class TransactionLocalDataSource(driver: SqlDriver) {
+    private val database = WalletDatabase(driver)
+    private val queries = database.transactionQueries
 
-    fun getAllTransactions(): Flow<List<TransactionEntity>> = transactions
+    fun getAllTransactions(): Flow<List<TransactionEntity>> =
+        queries.selectAllTransactions().asFlow().mapToList(Dispatchers.Default).map { list ->
+            list.map { it.toDataEntity() }
+        }
 
     fun getTransactionById(id: Int): Flow<TransactionEntity?> =
-        transactions.map { list -> list.find { it.id == id } }
+        queries.selectTransactionById(id.toLong()).asFlow().mapToOneOrNull(Dispatchers.Default).map { it?.toDataEntity() }
 
     fun getTransactionsByType(type: String): Flow<List<TransactionEntity>> =
-        transactions.map { list -> list.filter { it.type == type } }
-
-    suspend fun insertTransaction(entity: TransactionEntity) {
-        val currentList = transactions.value.toMutableList()
-        val newId = (currentList.maxOfOrNull { it.id } ?: 0) + 1
-        currentList.add(entity.copy(id = newId))
-        transactions.value = currentList
-    }
-
-    suspend fun updateTransaction(entity: TransactionEntity) {
-        val currentList = transactions.value.toMutableList()
-        val index = currentList.indexOfFirst { it.id == entity.id }
-        if (index != -1) {
-            currentList[index] = entity
-            transactions.value = currentList
+        queries.selectTransactionsByType(type).asFlow().mapToList(Dispatchers.Default).map { list ->
+            list.map { it.toDataEntity() }
         }
+
+    fun insertTransaction(entity: TransactionEntity) {
+        queries.insertTransaction(entity.title, entity.amount, entity.type, entity.category, entity.date, entity.time, if (entity.isRecurring) 1L else 0L)
     }
 
-    suspend fun deleteTransaction(id: Int) {
-        transactions.value = transactions.value.filter { it.id != id }
+    fun updateTransaction(entity: TransactionEntity) {
+        queries.updateTransaction(entity.title, entity.amount, entity.type, entity.category, entity.date, entity.time, if (entity.isRecurring) 1L else 0L, entity.id.toLong())
     }
+
+    fun deleteTransaction(id: Int) {
+        queries.deleteTransaction(id.toLong())
+    }
+
+    private fun com.mywallet.db.TransactionDbEntity.toDataEntity() = TransactionEntity(
+        id = id.toInt(),
+        title = title,
+        amount = amount,
+        type = type,
+        category = category,
+        date = date,
+        time = time,
+        isRecurring = isRecurring == 1L
+    )
 }

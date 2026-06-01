@@ -7,9 +7,9 @@ sealed interface HomeUiState {
     data object Empty : HomeUiState
     data class Success(
         val transactions: List<Transaction>,
-        val balance: Double,
         val totalIncome: Double,
-        val totalExpense: Double
+        val totalExpense: Double,
+        val balance: Double
     ) : HomeUiState
     data class Error(val message: String) : HomeUiState
 }

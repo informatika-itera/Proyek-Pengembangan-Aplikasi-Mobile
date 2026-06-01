@@ -123,11 +123,11 @@ class NotesViewModel(
             
             _uiState.emit(NotesUiState.Refining(notes, -1L))
             
-            // We use the same repository logic but don't save to DB immediately for "New Note"
             val result = refineNoteUseCase.refineRawContent(content)
             
             if (result.isSuccess) {
-                onRefined(result.getOrThrow())
+                val refinedText = result.getOrThrow()
+                onRefined(refinedText)
                 _uiState.emit(if (notes.isEmpty()) NotesUiState.Empty else NotesUiState.Success(notes))
                 _events.emit(NoteEvent.ShowMessage("Konten berhasil dijelaskan AI ✨"))
             } else {

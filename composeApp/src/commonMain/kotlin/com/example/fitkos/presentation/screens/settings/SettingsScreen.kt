@@ -1,6 +1,7 @@
 package com.example.fitkos.presentation.screens.settings
 
 import androidx.compose.foundation.layout.*
+import com.example.fitkos.presentation.components.FitKosTopBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
@@ -24,6 +25,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onNavigateBack: () -> Unit = {},
+    onLogout: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -31,9 +34,12 @@ fun SettingsScreen(
     var showWaterTargetDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
-                title = { Text("Pengaturan", fontWeight = FontWeight.Bold) }
+            FitKosTopBar(
+                title = "Pengaturan",
+                onNavigateBack = onNavigateBack
             )
         }
     ) { paddingValues ->
@@ -85,6 +91,23 @@ fun SettingsScreen(
                 subtitle = "Versi 1.0.0"
             )
             
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { 
+                    viewModel.logout()
+                    onLogout()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Keluar / Ganti Nama")
+            }
+
             Spacer(modifier = Modifier.weight(1f))
         }
     }

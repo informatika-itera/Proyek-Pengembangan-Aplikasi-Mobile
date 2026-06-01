@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -30,28 +29,38 @@ class DashboardViewModel(
     }
 
     private fun observeData() {
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val dateString = "${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}"
+        val dateString = getTodayDateString()
 
         viewModelScope.launch {
+            userPreferences.resetExerciseIfNewDay(dateString)
+
             combine(
                 repository.getAllNotes(),
                 waterRepository.getWaterLogByDate(dateString),
                 userPreferences.userName,
-                userPreferences.waterTarget
-            ) { notes, waterLog, userName, waterTarget ->
+                userPreferences.waterTarget,
+                userPreferences.exerciseMinutesToday
+            ) { notes, waterLog, userName, waterTarget, exerciseMinutes ->
                 DashboardUiState(
                     userName = userName,
                     mealCount = notes.size,
                     waterGlasses = waterLog?.amount ?: 0,
-                    waterTarget = waterTarget
+                    waterTarget = waterTarget,
+                    exerciseMinutes = exerciseMinutes,
+                    exerciseTarget = 30,
+                    mealTarget = 3
                 )
-            }.catch { e ->
-                // Handle error
+            }.catch {
+                _uiState.value = DashboardUiState()
             }.collect { newState ->
                 _uiState.value = newState
             }
         }
+    }
+
+    private fun getTodayDateString(): String {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        return "${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}"
     }
 }
 
@@ -60,7 +69,7 @@ data class DashboardUiState(
     val mealCount: Int = 0,
     val waterGlasses: Int = 0,
     val waterTarget: Int = 8,
-    val exerciseMinutes: Int? = null,
+    val exerciseMinutes: Int = 0,
     val exerciseTarget: Int = 30,
     val mealTarget: Int = 3
 )

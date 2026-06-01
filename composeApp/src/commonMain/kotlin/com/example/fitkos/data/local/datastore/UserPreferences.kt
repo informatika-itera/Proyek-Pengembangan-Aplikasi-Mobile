@@ -23,7 +23,7 @@ class UserPreferences(
     private val dataStore: DataStore<Preferences>
 ) {
     // ==================== PREFERENCE KEYS ====================
-    
+
     private object Keys {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val SORT_BY = stringPreferencesKey("sort_by")
@@ -32,6 +32,13 @@ class UserPreferences(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val USER_NAME = stringPreferencesKey("user_name")
         val WATER_TARGET = intPreferencesKey("water_target")
+
+        val AI_CACHED_PROMPT = stringPreferencesKey("ai_cached_prompt")
+        val AI_CACHED_RESPONSE = stringPreferencesKey("ai_cached_response")
+        val AI_CACHED_UPDATED_AT = stringPreferencesKey("ai_cached_updated_at")
+
+        val EXERCISE_MINUTES_TODAY = intPreferencesKey("exercise_minutes_today")
+        val EXERCISE_LAST_DATE = stringPreferencesKey("exercise_last_date")
     }
     
     // ==================== PROFILE ====================
@@ -65,6 +72,103 @@ class UserPreferences(
     suspend fun setWaterTarget(target: Int) {
         dataStore.edit { prefs ->
             prefs[Keys.WATER_TARGET] = target
+        }
+    }
+
+    // ==================== EXERCISE ====================
+
+    /**
+     * Observe exercise minutes today
+     */
+    val exerciseMinutesToday: Flow<Int> = dataStore.data.map { prefs ->
+        prefs[Keys.EXERCISE_MINUTES_TODAY] ?: 0
+    }
+
+    /**
+     * Set exercise minutes today
+     */
+    suspend fun setExerciseMinutesToday(minutes: Int) {
+        dataStore.edit { prefs ->
+            prefs[Keys.EXERCISE_MINUTES_TODAY] = minutes.coerceAtLeast(0)
+        }
+    }
+
+    /**
+     * Add exercise minutes today
+     */
+    suspend fun addExerciseMinutesToday(minutes: Int) {
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.EXERCISE_MINUTES_TODAY] ?: 0
+            prefs[Keys.EXERCISE_MINUTES_TODAY] = (current + minutes).coerceAtLeast(0)
+        }
+    }
+
+    /**
+     * Reset exercise minutes today
+     */
+    suspend fun resetExerciseMinutesToday() {
+        dataStore.edit { prefs ->
+            prefs[Keys.EXERCISE_MINUTES_TODAY] = 0
+        }
+    }
+
+    suspend fun resetExerciseIfNewDay(todayDate: String) {
+        dataStore.edit { prefs ->
+            val lastDate = prefs[Keys.EXERCISE_LAST_DATE]
+
+            if (lastDate != todayDate) {
+                prefs[Keys.EXERCISE_MINUTES_TODAY] = 0
+                prefs[Keys.EXERCISE_LAST_DATE] = todayDate
+            }
+        }
+    }
+
+    // ==================== AI CACHE ====================
+
+    /**
+     * Observe cached AI prompt
+     */
+    val cachedAIPrompt: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_CACHED_PROMPT] ?: ""
+    }
+
+    /**
+     * Observe cached AI response
+     */
+    val cachedAIResponse: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_CACHED_RESPONSE] ?: ""
+    }
+
+    /**
+     * Observe cached AI updated time
+     */
+    val cachedAIUpdatedAt: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_CACHED_UPDATED_AT] ?: ""
+    }
+
+    /**
+     * Save latest AI response cache
+     */
+    suspend fun saveAIResponseCache(
+        prompt: String,
+        response: String,
+        updatedAt: String
+    ) {
+        dataStore.edit { prefs ->
+            prefs[Keys.AI_CACHED_PROMPT] = prompt
+            prefs[Keys.AI_CACHED_RESPONSE] = response
+            prefs[Keys.AI_CACHED_UPDATED_AT] = updatedAt
+        }
+    }
+
+    /**
+     * Clear AI response cache
+     */
+    suspend fun clearAIResponseCache() {
+        dataStore.edit { prefs ->
+            prefs.remove(Keys.AI_CACHED_PROMPT)
+            prefs.remove(Keys.AI_CACHED_RESPONSE)
+            prefs.remove(Keys.AI_CACHED_UPDATED_AT)
         }
     }
 

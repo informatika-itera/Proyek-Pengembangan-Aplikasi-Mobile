@@ -3,9 +3,26 @@ package com.example.fitkos.presentation.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -18,14 +35,29 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Restaurant
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fitkos.domain.model.Note
 import com.example.fitkos.domain.model.NoteCategory
@@ -37,7 +69,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToAddNote: () -> Unit,
@@ -46,45 +77,23 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     var showSortMenu by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Catatan Makan",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Urutkan")
-                    }
-
-                    SortDropdownMenu(
-                        expanded = showSortMenu,
-                        currentSortBy = currentSortBy,
-                        onSortSelected = {
-                            viewModel.onSortByChanged(it)
-                            showSortMenu = false
-                        },
-                        onDismiss = { showSortMenu = false }
-                    )
-
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
-                    }
-                }
-            )
-        },
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // Hapus insets internal agar tidak double gap
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddNote,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Tambah Catatan"
+                )
             }
         }
     ) { paddingValues ->
@@ -92,16 +101,28 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp
+                )
         ) {
-            val query = when (val state = uiState) {
-                is HomeUiState.Success -> state.query
-                is HomeUiState.Empty -> state.query
-                else -> ""
-            }
+            HomeHeaderSection(
+                showSortMenu = showSortMenu,
+                currentSortBy = currentSortBy,
+                onShowSortMenu = { showSortMenu = true },
+                onSortSelected = {
+                    viewModel.onSortByChanged(it)
+                    showSortMenu = false
+                },
+                onDismissSortMenu = { showSortMenu = false },
+                onNavigateToAI = onNavigateToAI
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             MealSearchField(
-                query = query,
+                query = searchQuery,
                 onQueryChange = viewModel::onSearchQueryChange,
                 onClear = viewModel::clearSearch
             )
@@ -109,11 +130,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             CategoryFilterRow(
-                selectedCategory = when (val state = uiState) {
-                    is HomeUiState.Success -> state.category
-                    is HomeUiState.Empty -> state.category
-                    else -> null
-                },
+                selectedCategory = selectedCategory,
                 onCategorySelected = viewModel::onCategorySelected
             )
 
@@ -125,6 +142,8 @@ fun HomeScreen(
                 }
 
                 is HomeUiState.Success -> {
+                    TanyaAICard(onNavigateToAI = onNavigateToAI)
+                    Spacer(modifier = Modifier.height(16.dp))
                     MealList(
                         notes = state.notes,
                         onNoteClick = onNavigateToDetail
@@ -132,8 +151,10 @@ fun HomeScreen(
                 }
 
                 is HomeUiState.Empty -> {
+                    TanyaAICard(onNavigateToAI = onNavigateToAI)
+                    Spacer(modifier = Modifier.height(16.dp))
                     EmptyMealState(
-                        isFiltered = state.query.isNotBlank() || state.category != null
+                        isFiltered = searchQuery.isNotBlank() || selectedCategory != null
                     )
                 }
 
@@ -143,6 +164,57 @@ fun HomeScreen(
                         onRetry = { viewModel.clearSearch() }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeHeaderSection(
+    showSortMenu: Boolean,
+    currentSortBy: NoteSortBy,
+    onShowSortMenu: () -> Unit,
+    onSortSelected: (NoteSortBy) -> Unit,
+    onDismissSortMenu: () -> Unit,
+    onNavigateToAI: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Catatan Makan",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box {
+                IconButton(onClick = onShowSortMenu) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Urutkan"
+                    )
+                }
+
+                SortDropdownMenu(
+                    expanded = showSortMenu,
+                    currentSortBy = currentSortBy,
+                    onSortSelected = onSortSelected,
+                    onDismiss = onDismissSortMenu
+                )
+            }
+
+            IconButton(onClick = onNavigateToAI) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = "AI Assistant"
+                )
             }
         }
     }
@@ -161,7 +233,10 @@ private fun MealSearchField(
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = null)
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
         },
         trailingIcon = {
             AnimatedVisibility(
@@ -170,7 +245,10 @@ private fun MealSearchField(
                 exit = fadeOut()
             ) {
                 IconButton(onClick = onClear) {
-                    Icon(Icons.Default.Close, contentDescription = "Hapus")
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Hapus"
+                    )
                 }
             }
         },
@@ -217,12 +295,61 @@ private fun CategoryFilterRow(
 }
 
 @Composable
+private fun TanyaAICard(
+    onNavigateToAI: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onNavigateToAI),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column {
+                Text(
+                    text = "Tanya Asisten AI FitKos",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Butuh saran makanan sehat & murah?",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun MealList(
     notes: List<Note>,
     onNoteClick: (Long) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(bottom = 96.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 72.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
@@ -259,6 +386,7 @@ private fun MealLogCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = 108.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -269,7 +397,7 @@ private fun MealLogCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(horizontal = 14.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -291,23 +419,23 @@ private fun MealLogCard(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = " ${note.category.shortLabel()}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text = note.category.shortLabel(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
                 Text(
                     text = note.title.ifBlank { "Makanan tanpa nama" },
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 if (mealContent.note.isNotBlank()) {
@@ -315,7 +443,8 @@ private fun MealLogCard(
                         text = mealContent.note,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -324,7 +453,9 @@ private fun MealLogCard(
                         text = "Rp${mealContent.price.formatRupiah()}",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -351,7 +482,7 @@ private fun EmptyMealState(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(
-                Icons.Outlined.Restaurant,
+                imageVector = Icons.Outlined.Restaurant,
                 contentDescription = null,
                 modifier = Modifier.size(72.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
@@ -401,7 +532,10 @@ private fun SortDropdownMenu(
 
                         if (sortBy == currentSortBy) {
                             Spacer(modifier = Modifier.size(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                text = "✓",
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 },

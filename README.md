@@ -5,7 +5,7 @@
 
 FitKos adalah aplikasi Android berbasis Kotlin yang dirancang untuk membantu penghuni kos menjaga pola hidup sehat sesuai budget harian. Aplikasi ini membantu pengguna mencatat makanan dan pengeluaran makan, memantau jumlah minum air, menandai olahraga ringan, serta mendapatkan tips sehat yang sederhana dan realistis.
 
-FitKos juga direncanakan memiliki AI Assistant yang dapat membaca data harian pengguna, memberikan rekomendasi berdasarkan data yang diinput pengguna dan memberikan evaluasi serta saran sehat hemat dengan gaya bahasa yang santai dan mudah dipahami.
+FitKos juga dilengkapi dengan AI Assistant berbasis Gemini API yang dapat memberikan rekomendasi sehat hemat, tips makanan, dan saran aktivitas ringan dengan gaya bahasa yang santai dan mudah dipahami.
 
 ## 👥 Tim Pengembangan
 
@@ -25,16 +25,25 @@ FitKos juga direncanakan memiliki AI Assistant yang dapat membaca data harian pe
 - [x] Local storage untuk menyimpan catatan makanan
 - [x] Basic CRUD untuk catatan makanan
 - [x] Multi-screen navigation
-- [x] AI Assistant dasar dengan Gemini API
+- [x] AI Assistant dengan Gemini API
+
+### Sudah Diimplementasikan pada Sprint 3
+- [x] Search/filter catatan makanan berdasarkan nama dan kategori
+- [x] Water tracker harian
+- [x] Exercise timer / stopwatch olahraga ringan
+- [x] Target harian untuk air minum dan olahraga
+- [x] Reset harian otomatis untuk data olahraga berdasarkan tanggal device
+- [x] Offline support dengan strategi Stale-While-Revalidate pada fitur AI/Tips
+- [x] Dark mode melalui pengaturan aplikasi
+- [x] UI/UX polish pada Dashboard, Meal Log, Add/Edit, Detail, AI, Water Tracker, dan Exercise Screen
 
 ### Direncanakan untuk Sprint Berikutnya
-- [ ] Target minum air
-- [ ] Checklist olahraga ringan
-- [ ] Tips menu sehat hemat
-- [ ] Search/filter catatan makanan
-- [ ] Dark mode
-- [ ] Offline-first enhancement
-- [ ] Evaluasi kebiasaan harian berbasis data pengguna
+- [ ] All known bugs fixed: tidak ada crash dan semua fitur utama berjalan
+- [ ] UI polished: desain konsisten, spacing rapi, dan state aplikasi jelas
+- [ ] 10+ unit tests untuk Repository dan ViewModel
+- [ ] 3+ UI tests untuk critical user flows
+- [ ] 50%+ code coverage
+- [ ] README updated dengan instruksi menjalankan test
 
 ## 🏗️ Arsitektur & Teknologi Stack
 FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, mudah dikembangkan, dan mudah diuji.
@@ -66,10 +75,13 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
     ├── navigation/               # App routes and navigation host
     ├── screens/
     │   ├── dashboard/            # Daily summary and quick actions
-    │   ├── home/                 # Meal log list
+    │   ├── home/                 # Meal log list with search and filter
     │   ├── addnote/              # Add/Edit meal log
     │   ├── detail/               # Meal log detail
-    │   └── ai/                   # FitKos AI Assistant
+    │   ├── ai/                   # FitKos AI Assistant
+    │   ├── water/                # Daily water tracker
+    │   ├── exercise/             # Exercise timer and workout tips
+    │   └── settings/             # User preferences and dark mode
     └── theme/                    # Material theme
 ```
 
@@ -104,6 +116,27 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 
 ### 🎥 Demo Sprint 2
 [Demo](https://youtu.be/MZyQGsvdlZo)
+
+## 📌 Sprint 3 - Advanced Features
+
+### Deliverables Sprint 3
+- [x] Search/filter functionality pada catatan makanan
+- [x] API integration menggunakan Gemini API
+- [x] Offline support menggunakan strategi Stale-While-Revalidate pada fitur AI/Tips
+- [x] Additional screen: Water Tracker dan Exercise Timer
+- [x] Bonus feature: Dark mode dan daily exercise reset
+- [x] Core features Sprint 2 tetap berjalan
+
+### Advanced Features
+- Search/filter digunakan pada Meal Log untuk mencari catatan makanan berdasarkan nama dan kategori.
+- AI Assistant menggunakan Gemini API untuk memberikan rekomendasi sehat hemat.
+- Strategi Stale-While-Revalidate diterapkan pada fitur AI/Tips dengan menyimpan rekomendasi terakhir di DataStore, lalu memperbarui data dari Gemini API saat koneksi tersedia.
+- Water Tracker menyimpan data berdasarkan tanggal sehingga data harian otomatis dimulai dari 0 pada hari baru.
+- Exercise Timer menyimpan durasi olahraga harian dan melakukan reset otomatis ketika aplikasi dibuka pada tanggal yang berbeda.
+- Dark mode disimpan menggunakan DataStore sebagai preferensi pengguna.
+
+### 🎥 Demo Sprint 3
+[Demo](https://youtu.be/Ts4yZCOPH5w)
 
 ## 🚀 Getting Started
 

@@ -94,6 +94,14 @@ class TargetRepositoryTest {
     }
 
     @Test
+    fun `getTargetById mengembalikan target yang benar bila ada`() = runTest {
+        val id = repo.insertTarget(Target(nama = "Beli HP", targetAmount = 3_000_000.0, deadline = "2025-08-17"))
+        val result = repo.getTargetById(id).first()
+
+        assertEquals("Beli HP", result?.nama)
+    }
+
+    @Test
     fun `getAllTargets mengembalikan list kosong di awal`() = runTest {
         val all = repo.getAllTargets().first()
         assertTrue(all.isEmpty())

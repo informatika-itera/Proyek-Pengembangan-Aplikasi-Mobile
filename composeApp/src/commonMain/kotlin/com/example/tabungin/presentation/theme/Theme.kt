@@ -13,22 +13,23 @@ import androidx.compose.ui.unit.sp
 
 
 
-private val AestheticPrimary = Color(0xFF8B5CF6)
+// Light Theme Colors
+private val AestheticPrimary = Color(0xFF4CAF50)
 private val AestheticOnPrimary = Color(0xFFFFFFFF)
-private val AestheticPrimaryContainer = Color(0xFFF3E8FF)
-private val AestheticOnPrimaryContainer = Color(0xFF2E1065)
+private val AestheticPrimaryContainer = Color(0xFFE8F5E9)
+private val AestheticOnPrimaryContainer = Color(0xFF1B5E20)
 
 
-private val AestheticSecondary = Color(0xFFEC4899)
+private val AestheticSecondary = Color(0xFF708090)
 private val AestheticOnSecondary = Color(0xFFFFFFFF)
-private val AestheticSecondaryContainer = Color(0xFFFCE7F3)
-private val AestheticOnSecondaryContainer = Color(0xFF500724)
+private val AestheticSecondaryContainer = Color(0xFFE1E8ED)
+private val AestheticOnSecondaryContainer = Color(0xFF2D3748)
 
 
-private val AestheticTertiary = Color(0xFF14B8A6)
-private val AestheticOnTertiary = Color(0xFFFFFFFF)
-private val AestheticTertiaryContainer = Color(0xFFCCFBF1)
-private val AestheticOnTertiaryContainer = Color(0xFF0F3D38)
+private val AestheticTertiary = Color(0xFFE8F5E9)
+private val AestheticOnTertiary = Color(0xFF1B5E20)
+private val AestheticTertiaryContainer = Color(0xFFF1F8E9)
+private val AestheticOnTertiaryContainer = Color(0xFF2E7D32)
 
 
 private val AestheticError = Color(0xFFEF4444)
@@ -36,33 +37,34 @@ private val AestheticOnError = Color(0xFFFFFFFF)
 private val AestheticErrorContainer = Color(0xFFFEE2E2)
 private val AestheticOnErrorContainer = Color(0xFF7F1D1D)
 
-// Surface & Background - Soft Cream/White
-private val AestheticBackgroundLight = Color(0xFFFAF5FF)
-private val AestheticOnBackgroundLight = Color(0xFF1E1B4B)
+// Surface & Background - Light Neutral
+private val AestheticBackgroundLight = Color(0xFFF8FAFB)
+private val AestheticOnBackgroundLight = Color(0xFF1A1A2E)
 private val AestheticSurfaceLight = Color(0xFFFFFFFF)
-private val AestheticOnSurfaceLight = Color(0xFF1E1B4B)
-private val AestheticSurfaceVariantLight = Color(0xFFF3F4F6)
-private val AestheticOnSurfaceVariantLight = Color(0xFF4B5563)
+private val AestheticOnSurfaceLight = Color(0xFF1A1A2E)
+private val AestheticSurfaceVariantLight = Color(0xFFF1F5F9)
+private val AestheticOnSurfaceVariantLight = Color(0xFF64748B)
 private val AestheticOutlineLight = Color(0xFFCBD5E1)
 
 
 
-private val AestheticPrimaryDark = Color(0xFFA78BFA)
-private val AestheticOnPrimaryDark = Color(0xFF1E1B4B)
-private val AestheticPrimaryContainerDark = Color(0xFF4C1D95)
-private val AestheticOnPrimaryContainerDark = Color(0xFFF3E8FF)
+// Dark Theme Colors
+private val AestheticPrimaryDark = Color(0xFF66BB6A)
+private val AestheticOnPrimaryDark = Color(0xFF1B5E20)
+private val AestheticPrimaryContainerDark = Color(0xFF2E7D32)
+private val AestheticOnPrimaryContainerDark = Color(0xFFE8F5E9)
 
 
-private val AestheticSecondaryDark = Color(0xFFF472B6)
-private val AestheticOnSecondaryDark = Color(0xFF500724)
-private val AestheticSecondaryContainerDark = Color(0xFF831843)
-private val AestheticOnSecondaryContainerDark = Color(0xFFFCE7F3)
+private val AestheticSecondaryDark = Color(0xFF90A4AE)
+private val AestheticOnSecondaryDark = Color(0xFF2D3748)
+private val AestheticSecondaryContainerDark = Color(0xFF546E7A)
+private val AestheticOnSecondaryContainerDark = Color(0xFFE1E8ED)
 
 
-private val AestheticTertiaryDark = Color(0xFF5EEAD4)
-private val AestheticOnTertiaryDark = Color(0xFF0F3D38)
-private val AestheticTertiaryContainerDark = Color(0xFF134E4A)
-private val AestheticOnTertiaryContainerDark = Color(0xFFCCFBF1)
+private val AestheticTertiaryDark = Color(0xFFA5D6A7)
+private val AestheticOnTertiaryDark = Color(0xFF2E7D32)
+private val AestheticTertiaryContainerDark = Color(0xFF388E3C)
+private val AestheticOnTertiaryContainerDark = Color(0xFFF1F8E9)
 
 
 private val AestheticErrorDark = Color(0xFFFCA5A5)
@@ -71,13 +73,13 @@ private val AestheticErrorContainerDark = Color(0xFF991B1B)
 private val AestheticOnErrorContainerDark = Color(0xFFFEE2E2)
 
 
-private val AestheticBackgroundDark = Color(0xFF0F0A1F)
-private val AestheticOnBackgroundDark = Color(0xFFF3F4F6)
-private val AestheticSurfaceDark = Color(0xFF1A1330)
-private val AestheticOnSurfaceDark = Color(0xFFF3F4F6)
-private val AestheticSurfaceVariantDark = Color(0xFF312E6B)
-private val AestheticOnSurfaceVariantDark = Color(0xFFC4B5FD)
-private val AestheticOutlineDark = Color(0xFF6366F1)
+private val AestheticBackgroundDark = Color(0xFF0F1419)
+private val AestheticOnBackgroundDark = Color(0xFFE2E8F0)
+private val AestheticSurfaceDark = Color(0xFF1A2332)
+private val AestheticOnSurfaceDark = Color(0xFFE2E8F0)
+private val AestheticSurfaceVariantDark = Color(0xFF2D3A4A)
+private val AestheticOnSurfaceVariantDark = Color(0xFF94A3B8)
+private val AestheticOutlineDark = Color(0xFF475569)
 
 
 

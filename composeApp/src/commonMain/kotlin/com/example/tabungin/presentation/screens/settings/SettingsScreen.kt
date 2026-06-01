@@ -31,6 +31,29 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.isSaved) {
+        if (state.isSaved) {
+            snackbarHostState.showSnackbar(
+                message = "Nama berhasil disimpan!",
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetSavedState()
+        }
+    }
+
+    // Time Picker Dialog
+    if (state.showTimePicker) {
+        TimePickerDialog(
+            initialHour = state.notifikasiJam,
+            initialMinute = state.notifikasiMenit,
+            onDismiss = { viewModel.hideTimePicker() },
+            onConfirm = { hour, minute ->
+                viewModel.setNotificationTime(hour, minute)
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -69,6 +92,16 @@ fun SettingsScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
         }
     ) { padding ->
         Column(
@@ -99,7 +132,7 @@ fun SettingsScreen(
                                 brush = Brush.horizontalGradient(
                                     colors = listOf(
                                         MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.tertiary
+                                        MaterialTheme.colorScheme.secondary
                                     )
                                 )
                             )
@@ -120,13 +153,13 @@ fun SettingsScreen(
                             }
                             Column {
                                 Text(
-                                    "TabungIn",
+                                    if (state.namaUser.isNotBlank()) state.namaUser else "TabungIn",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
                                 Text(
-                                    "Wujudkan Impianmu",
+                                    if (state.namaUser.isNotBlank()) "Wujudkan Impianmu" else "Mulai menabung sekarang",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.White.copy(alpha = 0.85f)
                                 )
@@ -138,20 +171,118 @@ fun SettingsScreen(
 
             // Profile Section
             SettingsSection(title = "Profil") {
-                OutlinedTextField(
-                    value = state.namaUser,
-                    onValueChange = { newName ->
-                        viewModel.onNamaUserChange(newName)
-                    },
-                    label = { Text("Nama Pengguna") },
-                    placeholder = { Text("Masukkan nama kamu") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Person, contentDescription = null)
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
-                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        ),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        // Profile Icon
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.size(56.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        Icons.Default.AccountCircle,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
+                            }
+                            Column {
+                                Text(
+                                    "Profil Pengguna",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    "Kelola informasi akun kamu",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+
+                        OutlinedTextField(
+                            value = state.namaUser,
+                            onValueChange = { newName ->
+                                viewModel.onNamaUserChange(newName)
+                            },
+                            label = { Text("Nama Lengkap") },
+                            placeholder = { Text("Masukkan nama kamu") },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                cursorColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+
+                        Spacer(Modifier.height(16.dp))
+
+                        Button(
+                            onClick = { viewModel.saveNamaUser() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 2.dp,
+                                pressedElevation = 4.dp
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "Simpan Perubahan",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
             }
 
             // Appearance Section
@@ -167,22 +298,92 @@ fun SettingsScreen(
 
             // Notifications Section
             SettingsSection(title = "Notifikasi") {
-                SettingsToggleCard(
-                    icon = Icons.Default.Notifications,
-                    title = "Pengingat Menabung",
-                    subtitle = "Dapatkan notifikasi harian untuk menabung",
-                    checked = uiState.notifikasiAktif,
-                    onToggle = viewModel::toggleNotifikasi
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Pengingat Menabung Toggle
+                    SettingsToggleCard(
+                        icon = Icons.Default.Notifications,
+                        title = "Pengingat Menabung",
+                        subtitle = "Dapatkan notifikasi harian untuk menabung",
+                        checked = uiState.notifikasiAktif,
+                        onToggle = viewModel::toggleNotifikasi
+                    )
+
+                    // Time Picker Card (shown when notifications are enabled)
+                    if (uiState.notifikasiAktif) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(
+                                    elevation = 2.dp,
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Schedule,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Column {
+                                        Text(
+                                            "Waktu Pengingat",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            "${state.notifikasiJam.toString().padStart(2, '0')}:${state.notifikasiMenit.toString().padStart(2, '0')}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+
+                                TextButton(onClick = { viewModel.showTimePicker() }) {
+                                    Text("Ubah")
+                                }
+                            }
+                        }
+                    }
+
+                    // Target Tercapai Toggle
+                    SettingsToggleCard(
+                        icon = Icons.Default.EmojiEvents,
+                        title = "Notifikasi Target Tercapai",
+                        subtitle = "Beritahu saat target tabungan tercapai",
+                        checked = uiState.notifTargetTercapai,
+                        onToggle = viewModel::toggleNotifTargetTercapai
+                    )
+                }
             }
 
             // About Section
             SettingsSection(title = "Tentang Aplikasi") {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 2.dp,
+                            shape = RoundedCornerShape(16.dp)
+                        ),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -203,7 +404,8 @@ fun SettingsScreen(
                                 Text(
                                     "TabungIn",
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     "Versi 1.0.0",
@@ -214,18 +416,13 @@ fun SettingsScreen(
                         }
 
                         Spacer(Modifier.height(16.dp))
-                        HorizontalDivider()
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(Modifier.height(16.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            InfoItem(
-                                icon = Icons.Default.Code,
-                                label = "Sprint",
-                                value = "2"
-                            )
                             InfoItem(
                                 icon = Icons.Default.School,
                                 label = "Mata Kuliah",
@@ -386,4 +583,67 @@ private fun InfoItem(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerDialog(
+    initialHour: Int,
+    initialMinute: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (hour: Int, minute: Int) -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = true
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Atur Waktu Pengingat",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectorColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        clockDialSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(timePickerState.hour, timePickerState.minute)
+                }
+            ) {
+                Text("Simpan", color = MaterialTheme.colorScheme.primary)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp)
+    )
 }

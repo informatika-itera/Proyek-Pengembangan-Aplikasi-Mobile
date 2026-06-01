@@ -92,17 +92,17 @@ fun HomeScreen(
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp,
-                modifier = Modifier.height(80.dp)
+                tonalElevation = 0.dp
             ) {
                 NavigationBarItem(
                     icon = {
                         Icon(
                             if (selectedTab == 0) Icons.Filled.Home else Icons.Outlined.Home,
-                            contentDescription = "Beranda"
+                            contentDescription = "Beranda",
+                            modifier = Modifier.size(26.dp)
                         )
                     },
-                    label = { Text("Beranda") },
+                    label = { Text("Beranda", style = MaterialTheme.typography.labelMedium) },
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     colors = NavigationBarItemDefaults.colors(
@@ -115,10 +115,11 @@ fun HomeScreen(
                     icon = {
                         Icon(
                             if (selectedTab == 1) Icons.Filled.QueryStats else Icons.Outlined.QueryStats,
-                            contentDescription = "Statistik"
+                            contentDescription = "Statistik",
+                            modifier = Modifier.size(26.dp)
                         )
                     },
-                    label = { Text("Statistik") },
+                    label = { Text("Statistik", style = MaterialTheme.typography.labelMedium) },
                     selected = selectedTab == 1,
                     onClick = {
                         selectedTab = 1
@@ -134,10 +135,11 @@ fun HomeScreen(
                     icon = {
                         Icon(
                             if (selectedTab == 2) Icons.Filled.SmartToy else Icons.Outlined.SmartToy,
-                            contentDescription = "AI Assistant"
+                            contentDescription = "AI Assistant",
+                            modifier = Modifier.size(26.dp)
                         )
                     },
-                    label = { Text("AI") },
+                    label = { Text("AI", style = MaterialTheme.typography.labelMedium) },
                     selected = selectedTab == 2,
                     onClick = {
                         selectedTab = 2
@@ -153,10 +155,11 @@ fun HomeScreen(
                     icon = {
                         Icon(
                             if (selectedTab == 3) Icons.Filled.Person else Icons.Outlined.Person,
-                            contentDescription = "Profil"
+                            contentDescription = "Profil",
+                            modifier = Modifier.size(26.dp)
                         )
                     },
-                    label = { Text("Profil") },
+                    label = { Text("Profil", style = MaterialTheme.typography.labelMedium) },
                     selected = selectedTab == 3,
                     onClick = {
                         selectedTab = 3

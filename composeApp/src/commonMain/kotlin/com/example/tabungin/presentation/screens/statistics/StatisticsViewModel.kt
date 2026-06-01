@@ -8,6 +8,9 @@ import com.example.tabungin.domain.usecase.GetAllSetoranUseCase
 import com.example.tabungin.domain.usecase.GetAllTargetsUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 data class StatisticsUiState(
     val targets: List<Target> = emptyList(),
@@ -61,8 +64,9 @@ class StatisticsViewModel(
         val targetAktif = targets.count { it.terkumpul < it.targetAmount }
 
         // Calculate monthly statistics
-        val currentMonth = java.time.LocalDate.now().monthValue
-        val currentYear = java.time.LocalDate.now().year
+        val currentLocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val currentMonth = currentLocalDateTime.monthNumber
+        val currentYear = currentLocalDateTime.year
         val setoranBulanIni = setoran.count { setoranItem ->
             try {
                 val parts = setoranItem.tanggal.split("-")

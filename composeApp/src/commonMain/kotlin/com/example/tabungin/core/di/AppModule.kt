@@ -7,10 +7,13 @@ import com.example.tabungin.data.local.datastore.DataStoreFactory
 import com.example.tabungin.data.local.datastore.UserPreferences
 import com.example.tabungin.data.local.datastore.create
 import com.example.tabungin.data.remote.api.GeminiService
+import com.example.tabungin.data.repository.AIRepositoryImpl
 import com.example.tabungin.data.repository.TargetRepositoryImpl
+import com.example.tabungin.domain.repository.AIRepository
 import com.example.tabungin.domain.repository.TargetRepository
 import com.example.tabungin.domain.usecase.*
 import com.example.tabungin.presentation.screens.add_edit.AddEditViewModel
+import com.example.tabungin.presentation.screens.ai.AIAssistantViewModel
 import com.example.tabungin.presentation.screens.detail.DetailViewModel
 import com.example.tabungin.presentation.screens.home.HomeViewModel
 import com.example.tabungin.presentation.screens.riwayat.RiwayatViewModel
@@ -25,7 +28,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
-
+import kotlin.coroutines.EmptyCoroutineContext.get
 
 
 val networkModule = module {
@@ -51,6 +54,7 @@ val preferencesModule = module {
 
 val repositoryModule = module {
     single<TargetRepository> { TargetRepositoryImpl(get()) }
+    single<AIRepository> { AIRepositoryImpl(get()) }
 }
 
 
@@ -65,17 +69,21 @@ val useCaseModule = module {
     factory { GetAllSetoranUseCase(get()) }
     factory { InsertSetoranUseCase(get()) }
     factory { DeleteSetoranUseCase(get()) }
+    factory { SummarizeNoteUseCase(get()) }
+    factory { ImproveWritingUseCase(get()) }
+    factory { GenerateIdeasUseCase(get()) }
 }
 
 
 
 val viewModelModule = module {
     viewModel { HomeViewModel(get(), get()) }
-    viewModel { (id: Long) -> DetailViewModel(id, get(), get(), get(), get()) }
+    viewModel { (id: Long) -> DetailViewModel(id, get(), get(), get(), get(), get(), get()) }
     viewModel { params -> AddEditViewModel(params.getOrNull<Long>(), get(), get(), get()) }
     viewModel { RiwayatViewModel(get()) }
-    viewModel { SettingsViewModel(get()) }
+    viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { StatisticsViewModel(get(), get()) }
+    viewModel { AIAssistantViewModel(get(), get()) }
 }
 
 
@@ -92,11 +100,14 @@ val sharedModules = listOf(
 
 
 fun commonModules(): List<Module> = listOf(
+    networkModule,
     databaseModule,
+    preferencesModule,
     repositoryModule,
     useCaseModule,
     viewModelModule
 )
+
 fun initKoin(
     platformModules: List<Module> = emptyList(),
     config: KoinAppDeclaration? = null

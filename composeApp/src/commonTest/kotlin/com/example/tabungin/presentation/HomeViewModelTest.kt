@@ -3,12 +3,15 @@ package com.example.tabungin.presentation
 import app.cash.turbine.test
 import com.example.tabungin.data.repository.FakeTargetRepository
 import com.example.tabungin.domain.model.Target
+import com.example.tabungin.domain.repository.TargetRepository
 import com.example.tabungin.domain.usecase.DeleteTargetUseCase
 import com.example.tabungin.domain.usecase.GetAllTargetsUseCase
 import com.example.tabungin.presentation.screens.home.HomeUiState
 import com.example.tabungin.presentation.screens.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -56,7 +59,6 @@ class HomeViewModelTest {
 
     @Test
     fun `deleteTarget menghapus target dari uiState`() = runTest {
-
         val id = repo.insertTarget(
             Target(nama = "Test", targetAmount = 1_000_000.0, deadline = "2025-12-31")
         )
@@ -90,9 +92,32 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `targets terisi dengan benar setelah inisialisasi`() = runTest {
+        repo.insertTarget(Target(nama = "C", targetAmount = 5_000.0, deadline = "2025-12-31"))
+
+        val vm = HomeViewModel(GetAllTargetsUseCase(repo), DeleteTargetUseCase(repo))
+        advanceUntilIdle()
+
+        assertEquals(1, vm.uiState.value.targets.size)
+        assertEquals("C", vm.uiState.value.targets.first().nama)
+    }
+
+    @Test
     fun `clearError mengosongkan error di uiState`() = runTest {
-        assertFails { throw IllegalStateException("dummy") }
-        viewModel.clearError()
-        assertNull(viewModel.uiState.value.error)
+        // Buat fake repository yang sengaja melempar error agar masuk ke State ViewModel
+        val failingRepo = object : TargetRepository by FakeTargetRepository() {
+            override fun getAllTargets(): Flow<List<Target>> = flow {
+                throw Exception("Simulasi Error Database")
+            }
+        }
+
+        val errorVm = HomeViewModel(GetAllTargetsUseCase(failingRepo), DeleteTargetUseCase(failingRepo))
+        advanceUntilIdle() // Biarkan ViewModel mencoba mengambil data dan gagal
+
+        assertEquals("Simulasi Error Database", errorVm.uiState.value.error)
+
+        errorVm.clearError()
+
+        assertNull(errorVm.uiState.value.error)
     }
 }

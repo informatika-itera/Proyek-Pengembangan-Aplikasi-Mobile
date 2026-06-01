@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,6 +21,12 @@ class UserPreferences(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
 
         val NAMA_USER = stringPreferencesKey("nama_user")
+
+        // Notification settings
+        val NOTIFIKASI_AKTIF = booleanPreferencesKey("notifikasi_aktif")
+        val NOTIFIKASI_JAM = intPreferencesKey("notifikasi_jam")
+        val NOTIFIKASI_MENIT = intPreferencesKey("notifikasi_menit")
+        val NOTIF_TARGET_TERCAPAI = booleanPreferencesKey("notif_target_tercapai")
     }
 
     val namaUser: Flow<String> = dataStore.data.map { prefs ->
@@ -79,6 +86,47 @@ class UserPreferences(
     suspend fun setOnboardingCompleted() {
         dataStore.edit { prefs ->
             prefs[Keys.ONBOARDING_COMPLETED] = true
+        }
+    }
+
+    // Notification Settings
+    val notifikasiAktif: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFIKASI_AKTIF] ?: true
+    }
+
+    suspend fun setNotifikasiAktif(aktif: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NOTIFIKASI_AKTIF] = aktif
+        }
+    }
+
+    val notifikasiJam: Flow<Int> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFIKASI_JAM] ?: 9 // Default 09:00
+    }
+
+    suspend fun setNotifikasiJam(jam: Int) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NOTIFIKASI_JAM] = jam
+        }
+    }
+
+    val notifikasiMenit: Flow<Int> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFIKASI_MENIT] ?: 0
+    }
+
+    suspend fun setNotifikasiMenit(menit: Int) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NOTIFIKASI_MENIT] = menit
+        }
+    }
+
+    val notifTargetTercapai: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIF_TARGET_TERCAPAI] ?: true
+    }
+
+    suspend fun setNotifTargetTercapai(aktif: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NOTIF_TARGET_TERCAPAI] = aktif
         }
     }
 }

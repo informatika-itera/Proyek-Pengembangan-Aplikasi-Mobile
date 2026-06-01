@@ -2,27 +2,25 @@ package com.example.tabungin.presentation.screens.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tabungin.data.local.datastore.UserPreferences
 import com.example.tabungin.domain.model.Setoran
 import com.example.tabungin.domain.model.Target
 import com.example.tabungin.domain.usecase.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.tabungin.notification.NotificationService
+import com.example.tabungin.presentation.components.formatRupiah
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.coroutines.flow.*
 
 data class DetailUiState(
     val target: Target?          = null,
     val setoranList: List<Setoran> = emptyList(),
     val isLoading: Boolean       = true,
     val error: String?           = null,
-    val showSetoranDialog: Boolean = false
+    val showSetoranDialog: Boolean = false,
+    val targetAchieved: Boolean  = false
 )
 
 class DetailViewModel(
@@ -30,7 +28,9 @@ class DetailViewModel(
     private val getTargetByIdUseCase: GetTargetByIdUseCase,
     private val getSetoranByTargetUseCase: GetSetoranByTargetUseCase,
     private val insertSetoranUseCase: InsertSetoranUseCase,
-    private val deleteSetoranUseCase: DeleteSetoranUseCase
+    private val deleteSetoranUseCase: DeleteSetoranUseCase,
+    private val notificationService: NotificationService,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DetailUiState())
@@ -44,8 +44,10 @@ class DetailViewModel(
             getSetoranByTargetUseCase(targetId)
         ) { target, setoran -> target to setoran }
             .onEach { (target, setoran) ->
+                val totalTabungan = setoran.sumOf { it.amount }
+                val achieved = target != null && totalTabungan >= target.targetAmount && !target.tercapai
                 _uiState.update {
-                    it.copy(target = target, setoranList = setoran, isLoading = false)
+                    it.copy(target = target, setoranList = setoran, isLoading = false, targetAchieved = achieved)
                 }
             }
             .catch { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
@@ -57,11 +59,32 @@ class DetailViewModel(
             val today = Clock.System.now()
                 .toLocalDateTime(TimeZone.currentSystemDefault())
                 .date.toString()
+
+            val currentTarget = _uiState.value.target
+            val currentTotal = _uiState.value.setoranList.sumOf { it.amount }
+            val newTotal = currentTotal + amount
+            val wasNotCompleted = currentTarget != null && !currentTarget.tercapai && currentTotal < currentTarget.targetAmount
+
             runCatching {
                 insertSetoranUseCase(
                     Setoran(targetId = targetId, amount = amount, catatan = catatan, tanggal = today)
                 )
-            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+            }.onSuccess {
+                // Check if target is now achieved
+                if (currentTarget != null && wasNotCompleted && newTotal >= currentTarget.targetAmount) {
+                    // Check if notification is enabled
+                    val isEnabled = userPreferences.notifTargetTercapai.first()
+                    if (isEnabled) {
+                        val formattedAmount = formatRupiah(currentTarget.targetAmount)
+                        notificationService.showTargetAchievedNotification(
+                            targetName = currentTarget.nama,
+                            amount = formattedAmount
+                        )
+                    }
+                }
+            }.onFailure { e ->
+                _uiState.update { it.copy(error = e.message) }
+            }
         }
     }
 
@@ -75,4 +98,6 @@ class DetailViewModel(
     fun showSetoranDialog()    = _uiState.update { it.copy(showSetoranDialog = true) }
     fun dismissSetoranDialog() = _uiState.update { it.copy(showSetoranDialog = false) }
     fun clearError()           = _uiState.update { it.copy(error = null) }
+    fun clearTargetAchieved()  = _uiState.update { it.copy(targetAchieved = false) }
 }
+

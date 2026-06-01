@@ -51,6 +51,13 @@ fun DetailScreen(
         }
     }
 
+    LaunchedEffect(uiState.targetAchieved) {
+        if (uiState.targetAchieved) {
+            snackbarHostState.showSnackbar("🎉 Selamat! Target \"${uiState.target?.nama}\" telah tercapai!")
+            viewModel.clearTargetAchieved()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {

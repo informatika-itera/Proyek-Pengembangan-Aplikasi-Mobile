@@ -2,116 +2,95 @@ package com.example.neurodeck.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.neurodeck.domain.model.Deck
 import com.example.neurodeck.domain.repository.CardRepository
 import com.example.neurodeck.domain.repository.DeckRepository
 import com.example.neurodeck.domain.repository.ReviewRecordRepository
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.neurodeck.domain.repository.UserPreferencesRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 /**
- * ViewModel untuk Home Tab.
+ * ViewModel untuk Home Tab — REACTIVE (Sprint 3 upgrade).
  *
- * Tugas:
- *   1. Observe stream `DeckRepository.observeAllDecks()` untuk recent decks.
- *   2. Fetch (one-shot) due count, reviewedToday, streak — refresh saat
- *      data deck berubah (cheaper than another flow).
- *   3. Compute greeting & tips lokal (no IO).
- *   4. Expose [HomeUiState] sebagai StateFlow.
+ * PERUBAHAN:
+ *   1. Greeting userName sekarang dari UserPreferences.observeProfile().name
+ *      (sebelumnya hardcoded "Mahasiswa").
+ *   2. Fully reactive via combine(deckFlow, profileFlow) + mapLatest:
+ *      - Nama berubah di EditProfile → greeting update instant
+ *      - User review kartu → CardEntity berubah → deck flow re-emit →
+ *        dueCount/streak/reviewedToday recompute OTOMATIS
  *
- * Catatan strategy: kita observe DECK flow (reactive), tapi STATS (due,
- * streak, reviewedToday) cuma di-fetch sekali setiap deck flow emit.
- * Trade-off:
- *   - Stats tidak super real-time (kalau user review kartu di session lain
- *     sambil Home tab terbuka, angka mungkin telat update).
- *   - TAPI: simpel, no flow combine complexity, dan dalam praktik user akan
- *     leave Home → study session → balik ke Home → recompute saat re-enter.
- *
- * Alternative (overkill untuk Sprint 2):
- *   - Subscribe ke review flow juga, combine 3 source via combine{}.
- *   - Tapi belum ada `ReviewRecordRepository.observeXxx()` flow API, butuh
- *     refactor besar. Defer ke Sprint 3+ kalau dibutuhkan.
+ * Arsitektur Flow:
+ *   combine(observeAllDecks, observeProfile)   ← trigger: cards/decks ATAU profil berubah
+ *     .mapLatest { computeSuccessState(...) }  ← recompute, cancel hitungan lama
+ *     .catch { Error }
+ *     .stateIn(WhileSubscribed)
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
     private val deckRepository: DeckRepository,
     private val cardRepository: CardRepository,
     private val reviewRecordRepository: ReviewRecordRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-
-    init {
-        observeData()
-    }
-
-    /**
-     * Subscribe ke deck flow. Setiap kali list deck berubah (insert, update,
-     * delete deck), re-fetch stats juga supaya semua angka selalu sinkron
-     * sama list deck yang ditampilkan.
-     */
-    private fun observeData() {
-        deckRepository.observeAllDecks()
+    val uiState: StateFlow<HomeUiState> =
+        combine(
+            deckRepository.observeAllDecks(),
+            userPreferencesRepository.observeProfile(),
+        ) { decks, profile -> decks to profile.name }
+            .mapLatest { (decks, userName) ->
+                computeSuccessState(decks, userName)
+            }
             .catch { e ->
-                _uiState.value = HomeUiState.Error(
-                    e.message ?: "Gagal memuat data Home",
-                )
+                emit(HomeUiState.Error(e.message ?: "Gagal memuat data Home"))
             }
-            .onEach { decks ->
-                // Stats fetch async di scope yang sama supaya cancellable
-                // saat ViewModel cleared.
-                viewModelScope.launch {
-                    refreshDashboard(decks)
-                }
-            }
-            .launchIn(viewModelScope)
-    }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = HomeUiState.Loading,
+            )
 
     /**
-     * Compose seluruh Success state dari multiple sumber:
-     *   - decks (parameter dari deck flow)
-     *   - due cards count (fetch one-shot)
-     *   - streak (fetch one-shot)
-     *   - reviewedToday (fetch one-shot)
-     *   - greeting (computed dari current time)
-     *   - tip of the day (computed dari day of year)
+     * Compose seluruh Success state dari:
+     *   - decks (dari deck flow)
+     *   - userName (dari profile flow)
+     *   - due count, streak, reviewedToday (suspend reads — fresh tiap recompute)
+     *   - greeting & tip (computed dari current time)
      */
-    private suspend fun refreshDashboard(decks: List<com.example.neurodeck.domain.model.Deck>) {
-        try {
-            val now = Clock.System.now()
+    private suspend fun computeSuccessState(
+        decks: List<Deck>,
+        userName: String,
+    ): HomeUiState {
+        val now = Clock.System.now()
+        val localNow = now.toLocalDateTime(TimeZone.currentSystemDefault())
 
-            // Parallel fetch — kalau ada 3 query yang independent, run async.
-            // Untuk Sprint 2 ini cukup sequential — angka kecil, query cepat.
-            val dueCount = cardRepository.countAllDueCards(now).toInt()
-            val streak = reviewRecordRepository.getStreakDays(now)
-            val reviewedToday = reviewRecordRepository.getReviewedToday(now)
+        val dueCount = cardRepository.countAllDueCards(now).toInt()
+        val streak = reviewRecordRepository.getStreakDays(now)
+        val reviewedToday = reviewRecordRepository.getReviewedToday(now)
 
-            _uiState.value = HomeUiState.Success(
-                greeting = computeGreeting(now.toLocalDateTime(TimeZone.currentSystemDefault())),
-                userName = DEFAULT_USERNAME,  // TODO Sprint 3: wire ke UserPreferencesRepository
-                dueCardsCount = dueCount,
-                streakDays = streak,
-                reviewedToday = reviewedToday,
-                recentDecks = decks.take(MAX_RECENT_DECKS),
-                tipOfTheDay = computeTipOfTheDay(now.toLocalDateTime(TimeZone.currentSystemDefault())),
-            )
-        } catch (e: Exception) {
-            _uiState.value = HomeUiState.Error(
-                e.message ?: "Gagal refresh statistik",
-            )
-        }
+        return HomeUiState.Success(
+            greeting = computeGreeting(localNow),
+            userName = userName,
+            dueCardsCount = dueCount,
+            streakDays = streak,
+            reviewedToday = reviewedToday,
+            recentDecks = decks.take(MAX_RECENT_DECKS),
+            tipOfTheDay = computeTipOfTheDay(localNow),
+        )
     }
 
     private companion object {
-        const val DEFAULT_USERNAME = "Mahasiswa"
         const val MAX_RECENT_DECKS = 3
     }
 }
@@ -128,8 +107,6 @@ class HomeViewModel(
  *   - 11:00 - 14:59  → "Selamat Siang"
  *   - 15:00 - 17:59  → "Selamat Sore"
  *   - 18:00 - 03:59  → "Selamat Malam"
- *
- * Pure function (no IO, deterministic) — mudah di-unit-test kalau perlu.
  */
 internal fun computeGreeting(now: LocalDateTime): String = when (now.hour) {
     in 4..10 -> "Selamat Pagi"
@@ -140,11 +117,8 @@ internal fun computeGreeting(now: LocalDateTime): String = when (now.hour) {
 
 /**
  * Tips of the day — rotate dari array TIPS_POOL berdasarkan day-of-year.
- * Tidak random supaya tip yang sama selama sehari penuh (user buka Home
- * berkali-kali tetap lihat tip yang sama → predictable, tidak menggangu).
  */
 internal fun computeTipOfTheDay(now: LocalDateTime): String {
-    // dayOfYear = 1-366. Modulo size pool jadi index 0..size-1.
     val index = now.dayOfYear % TIPS_POOL.size
     return TIPS_POOL[index]
 }
@@ -161,7 +135,3 @@ private val TIPS_POOL: List<String> = listOf(
     "❓ Kalau jawab Again 3x berturut-turut, edit kartunya — mungkin pertanyaan kurang jelas.",
     "🌱 New cards dibatasi otomatis supaya tidak overwhelm — kualitas > kuantitas.",
 )
-
-// ════════════════════════════════════════════════════════════════════════════
-// (End of file — launchIn imported from kotlinx.coroutines.flow above)
-// ════════════════════════════════════════════════════════════════════════════

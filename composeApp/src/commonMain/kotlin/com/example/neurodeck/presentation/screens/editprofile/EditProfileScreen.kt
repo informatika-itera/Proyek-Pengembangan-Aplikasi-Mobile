@@ -1,6 +1,7 @@
 package com.example.neurodeck.presentation.screens.editprofile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,10 +35,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.example.neurodeck.domain.model.UserProfile
 import com.example.neurodeck.presentation.components.LoadingIndicator
 import com.example.neurodeck.presentation.navigation.AppTopBar
+import com.example.neurodeck.presentation.util.rememberImagePickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -84,7 +91,14 @@ fun EditProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
-            // Avatar placeholder (centered)
+            // Avatar — tappable untuk pilih foto dari galeri
+            val avatarPicker = rememberImagePickerLauncher { path ->
+                // path = file:// hasil copy, atau null kalau batal
+                if (path != null) {
+                    viewModel.onAvatarChange(path)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -95,24 +109,53 @@ fun EditProfileScreen(
                     modifier = Modifier
                         .size(96.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable { avatarPicker.launch() },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = "Avatar",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(56.dp),
-                    )
+                    val avatar = uiState.avatarUri
+                    if (avatar != null) {
+                        // Render foto user via Coil
+                        AsyncImage(
+                            model = avatar,
+                            contentDescription = "Foto profil",
+                            modifier = Modifier
+                                .size(96.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } else {
+                        // Placeholder kalau belum ada foto
+                        Icon(
+                            imageVector = Icons.Outlined.PhotoCamera,
+                            contentDescription = "Pilih foto",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
                 }
             }
+
             Text(
-                text = "Avatar picker tersedia di Sprint 3",
+                text = "Ketuk untuk ganti foto",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
             )
+
+            // Tombol hapus foto (hanya muncul kalau ada foto)
+            if (uiState.avatarUri != null) {
+                TextButton(
+                    onClick = { viewModel.onAvatarChange(null) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                ) {
+                    Text(
+                        text = "Hapus Foto",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

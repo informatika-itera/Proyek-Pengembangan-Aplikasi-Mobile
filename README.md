@@ -13,12 +13,20 @@ Tahun Akademik Genap 2025/2026
 
 ---
 
+## 🎥 Demo Video
+
+> **Demo Sprint 3 (1–2 menit)** — menunjukkan: pencarian deck, mode offline, AI generate, study session SM-2, dan bonus features (dark mode, AI Tutor, foto profil).
+
+📹 **[ [Video demo](https://drive.google.com/file/d/1h6FUHHRWFLjuAneCT7EWsd3IU_rVtIsk/view?usp=drivesdk) ]**
+
+---
+
 ## 👥 Tim Pengembang
 
 | Role | Nama | NIM | GitHub |
 |------|------|-----|--------|
-| Lead Developer & AI Integration | Muhammad Fajri Firdaus | `123140050` | [@fajrifirdaus](https://github.com/fajrifirdaus) |
-| UI/UX Developer & QA | Nadya Shafwah Yusuf | `123140167` | [@nadshafy](https://github.com/nadshafy) |
+| Lead Developer & Full-stack developer Integration | Muhammad Fajri Firdaus | `123140050` | [@fajrifirdaus](https://github.com/fajrifirdaus) |
+| Full-stack developer & QA | Nadya Shafwah Yusuf | `123140167` | [@nadshafy](https://github.com/nadshafy) |
 
 **Dosen Pengampu:** Pak Habib — [@mh4Scripts](https://github.com/mh4Scripts)
 
@@ -64,14 +72,14 @@ Mahasiswa dan pelajar yang ingin belajar dengan metode spaced repetition tanpa h
 
 - [x] **AI Tutor Mode** — Full conversational chat dengan Gemini di tab "AI Chat" (5 tab: Home/Decks/AIChat/Stats/Profile), multi-turn history, persistent SQLDelight
 - [x] **Advanced Statistics** — Stats Tab dengan period filter, BigStatCards, Activity 7-day bar chart, Card Status breakdown, **Forgetting Curve chart** (Compose Canvas dengan formula Ebbinghaus `R(t) = e^(-t/S)`)
-- [x] **Dark Mode** — Theme selector Light/Dark/System di Profile Tab, persisted di DataStore
-- [ ] **Animations Polish** — Transisi halus antar screen, micro-interactions (Sprint 3 fokus)
+- [x] **Dark Mode** — Theme selector Light/Dark/System di Profile Tab, persisted di DataStore, **reactive** (toggle langsung re-skin seluruh app)
+- [x] **Reactive Data** — Stats, achievements, Home greeting auto-update saat review kartu (Flow + `flatMapLatest`, trigger via SQLDelight table invalidation)
+- [x] **Profile Photo dari Galeri** — Image picker (Android Photo Picker, expect/actual KMP), foto di-copy ke internal storage app (persisten), render via Coil
+- [x] **Hamburger Drawer Redesign** — Reactive profile header (nama + foto auto-update), Vivid Logic styling
 
 ### 🔵 Stretch Goals (Opsional, jika waktu memungkinkan)
-
 - [ ] **Mini Knowledge Graph** — Visualisasi sederhana relasi antar kartu dalam satu deck
 - [ ] **Export to CSV** — Export deck untuk backup eksternal
-- [ ] **iOS Support** — Adaptasi untuk platform iOS (saat ini fokus Android)
 
 ---
 
@@ -88,7 +96,7 @@ Mahasiswa dan pelajar yang ingin belajar dengan metode spaced repetition tanpa h
 | **Local Storage** | SQLDelight | 2.0.2 |
 | **Preferences** | DataStore | 1.1.1 |
 | **Dependency Injection** | Koin | 4.0.0 |
-| **AI Provider** | Google Gemini API (2.5 Flash-Lite) | Free Tier |
+| **AI Provider** | Google Gemini API (2.5 Flash) | Free Tier |
 | **Serialization** | Kotlinx Serialization JSON | 1.7.3 |
 | **Testing** | Kotlin Test + Turbine | 1.2.0 |
 | **CI/CD** | GitHub Actions | — |
@@ -162,19 +170,28 @@ composeApp/src/
 │   │   └── usecase/               # Business logic, termasuk SM-2 algorithm
 │   │
 │   └── presentation/              # 🎨 PRESENTATION LAYER
-│       ├── navigation/            # NavHost, Routes (type-safe)
-│       ├── theme/                 # Material 3 theme (light/dark)
-│       ├── components/            # Reusable composables (FlashcardView, ...)
+│       ├── navigation/            # NavHost, Routes, AppDrawer, BottomNav
+│       ├── theme/                 # Material 3 theme (Vivid Logic light + Midnight dark)
+│       ├── components/            # Reusable composables (RatingButtons, StickyNoteBadge, ...)
+│       ├── util/                  # expect/actual ImagePicker (gallery photo)
 │       └── screens/               # Feature screens + ViewModels
-│           ├── library/           # Deck Library (home)
-│           ├── import/            # Import & AI Generate
-│           ├── study/             # Study Session
-│           ├── statistics/        # Statistics Dashboard
-│           └── settings/          # Settings
+│           ├── home/              # Home dashboard (reactive greeting)
+│           ├── decklibrary/       # Deck Library + search
+│           ├── importgenerate/    # Import & AI Generate
+│           ├── studysession/      # Study Session (SM-2 flashcards)
+│           ├── stats/             # Statistics + Forgetting Curve
+│           ├── profile/           # Profile + achievements (reactive)
+│           ├── editprofile/       # Edit profile + photo picker
+│           ├── aichat/            # AI Tutor chat
+│           ├── createdeck/        # Create deck form
+│           ├── cardlist/          # Card list per deck
+│           ├── addcard/ editcard/ # Card CRUD
+│           └── about/             # About screen
 │
 ├── commonMain/sqldelight/         # SQLDelight schema (.sq files)
-├── androidMain/kotlin/            # Android-specific (expect/actual)
-└── iosMain/kotlin/                # iOS-specific (saat ini placeholder)
+├── commonMain/composeResources/   # Fonts (Bricolage, JetBrains Mono), drawables, logo
+├── androidMain/kotlin/            # Android actual (DB driver, DataStore, ImagePicker)
+└── iosMain/kotlin/                # iOS actual: DB driver + DataStore real, ImagePicker stub
 ```
 
 ---
@@ -187,7 +204,7 @@ composeApp/src/
 |--------|--------|-------|--------|
 | **Sprint 1** | W11 | Foundation: Setup, Architecture, CI/CD, Deck CRUD | ✅ Done |
 | **Sprint 2** | W12–W13 | Core Features: SM-2, AI Generation, 5-Tab Navigation, AI Chat, Stats | ✅ Done |
-| **Sprint 3** | W14–W15 | Pro Upgrades + Polish + Testing | 🟡 Cicilan ~80% |
+| **Sprint 3** | W14–W15 | Advanced Features: Reactive UI, Profile Photo, Drawer Redesign, UI Polish | ✅ Done |
 | **UAS** | W16 | Final Demo Day | ⚪ Planned |
 
 ### 📌 Sprint 1: Foundation (Minggu 11)
@@ -200,10 +217,10 @@ composeApp/src/
 | KMP project structure dengan Clean Architecture folders | NIM 123140050 | ✅ Done |
 | Konfigurasi Gradle, dependencies, Koin DI setup | NIM 123140050 | ✅ Done |
 | GitHub Actions CI workflow (build + APK artifact) | NIM 123140167 | ✅ Done |
-| SQLDelight schema awal: `decks`, `cards`, `review_records` | NIM 123140050 | 🟡 In Progress |
-| Domain models: `Deck`, `Flashcard`, `ReviewRecord` | NIM 123140050 | 🟡 In Progress |
+| SQLDelight schema: `decks`, `cards`, `review_records` (+ `chat_messages`) | NIM 123140050 | ✅ Done |
+| Domain models: `Deck`, `Card`, `ReviewRecord`, `CardReviewState`, `UserProfile` | NIM 123140050 | ✅ Done |
 | Navigation skeleton untuk 5 screens | NIM 123140167 | ✅ Done |
-| Deck Library Screen + ViewModel (CRUD deck) | NIM 123140167 | ⚪ Todo |
+| Deck Library Screen + ViewModel (CRUD deck) | NIM 123140167 | ✅ Done |
 | README lengkap  | NIM 123140050 | ✅ Done |
 
 **Deliverables Sprint 1:**
@@ -307,7 +324,62 @@ composeApp/src/
 - MIUI aggressive caching (uninstall app tidak hapus DB file) → solved dengan force fresh DB via filename change
 - Gemini v1beta tidak support `role=system` di multi-turn → solved dengan prepend system prompt sebagai `role=user`
 
-### 📌 Sprint 3: Pro Upgrades + Polish (Minggu 14–15)
+### ✅ Sprint 3 Delivery Report (Selesai)
+
+> **Status:** 🎉 Selesai — semua komponen rubrik Sprint 3 terpenuhi, beberapa melebihi minimum.
+
+#### 📦 Yang Dikirimkan di Sprint 3
+
+**1. Reactive Data Layer (auto-update tanpa refresh)**
+
+Sebelumnya Stats & achievements pakai snapshot (`.first()`) — tidak update setelah review kartu. Sekarang fully reactive:
+
+| ViewModel | Pattern | Efek |
+|-----------|---------|------|
+| `StatsViewModel` | `combine(observeAllDecks, period).flatMapLatest { computeStats() }` | Statistik auto-update saat review |
+| `ProfileViewModel` | `observeAllDecks().mapLatest { computeAchievements() }` | Achievement (Decks/Cards/Reviews/Streak) auto-update |
+| `HomeViewModel` | `combine(observeAllDecks, observeProfile).mapLatest { ... }` | Greeting + due count + streak reaktif |
+
+**Mekanisme:** `observeAllDecks()` query melakukan `LEFT JOIN CardEntity`. SQLDelight invalidate Flow di level tabel, jadi setiap update SM-2 state pada CardEntity (saat review) otomatis trigger re-emit → recompute → UI update.
+
+**2. Greeting Personalisasi**
+
+Home greeting yang sebelumnya hardcoded `"Mahasiswa"` sekarang membaca `UserProfile.name` dari DataStore — ganti nama di EditProfile langsung tercermin di Home (reactive).
+
+**3. Profile Photo dari Galeri (expect/actual KMP)**
+
+- `commonMain`: `expect fun rememberImagePickerLauncher()`
+- `androidMain`: Android Photo Picker (`ActivityResultContracts.PickVisualMedia`) — tanpa permission, system picker
+- `iosMain`: stub (project fokus Android)
+- Foto di-**copy ke internal storage app** (`filesDir/avatar_*.jpg`) supaya path permanen (content:// URI bisa expire), render via Coil 3 `AsyncImage`
+- EditProfile: avatar tappable → galeri → pilih → preview → simpan → persisten setelah restart; tombol "Hapus Foto"
+
+**4. Hamburger Drawer Redesign + Reactive**
+
+- Profile header drawer observe `observeProfile()` via Koin — nama + foto auto-update
+- Desain Vivid Logic: header card `primaryContainer` rounded + border, avatar ring + Coil photo, sticky badge "LIHAT PROFIL", nama panjang di-ellipsis (responsif)
+
+**5. UI Polish Konsisten (Vivid Logic Design Language)**
+
+Seluruh screen di-poles ke design language konsisten: `OutlinedCard` border tegas, sticky note badges, section titles uppercase, accent strips, custom font (Bricolage Grotesque + JetBrains Mono), splash screen, launcher icon. Study Session redesigned dengan rating pills pastel + interval preview SM-2.
+
+#### 🎯 Pemenuhan Rubrik Sprint 3
+
+| Komponen Rubrik | Bobot | Status | Bukti |
+|-----------------|-------|--------|-------|
+| **Search/Filter** | 25% | ✅ | Decks SearchBar (real-time) + Stats PeriodFilter (7/30/90/All) |
+| **API/Enhanced Local** | 25% | ✅ | Gemini API (generate + chat) dengan error handling lengkap (network + HTTP 400–503) |
+| **Offline Support** | 20% | ✅ | SQLDelight source-of-truth, semua CRUD/study/stats offline; AI degradasi anggun |
+| **Additional Screen** | 15% | ✅ | 4 screen tambahan (Profile, Stats, AIChat, About) — minimum 1 |
+| **Bonus Features** | 15% | ✅ | 4 bonus (Dark mode, AI Tutor, Forgetting Curve, Photo picker) — minimum 1 |
+
+#### 🐛 Issues Sprint 3 yang Di-Resolve
+
+- Kotlin incremental cache corruption (`Storage already registered`) saat heavy refactoring → solved dengan clear `build/` + `.gradle/` + restart daemon
+- Dark mode tidak berefek → root cause `App.kt` panggil `neurodeckTheme()` tanpa param (selalu `isSystemInDarkTheme()`) → fixed wire `observeThemeMode()` → `darkTheme` Boolean
+- Type mismatch reactive Flow → return type `computeStats` diubah ke parent `StatsUiState` supaya `.catch` bisa emit `Error`
+
+
 
 **Goal:** Tambah fitur upgrade untuk target bintang 5, polish UI, comprehensive testing.
 
@@ -396,9 +468,79 @@ composeApp/src/
 2. Sign in dengan Google account
 3. Klik **"Get API key"** → **"Create API key"**
 4. Salin key dan paste ke `local.properties`
-5. **Free tier:** 1.000 request/hari untuk Gemini 2.5 Flash-Lite
+5. **Free tier:** 1.000 request/hari untuk Gemini 2.5 Flash
 
 > ⚠️ **Jangan commit `local.properties` ke Git!** File ini sudah ada di `.gitignore`.
+
+---
+
+## 🔌 API Documentation
+
+NeuroDeck mengintegrasikan **Google Gemini API** untuk dua fitur: AI flashcard generation dan AI Tutor chat.
+
+### Endpoint
+
+| Item | Nilai |
+|------|-------|
+| **Base URL** | `https://generativelanguage.googleapis.com/v1beta/` |
+| **Model** | `gemini-2.5-flash` |
+| **Full endpoint** | `/v1beta/models/gemini-2.5-flash:generateContent` |
+| **Method** | `POST` |
+| **Auth** | API key via query parameter `?key=<GEMINI_API_KEY>` |
+| **Content-Type** | `application/json` |
+| **Client** | Ktor 3.0.1 dengan `ContentNegotiation` (kotlinx-serialization) + `HttpTimeout` 15s |
+
+### API Key Flow
+
+```
+local.properties (GEMINI_API_KEY=...)
+   └─► build.gradle.kts (baca via Properties, inject ke BuildConfig)
+        └─► ApiConfig (expect/actual) expose key ke commonMain
+             └─► GeminiService (Ktor) attach key sebagai query param
+```
+
+Key **tidak pernah di-hardcode** di source — hanya dari `local.properties` (gitignored).
+
+### Request Format (generateContent)
+
+```json
+{
+  "contents": [
+    { "role": "user", "parts": [{ "text": "<prompt + materi>" }] }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "responseMimeType": "application/json"
+  }
+}
+```
+
+> **Catatan:** Gemini `v1beta` tidak mendukung `role=system` di multi-turn. System prompt di-prepend sebagai `role=user` di awal history (lihat `AIRepository.chatWithHistory()`).
+
+### Dua Use Case
+
+| Use Case | Output | Keterangan |
+|----------|--------|------------|
+| **Generate Flashcards** | JSON terstruktur (array `{front, back}`) | `responseMimeType: application/json`, di-parse ke `FlashcardDto` |
+| **AI Tutor Chat** | Plain text | Multi-turn dengan history, persisted di SQLDelight |
+
+### Error Handling
+
+`GeminiService` memetakan error ke pesan Bahasa Indonesia yang user-friendly:
+
+| Kondisi | Pesan ke User |
+|---------|---------------|
+| Network exception (no internet) | "Koneksi gagal. Pastikan internet Anda menyala dan coba lagi." |
+| HTTP 400 | "Permintaan tidak valid. Mungkin materi terlalu panjang atau berisi konten yang tidak diizinkan." |
+| HTTP 401 / 403 | "API key tidak valid atau sudah expired. Hubungi developer." |
+| HTTP 429 | "Rate limit tercapai. Tunggu beberapa menit lalu coba lagi." |
+| HTTP 500 / 502 / 503 | "Server AI sedang bermasalah. Coba lagi nanti." |
+
+Error message disimpan sebagai assistant turn (`isError=true`) dan ditampilkan di bubble merah, sehingga chat tetap usable offline (graceful degradation).
+
+### Rate Limit (Free Tier)
+
+Gemini 2.5 Flash free tier: ~15 request/menit, ~1.500 request/hari. Cukup untuk development + demo. Tim memakai 2 API key (tiap anggota) untuk menghindari limit saat development.
 
 ---
 
@@ -480,7 +622,7 @@ Mengikuti [Conventional Commits](https://www.conventionalcommits.org/):
 | W6 | Networking | Ktor Client untuk Gemini API, JSON serialization |
 | W7 | Local Storage | SQLDelight untuk decks/cards/reviews, DataStore untuk preferences |
 | W8 | Platform Code | expect/actual untuk SQLDelight driver (Android/iOS) |
-| W9 | AI Integration | Gemini 2.5 Flash-Lite untuk flashcard generation dan tutor mode |
+| W9 | AI Integration | Gemini 2.5 Flash untuk flashcard generation dan tutor mode |
 | W10 | Testing & DI | Koin untuk DI, kotlin.test + Turbine untuk testing |
 
 ---

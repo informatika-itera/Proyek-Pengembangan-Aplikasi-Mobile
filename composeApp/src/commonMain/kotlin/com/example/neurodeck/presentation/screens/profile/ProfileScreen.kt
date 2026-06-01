@@ -1,6 +1,8 @@
 package com.example.neurodeck.presentation.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,8 +28,10 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SettingsBrightness
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -109,6 +113,7 @@ fun ProfileScreen(
                     name = uiState.profile.name,
                     username = uiState.profile.username,
                     bio = uiState.profile.bio,
+                    avatarUri = uiState.profile.avatarUri,
                     onEdit = onEditProfile,
                 )
             }
@@ -248,6 +253,7 @@ private fun ProfileHeader(
     name: String,
     username: String,
     bio: String,
+    avatarUri: String?,
     onEdit: () -> Unit,
 ) {
     Card(
@@ -261,7 +267,7 @@ private fun ProfileHeader(
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar placeholder (akan di-replace AsyncImage di Sprint 3+)
+                // Avatar — render foto user kalau ada, fallback ke icon
                 Box(
                     modifier = Modifier
                         .size(72.dp)
@@ -269,12 +275,23 @@ private fun ProfileHeader(
                         .background(MaterialTheme.colorScheme.secondaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(40.dp),
-                    )
+                    if (avatarUri != null) {
+                        AsyncImage(
+                            model = avatarUri,
+                            contentDescription = "Foto profil",
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -359,12 +376,13 @@ private fun AchievementCard(
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
-        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(14.dp),
     ) {
         Column(
             modifier = Modifier

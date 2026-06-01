@@ -1,39 +1,44 @@
 package com.example.neurodeck.presentation.screens.about
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.neurodeck.presentation.components.SectionTitle
+import com.example.neurodeck.presentation.components.StickyNoteBadge
 import com.example.neurodeck.presentation.navigation.AppTopBar
+import neurodeck.composeapp.generated.resources.Res
+import neurodeck.composeapp.generated.resources.neurodeck_logo
+import org.jetbrains.compose.resources.painterResource
 
-/**
- * About screen — info aplikasi NeuroDeck, team, repository.
- *
- * Static content untuk Sprint 2. Tidak ada ViewModel — pure composable
- * dengan hardcoded data. Sprint 4+ bisa di-extend kalau perlu (changelog
- * dinamis, dll).
- *
- * @param onBack  Pop back stack.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
@@ -53,124 +58,148 @@ fun AboutScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // App branding header
+            // ════════════════════════════════════════════════════════════════
+            // BRAND HEADER — Logo dalam white circle + nama + version badge
+            // ════════════════════════════════════════════════════════════════
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = "🧠",
-                    style = MaterialTheme.typography.displayLarge,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                // White circle container — supaya logo dengan background putih
+                // blend dengan dark mode tanpa edge artifact.
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(CircleShape)
+                        .background(androidx.compose.ui.graphics.Color.White),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    // Logo image — PNG dari composeResources
+                    Image(
+                        painter = painterResource(Res.drawable.neurodeck_logo),
+                        contentDescription = "NeuroDeck Logo",
+                        modifier = Modifier.size(120.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = "NeuroDeck",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                 )
-                Text(
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Version badge (sticky note style)
+                StickyNoteBadge(
                     text = APP_VERSION,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = APP_TAGLINE,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
 
+            // ════════════════════════════════════════════════════════════════
+            // TIM PENGEMBANG
+            // ════════════════════════════════════════════════════════════════
             SectionTitle(text = "Tim Pengembang")
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            OutlinedCard(
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
                 ),
-                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                shape = RoundedCornerShape(14.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Mata Kuliah",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = "IF25-22017 — Pengembangan Aplikasi Mobile",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    InfoRow(label = "Mata Kuliah", value = "IF25-22017 — Pengembangan Aplikasi Mobile")
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "Institusi",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = "Institut Teknologi Sumatera (ITERA)",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    InfoRow(label = "Institusi", value = "Institut Teknologi Sumatera (ITERA)")
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "Anggota Tim",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = "• Dev A — NIM 123140050\n• Dev B — NIM 123140167",
-                        style = MaterialTheme.typography.bodyMedium,
+                    InfoRow(
+                        label = "Anggota Tim",
+                        value = "• Muhammad Fajri Firdaus — NIM 123140050\n• Nadya Shafwa Yusuf — NIM 123140167",
                     )
                 }
             }
 
+            // ════════════════════════════════════════════════════════════════
+            // TECH STACK
+            // ════════════════════════════════════════════════════════════════
             SectionTitle(text = "Tech Stack")
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            OutlinedCard(
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
                 ),
-                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                shape = RoundedCornerShape(14.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = TECH_STACK,
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
 
+            // ════════════════════════════════════════════════════════════════
+            // REPOSITORY (highlight card — tertiary container biar stand out)
+            // ════════════════════════════════════════════════════════════════
             SectionTitle(text = "Repository")
-            Card(
-                colors = CardDefaults.cardColors(
+            OutlinedCard(
+                colors = CardDefaults.outlinedCardColors(
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                 ),
-                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                shape = RoundedCornerShape(14.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "GitHub",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    )
-                    Text(
-                        text = GITHUB_BRANCH,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
+                        text = "GitHub Repository",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "URL handler tersedia di Sprint 4 (platform-specific).",
+                        text = GITHUB_REPOSITORY,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                    Text(
+                        text = "GitHub Branch",
                         style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = GITHUB_BRANCH,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // ════════════════════════════════════════════════════════════════
+            // FOOTER
+            // ════════════════════════════════════════════════════════════════
             Text(
                 text = "Dibuat dengan ❤️ untuk pembelajaran adaptif",
                 style = MaterialTheme.typography.bodySmall,
@@ -184,11 +213,34 @@ fun AboutScreen(
     }
 }
 
-private const val APP_VERSION = "Versi 0.2.0 (Sprint 2 Build)"
+/**
+ * Helper Composable: label-value pair row, label small caps + value normal.
+ * Dipakai berulang di "Tim Pengembang" section.
+ */
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Column {
+        Text(
+            text = label.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+private const val APP_VERSION = "v0.2.0 · Sprint 2 Build"
 private const val APP_TAGLINE =
     "Aplikasi flashcard cerdas dengan SM-2 spaced repetition + AI Tutor."
-private const val GITHUB_BRANCH =
-    "project/123140050-123140167-NeuroDeck"
+private const val GITHUB_BRANCH = "project/123140050-123140167-NeuroDeck"
+
+private const val GITHUB_REPOSITORY = "https://github.com/fajrifirdaus/Proyek-Pengembangan-Aplikasi-Mobile.git"
 private const val TECH_STACK =
     "• Kotlin Multiplatform 2.0.21\n" +
             "• Compose Multiplatform 1.7.0\n" +

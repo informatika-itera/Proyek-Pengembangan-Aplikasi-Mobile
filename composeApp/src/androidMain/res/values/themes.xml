@@ -1,7 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+      Theme utama app (existing) — applied di Activity SETELAH splash done.
+      Background putih konsisten dengan Light theme NeuroDeck (Vivid Logic).
+    -->
     <style name="Theme.NeuroDeck" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--
+      Splash screen theme — Android 12+ built-in API via androidx.core:core-splashscreen.
+      Backport otomatis ke Android 6+ via library.
+
+      Konfigurasi:
+        - windowSplashScreenBackground: putih (#F4F4F4 = NeuroDeck Light bg)
+        - windowSplashScreenAnimatedIcon: pakai launcher foreground (logo Anda)
+        - postSplashScreenTheme: theme app normal setelah splash dismiss
+
+      REQUIREMENT: dependency `androidx.core:core-splashscreen` HARUS sudah
+      di-add di build.gradle.kts. Tanpa lib ini, build akan fail:
+      "resource style/Theme.SplashScreen not found"
+    -->
+    <style name="Theme.NeuroDeck.Splash" parent="Theme.SplashScreen">
+        <!-- Background color — match Light theme NeuroDeck -->
+        <item name="windowSplashScreenBackground">#F4F4F4</item>
+
+        <!--
+          Splash icon — pakai launcher foreground yang Anda sudah generate.
+          Android crop ke circle di tengah secara otomatis (safe zone 66%).
+        -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- Theme yang di-apply SETELAH splash hilang -->
+        <item name="postSplashScreenTheme">@style/Theme.NeuroDeck</item>
     </style>
 </resources>

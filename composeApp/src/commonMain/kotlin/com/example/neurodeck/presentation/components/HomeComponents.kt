@@ -1,5 +1,7 @@
 package com.example.neurodeck.presentation.screens.home.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,33 +38,27 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.neurodeck.domain.model.Deck
+import com.example.neurodeck.presentation.components.StickyNoteBadge
 
 // ════════════════════════════════════════════════════════════════════════════
-// HomeComponents.kt — commonMain
+// HomeComponents.kt — REFACTORED to Vivid Logic style (Sprint 2 UI polish)
 //
-// Sprint 2 — Prioritas 3c.3 (Home Tab Components)
-//
-// Semua sub-components untuk Home Screen di satu file (vs. 5 file terpisah).
-// Pattern ini dipakai juga di CommonComponents.kt — file lokasi dekat dengan
-// parent screen, mudah cari & maintain.
-//
-// Components:
-//   - GreetingCard      — Header big greeting + nama user
-//   - StatMiniCard      — Small stat card untuk 3 angka (Due/Streak/Today)
-//   - QuickActionButton — 2 tombol prominent (New Deck, Study Now)
-//   - RecentDeckItem    — Compact deck card untuk "Continue Learning" list
-//   - TipsCard          — Card dengan tips of the day
+// Perubahan dari versi sebelumnya:
+//   - GreetingCard: pakai big bold headline (display style) + sticky badge streak
+//   - StatMiniCard: OutlinedCard dengan black border (Vivid Logic signature)
+//   - QuickActionsRow: inverted black button + filled purple
+//   - RecentDeckItem: OutlinedCard dengan colored left accent strip
+//   - TipsCard: tetap tertiary container, lebih flat
 // ════════════════════════════════════════════════════════════════════════════
 
 /**
- * Header greeting card — big & welcoming.
+ * GreetingCard — big bold headline "Morning, Brainiac!" style.
  *
  * Layout:
- *   "Selamat Pagi 👋"
- *   "<userName>"
+ *   "Selamat Pagi 👋"               <-- caption
+ *   "<userName>"                    <-- big bold display
  *
- * Pakai primaryContainer sebagai background untuk visual prominence,
- * dan onPrimaryContainer untuk text supaya contrast cukup di Light & Dark.
+ * Tidak pakai Card container — biarkan flat di background, lebih airy.
  */
 @Composable
 fun GreetingCard(
@@ -69,43 +66,30 @@ fun GreetingCard(
     userName: String,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-        shape = RoundedCornerShape(20.dp),
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "$greeting 👋",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = userName,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
+        Text(
+            text = userName,
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "$greeting 👋 — siap rangkai memori baru?",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
 /**
- * Mini stat card — small box dengan icon + nilai + label.
+ * Mini stat card — outlined dengan black border (Vivid Logic style).
  *
- * Dipakai dalam Row 3 columns untuk display Due/Streak/Today di atas.
- *
- * @param icon       Material icon untuk visual cue.
- * @param value      Angka utama (e.g. "12", "5 hari", "23 kartu").
- * @param label      Caption di bawah angka (e.g. "Due Cards", "Streak").
- * @param accentColor Optional warna icon — supaya ada visual variety:
- *                   merah untuk Due (urgency), oranye untuk Streak (fire),
- *                   hijau untuk Reviewed Today (success).
+ * @param accentColor Warna icon — variasi visual untuk Due/Streak/Today.
  */
 @Composable
 fun StatMiniCard(
@@ -115,12 +99,13 @@ fun StatMiniCard(
     modifier: Modifier = Modifier,
     accentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
-        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(14.dp),
     ) {
         Column(
             modifier = Modifier
@@ -132,28 +117,24 @@ fun StatMiniCard(
                 imageVector = icon,
                 contentDescription = null,
                 tint = accentColor,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(24.dp),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
-/**
- * Helper row untuk 3 mini stat cards. Weight 1f each = equal width.
- */
 @Composable
 fun StatsRow(
     dueCount: Int,
@@ -192,10 +173,8 @@ fun StatsRow(
 }
 
 /**
- * Quick action buttons row — 2 tombol prominent: "Deck Baru" + "Belajar Sekarang".
- *
- * Yang pertama (Deck Baru) = OutlinedButton (less emphasis, secondary action).
- * Yang kedua (Belajar Sekarang) = filled Button (primary action — Study CTA).
+ * Quick action buttons — INVERTED (black) untuk "Belajar Sekarang" dan
+ * OUTLINED untuk "Deck Baru". Sesuai pattern Stitch button system.
  */
 @Composable
 fun QuickActionsRow(
@@ -213,39 +192,50 @@ fun QuickActionsRow(
             onClick = onCreateDeck,
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 14.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            shape = RoundedCornerShape(10.dp),
         ) {
             Icon(
                 imageVector = Icons.Outlined.Add,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Deck Baru")
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "Deck Baru",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
+        // Filled primary button = main CTA "Belajar Sekarang"
         Button(
             onClick = onStudyNow,
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
+            shape = RoundedCornerShape(10.dp),
         ) {
             Icon(
                 imageVector = Icons.Outlined.PlayArrow,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Belajar Sekarang")
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "Belajar Sekarang",
+                fontWeight = FontWeight.SemiBold,
+            )
         }
     }
 }
 
 /**
- * Recent deck item — compact card untuk Continue Learning list.
- *
- * Tampil sebagai Card horizontal: icon kiri, title + card count kanan.
- * Click → navigate ke deck detail / card list.
+ * Recent deck item — OutlinedCard dengan colored accent strip di kiri.
+ * Mimicking Stitch library card style.
  */
 @Composable
 fun RecentDeckItem(
@@ -253,95 +243,101 @@ fun RecentDeckItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
+        colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         onClick = onClick,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Icon container — circle dengan style icon di tengah.
+            // Left accent strip (purple)
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Style,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp),
-                )
-            }
+                    .width(4.dp)
+                    .height(70.dp)
+                    .clip(RoundedCornerShape(topStart = 2.dp, bottomStart = 2.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+            )
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = deck.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                )
-                if (deck.description.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = deck.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
+            Row(
+                modifier = Modifier.padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                // Icon container — square outlined
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Style,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${deck.cardCount} kartu",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = deck.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                    )
+                    if (deck.description.isNotBlank()) {
+                        Text(
+                            text = deck.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "${deck.cardCount} kartu",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
             }
         }
     }
 }
 
 /**
- * Tips of the day card — small info card di paling bawah Home.
- *
- * Style: tertiaryContainer background, supaya visually berbeda dengan
- * mini stats (surfaceVariant) dan greeting (primaryContainer).
+ * Tips card — sticky-note look (yellow tertiary) untuk tip of the day.
  */
 @Composable
 fun TipsCard(
     tip: String,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
+        colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
         ),
-        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(14.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "TIPS HARI INI",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
-            )
-            Spacer(modifier = Modifier.height(6.dp))
+        Column(modifier = Modifier.padding(14.dp)) {
+            StickyNoteBadge(text = "TIPS HARI INI")
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = tip,
                 style = MaterialTheme.typography.bodyMedium,
@@ -350,3 +346,5 @@ fun TipsCard(
         }
     }
 }
+
+// (End of file)

@@ -7,23 +7,47 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.RemoveRedEye
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.neurodeck.presentation.components.StickyNoteBadge
+
+// ════════════════════════════════════════════════════════════════════════════
+// Flashcard.kt — REFACTORED to Vivid Logic style (Sprint 2 UI polish)
+//
+// Perubahan visual:
+//   - Card pakai OutlinedCard border tegas (signature Vivid Logic)
+//   - Category badge "FLASHCARD" di pojok atas (sticky note style)
+//   - Tap hint pakai icon + text yang lebih halus (bukan emoji 👆)
+//   - Divider lebih tegas di FlashcardBack
+//   - Animasi flip horizontal tetap dipertahankan (sudah OK)
+//
+// Decision: tidak implement 3D flip animation. AnimatedContent slide horizontal
+// sudah cukup intuitive dan tidak distract dari belajar.
+// ════════════════════════════════════════════════════════════════════════════
 
 @Composable
 fun Flashcard(
@@ -33,19 +57,20 @@ fun Flashcard(
     onTap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxSize()
-            .clickable(enabled = !showingBack, onClick = onTap),  // disable tap saat showingBack
+            .clickable(enabled = !showingBack, onClick = onTap),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         AnimatedContent(
             targetState = showingBack,
             transitionSpec = {
+                // Slide horizontal: konten masuk dari kanan, keluar ke kiri
                 (slideInHorizontally(
                     animationSpec = tween(durationMillis = 300),
                     initialOffsetX = { fullWidth -> fullWidth },
@@ -67,58 +92,122 @@ fun Flashcard(
     }
 }
 
+/**
+ * Front side: badge category + pertanyaan + tap hint icon.
+ */
 @Composable
 private fun FlashcardFront(front: String) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center,
+            .padding(20.dp),
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+        // Header: category badge
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            StickyNoteBadge(
+                text = "PERTANYAAN",
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Icon(
+                imageVector = Icons.Outlined.RemoveRedEye,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+        }
+
+        // Center: pertanyaan
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = front,
                 style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = "Klik untuk lihat jawaban",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
+
+        // Footer: tap hint
+        Text(
+            text = "Tap untuk lihat jawaban",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
+/**
+ * Back side: badge "JAWABAN" + pertanyaan kecil di atas + jawaban besar di tengah.
+ */
 @Composable
 private fun FlashcardBack(front: String, back: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(20.dp),
     ) {
+        // Header: badge "JAWABAN" (tertiary yellow biar beda dari front)
+        StickyNoteBadge(
+            text = "JAWABAN",
+            containerColor = MaterialTheme.colorScheme.tertiary,
+            contentColor = MaterialTheme.colorScheme.onTertiary,
+        )
+
+        // Pertanyaan kecil sebagai context
         Text(
             text = front,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
         )
+
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 16.dp),
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            modifier = Modifier.padding(vertical = 12.dp),
+            color = MaterialTheme.colorScheme.outline,
         )
-        // Jawaban besar
+
+        // Jawaban besar di tengah, prominent
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = back,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+
+        // Footer: prompt rating
         Text(
-            text = back,
-            style = MaterialTheme.typography.headlineSmall,
+            text = "Seberapa mudah kamu menjawab?",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.primary,
         )
     }
 }

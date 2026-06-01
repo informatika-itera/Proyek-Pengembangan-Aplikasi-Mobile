@@ -109,6 +109,17 @@ class EditProfileViewModel(
         }
     }
 
+    /**
+     * Update avatar URI setelah user pilih foto dari galeri (atau hapus).
+     *
+     * @param uri file:// path hasil image picker, atau null untuk hapus avatar.
+     */
+    fun onAvatarChange(uri: String?) {
+        _uiState.update {
+            it.copy(avatarUri = uri, errorMessage = null)
+        }
+    }
+
     fun save() {
         val current = _uiState.value
         if (!current.canSave) return

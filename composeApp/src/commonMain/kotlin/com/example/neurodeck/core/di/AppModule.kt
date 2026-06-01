@@ -83,7 +83,7 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModel { DeckLibraryViewModel(get()) }
-    viewModel { HomeViewModel(get(), get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get(), get()) }
     viewModel { params ->
         StudySessionViewModel(
             deckId = params.get(),

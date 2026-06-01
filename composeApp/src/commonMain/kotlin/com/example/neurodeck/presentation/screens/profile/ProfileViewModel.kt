@@ -7,16 +7,17 @@ import com.example.neurodeck.domain.model.UserProfile
 import com.example.neurodeck.domain.repository.DeckRepository
 import com.example.neurodeck.domain.repository.ReviewRecordRepository
 import com.example.neurodeck.domain.repository.UserPreferencesRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 
 /**
  * UI state untuk Profile Tab.
@@ -42,32 +43,59 @@ data class ProfileUiState(
 )
 
 /**
- * ViewModel untuk Profile Tab.
+ * ViewModel untuk Profile Tab — REACTIVE achievements (Sprint 3 upgrade).
  *
- * State adalah combine dari:
- *   - UserPreferencesRepository.observeProfile() (reactive — auto-update saat edit)
- *   - UserPreferencesRepository.observeThemeMode() (reactive)
- *   - One-shot fetch achievement stats (di refresh saat init + after reset)
+ * PERUBAHAN dari versi snapshot:
+ *   Dulu: achievement stats di-fetch one-shot di init via refreshAchievements().
+ *         Angka Decks/Cards/Reviews/Streak TIDAK update saat user review kartu.
+ *   Sekarang: achievementsFlow derived dari observeAllDecks() (reactive trigger).
  *
- * Achievement stats di-fetch sekali di init (bukan reactive flow) karena:
- *   - Tidak ada flow API yet di ReviewRecordRepository
- *   - User biasanya tidak refresh tab Profile berkali-kali
- *   - Acceptable trade-off Sprint 2 (sama pattern dengan HomeViewModel)
+ * State adalah combine dari 4 source reactive:
+ *   - observeProfile()      → auto-update saat user edit profil
+ *   - observeThemeMode()    → auto-update saat ganti theme
+ *   - achievementsFlow      → auto-update saat decks/cards/review berubah
+ *   - _snackbar             → one-shot message
+ *
+ * Kenapa observeAllDecks() jadi trigger achievements:
+ *   - Query LEFT JOIN CardEntity → SQLDelight re-emit saat CardEntity berubah
+ *   - User review kartu → card SM-2 state update → flow emit → achievements
+ *     recompute (termasuk totalReviews & streak via suspend reads)
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val deckRepository: DeckRepository,
     private val reviewRecordRepository: ReviewRecordRepository,
 ) : ViewModel() {
 
-    // Internal mutable state — combine profile flow + achievement (one-shot).
-    private val _achievements = MutableStateFlow(Achievements())
     private val _snackbar = MutableStateFlow<String?>(null)
+
+    /**
+     * Achievement stats sebagai reactive Flow.
+     * Derived dari observeAllDecks() — re-compute setiap kali cards berubah.
+     * mapLatest: kalau emit baru datang sebelum compute selesai, batalkan yang lama.
+     */
+    private val achievementsFlow: Flow<Achievements> =
+        deckRepository.observeAllDecks()
+            .mapLatest { decks ->
+                val now = Clock.System.now()
+                Achievements(
+                    totalDecks = decks.size,
+                    totalCards = decks.sumOf { it.cardCount },
+                    totalReviews = reviewRecordRepository.getTotalReviews(),
+                    streakDays = reviewRecordRepository.getStreakDays(now),
+                )
+            }
+            .catch {
+                // Achievement non-kritis — fallback ke default kalau error,
+                // jangan crash seluruh Profile screen.
+                emit(Achievements())
+            }
 
     val uiState: StateFlow<ProfileUiState> = combine(
         userPreferencesRepository.observeProfile(),
         userPreferencesRepository.observeThemeMode(),
-        _achievements,
+        achievementsFlow,
         _snackbar,
     ) { profile, themeMode, achievements, snackbarMsg ->
         ProfileUiState(
@@ -86,36 +114,6 @@ class ProfileViewModel(
         initialValue = ProfileUiState(isLoading = true),
     )
 
-    init {
-        refreshAchievements()
-    }
-
-    /**
-     * Re-fetch achievement stats. Dipanggil saat init dan setelah reset data.
-     * Public supaya Screen bisa pull-to-refresh (Sprint 3+ feature).
-     */
-    fun refreshAchievements() {
-        viewModelScope.launch {
-            try {
-                val now: Instant = Clock.System.now()
-                val decks = deckRepository.observeAllDecks().first()
-                val totalDecks = decks.size
-                val totalCards = decks.sumOf { it.cardCount }
-                val totalReviews = reviewRecordRepository.getTotalReviews()
-                val streak = reviewRecordRepository.getStreakDays(now)
-
-                _achievements.value = Achievements(
-                    totalDecks = totalDecks,
-                    totalCards = totalCards,
-                    totalReviews = totalReviews,
-                    streakDays = streak,
-                )
-            } catch (e: Exception) {
-                _snackbar.value = "Gagal memuat statistik: ${e.message ?: "unknown error"}"
-            }
-        }
-    }
-
     // ════════════════════════════════════════════════════════════════════════
     // SETTINGS ACTIONS
     // ════════════════════════════════════════════════════════════════════════
@@ -131,18 +129,14 @@ class ProfileViewModel(
     }
 
     /**
-     * Reset all data — preferences + (TODO future: database).
-     *
-     * Sprint 2 scope: HANYA reset preferences (profile + theme).
-     * Sprint 3+ extension: tambah hapus semua decks/cards/reviews via
-     * additional repository calls. Untuk sekarang, reset partial dulu.
+     * Reset preferences (profile + theme). Achievement flow auto-update sendiri
+     * kalau ada perubahan data (reactive), jadi tidak perlu manual refresh.
      */
     fun resetAllData() {
         viewModelScope.launch {
             try {
                 userPreferencesRepository.resetPreferences()
                 _snackbar.value = "Preferensi berhasil di-reset"
-                refreshAchievements()  // re-fetch karena data mungkin berubah
             } catch (e: Exception) {
                 _snackbar.value = "Gagal reset: ${e.message ?: "unknown"}"
             }

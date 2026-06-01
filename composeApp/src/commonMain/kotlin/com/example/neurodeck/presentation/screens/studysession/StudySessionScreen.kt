@@ -21,18 +21,41 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.neurodeck.domain.model.ReviewRating
+import com.example.neurodeck.domain.usecase.CalculateNextReviewUseCase
 import com.example.neurodeck.presentation.components.EmptyState
 import com.example.neurodeck.presentation.components.ErrorMessage
 import com.example.neurodeck.presentation.components.LoadingIndicator
 import com.example.neurodeck.presentation.components.RatingButtonRow
+import kotlinx.datetime.Clock
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+/**
+ * Study Session screen — INTI aplikasi NeuroDeck.
+ *
+ * User flow:
+ * 1. Load due cards untuk [deckId]
+ * 2. Untuk setiap kartu:
+ *    a. Tampilkan front, user pikirkan jawaban
+ *    b. Tap kartu → reveal back
+ *    c. User self-rate jawaban (Lupa/Sulit/Oke/Mudah)
+ *    d. SM-2 algorithm hitung next due date
+ *    e. Lanjut ke kartu berikutnya
+ * 3. Selesai semua kartu → tampilkan summary
+ *
+ * Navigation contract:
+ * - [onExit]: panggil saat user tap back button atau "Selesai"
+ *
+ * ViewModel di-inject dengan parameter [deckId]:
+ *   koinViewModel { parametersOf(deckId) }
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudySessionScreen(
@@ -123,9 +146,53 @@ private fun ShowingCardContent(
 
         // Rating buttons di bawah, hanya muncul saat showingBack=true
         if (state.showingBack) {
-            RatingButtonRow(onRate = onRate)
+            // Compute interval preview untuk setiap rating via SM-2 use case.
+            // Stateless function — bisa dipanggil 4x tanpa side effect.
+            val previews = computeIntervalPreviews(state.currentCard.reviewState)
+            RatingButtonRow(
+                onRate = onRate,
+                intervalPreviews = previews,
+            )
         }
     }
+}
+
+/**
+ * Compute interval preview untuk semua 4 ratings via SM-2 dry-run.
+ *
+ * Setiap rating → SM-2 hitung future CardReviewState (tanpa actually persist) →
+ * extract intervalDays → format ke string ringkas ("<1m", "10m", "6h", "4d").
+ *
+ * Pure function — re-computed di setiap recomposition saat showingBack=true.
+ * Cheap (4x stateless function calls), tidak perlu remember/cache.
+ */
+@Composable
+private fun computeIntervalPreviews(
+    currentState: com.example.neurodeck.domain.model.CardReviewState,
+): Map<ReviewRating, String> {
+    val useCase = remember { CalculateNextReviewUseCase() }
+    val now = remember { Clock.System.now() }
+    return ReviewRating.entries.associateWith { rating ->
+        val nextState = useCase(currentState, rating, now)
+        formatIntervalShort(nextState.intervalDays)
+    }
+}
+
+/**
+ * Format interval (dalam hari) ke string ringkas untuk button label.
+ *
+ * Aturan:
+ *   - 0 hari (immediate re-test) → "<1m" (kalau sangat singkat, simulate "less than 1 minute")
+ *   - <1 hari → "Xh" (jam) — tapi karena SM-2 minimum 1 hari, ini rare
+ *   - 1-30 hari → "Xd"
+ *   - >30 hari → "Xmo" (bulan, approx 30 hari)
+ *   - >365 hari → "Xy"
+ */
+private fun formatIntervalShort(intervalDays: Int): String = when {
+    intervalDays < 1 -> "<1m"
+    intervalDays < 30 -> "${intervalDays}d"
+    intervalDays < 365 -> "${intervalDays / 30}mo"
+    else -> "${intervalDays / 365}y"
 }
 
 @Composable

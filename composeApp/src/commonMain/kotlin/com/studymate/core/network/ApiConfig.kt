@@ -6,25 +6,42 @@ object ApiConfig {
 
     object Prompts {
         fun refineNote(rawNote: String): String {
-            return """
-                Tolong perbaiki struktur catatan kuliah yang berantakan berikut ini:
-                
-                $rawNote
-                
-                Instruksi:
-                - Ubah menjadi bullet points yang rapi dalam Bahasa Indonesia.
-                - Tambahkan glosarium untuk istilah teknis yang muncul.
-                - Gunakan format output sebagai berikut:
-                ## Ringkasan
-                [Isi ringkasan]
-                
-                ## Poin Utama
-                - [Poin 1]
-                - [Poin 2]
-                
-                ## Glosarium
-                - [Istilah]: [Definisi]
-            """.trimIndent()
+            val isShort = rawNote.split(" ").size < 50
+            
+            return if (isShort) {
+                """
+                    Tolong berikan penjelasan mendalam mengenai teks berikut:
+                    
+                    $rawNote
+                    
+                    Instruksi:
+                    - Berikan penjelasan yang mudah dipahami.
+                    - Karena teks ini pendek, buatkan penjelasan naratif saja jangan dibuat ringkasan poin-poin.
+                    - Gunakan Bahasa Indonesia.
+                """.trimIndent()
+            } else {
+                """
+                    Tolong ubah teks mentah berikut menggunakan format AI Smart Refine:
+                    
+                    $rawNote
+                    
+                    Instruksi:
+                    - Berikan Ringkasan terstruktur (poin per poin yang jelas).
+                    - Berikan Poin-poin detail (bullet points) untuk setiap inti pembahasan.
+                    - Berikan Glosarium istilah teknis atau penting beserta definisinya.
+                    - Gunakan Bahasa Indonesia.
+                    - Gunakan format output sebagai berikut:
+                    ## Ringkasan Terstruktur
+                    [Isi ringkasan]
+                    
+                    ## Poin-Poin Detail
+                    - [Poin 1]
+                    - [Poin 2]
+                    
+                    ## Glosarium
+                    - [Istilah]: [Definisi]
+                """.trimIndent()
+            }
         }
 
         fun generateQuiz(refinedNote: String): String {

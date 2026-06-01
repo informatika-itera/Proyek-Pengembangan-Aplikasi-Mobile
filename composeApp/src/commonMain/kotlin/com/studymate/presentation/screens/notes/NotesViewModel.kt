@@ -27,8 +27,13 @@ class NotesViewModel(
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState: StateFlow<NotesUiState> = _uiState.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
     private val _events = MutableSharedFlow<NoteEvent>()
     val events: SharedFlow<NoteEvent> = _events.asSharedFlow()
+
+    private var allNotes: List<Note> = emptyList()
 
     init {
         loadNotes()
@@ -41,12 +46,42 @@ class NotesViewModel(
                     _uiState.emit(NotesUiState.Error(e.message ?: "Gagal memuat catatan"))
                 }
                 .collect { notes ->
-                    if (notes.isEmpty()) {
-                        _uiState.emit(NotesUiState.Empty)
-                    } else {
-                        _uiState.emit(NotesUiState.Success(notes))
-                    }
+                    allNotes = notes
+                    filterNotes(_searchQuery.value)
                 }
+        }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+        filterNotes(query)
+    }
+
+    private fun filterNotes(query: String) {
+        viewModelScope.launch {
+            if (allNotes.isEmpty()) {
+                _uiState.emit(NotesUiState.Empty)
+                return@launch
+            }
+
+            val filtered = if (query.isBlank()) {
+                allNotes
+            } else {
+                allNotes.filter {
+                    it.title.contains(query, ignoreCase = true) ||
+                            it.rawContent.contains(query, ignoreCase = true) ||
+                            it.subject.contains(query, ignoreCase = true) ||
+                            it.refinedContent?.contains(query, ignoreCase = true) == true
+                }
+            }
+
+            if (filtered.isEmpty() && query.isNotBlank()) {
+                _uiState.emit(NotesUiState.Empty) // Or a specific NoResults state
+            } else if (filtered.isEmpty()) {
+                _uiState.emit(NotesUiState.Empty)
+            } else {
+                _uiState.emit(NotesUiState.Success(filtered))
+            }
         }
     }
 
@@ -55,6 +90,13 @@ class NotesViewModel(
         viewModelScope.launch {
             noteRepository.insertNote(Note(title = title, rawContent = rawContent, subject = subject))
             _events.emit(NoteEvent.ShowMessage("Catatan berhasil disimpan!"))
+        }
+    }
+
+    fun updateNote(note: Note) {
+        viewModelScope.launch {
+            noteRepository.updateNote(note)
+            _events.emit(NoteEvent.ShowMessage("Catatan diperbarui!"))
         }
     }
 

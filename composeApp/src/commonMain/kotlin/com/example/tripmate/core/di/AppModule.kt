@@ -4,9 +4,12 @@ import com.example.tripmate.core.network.HttpClientFactory
 import com.example.tripmate.data.local.TripDatabase
 import com.example.tripmate.data.remote.api.GeminiService
 import com.example.tripmate.data.repository.AIRepositoryImpl
+import com.example.tripmate.data.repository.PackingRepositoryImpl
 import com.example.tripmate.data.repository.TripRepositoryImpl
+import com.example.tripmate.domain.repository.PackingRepository
 import com.example.tripmate.domain.repository.TripRepository
 import com.example.tripmate.presentation.screens.ai.AIViewModel
+import com.example.tripmate.presentation.screens.detail.PackingViewModel
 import com.example.tripmate.presentation.screens.home.TripViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -20,11 +23,13 @@ val sharedModules = module {
     single { GeminiService(get()) }
     single<TripRepository> { TripRepositoryImpl(get()) }
     single { AIRepositoryImpl(get()) }
+    single<PackingRepository> { PackingRepositoryImpl(get()) }
 }
 
 val viewModelModule = module {
     viewModelOf(::TripViewModel)
     viewModelOf(::AIViewModel)
+    viewModelOf(::PackingViewModel)
 }
 
 fun initKoin(

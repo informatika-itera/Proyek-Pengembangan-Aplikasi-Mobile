@@ -1,0 +1,30 @@
+CREATE TABLE PackingItem (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    trip_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    is_checked INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (trip_id) REFERENCES TripEntity(id) ON DELETE CASCADE
+);
+
+getItemsByTripId:
+SELECT * FROM PackingItem
+WHERE trip_id = :tripId
+ORDER BY is_checked ASC, created_at ASC;
+
+insertItem:
+INSERT INTO PackingItem(trip_id, name, is_checked, created_at)
+VALUES (:tripId, :name, 0, :createdAt);
+
+updateChecked:
+UPDATE PackingItem
+SET is_checked = :isChecked
+WHERE id = :id;
+
+deleteItem:
+DELETE FROM PackingItem
+WHERE id = :id;
+
+deleteItemsByTripId:
+DELETE FROM PackingItem
+WHERE trip_id = :tripId;

@@ -92,4 +92,10 @@ class TripViewModel(
             }
         }
     }
+
+    fun retry() {
+        _uiState.value = HomeUiState.Loading
+        loadTrips()
+    }
+
 }

@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
@@ -24,10 +24,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.tripmate.domain.model.Trip
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -51,7 +54,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToAdd: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
-    onNavigateToAI: () -> Unit,
     viewModel: TripViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -61,19 +63,35 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("TripMate ✈️", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Default.AutoAwesome, contentDescription = "AI Itinerary")
+                title = {
+                    Column {
+                        Text(
+                            "TripMate",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text(
+                            "Rencanakan perjalananmu",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.75f)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0)
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAdd) {
+            FloatingActionButton(
+                onClick = onNavigateToAdd,
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
+                elevation = FloatingActionButtonDefaults.elevation(6.dp)
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Tambah Trip")
             }
         }
@@ -86,53 +104,59 @@ fun HomeScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
-                placeholder = { Text("Cari destinasi...") },
+                placeholder = {
+                    Text("Cari destinasi...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Cari")
+                    Icon(Icons.Default.Search, contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.clearSearch() }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Hapus pencarian")
+                            Icon(Icons.Default.Clear, contentDescription = "Hapus",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 },
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 singleLine = true
             )
 
             when (val state = uiState) {
                 is HomeUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
                     }
                 }
-
                 is HomeUiState.Empty -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                if (searchQuery.isNotEmpty()) "🔍" else "✈️",
-                                style = MaterialTheme.typography.displayLarge
+                                text = "✈",
+                                fontSize = 72.sp,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(Modifier.height(16.dp))
+                            val emptyText = if (searchQuery.isNotEmpty())
+                                "Tidak ada trip untuk \"${searchQuery}\""
+                            else
+                                "Belum ada trip"
                             Text(
-                                if (searchQuery.isNotEmpty())
-                                    "Tidak ada trip dengan kata kunci \"$searchQuery\""
-                                else
-                                    "Belum ada trip",
-                                style = MaterialTheme.typography.titleMedium
+                                text = emptyText,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
                             if (searchQuery.isEmpty()) {
+                                Spacer(Modifier.height(6.dp))
                                 Text(
                                     "Tap + untuk menambah perjalanan baru",
                                     style = MaterialTheme.typography.bodyMedium,
@@ -142,12 +166,11 @@ fun HomeScreen(
                         }
                     }
                 }
-
                 is HomeUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(state.trips) { trip ->
                             TripCard(
@@ -158,16 +181,17 @@ fun HomeScreen(
                         }
                     }
                 }
-
                 is HomeUiState.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = state.message,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(state.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyLarge)
+                            Spacer(Modifier.height(12.dp))
+                            androidx.compose.material3.Button(onClick = { viewModel.retry() }) {
+                                Text("Coba Lagi")
+                            }
+                        }
                     }
                 }
             }
@@ -180,17 +204,12 @@ fun HomeScreen(
             title = { Text("Hapus Trip") },
             text = { Text("Yakin ingin menghapus perjalanan ini?") },
             confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteTrip(id)
-                    tripToDelete = null
-                }) {
+                TextButton(onClick = { viewModel.deleteTrip(id); tripToDelete = null }) {
                     Text("Hapus", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { tripToDelete = null }) {
-                    Text("Batal")
-                }
+                TextButton(onClick = { tripToDelete = null }) { Text("Batal") }
             }
         )
     }
@@ -198,57 +217,41 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripCard(
-    trip: Trip,
-    onClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
+fun TripCard(trip: Trip, onClick: () -> Unit, onDeleteClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = trip.destination,
+                Text(trip.destination,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${trip.startDate} → ${trip.endDate}",
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.height(4.dp))
+                Text("${trip.startDate}  —  ${trip.endDate}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Budget: Rp ${formatBudget(trip.budget)}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Text("Rp ${formatBudget(trip.budget)}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary)
             }
             IconButton(onClick = onDeleteClick) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Hapus",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                Icon(Icons.Default.Delete, contentDescription = "Hapus",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f))
             }
         }
     }
 }
 
-private fun formatBudget(budget: Double): String {
-    return budget.toLong().toString()
-        .reversed()
-        .chunked(3)
-        .joinToString(".")
-        .reversed()
-}
+private fun formatBudget(budget: Double): String =
+    budget.toLong().toString().reversed().chunked(3).joinToString(".").reversed()

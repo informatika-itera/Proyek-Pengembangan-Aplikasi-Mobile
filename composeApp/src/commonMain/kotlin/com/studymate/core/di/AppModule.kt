@@ -16,6 +16,7 @@ import com.studymate.domain.usecase.RefineNoteUseCase
 import com.studymate.presentation.screens.home.HomeViewModel
 import com.studymate.presentation.screens.notes.NotesViewModel
 import com.studymate.presentation.screens.profile.ProfileViewModel
+import com.studymate.presentation.screens.quiz.QuizViewModel
 import org.koin.compose.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -46,6 +47,7 @@ val viewModelModule = module {
     viewModel { HomeViewModel(noteRepository = get(), profileRepository = get()) }
     viewModel { NotesViewModel(noteRepository = get(), refineNoteUseCase = get()) }
     viewModel { ProfileViewModel(profileRepository = get()) }
+    viewModel { QuizViewModel(aiRepository = get(), noteRepository = get()) }
 }
 
 val appModules = listOf(networkModule, databaseModule, dataModule, useCaseModule, viewModelModule)

@@ -1,236 +1,210 @@
 package com.studymate.presentation.screens.notes
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.studymate.domain.model.Note
-import kotlinx.coroutines.flow.collectLatest
-import com.studymate.Res
-import com.studymate.app_logo
-import org.jetbrains.compose.resources.painterResource
+import com.studymate.presentation.theme.PrimaryLight
+import com.studymate.presentation.theme.SuccessStreak
+import com.studymate.presentation.theme.ActionFABLight
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesScreen(
     viewModel: NotesViewModel,
     onNavigateToDetail: (Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var showAddDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        viewModel.events.collectLatest { event ->
-            when (event) {
-                is NoteEvent.ShowMessage -> snackbarHostState.showSnackbar(event.message)
-                is NoteEvent.NavigateTo -> {} 
-            }
-        }
-    }
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Materi Kuliah", fontWeight = FontWeight.Bold) },
-                navigationIcon = { Text("📝", modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.headlineSmall) }
-            )
+            Surface(
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier.shadow(2.dp)
+            ) {
+                Column {
+                    Text(
+                        "Catatan Belajar",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+                    )
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChange = viewModel::onSearchQueryChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(bottom = 16.dp)
+                    )
+                }
+            }
         },
         floatingActionButton = {
-            LargeFloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+            FloatingActionButton(
+                onClick = { onNavigateToDetail(-1L) },
+                containerColor = ActionFABLight,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(20.dp),
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Catatan", modifier = Modifier.size(32.dp))
+                Icon(Icons.Default.Add, contentDescription = "Tambah", modifier = Modifier.size(28.dp))
             }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        }
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.surface)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
             when (val state = uiState) {
                 is NotesUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                is NotesUiState.Empty -> Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        painter = painterResource(Res.drawable.app_logo),
-                        contentDescription = null,
-                        modifier = Modifier.size(120.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Belum ada catatan.", style = MaterialTheme.typography.titleMedium)
-                    Text("Mulai mencatat materi kuliahmu!", style = MaterialTheme.typography.bodySmall)
-                }
-                is NotesUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
                 is NotesUiState.Success -> {
-                    NoteList(
+                    NoteGrid(
                         notes = state.notes,
-                        refiningNoteId = null,
-                        onNoteClick = { onNavigateToDetail(it.id) },
-                        onRefineClick = { viewModel.refineNote(it) },
-                        onDeleteClick = { viewModel.deleteNote(it.id) }
+                        onNoteClick = { onNavigateToDetail(it.id) }
                     )
                 }
-                is NotesUiState.Refining -> {
-                    NoteList(
-                        notes = state.notes,
-                        refiningNoteId = state.noteBeingRefined,
-                        onNoteClick = { onNavigateToDetail(it.id) },
-                        onRefineClick = { viewModel.refineNote(it) },
-                        onDeleteClick = { viewModel.deleteNote(it.id) }
-                    )
+                is NotesUiState.Empty -> {
+                    val message = if (searchQuery.isNotEmpty()) "Hasil tidak ditemukan" else "Belum ada catatan"
+                    Text(message, modifier = Modifier.align(Alignment.Center))
                 }
+                is NotesUiState.Error -> Text(state.message, color = Color.Red, modifier = Modifier.align(Alignment.Center))
+                else -> {}
             }
         }
-    }
-
-    if (showAddDialog) {
-        AddNoteDialog(
-            onDismiss = { showAddDialog = false },
-            onConfirm = { title, content, subject ->
-                viewModel.addNote(title, content, subject)
-                showAddDialog = false
-            }
-        )
     }
 }
 
 @Composable
-private fun NoteList(
-    notes: List<Note>,
-    refiningNoteId: Long?,
-    onNoteClick: (Note) -> Unit,
-    onRefineClick: (Note) -> Unit,
-    onDeleteClick: (Note) -> Unit
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn(
+    TextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = { Text("Cari catatan atau mata kuliah...") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Default.Close, contentDescription = "Clear")
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    )
+}
+
+@Composable
+fun NoteGrid(notes: List<Note>, onNoteClick: (Note) -> Unit) {
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalItemSpacing = 12.dp
     ) {
         items(notes) { note ->
-            NoteCard(
-                note = note,
-                isRefining = note.id == refiningNoteId,
-                onClick = { onNoteClick(note) },
-                onRefineClick = { onRefineClick(note) },
-                onDeleteClick = { onDeleteClick(note) }
-            )
+            NoteCard(note, onClick = { onNoteClick(note) })
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteCard(
-    note: Note,
-    isRefining: Boolean,
-    onClick: () -> Unit,
-    onRefineClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
+fun NoteCard(note: Note, onClick: () -> Unit) {
     Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(note.title, style = MaterialTheme.typography.titleLarge)
-                IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
+            if (note.isRefined) {
+                Surface(
+                    color = SuccessStreak.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(10.dp), tint = SuccessStreak)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "AI Refined",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = SuccessStreak,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            if (note.subject.isNotBlank()) {
-                AssistChip(
-                    onClick = {},
-                    label = { Text(note.subject) }
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                note.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 note.rawContent,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (note.isRefined) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text("✨ AI Refined") },
-                        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            
+            if (note.subject.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = PrimaryLight.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Text(
+                        note.subject,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PrimaryLight,
+                        fontWeight = FontWeight.Medium
                     )
-                } else {
-                    Button(
-                        onClick = onRefineClick,
-                        enabled = !isRefining,
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        if (isRefining) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Memproses AI...")
-                        } else {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("AI Refine")
-                        }
-                    }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun AddNoteDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
-    var title by remember { mutableStateOf("") }
-    var subject by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Tambah Catatan") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Judul") })
-                OutlinedTextField(value = subject, onValueChange = { subject = it }, label = { Text("Mata Kuliah") })
-                OutlinedTextField(
-                    value = content,
-                    onValueChange = { content = it },
-                    label = { Text("Isi Catatan") },
-                    minLines = 4
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onConfirm(title, content, subject) },
-                enabled = title.isNotBlank() && content.isNotBlank()
-            ) { Text("Simpan") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Batal") }
-        }
-    )
 }

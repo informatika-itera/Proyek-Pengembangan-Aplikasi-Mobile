@@ -93,6 +93,8 @@ kotlin {
         
         androidMain.dependencies {
             implementation(compose.preview)
+            implementation(libs.androidx.core.splashscreen)
+            implementation(libs.generativeai)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)

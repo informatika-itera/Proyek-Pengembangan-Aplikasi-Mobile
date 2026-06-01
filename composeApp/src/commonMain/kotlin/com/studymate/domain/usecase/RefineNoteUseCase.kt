@@ -21,4 +21,8 @@ class RefineNoteUseCase(
             updatedNote
         }
     }
+
+    suspend fun refineRawContent(content: String): Result<String> {
+        return aiRepository.refineNote(content)
+    }
 }

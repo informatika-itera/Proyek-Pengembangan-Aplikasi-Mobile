@@ -1,6 +1,7 @@
 package com.studymate.presentation.navigation
 
 sealed class Screen(val route: String) {
+    object Splash : Screen("splash")
     object Home : Screen("home")
     object Notes : Screen("notes")
     object Quiz : Screen("quiz")

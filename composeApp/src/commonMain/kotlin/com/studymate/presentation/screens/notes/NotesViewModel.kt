@@ -116,6 +116,27 @@ class NotesViewModel(
         }
     }
 
+    fun refineContent(content: String, onRefined: (String) -> Unit) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            val notes = if (currentState is NotesUiState.Success) currentState.notes else emptyList()
+            
+            _uiState.emit(NotesUiState.Refining(notes, -1L))
+            
+            // We use the same repository logic but don't save to DB immediately for "New Note"
+            val result = refineNoteUseCase.refineRawContent(content)
+            
+            if (result.isSuccess) {
+                onRefined(result.getOrThrow())
+                _uiState.emit(if (notes.isEmpty()) NotesUiState.Empty else NotesUiState.Success(notes))
+                _events.emit(NoteEvent.ShowMessage("Konten berhasil dijelaskan AI ✨"))
+            } else {
+                _uiState.emit(if (notes.isEmpty()) NotesUiState.Empty else NotesUiState.Success(notes))
+                _events.emit(NoteEvent.ShowMessage("Gagal: ${result.exceptionOrNull()?.message}"))
+            }
+        }
+    }
+
     fun deleteNote(id: Long) {
         viewModelScope.launch {
             noteRepository.deleteNote(id)

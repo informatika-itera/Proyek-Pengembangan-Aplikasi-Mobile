@@ -60,6 +60,9 @@ fun NoteDetailScreen(
 
     val isRefining = uiState is NotesUiState.Refining
 
+    // Add a summary/explain button for new notes or when text is long enough
+    val showAIAction = content.length > 20
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -102,12 +105,21 @@ fun NoteDetailScreen(
             )
         },
         bottomBar = {
-            if (noteId != -1L) {
+            if (showAIAction) {
                 AIActionBar(
                     onRefineClick = {
-                        currentNote?.let { viewModel.refineNote(it) }
+                        if (noteId == -1L) {
+                            // If it's a new note, we might need to save it first or just refine the current content
+                            // For simplicity, let's allow refining the local content
+                            viewModel.refineContent(content) { refined: String ->
+                                content = refined
+                            }
+                        } else {
+                            currentNote?.let { viewModel.refineNote(it) }
+                        }
                     },
-                    isRefining = isRefining
+                    isRefining = isRefining,
+                    isNewNote = noteId == -1L
                 )
             }
         }
@@ -180,7 +192,7 @@ fun NoteDetailScreen(
 }
 
 @Composable
-fun AIActionBar(onRefineClick: () -> Unit, isRefining: Boolean) {
+fun AIActionBar(onRefineClick: () -> Unit, isRefining: Boolean, isNewNote: Boolean = false) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -205,7 +217,7 @@ fun AIActionBar(onRefineClick: () -> Unit, isRefining: Boolean) {
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = if (isRefining) "Sedang Merapikan..." else "🪄 Rapikan dengan Gemini AI",
+                text = if (isRefining) "Sedang Memproses..." else if (isNewNote) "✨ Ringkas & Jelaskan dengan AI" else "🪄 Rapikan dengan Gemini AI",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.bodyMedium

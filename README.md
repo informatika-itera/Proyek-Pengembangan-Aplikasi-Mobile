@@ -136,7 +136,7 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 - Dark mode disimpan menggunakan DataStore sebagai preferensi pengguna.
 
 ### 🎥 Demo Sprint 3
-[Demo](https://youtu.be/Ts4yZCOPH5w)
+[Demo](https://youtu.be/oRgG741M1VE)
 
 ## 🚀 Getting Started
 

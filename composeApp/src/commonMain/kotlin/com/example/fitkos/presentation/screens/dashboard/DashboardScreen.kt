@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.fitkos.presentation.screens.ai.TipCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -122,7 +123,8 @@ private fun QuickActionSection(
         Text(
             text = "Aksi Cepat",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         QuickActionCard(
@@ -145,13 +147,16 @@ private fun QuickActionCard(
     color: Color,
     onClick: () -> Unit
 ) {
+    val contentColor = Color(0xFF1C1B1F)
+
     Card(
         modifier = modifier
             .height(92.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = color
+            containerColor = color,
+            contentColor = contentColor
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -174,13 +179,14 @@ private fun QuickActionCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
                 )
 
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = contentColor.copy(alpha = 0.72f)
                 )
             }
         }
@@ -424,9 +430,52 @@ private fun TargetItem(
 }
 
 @Composable
+private fun TipCard(
+    tip: DashboardTip
+) {
+    val contentColor = Color(0xFF1C1B1F)
+
+    Card(
+        modifier = Modifier.width(200.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = tip.color,
+            contentColor = contentColor
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = tip.icon,
+                fontSize = 24.sp
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = tip.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
+                )
+
+                Text(
+                    text = tip.desc,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.72f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun DashboardTipsSection() {
     val tips = listOf(
-        DashboardTip("💡", "Masak Nasi Sendiri", "Hemat & lebih higienis.", Color(0xFFE8F5E9)),
+        DashboardTip("💡", "Masak Nasi Sendiri", "Hemat budget dan lebih higienis.", Color(0xFFE8F5E9)),
         DashboardTip("💧", "Air Putih", "Minum 1 gelas setelah bangun.", Color(0xFFE3F2FD)),
         DashboardTip("🍎", "Cemilan Buah", "Ganti gorengan dengan buah.", Color(0xFFFFF3E0)),
         DashboardTip("🧘", "Peregangan", "Stretching tiap 2 jam duduk.", Color(0xFFF3E5F5)),
@@ -452,32 +501,17 @@ private fun DashboardTipsSection() {
         Text(
             text = "Tips Sehat Anak Kos",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(bottom = 0.dp) // Hapus gap bawah berlebih
+            contentPadding = PaddingValues(bottom = 0.dp)
         ) {
             items(tips) { tip ->
-                Card(
-                    modifier = Modifier.width(200.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = tip.color)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(tip.icon, fontSize = 24.sp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(tip.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                            Text(tip.desc, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                        }
-                    }
-                }
+                TipCard(tip = tip)
             }
         }
     }

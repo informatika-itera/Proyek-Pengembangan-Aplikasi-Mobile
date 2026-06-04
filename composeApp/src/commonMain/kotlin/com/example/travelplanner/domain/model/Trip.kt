@@ -20,5 +20,7 @@ data class ItineraryItem(
     val icon: String,
     val priceRange: String = "",
     val mapsUrl: String = "",
-    val placeName: String = ""
+    val placeName: String = "",
+    val activityEn: String = "",
+    val placeNameEn: String = ""
 )

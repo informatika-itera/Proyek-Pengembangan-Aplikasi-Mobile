@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
 
 data class TripResultUiState(
     val isLoading: Boolean = true,
@@ -22,8 +23,10 @@ data class TripResultUiState(
 class TripResultViewModel(
     private val tripRepository: TripRepository,
     private val expenseRepository: ExpenseRepository,
-    private val cityImageService: CityImageService
+    private val cityImageService: CityImageService,
+    private val aiRepository: com.example.travelplanner.domain.repository.AIRepository
 ) : ViewModel() {
+    private val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
 
     private val _uiState = MutableStateFlow(TripResultUiState())
     val uiState: StateFlow<TripResultUiState> = _uiState.asStateFlow()
@@ -69,6 +72,34 @@ class TripResultViewModel(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    fun checkAndTranslateItinerary(trip: Trip, isEnglish: Boolean) {
+        if (!isEnglish) return // Only run translation when English is needed
+        
+        val needsTranslation = trip.itineraryItems.any { it.activityEn.isBlank() }
+        if (!needsTranslation) return
+
+        viewModelScope.launch {
+            try {
+                val jsonItinerary = jsonParser.encodeToString(trip.itineraryItems)
+                val translatedJson = aiRepository.translateItinerary(jsonItinerary)
+                
+                val startIndex = translatedJson.indexOfAny(charArrayOf('[', '{'))
+                val endIndex = translatedJson.lastIndexOfAny(charArrayOf(']', '}'))
+                if (startIndex == -1 || endIndex == -1 || endIndex < startIndex) return@launch
+                val cleanJson = translatedJson.substring(startIndex, endIndex + 1)
+                
+                val translatedItems = jsonParser.decodeFromString<List<com.example.travelplanner.domain.model.ItineraryItem>>(cleanJson)
+                if (translatedItems.isNotEmpty()) {
+                    val updatedTrip = trip.copy(itineraryItems = translatedItems)
+                    tripRepository.saveTrip(updatedTrip)
+                    // saveTrip uses INSERT OR REPLACE so the Flow from getTripById will re-emit → UI updates
+                }
+            } catch (e: Exception) {
+                // Silently fail; translation is best-effort
             }
         }
     }

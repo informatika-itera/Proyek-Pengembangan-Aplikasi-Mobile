@@ -175,7 +175,13 @@ fun GenerateTripScreen(
                                     endDate = endDate,
                                     duration = "$startDate – $endDate",
                                     vibe = selectedVibe,
-                                    specialNotes = specialNotes
+                                    specialNotes = specialNotes,
+                                    language = if (s.isEnglish) "English" else "Indonesian",
+                                    errDestEmpty = s.destinationEmptyError,
+                                    errVibeEmpty = s.vibeEmptyError,
+                                    errAiFormat = s.aiFormatError,
+                                    errNetwork = s.networkError,
+                                    errAiGeneral = s.aiGeneralError
                                 )
                             },
                             modifier = Modifier.fillMaxWidth().height(52.dp),

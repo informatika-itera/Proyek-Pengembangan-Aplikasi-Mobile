@@ -243,7 +243,7 @@ fun ExpenseTrackerScreen(
 @Composable
 fun ExpenseSummaryCard(totalExpenses: Double, expenses: List<Expense>) {
     val s = LocalStrings.current
-    val isEn = s.seeAll == "See All"
+    val isEn = s.isEnglish
     val animProgress = remember { Animatable(0f) }
     LaunchedEffect(expenses) {
         animProgress.snapTo(0f)
@@ -410,7 +410,7 @@ fun ExpenseSummaryCard(totalExpenses: Double, expenses: List<Expense>) {
 @Composable
 fun ExpenseInsightsCard(expenses: List<Expense>, totalExpenses: Double) {
     val s = LocalStrings.current
-    val isEn = s.seeAll == "See All"
+    val isEn = s.isEnglish
 
     if (expenses.isEmpty()) return
 

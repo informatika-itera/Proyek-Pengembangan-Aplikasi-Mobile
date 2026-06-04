@@ -20,6 +20,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import okio.Path.Companion.toOkioPath
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 /**
  * Android MainActivity
@@ -30,6 +36,27 @@ import okio.Path.Companion.toOkioPath
 class MainActivity : ComponentActivity(), SingletonImageLoader.Factory {
 
     private lateinit var networkMonitor: NetworkMonitor
+
+    private fun scheduleDailyNotification(replace: Boolean = false) {
+        val dailyWorkRequest = PeriodicWorkRequestBuilder<DailyNotificationWorker>(1, TimeUnit.DAYS)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "DailyTravelReminder",
+            if (replace) ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE else ExistingPeriodicWorkPolicy.KEEP,
+            dailyWorkRequest
+        )
+    }
+
+    // Register ActivityResultLauncher for POST_NOTIFICATIONS
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted, jadwalkan ulang agar langsung berjalan hari ini
+            scheduleDailyNotification(replace = true)
+        }
+    }
 
     // Register ActivityResultLauncher for Speech-to-Text overlay intent
     private val speechRecognizerLauncher = registerForActivityResult(
@@ -92,6 +119,17 @@ class MainActivity : ComponentActivity(), SingletonImageLoader.Factory {
 
         enableEdgeToEdge()
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                scheduleDailyNotification(replace = false)
+            } else {
+                requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            // Android 12 kebawah
+            scheduleDailyNotification(replace = false)
+        }
+
         networkMonitor = NetworkMonitor(applicationContext)
 
         // Wire shared VoiceInputManager to Android native implementation
@@ -108,8 +146,17 @@ class MainActivity : ComponentActivity(), SingletonImageLoader.Factory {
             }
         }
 
+        val sharedPref = getSharedPreferences("TravelPlannerPrefs", android.content.Context.MODE_PRIVATE)
+        val isEnglishInit = sharedPref.getBoolean("isEnglish", false)
+
         setContent {
-            App(networkMonitor = networkMonitor)
+            App(
+                networkMonitor = networkMonitor,
+                initialIsEnglish = isEnglishInit,
+                onLanguageChange = { isEnglish ->
+                    sharedPref.edit().putBoolean("isEnglish", isEnglish).apply()
+                }
+            )
         }
     }
 

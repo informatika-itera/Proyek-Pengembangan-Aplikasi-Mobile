@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun ConnectivityBanner(isOnline: Boolean, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     // Track whether we've ever seen an offline state (to show "back online" message)
     var wasOffline by remember { mutableStateOf(false) }
     var showOnlineConfirmation by remember { mutableStateOf(false) }
@@ -71,15 +72,15 @@ fun ConnectivityBanner(isOnline: Boolean, modifier: Modifier = Modifier) {
                     )
                     Column {
                         Text(
-                            text = "Tidak ada koneksi internet",
+                            text = s.noInternetConnection,
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 13.sp
                         )
                         Text(
-                            text = "Beberapa fitur mungkin tidak tersedia",
-                            color = Color.White.copy(alpha = 0.80f),
+                            text = s.someFeaturesUnavailable,
+                            color = Color.White.copy(alpha = 0.85f),
                             style = MaterialTheme.typography.labelSmall,
                             fontSize = 11.sp
                         )
@@ -112,7 +113,7 @@ fun ConnectivityBanner(isOnline: Boolean, modifier: Modifier = Modifier) {
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Koneksi internet pulih ✓",
+                        text = s.internetRestored,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodySmall,

@@ -53,6 +53,13 @@ fun TripResultScreen(
     val s = LocalStrings.current
 
     LaunchedEffect(tripId) { viewModel.loadTripDetails(tripId) }
+    
+    LaunchedEffect(uiState.trip, s.isEnglish) {
+        val trip = uiState.trip
+        if (trip != null) {
+            viewModel.checkAndTranslateItinerary(trip, s.isEnglish)
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -340,8 +347,8 @@ fun TimelineItem(item: ItineraryItem, isLast: Boolean, modifier: Modifier = Modi
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
 
     val annotatedText = buildAnnotatedString {
-        val activityText = item.activity
-        val place = item.placeName
+        val activityText = if (s.isEnglish && item.activityEn.isNotBlank()) item.activityEn else item.activity
+        val place = if (s.isEnglish && item.placeNameEn.isNotBlank()) item.placeNameEn else item.placeName
         val url = item.mapsUrl
         if (place.isNotBlank() && url.isNotBlank()) {
             val startIndex = activityText.indexOf(place, ignoreCase = true)
@@ -444,6 +451,7 @@ fun TransitHeroCard(
     startDate: String,
     modifier: Modifier = Modifier
 ) {
+    val s = LocalStrings.current
     var showSheet by remember { mutableStateOf(false) }
 
     val isFlightRecommended = remember(destination, departureCity) {
@@ -502,7 +510,7 @@ fun TransitHeroCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (isFlightRecommended) "Rekomendasi Penerbangan" else "Rekomendasi Tiket Kereta/Bus",
+                    text = if (isFlightRecommended) s.flightRecommendation else s.trainBusRecommendation,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -516,7 +524,7 @@ fun TransitHeroCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Berangkat: $startDate",
+                    text = "${s.departPrefix}: $startDate",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -531,7 +539,7 @@ fun TransitHeroCard(
                 ),
                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
             ) {
-                Text("Cari Tiket", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                Text(s.searchTicket, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -556,6 +564,7 @@ fun TransitBookingBottomSheet(
     isFlight: Boolean,
     onDismiss: () -> Unit
 ) {
+    val s = LocalStrings.current
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
     
     val originEncoded = departureCity.trim().replace(" ", "%20")
@@ -584,14 +593,14 @@ fun TransitBookingBottomSheet(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Bandingkan & Pesan Tiket",
+                    text = s.compareAndBook,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Pilih platform untuk mencari tiket ${if (isFlight) "pesawat" else "kereta/bus"} dari ${departureCity} ke ${destination}",
+                    text = if (isFlight) s.compareFlightTitle(departureCity, destination) else s.compareTrainTitle(departureCity, destination),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -603,7 +612,7 @@ fun TransitBookingBottomSheet(
             if (isFlight) {
                 OtaItem(
                     name = "Traveloka Flights",
-                    subtitle = "Platform Terbesar di Indonesia",
+                    subtitle = s.biggestPlatformID,
                     icon = "✈️",
                     onClick = {
                         uriHandler.openUri(travelokaPesawatUrl)
@@ -612,7 +621,7 @@ fun TransitBookingBottomSheet(
                 )
                 OtaItem(
                     name = "Tiket.com Pesawat",
-                    subtitle = "Banyak Promo Menarik",
+                    subtitle = s.lotsOfPromos,
                     icon = "🎫",
                     onClick = {
                         uriHandler.openUri(tiketPesawatUrl)
@@ -621,7 +630,7 @@ fun TransitBookingBottomSheet(
                 )
                 OtaItem(
                     name = "Agoda Flights",
-                    subtitle = "Bagus untuk Rute Internasional",
+                    subtitle = s.goodForInternational,
                     icon = "🏨",
                     onClick = {
                         uriHandler.openUri(agodaPesawatUrl)
@@ -631,7 +640,7 @@ fun TransitBookingBottomSheet(
             } else {
                 OtaItem(
                     name = "Tiket.com Kereta Api",
-                    subtitle = "Pesan Tiket KAI Instan",
+                    subtitle = s.instantKAITicket,
                     icon = "🚆",
                     onClick = {
                         uriHandler.openUri(tiketKeretaUrl)
@@ -640,7 +649,7 @@ fun TransitBookingBottomSheet(
                 )
                 OtaItem(
                     name = "Traveloka Kereta & Bus",
-                    subtitle = "Lengkap KAI, Whoosh, & Bus",
+                    subtitle = s.completeTransport,
                     icon = "🚌",
                     onClick = {
                         uriHandler.openUri(travelokaBusUrl)
@@ -649,7 +658,7 @@ fun TransitBookingBottomSheet(
                 )
                 OtaItem(
                     name = "RedBus Indonesia",
-                    subtitle = "Pesan Tiket Bus & Travel Terbaik",
+                    subtitle = s.bestBusTravel,
                     icon = "🚍",
                     onClick = {
                         uriHandler.openUri(redbusUrl)

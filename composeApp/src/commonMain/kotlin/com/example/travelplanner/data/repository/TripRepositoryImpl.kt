@@ -17,6 +17,7 @@ class TripRepositoryImpl(
     private val database: TravelPlannerDatabase
 ) : TripRepository {
 
+    private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
     private val queries = database.travelDatabaseQueries
 
     override fun getAllTrips(): Flow<List<Trip>> {
@@ -33,7 +34,7 @@ class TripRepositoryImpl(
                         duration = entity.duration,
                         vibe = entity.vibes,
                         itineraryItems = try {
-                            Json.decodeFromString<List<ItineraryItem>>(entity.itinerary_json)
+                            jsonParser.decodeFromString<List<ItineraryItem>>(entity.itinerary_json)
                         } catch (e: Exception) {
                             emptyList()
                         }
@@ -56,7 +57,7 @@ class TripRepositoryImpl(
                         duration = it.duration,
                         vibe = it.vibes,
                         itineraryItems = try {
-                            Json.decodeFromString<List<ItineraryItem>>(it.itinerary_json)
+                            jsonParser.decodeFromString<List<ItineraryItem>>(it.itinerary_json)
                         } catch (e: Exception) {
                             emptyList()
                         }
@@ -66,7 +67,7 @@ class TripRepositoryImpl(
     }
 
     override suspend fun saveTrip(trip: Trip) {
-        val itineraryJson = Json.encodeToString(trip.itineraryItems)
+        val itineraryJson = jsonParser.encodeToString(trip.itineraryItems)
         queries.insertTrip(
             id = trip.id,
             user_id = null,

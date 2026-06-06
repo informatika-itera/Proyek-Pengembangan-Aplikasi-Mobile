@@ -109,11 +109,6 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-//                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-//                        ProfileBadge(label = "Aktif", value = "12")
-//                        ProfileBadge(label = "Selesai", value = "48")
-//                        ProfileBadge(label = "Streak", value = "7")
-//                    }
                 }
             }
 
@@ -150,62 +145,6 @@ fun ProfileScreen(
                     )
                 }
             }
-
-//            Card(
-//                modifier = Modifier.fillMaxWidth(),
-//                shape = RoundedCornerShape(20.dp),
-//                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-//            ) {
-//                Column(modifier = Modifier.padding(20.dp)) {
-//                    Text(
-//                        text = "Pengaturan Cepat",
-//                        style = MaterialTheme.typography.titleLarge,
-//                        fontWeight = FontWeight.SemiBold
-//                    )
-//
-//                    Spacer(modifier = Modifier.height(12.dp))
-//
-//                    ProfileInfoRow(
-//                        icon = Icons.Default.Settings,
-//                        label = "Tema",
-//                        value = "Bisa diubah dari menu Pengaturan"
-//                    )
-//
-//                    ProfileInfoRow(
-//                        icon = Icons.Default.TaskAlt,
-//                        label = "Fokus belajar",
-//                        value = "Pantau tugas dan waktu belajar dari sidebar"
-//                    )
-//                }
-//            }
-        }
-    }
-}
-
-@Composable
-private fun ProfileBadge(
-    label: String,
-    value: String
-) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

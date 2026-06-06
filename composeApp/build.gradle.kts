@@ -73,18 +73,10 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
             
-            // Koin DI
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-            
+
             // SQLDelight
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-            
-            // DataStore + Okio
-            implementation(libs.datastore.preferences)
-            implementation(libs.okio)
             
             // Lifecycle & ViewModel
             implementation(libs.lifecycle.viewmodel)
@@ -106,7 +98,6 @@ kotlin {
         
         androidMain.dependencies {
             implementation(compose.preview)
-            implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
         }

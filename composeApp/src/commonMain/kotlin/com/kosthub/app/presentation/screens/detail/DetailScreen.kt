@@ -24,6 +24,8 @@ import com.kosthub.app.presentation.components.EmptyState
 import com.kosthub.app.presentation.components.ErrorState
 import com.kosthub.app.presentation.components.LoadingState
 import com.kosthub.app.presentation.state.UiState
+import com.kosthub.app.core.util.formatHargaTahunan
+import com.kosthub.app.core.util.formatJarakKm
 
 @Composable
 fun DetailScreen(
@@ -384,14 +386,4 @@ private fun getFacilityItems(kost: Kost): List<FacilityItem> {
         FacilityItem("Dapur", Icons.Outlined.Kitchen, kost.areaDapur == "Ada"),
         FacilityItem("CCTV", Icons.Outlined.Security, kost.keamananCctv == "Ada")
     )
-}
-
-private fun formatJarakKm(km: Double): String {
-    return km.toString().replace(".", ",")
-}
-
-private fun formatHargaTahunan(value: Long): String {
-    val digits = value.toString()
-    val grouped = digits.reversed().chunked(3).joinToString(".").reversed()
-    return "Rp$grouped"
 }

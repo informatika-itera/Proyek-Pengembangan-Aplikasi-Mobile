@@ -42,29 +42,7 @@ data class KostDto(
             isFavorite = isFavorite
         )
     }
-    
-    companion object {
-        fun fromDomain(kost: Kost): KostDto {
-            return KostDto(
-                id = kost.id,
-                namaKos = kost.namaKos,
-                nomorTelepon = kost.nomorTelepon,
-                jarakKm = kost.jarakKm,
-                hargaTahunan = kost.hargaTahunan,
-                tipeKos = kost.tipeKos,
-                kamarMandi = kost.kamarMandi,
-                wifi = kost.wifi,
-                furniturKasur = kost.furniturKasur,
-                furniturLemari = kost.furniturLemari,
-                furniturMejaBelajar = kost.furniturMejaBelajar,
-                fasilitasPendingin = kost.fasilitasPendingin,
-                areaLaundry = kost.areaLaundry,
-                areaDapur = kost.areaDapur,
-                keamananCctv = kost.keamananCctv,
-                isFavorite = kost.isFavorite
-            )
-        }
-    }
+
 }
 
 @Serializable

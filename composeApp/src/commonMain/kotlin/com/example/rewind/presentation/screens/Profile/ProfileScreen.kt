@@ -8,6 +8,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -21,10 +28,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import com.example.rewind.domain.model.WatchStatus
 import com.example.rewind.presentation.theme.*
 import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileScreen(
@@ -59,22 +75,33 @@ fun ProfileScreen(
     ) {
         Box(
             modifier = Modifier
-                .size(300.dp)
-                .offset(x = (-80).dp, y = (-60).dp)
-                .blur(120.dp)
+                .size(350.dp)
+                .offset(x = (-100).dp, y = (-80).dp)
+                .blur(130.dp)
                 .background(
-                    Brush.radialGradient(listOf(TheaterRed.copy(alpha = 0.18f), Color.Transparent)),
+                    Brush.radialGradient(listOf(TheaterRed.copy(alpha = 0.22f), Color.Transparent)),
                     CircleShape
                 )
         )
         Box(
             modifier = Modifier
-                .size(200.dp)
+                .size(220.dp)
                 .align(Alignment.TopEnd)
-                .offset(x = 60.dp, y = 100.dp)
-                .blur(100.dp)
+                .offset(x = 70.dp, y = 120.dp)
+                .blur(110.dp)
                 .background(
-                    Brush.radialGradient(listOf(GoldAmber.copy(alpha = 0.1f), Color.Transparent)),
+                    Brush.radialGradient(listOf(GoldAmber.copy(alpha = 0.13f), Color.Transparent)),
+                    CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(280.dp)
+                .align(Alignment.BottomCenter)
+                .offset(y = 60.dp)
+                .blur(120.dp)
+                .background(
+                    Brush.radialGradient(listOf(VelvetRed.copy(alpha = 0.12f), Color.Transparent)),
                     CircleShape
                 )
         )
@@ -106,32 +133,24 @@ fun ProfileScreen(
         }
     }
 }
-
 @Composable
 private fun ProfileHeader(onNavigateBack: () -> Unit) {
+    val rewindColors = LocalRewindColors.current
     val surface = MaterialTheme.colorScheme.surface
-    val background = MaterialTheme.colorScheme.background
-    val primary = MaterialTheme.colorScheme.primary
-    val outline = MaterialTheme.colorScheme.outline
-    val onBackground = MaterialTheme.colorScheme.onBackground
+    val onBg = MaterialTheme.colorScheme.onBackground
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.9f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        targetValue = if (isPressed) 0.88f else 1f,
+        animationSpec = spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow),
         label = "BackBtnScale"
     )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    listOf(surface, surface.copy(alpha = 0.8f), background)
-                )
-            )
-            .padding(horizontal = 20.dp, vertical = 18.dp)
+            .background(surface)
     ) {
         Box(
             modifier = Modifier
@@ -142,22 +161,28 @@ private fun ProfileHeader(onNavigateBack: () -> Unit) {
                     Brush.horizontalGradient(
                         listOf(
                             Color.Transparent,
-                            outline.copy(alpha = 0.4f),
-                            primary.copy(alpha = 0.3f),
-                            outline.copy(alpha = 0.4f),
+                            BorderGold.copy(alpha = 0.3f),
+                            GoldAmber.copy(alpha = 0.2f),
+                            BorderGold.copy(alpha = 0.3f),
                             Color.Transparent
                         )
                     )
                 )
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(42.dp)
                     .graphicsLayer(scaleX = scale, scaleY = scale)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .border(BorderStroke(1.dp, outline.copy(alpha = 0.4f)), RoundedCornerShape(10.dp))
+                    .clip(CircleShape)
+                    .background(rewindColors.surfaceElevated)
+                    .border(BorderStroke(1.dp, rewindColors.borderGold.copy(alpha = 0.55f)), CircleShape)
                     .clickable(
                         interactionSource = interactionSource,
                         indication = LocalIndication.current,
@@ -165,26 +190,201 @@ private fun ProfileHeader(onNavigateBack: () -> Unit) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("←", color = primary, fontSize = 17.sp)
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = "Kembali",
+                    tint = GoldAmber,
+                    modifier = Modifier.size(19.dp)
+                )
             }
 
-            Spacer(Modifier.width(16.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    "MY PROFILE",
-                    color = primary,
-                    fontSize = 9.sp,
+                    text = "PROFILE SAYA",
+                    color = GoldAmber,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 3.sp
+                )
+                Text(
+                    text = "Statistik & Koleksi",
+                    color = onBg,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = (-0.3).sp,
+                    lineHeight = 24.sp
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(rewindColors.surfaceElevated)
+                    .border(BorderStroke(1.dp, rewindColors.borderGold.copy(alpha = 0.55f)), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = null,
+                    tint = GoldAmber,
+                    modifier = Modifier.size(19.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RewindHeroSection(state: ProfileUiState.Success) {
+    val primary = MaterialTheme.colorScheme.primary
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(
+                Brush.linearGradient(
+                    colorStops = arrayOf(
+                        0f to VelvetRed.copy(alpha = 0.35f),
+                        0.5f to SurfaceElevated,
+                        1f to GoldAmberDim.copy(alpha = 0.2f)
+                    )
+                )
+            )
+            .border(
+                BorderStroke(
+                    1.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            GoldAmber.copy(alpha = 0.5f),
+                            BorderSubtle.copy(alpha = 0.15f),
+                            Color.Transparent
+                        )
+                    )
+                ),
+                RoundedCornerShape(28.dp)
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .size(180.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 40.dp, y = (-40).dp)
+                .blur(60.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(GoldAmber.copy(alpha = 0.2f), Color.Transparent)
+                    ),
+                    CircleShape
+                )
+        )
+
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Label "2026 REWIND"
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(GoldAmber)
+                )
+                Text(
+                    "2026  REWIND",
+                    color = GoldAmber,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 4.sp
                 )
-                Text(
-                    "Stats & Collection",
-                    color = onBackground,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.3).sp
-                )
             }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Nama user
+            Text(
+                "${state.userName}'s",
+                color = TextWarm.copy(alpha = 0.7f),  // ← hardcode TextWarm
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = (-0.3).sp
+            )
+
+            // "Rewind" judul besar
+            Text(
+                "Rewind",
+                color = TextWarm,  // ← hardcode TextWarm biar selalu terang
+                fontSize = 44.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-2).sp,
+                lineHeight = 44.sp
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Total movies — fix layout supaya "Movies Watched" gak kepotong
+            Row(
+                verticalAlignment = Alignment.CenterVertically,  // ← ganti Bottom → CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                AnimatedCounter(
+                    target = state.totalMovies,
+                    style = TextStyle(
+                        color = GoldAmber,
+                        fontSize = 52.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-2).sp,
+                        lineHeight = 52.sp,
+                    )
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        "Film",
+                        color = TextWarm,  // ← hardcode
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "Ditonton",
+                        color = TextWarm.copy(alpha = 0.5f),  // ← hardcode
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            // Divider line
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f)
+                    .height(1.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(GoldAmber.copy(alpha = 0.6f), Color.Transparent)
+                        )
+                    )
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            Text(
+                "Dicatat sejak Jan 2026",
+                color = TextWarm.copy(alpha = 0.35f),  // ← hardcode
+                fontSize = 11.sp,
+                letterSpacing = 0.3.sp
+            )
         }
     }
 }
@@ -198,6 +398,10 @@ private fun ProfileContent(
     val editName by viewModel.editName.collectAsState()
     val editBio by viewModel.editBio.collectAsState()
 
+    // State untuk trigger animasi
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -207,33 +411,298 @@ private fun ProfileContent(
     ) {
         Spacer(Modifier.height(8.dp))
 
-        IdentityCard(
-            state = state,
-            isEditMode = isEditMode,
-            editName = editName,
-            editBio = editBio,
-            onNameChange = { viewModel.editName.value = it },
-            onBioChange = { viewModel.editBio.value = it },
-            onEditClick = { viewModel.startEdit() },
-            onSaveClick = { viewModel.saveEdit() },
-            onCancelClick = { viewModel.cancelEdit() }
+        // Tiap section pakai delay berbeda
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(400)) + slideInVertically(
+                tween(400), initialOffsetY = { it / 3 }
+            )
+        ) {
+            RewindHeroSection(state = state)
+        }
+
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(400, delayMillis = 80)) + slideInVertically(
+                tween(400, delayMillis = 80), initialOffsetY = { it / 3 }
+            )
+        ) {
+            IdentityCard(
+                state = state,
+                isEditMode = isEditMode,
+                editName = editName,
+                editBio = editBio,
+                onNameChange = { viewModel.editName.value = it },
+                onBioChange = { viewModel.editBio.value = it },
+                onEditClick = { viewModel.startEdit() },
+                onSaveClick = { viewModel.saveEdit() },
+                onCancelClick = { viewModel.cancelEdit() }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(400, delayMillis = 160)) + slideInVertically(
+                tween(400, delayMillis = 160), initialOffsetY = { it / 3 }
+            )
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                RewindStatsSection(state = state)
+                SectionTitle("STATUS TONTONAN")
+                StatusBreakdown(state = state)
+                if (state.topGenres.isNotEmpty()) {
+                    SectionTitle("GENRE FAVORIT")
+                    GenreBreakdown(state = state)
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(400, delayMillis = 240)) + slideInVertically(
+                tween(400, delayMillis = 240), initialOffsetY = { it / 3 }
+            )
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                SectionTitle("PENCAPAIAN")
+                AchievementsGrid(achievements = state.achievements)
+                if (state.recentMovies.isNotEmpty()) {
+                    SectionTitle("BARU DITONTON")
+                    RecentPosterScroll(movies = state.recentMovies)
+                }
+                Spacer(Modifier.height(48.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentPosterScroll(movies: List<com.example.rewind.domain.model.Movie>) {
+    val primary = MaterialTheme.colorScheme.primary
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val onBackground = MaterialTheme.colorScheme.onBackground
+    val outline = MaterialTheme.colorScheme.outline
+
+    // Warna poster placeholder berdasarkan index
+    val posterColors = listOf(
+        listOf(VelvetRed, TheaterRed),
+        listOf(Color(0xFF1a3a5c), Color(0xFF2d6091)),
+        listOf(Color(0xFF3d1a4a), GoldAmberDim),
+        listOf(Color(0xFF1a3a20), Color(0xFF2d7040)),
+        listOf(SurfaceElevated, TheaterRed.copy(alpha = 0.6f))
+    )
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(horizontal = 0.dp)
+    ) {
+        itemsIndexed(movies) { index, movie ->
+            val colors = posterColors[index % posterColors.size]
+            val (statusColor, _) = when (movie.status) {
+                WatchStatus.COMPLETED -> StatusFinished to "Selesai"
+                WatchStatus.WATCHING  -> StatusWatching to "Sedang Ditonton"
+                WatchStatus.PLAN_TO_WATCH -> StatusWantToWatch to "Rencana"
+                WatchStatus.ON_HOLD   -> StatusOnHold to "Ditunda"
+                WatchStatus.DROPPED   -> StatusDropped to "Berhenti"
+            }
+
+            Box(
+                modifier = Modifier
+                    .width(105.dp)
+                    .height(152.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colorStops = arrayOf(0f to colors[0], 1f to colors[1])
+                        )
+                    )
+                    .border(
+                        BorderStroke(1.dp, outline.copy(alpha = 0.2f)),
+                        RoundedCornerShape(14.dp)
+                    )
+            ) {
+                // Overlay gradient bawah
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.55f)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
+                            )
+                        )
+                )
+
+                // Status dot kanan atas
+                Box(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(7.dp)
+                        .align(Alignment.TopEnd)
+                        .clip(CircleShape)
+                        .background(statusColor)
+                )
+
+                // Info bawah
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    Text(
+                        movie.title,
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 14.sp
+                    )
+                    if ((movie.rating ?: 0f) > 0f) {
+                        Text(
+                            "★ ${movie.rating}",
+                            color = GoldAmber,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RewindStatsSection(state: ProfileUiState.Success) {
+    val topGenre = state.topGenres.firstOrNull()?.first ?: "—"
+    val topMovie = state.recentMovies
+        .filter { it.status == WatchStatus.COMPLETED }
+        .maxByOrNull { it.rating ?: 0f }
+        ?.title ?: "—"
+
+    val statItems = listOf(
+        RewindStat("🔥", "${state.currentStreak}", "Hari Beruntun", TheaterRed),
+        RewindStat("⭐", if (state.averageRating > 0f) "${state.averageRating}" else "—", "Rata-rata Rating", GoldAmber),
+        RewindStat("🎭", topGenre, "Genre Terfavorit", StatusOnHold),
+        RewindStat("🎬", topMovie, "Film Terbaik", StatusFinished)
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        statItems.chunked(2).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                row.forEach { stat ->
+                    RewindStatCard(stat = stat, modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+data class RewindStat(
+    val emoji: String,
+    val value: String,
+    val label: String,
+    val accentColor: Color
+)
+
+@Composable
+private fun RewindStatCard(stat: RewindStat, modifier: Modifier) {
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val outline = MaterialTheme.colorScheme.outline
+    val onBackground = MaterialTheme.colorScheme.onBackground
+
+    Box(
+        modifier = modifier
+            .height(110.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(surfaceVariant)
+            .border(
+                BorderStroke(1.dp, stat.accentColor.copy(alpha = 0.25f)),
+                RoundedCornerShape(20.dp)
+            )
+    ) {
+        // Accent line atas
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .align(Alignment.TopCenter)
+                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(stat.accentColor, stat.accentColor.copy(alpha = 0.3f))
+                    )
+                )
+        )
+        // Ambient glow sudut kiri atas
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .align(Alignment.TopStart)
+                .offset(x = (-10).dp, y = (-10).dp)
+                .blur(25.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(stat.accentColor.copy(alpha = 0.25f), Color.Transparent)
+                    ),
+                    CircleShape
+                )
         )
 
-        QuickStatsRow(state = state)
-        SectionTitle("WATCH STATUS")
-        StatusBreakdown(state = state)
-        if (state.topGenres.isNotEmpty()) {
-            SectionTitle("TOP GENRES")
-            GenreBreakdown(state = state)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stat.emoji, fontSize = 22.sp)
+
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    stat.value,
+                    color = onBackground,
+                    fontSize = if (stat.value.length > 8) 14.sp else 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.5).sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    stat.label,
+                    color = MaterialTheme.colorScheme.outline,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.3.sp
+                )
+            }
         }
-        SectionTitle("ACHIEVEMENTS")
-        AchievementsGrid(achievements = state.achievements)
-        if (state.recentMovies.isNotEmpty()) {
-            SectionTitle("RECENT ACTIVITY")
-            RecentActivity(movies = state.recentMovies)
-        }
-        Spacer(Modifier.height(48.dp))
     }
+}
+
+@Composable
+fun AnimatedCounter(
+    target: Int,
+    durationMs: Int = 1200,
+    style: TextStyle,
+    modifier: Modifier = Modifier
+) {
+    var display by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(target) {
+        val steps = 40
+        val stepDelay = durationMs / steps
+        for (i in 1..steps) {
+            delay(stepDelay.toLong())
+            display = (target * i / steps)
+        }
+        display = target
+    }
+
+    Text(text = "$display", style = style, modifier = modifier)
 }
 
 @Composable
@@ -364,11 +833,30 @@ private fun IdentityCard(
                             color = onBackground,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.3).sp
+                            letterSpacing = (-0.5).sp
                         )
                     }
 
-                    Text("@cinephile", color = primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(primary.copy(alpha = 0.12f))
+                                .border(BorderStroke(0.5.dp, primary.copy(alpha = 0.35f)), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 7.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                "✦ cinephile",
+                                color = primary,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
+                    }
 
                     if (isEditMode) {
                         BasicTextField(
@@ -495,13 +983,13 @@ private fun IdentityCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                MiniStat("${state.totalMovies}", "Total")
+                MiniStat("${state.totalMovies}", "Film")
                 StatDivider()
-                MiniStat("${state.statusCounts[WatchStatus.COMPLETED] ?: 0}", "Done")
+                MiniStat("${state.statusCounts[WatchStatus.COMPLETED] ?: 0}", "Selesai")
                 StatDivider()
-                MiniStat(if (state.averageRating > 0f) "${state.averageRating}★" else "—", "Avg")
+                MiniStat(if (state.averageRating > 0f) "${state.averageRating}★" else "—", "Rating")
                 StatDivider()
-                MiniStat("${state.favoriteCount}", "Faves")
+                MiniStat("${state.favoriteCount}", "Favorit")
             }
         }
     }
@@ -511,10 +999,22 @@ private fun IdentityCard(
 private fun MiniStat(value: String, label: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        Text(value, color = MaterialTheme.colorScheme.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        Text(label, color = MaterialTheme.colorScheme.outline, fontSize = 10.sp, letterSpacing = 0.5.sp)
+        Text(
+            value,
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = (-0.3).sp
+        )
+        Text(
+            label,
+            color = MaterialTheme.colorScheme.outline,
+            fontSize = 9.sp,
+            letterSpacing = 1.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -922,11 +1422,25 @@ private fun RecentActivity(movies: List<com.example.rewind.domain.model.Movie>) 
 
 @Composable
 private fun SectionTitle(text: String) {
-    Text(
-        text,
-        color = MaterialTheme.colorScheme.primary,
-        fontSize = 9.sp,
-        fontWeight = FontWeight.ExtraBold,
-        letterSpacing = 2.5.sp
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+            )
+            Text(
+                text,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 2.5.sp
+            )
+        }
+    }
 }

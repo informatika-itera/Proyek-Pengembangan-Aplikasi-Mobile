@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.LocalDate
 
 class ProfileViewModel(
     private val getAllMovies: GetAllMoviesUseCase,
@@ -54,6 +58,40 @@ class ProfileViewModel(
                         .sortedByDescending { it.second }
 
                     val favoriteCount = movies.count { (it.rating ?: 0f) >= 4f }
+
+                    val sortedByDate = movies
+                        .filter { it.status == WatchStatus.COMPLETED }
+                        .sortedByDescending { it.updatedAt }  // pastikan field ini ada di Movie
+
+                    val streak = run {
+                        var count = 0
+                        var prevDayOrdinal: Int? = null
+                        val tz = TimeZone.currentSystemDefault()
+
+                        for (movie in sortedByDate) {
+                            val dayOrdinal = movie.updatedAt       // sudah Instant langsung
+                                .toLocalDateTime(tz)
+                                .date
+                                .toEpochDays()
+
+                            when {
+                                prevDayOrdinal == null -> {
+                                    count++
+                                    prevDayOrdinal = dayOrdinal
+                                }
+                                dayOrdinal == prevDayOrdinal -> {
+                                    // hari sama, skip
+                                }
+                                dayOrdinal == prevDayOrdinal - 1 -> {
+                                    count++
+                                    prevDayOrdinal = dayOrdinal
+                                }
+                                else -> break
+                            }
+                        }
+                        count
+                    }
+
                     val completedCount = statusCounts[WatchStatus.COMPLETED] ?: 0
 
                     val achievements = listOf(

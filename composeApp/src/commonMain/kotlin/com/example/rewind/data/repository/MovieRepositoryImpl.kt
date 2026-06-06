@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
 
 class MovieRepositoryImpl(
     database: RewindDatabase
@@ -51,20 +52,36 @@ class MovieRepositoryImpl(
 
     override suspend fun insertMovie(movie: Movie): Long {
         queries.insertMovie(
-            movie.title, movie.genre.name, movie.type.name, movie.status.name,
-            movie.rating?.toDouble(), movie.review, movie.totalEpisodes?.toLong(),
-            movie.watchedEpisodes.toLong(), movie.createdAt.toEpochMilliseconds(),
-            movie.updatedAt.toEpochMilliseconds(), movie.posterUrl
+            title = movie.title,
+            movie.genre.name,
+            movie.type.name,
+            movie.status.name,
+            movie.rating?.toDouble(),
+            review = movie.review,
+            synopsis = movie.synopsis,
+            movie.totalEpisodes?.toLong(),
+            movie.watchedEpisodes.toLong(),
+            movie.updatedAt.toEpochMilliseconds(),
+            movie.updatedAt.toEpochMilliseconds(),
+            posterUrl = movie.posterUrl
         )
         return queries.lastInsertRowId().executeAsOne()
     }
 
     override suspend fun updateMovie(movie: Movie) {
         queries.updateMovie(
-            movie.title, movie.genre.name, movie.type.name, movie.status.name,
-            movie.rating?.toDouble(), movie.review, movie.totalEpisodes?.toLong(),
-            movie.watchedEpisodes.toLong(), movie.updatedAt.toEpochMilliseconds(),
-            movie.posterUrl, movie.id
+            title = movie.title,
+            movie.genre.name,
+            movie.type.name,
+            movie.status.name,
+            movie.rating?.toDouble(),
+            review = movie.review,
+            synopsis = movie.synopsis,
+            movie.totalEpisodes?.toLong(),
+            movie.watchedEpisodes.toLong(),
+            Clock.System.now().toEpochMilliseconds(),
+            posterUrl = movie.posterUrl,
+            id = movie.id
         )
     }
 

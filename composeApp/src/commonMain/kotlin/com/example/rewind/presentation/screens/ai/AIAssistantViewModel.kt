@@ -47,7 +47,7 @@ class AIAssistantViewModel(
         val state = _uiState.value
 
         if (state.inputText.isBlank()) {
-            _uiState.update { it.copy(error = "Please enter some text first") }
+            _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
             return
         }
 
@@ -68,7 +68,7 @@ class AIAssistantViewModel(
                     _uiState.update { it.copy(isLoading = false, result = output) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Something went wrong") }
+                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
                 }
         }
     }
@@ -127,12 +127,12 @@ class AIAssistantViewModel(
 }
 
 enum class AIAction(val displayName: String, val description: String) {
-    SUMMARIZE("Summarize", "Generate a concise summary from your text"),
-    GENERATE_IDEAS("Ideas", "Brainstorm ideas based on a topic"),
-    IMPROVE_WRITING("Improve", "Polish and enhance your writing"),
-    TRANSLATE("Translate", "Translate text to another language"),
-    SUGGEST_TITLE("Title", "Suggest a fitting title for your content"),
-    CHAT("Ask AI", "Ask the Echo anything about movies or series")
+    SUMMARIZE("Ringkas", "Buat ringkasan singkat dari teks yang kamu masukkan"),
+    GENERATE_IDEAS("Ide", "Cari inspirasi dan ide berdasarkan topik tertentu"),
+    IMPROVE_WRITING("Perbaiki", "Perbaiki dan perindah tulisanmu menjadi lebih baik"),
+    TRANSLATE("Terjemah", "Terjemahkan teks ke bahasa lain"),
+    SUGGEST_TITLE("Judul", "Sarankan judul yang pas untuk konten atau ulasanmu"),
+    CHAT("Tanya AI", "Tanya Echo apa saja tentang film, series, atau anime")
 }
 
 data class AIAssistantUiState(

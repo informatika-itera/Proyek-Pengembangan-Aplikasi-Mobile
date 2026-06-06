@@ -21,6 +21,7 @@ sealed interface ProfileUiState {
         val achievements: List<Achievement>,
         val recentMovies: List<Movie>,
         val userName: String,
-        val userBio: String
+        val userBio: String,
+        val currentStreak: Int = 0
     ) : ProfileUiState
 }

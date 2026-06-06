@@ -11,6 +11,7 @@ data class Movie(
     val status: WatchStatus = WatchStatus.PLAN_TO_WATCH,
     val rating: Float? = null, // 0.0 - 10.0, null = belum dirating
     val review: String = "",
+    val synopsis: String = "",
     val totalEpisodes: Int? = null, // null jika tipe MOVIE
     val watchedEpisodes: Int = 0,
     val createdAt: Instant = Clock.System.now(),

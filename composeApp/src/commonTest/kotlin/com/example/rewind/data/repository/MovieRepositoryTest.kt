@@ -65,6 +65,33 @@ class MovieRepositoryTest {
         }
     }
 
+    @Test
+    fun `updateMovie should change movie data`() = runTest {
+        val id = repository.insertMovie(createTestMovie(title = "Original Title"))
+        val updatedMovie = createTestMovie(id = id, title = "Updated Title")
+        repository.updateMovie(updatedMovie)
+
+        repository.getMovieByID(id).test {
+            val movie = awaitItem()
+            assertNotNull(movie)
+            assertEquals("Updated Title", movie.title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchMovies should return matching results`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Avengers Endgame"))
+        repository.insertMovie(createTestMovie(title = "Spider-Man"))
+
+        repository.searchMovies("Avengers").test {
+            val results = awaitItem()
+            assertEquals(1, results.size)
+            assertEquals("Avengers Endgame", results.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private fun createTestMovie(
         id: Long = 0,
         title: String = "Test Movie",

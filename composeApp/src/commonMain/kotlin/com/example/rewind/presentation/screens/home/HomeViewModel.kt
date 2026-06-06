@@ -156,7 +156,12 @@ class HomeViewModel(
     }
 
     // Tambah film dari TMDB ke koleksi lokal dengan status pilihan & menyimpan poster
-    fun addTmdbToCollection(item: TmdbMovieDto, status: WatchStatus) {
+    fun addTmdbToCollection(
+        item: TmdbMovieDto,
+        status: WatchStatus,
+        rating: Float? = null,
+        userReview: String = ""
+    ) {
         viewModelScope.launch {
             val genre = try {
                 MovieGenre.valueOf(TmdbGenreMapper.fromGenreIds(item.genreIds))
@@ -164,14 +169,21 @@ class HomeViewModel(
                 MovieGenre.OTHER
             }
 
+            val type = if (item.isTvSeries) MovieType.SERIES else MovieType.MOVIE
+
+            val totalEpisodes = if (item.isTvSeries) {
+                item.numberOfEpisodes
+            } else null
+
             val movie = Movie(
                 title = item.displayTitle,
                 genre = genre,
-                type = if (item.isTvSeries) MovieType.SERIES else MovieType.MOVIE,
+                type = type,
                 status = status,
-                rating = null,
-                review = item.overview?.take(200) ?: "",
-                totalEpisodes = null,
+                rating = rating,
+                review = userReview,
+                synopsis = item.overview ?: "",
+                totalEpisodes = totalEpisodes,
                 watchedEpisodes = 0,
                 createdAt = Clock.System.now(),
                 updatedAt = Clock.System.now(),

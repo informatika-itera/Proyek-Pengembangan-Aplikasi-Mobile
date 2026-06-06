@@ -6,6 +6,7 @@ CREATE TABLE MovieEntity (
     status TEXT NOT NULL,
     rating REAL,
     review TEXT NOT NULL,
+    synopsis TEXT NOT NULL DEFAULT '',
     totalEpisodes INTEGER,
     watchedEpisodes INTEGER NOT NULL DEFAULT 0,
     createdAt INTEGER NOT NULL,
@@ -36,8 +37,8 @@ getFavoriteMovies:
 SELECT * FROM MovieEntity WHERE rating >= 8.0 ORDER BY updatedAt DESC;
 
 insertMovie:
-INSERT INTO MovieEntity(title, genre, type, status, rating, review, totalEpisodes, watchedEpisodes, createdAt, updatedAt, posterUrl)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO MovieEntity(title, genre, type, status, rating, review, synopsis, totalEpisodes, watchedEpisodes, createdAt, updatedAt, posterUrl)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Trik untuk mendapatkan ID yang baru saja dibuat
 lastInsertRowId:
@@ -45,7 +46,7 @@ SELECT last_insert_rowid();
 
 updateMovie:
 UPDATE MovieEntity
-SET title = ?, genre = ?, type = ?, status = ?, rating = ?, review = ?, totalEpisodes = ?, watchedEpisodes = ?, updatedAt = ?, posterUrl = ?
+SET title = ?, genre = ?, type = ?, status = ?, rating = ?, review = ?, synopsis = ?, totalEpisodes = ?, watchedEpisodes = ?, updatedAt = ?, posterUrl = ?
 WHERE id = ?;
 
 deleteMovieById:

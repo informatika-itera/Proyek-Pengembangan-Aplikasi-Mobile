@@ -13,6 +13,7 @@ fun MovieEntity.toMovie(): Movie {
         status = WatchStatus.fromString(status),
         rating = rating?.toFloat(),
         review = review,
+        synopsis = synopsis,
         totalEpisodes = totalEpisodes?.toInt(),
         watchedEpisodes = watchedEpisodes.toInt(),
         createdAt = Instant.fromEpochMilliseconds(createdAt),

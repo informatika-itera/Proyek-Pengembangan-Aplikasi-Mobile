@@ -32,7 +32,8 @@ data class TmdbMovieDto(
     @SerialName("genre_ids") val genreIds: List<Int> = emptyList(),
     @SerialName("media_type") val mediaType: String? = null, // "movie" | "tv"
     @SerialName("popularity") val popularity: Double = 0.0,
-    @SerialName("adult") val adult: Boolean = false
+    @SerialName("adult") val adult: Boolean = false,
+    @SerialName("number_of_episodes") val numberOfEpisodes: Int? = null
 ) {
     // Helper: ambil judul apapun tipenya
     val displayTitle: String

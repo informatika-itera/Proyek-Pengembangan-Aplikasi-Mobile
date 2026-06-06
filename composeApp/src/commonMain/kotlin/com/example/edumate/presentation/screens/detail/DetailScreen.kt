@@ -70,7 +70,7 @@ fun DetailScreen(
                     ) {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("AI", color = MaterialTheme.colorScheme.primary)
+                        Text("Bantuan AI", color = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = { viewModel.deleteTask(onDeleted = onNavigateBack) }) {
                         Icon(Icons.Default.Delete, contentDescription = "Hapus Tugas", tint = MaterialTheme.colorScheme.error)
@@ -99,8 +99,8 @@ fun DetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Memuat detail tugas...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Memuat informasi tugas...", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -114,11 +114,11 @@ fun DetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = uiState.error ?: "Terjadi kesalahan",
+                        text = uiState.error ?: "Terjadi kesalahan pada sistem.",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Button(onClick = onNavigateBack) {
                         Text("Kembali")
                     }
@@ -131,9 +131,8 @@ fun DetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
                 ) {
-                    // Judul Tugas
                     Text(
                         text = currentTask.title,
                         style = MaterialTheme.typography.headlineMedium,
@@ -141,28 +140,25 @@ fun DetailScreen(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Row untuk Badge Prioritas & Deadline
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Badge Prioritas (Warna Biru Container)
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ) {
                             Text(
-                                text = "🎯 ${currentTask.priority.displayName}",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                text = "Prioritas: ${currentTask.priority.displayName}",
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
 
-                        // Badge Deadline (Warna Oren Container)
                         currentTask.deadline?.let {
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
@@ -170,8 +166,8 @@ fun DetailScreen(
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                             ) {
                                 Text(
-                                    text = "⏳ ${it.toDateText()}",
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    text = "Batas Waktu: ${it.toDateText()}",
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -179,9 +175,8 @@ fun DetailScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
-                    // Card Deskripsi
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -190,26 +185,25 @@ fun DetailScreen(
                         ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
+                        Column(modifier = Modifier.padding(24.dp)) {
                             Text(
-                                text = "Deskripsi",
+                                text = "Deskripsi Tugas",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = if (currentTask.description.isBlank()) "Tidak ada deskripsi yang ditambahkan." else currentTask.description,
+                                text = if (currentTask.description.isBlank()) "Tidak ada rincian deskripsi untuk tugas ini." else currentTask.description,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
+                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Banner Status (Di bagian bawah layar)
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -226,17 +220,16 @@ fun DetailScreen(
                                 contentDescription = null,
                                 tint = if (currentTask.isCompleted) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = if (currentTask.isCompleted) "Tugas Telah Diselesaikan!" else "Tugas Belum Selesai",
+                                text = if (currentTask.isCompleted) "Status: Selesai" else "Status: Belum Selesai",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
 
-                    // Spacer tambahan agar tidak menabrak FAB
-                    Spacer(modifier = Modifier.height(64.dp))
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
         }

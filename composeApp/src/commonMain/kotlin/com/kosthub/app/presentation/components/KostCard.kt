@@ -107,7 +107,7 @@ fun KostCard(
             }
 
             // Card body
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
                 // Name
                 Text(
                     text = kost.namaKos,
@@ -126,7 +126,7 @@ fun KostCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(3.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${formatJarakKm(kost.jarakKm)} km dari Kampus",
                         style = MaterialTheme.typography.bodySmall,
@@ -157,7 +157,7 @@ fun KostCard(
                     }
 
                     // Facility badges (max 3)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         badgeItems(kost).take(3).forEach { label ->
                             Badge(text = label)
                         }

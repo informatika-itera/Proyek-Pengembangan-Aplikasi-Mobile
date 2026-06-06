@@ -28,7 +28,7 @@ fun FavoritesScreen(
 ) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(text = "Favorit Saya", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         when (uiState) {
             is UiState.Loading -> LoadingState()
             is UiState.Error -> ErrorState(message = uiState.message)
@@ -38,7 +38,7 @@ fun FavoritesScreen(
                 if (favorites.isEmpty()) {
                     EmptyState(text = "Belum ada kost favorit")
                 } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         items(favorites) { kost ->
                             KostCard(
                                 kost = kost,

@@ -26,11 +26,14 @@ import com.kosthub.app.presentation.components.LoadingState
 import com.kosthub.app.presentation.state.UiState
 import com.kosthub.app.core.util.formatHargaTahunan
 import com.kosthub.app.core.util.formatJarakKm
+import com.kosthub.app.platform.PlatformContext
+import com.kosthub.app.platform.openDialer
 
 @Composable
 fun DetailScreen(
     kostId: Long,
     uiState: UiState<List<Kost>>,
+    platformContext: PlatformContext,
     onBack: () -> Unit,
     onToggleFavorite: (Kost) -> Unit
 ) {
@@ -44,7 +47,7 @@ fun DetailScreen(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp)
+                .padding(vertical = 16.dp)
         ) {
             IconButton(onClick = onBack) {
                 Icon(
@@ -69,7 +72,7 @@ fun DetailScreen(
                 if (kost == null) {
                     EmptyState(text = "Kost tidak ditemukan")
                 } else {
-                    DetailContent(kost = kost, onToggleFavorite = onToggleFavorite)
+                    DetailContent(kost = kost, platformContext = platformContext, onToggleFavorite = onToggleFavorite)
                 }
             }
         }
@@ -79,6 +82,7 @@ fun DetailScreen(
 @Composable
 private fun DetailContent(
     kost: Kost,
+    platformContext: PlatformContext,
     onToggleFavorite: (Kost) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -124,7 +128,7 @@ private fun DetailContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Location Row
         Row(
@@ -145,7 +149,7 @@ private fun DetailContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Price Section
         Row(
@@ -170,7 +174,7 @@ private fun DetailContent(
 
         // Specs Grid
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             SpecCard(
@@ -187,7 +191,7 @@ private fun DetailContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Facilities Section
         Text(
@@ -210,7 +214,7 @@ private fun DetailContent(
             // Group into grid rows of 2 columns
             availableFacilities.chunked(2).forEach { rowItems ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
@@ -229,7 +233,7 @@ private fun DetailContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Contact Section
         Text(
@@ -274,10 +278,10 @@ private fun DetailContent(
 
                 kost.nomorTelepon?.let { phone ->
                     if (phone.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
-                                // Dialer action is not platform-agnostic, we can use a callback or standard indicator
+                                openDialer(platformContext, phone)
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {

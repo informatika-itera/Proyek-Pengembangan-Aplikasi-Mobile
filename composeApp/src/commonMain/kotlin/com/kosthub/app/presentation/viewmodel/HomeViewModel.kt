@@ -39,9 +39,10 @@ class HomeViewModel(
         debouncedSearchQuery,
         _selectedTipeKos
     ) { data, query, tipeKos ->
+        val trimmedQuery = query.trim()
         val filtered = data.filter { kost ->
-            val matchesQuery = query.isEmpty() || 
-                kost.namaKos.contains(query, ignoreCase = true)
+            val matchesQuery = trimmedQuery.isEmpty() || 
+                kost.namaKos.contains(trimmedQuery, ignoreCase = true)
             val matchesTipeKos = tipeKos.isNullOrEmpty() || 
                 kost.tipeKos.equals(tipeKos, ignoreCase = true)
             

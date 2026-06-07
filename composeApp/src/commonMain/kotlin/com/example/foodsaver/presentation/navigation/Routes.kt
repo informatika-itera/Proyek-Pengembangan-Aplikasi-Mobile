@@ -2,9 +2,6 @@ package com.example.foodsaver.presentation.navigation
 
 import kotlinx.serialization.Serializable
 
-/**
- * Definisi rute navigasi untuk FoodSaver.
- */
 sealed class Screen {
     @Serializable
     data object Home : Screen()

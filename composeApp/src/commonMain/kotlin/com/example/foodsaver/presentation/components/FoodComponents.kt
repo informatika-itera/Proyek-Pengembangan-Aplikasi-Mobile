@@ -88,7 +88,6 @@ fun FoodItemCard(
         else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
-    // Expiry Highlight: subtle background tint for expired items
     val cardBgColor = if (status == FoodStatus.EXPIRED || status == FoodStatus.EXPIRED_TODAY) {
         statusColor.copy(alpha = 0.05f)
     } else {

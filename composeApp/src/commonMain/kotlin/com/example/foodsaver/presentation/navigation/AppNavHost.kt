@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -37,7 +38,6 @@ fun AppNavHost() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Konfigurasi Item Bottom Navigation: Home | Expiry | Resep | Calendar | Profile
     val items = listOf(
         BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory),
         BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant),
@@ -52,11 +52,13 @@ fun AppNavHost() {
             if (items.any { it.route == currentRoute }) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp
+                    tonalElevation = 8.dp,
+                    modifier = Modifier.testTag("bottom_nav")
                 ) {
                     items.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
                         NavigationBarItem(
+                            modifier = Modifier.testTag("nav_${item.route}"),
                             icon = { 
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon, 
@@ -68,7 +70,6 @@ fun AppNavHost() {
                             onClick = {
                                 if (!selected) {
                                     navController.navigate(item.route) {
-                                        // Menggunakan route start destination agar lebih aman di Compose Multiplatform
                                         val startRoute = navController.graph.findStartDestination().route ?: "home"
                                         popUpTo(startRoute) {
                                             saveState = true
@@ -202,6 +203,19 @@ fun AppNavHost() {
                 MealPlannerScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onRecipeClick = { recipeId -> navController.navigate("recipe_detail/$recipeId") }
+                )
+            }
+
+            composable(
+                route = "recipe_detail/{recipeId}",
+                arguments = listOf(
+                    navArgument("recipeId") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+                RecipeDetailScreen(
+                    recipeId = recipeId,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }

@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,7 +51,6 @@ fun ExpiryScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Summary Card
             ExpirySummaryCard(
                 nearlyExpired = state.nearlyExpiredCount,
                 expired = state.expiredCount
@@ -68,12 +68,14 @@ fun ExpiryScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                }
+                },
+                modifier = Modifier.testTag("expiry_tab_row")
             ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = state.selectedTab == index,
                         onClick = { viewModel.onTabSelected(index) },
+                        modifier = Modifier.testTag("expiry_tab_$index"),
                         text = {
                             Text(
                                 title,
@@ -95,14 +97,15 @@ fun ExpiryScreen(
                     EmptyExpiryState(state.selectedTab)
                 } else {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().testTag("expiry_food_list"),
                         contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(state.filteredItems, key = { it.id }) { item ->
                             FoodItemCard(
                                 item = item,
-                                onClick = { onFoodClick(item.id) }
+                                onClick = { onFoodClick(item.id) },
+                                modifier = Modifier.testTag("expiry_item_${item.id}")
                             )
                         }
                     }
@@ -132,7 +135,8 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .testTag("expiry_summary_card"),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor)
     ) {
@@ -188,7 +192,7 @@ fun EmptyExpiryState(tabIndex: Int) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier.fillMaxSize().padding(32.dp).testTag("expiry_empty_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

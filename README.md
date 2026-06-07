@@ -1,118 +1,58 @@
-# 🥗 FoodSaver
-[![FoodSaver CI](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml/badge.svg?branch=project/123140089-123140125-FoodSaver)](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml?query=branch%3Aproject%2F123140089-123140125-FoodSaver)
+# FoodSaver - Kotlin Multiplatform
 
-Aplikasi mobile multiplatform (Android-first) yang dirancang untuk membantu pengguna **mengelola stok bahan makanan**, **memantau tanggal kedaluwarsa secara proaktif**, dan **mengurangi limbah makanan** melalui bantuan asisten cerdas berbasis AI.
+FoodSaver adalah aplikasi pengelola stok makanan pintar yang membantu mengurangi pemborosan makanan (food waste) dengan pengingat kedaluwarsa dan rekomendasi resep berbasis AI.
 
----
+## 🚀 Sprint 4 Summary (Stabilization & Testing)
+Pada Sprint 4, fokus utama adalah stabilitas aplikasi, pengujian menyeluruh, dan pemolesan UI.
 
-## 👥 Tim
+### Key Improvements:
+- **Bug Fixes**: Navigasi antar halaman kini lebih stabil dengan penanganan rute yang lengkap.
+- **UI Polish**: Konsistensi desain Card, Typography, dan Spacing di seluruh layar.
+- **Quantity Formatter**: Perbaikan tampilan angka (misal `12.0` menjadi `12`).
+- **Edge Cases**: Penanganan kondisi list kosong, gagal load data, dan proses loading AI yang lebih halus.
+- **Testing**: Implementasi 15+ Unit Tests dan 3 Critical User Journey UI Tests.
 
-| Nama | NIM | GitHub | Role |
-|------|-----|--------|------|
-| Bening Apni Prameswari | 123140089 | [@beningapniprameswari](https://github.com/beningapniprameswari) | Lead & UI/UX Developer |
-| Raditya Alrasyid Nugroho | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Dev |
+## 🛠 Features
+- **Home Dashboard**: Ringkasan stok dan pengingat urgent.
+- **Food Inventory**: Kelola stok dengan kategori dan lokasi penyimpanan.
+- **Expiry Alert**: Notifikasi visual untuk makanan yang mendekati kedaluwarsa.
+- **AI Cook from Stock**: Rekomendasi resep cerdas berdasarkan bahan yang tersedia (Rule-based & AI-ready).
+- **Food Calendar**: Jadwal estimasi kesegaran makanan dalam tampilan kalender.
+- **Dark & Light Mode**: Dukungan penuh tema gelap dan terang.
 
-**Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
-**Dosen:** Pak Habib ([@mh4Scripts](https://github.com/mh4Scripts))  
----
+## 🧪 Testing Instructions
 
-## 📱 Deskripsi Aplikasi
-
-**FoodSaver** membantu pengguna mengelola dapur mereka dengan lebih efisien guna mengurangi pemborosan makanan rumah tangga. Aplikasi ini bertindak sebagai asisten dapur pribadi yang:
-
-1. **Digital Inventory**: Melacak stok bahan makanan beserta jumlah, kategori, dan masa simpan secara lokal dengan **SQLDelight**.
-2. **Proactive Reminders**: Memberikan peringatan dini melalui notifikasi sebelum bahan makanan mencapai tanggal kedaluwarsa.
-3. **AI Recipe Suggestion**: Mengintegrasikan **Gemini AI** untuk memberikan rekomendasi resep masakan kreatif berdasarkan bahan-bahan yang paling mendekati tanggal kedaluwarsa.
-
----
-
-## ✨ Fitur
-
-### Minimum (Wajib)
-- [x] **Setup Project & CI/CD** — Inisialisasi KMP dan GitHub Actions.
-- [x] **Architecture Setup** — Implementasi Clean Architecture & Koin DI.
-- [ ] **Onboarding & Profil** — Setup awal aplikasi dan preferensi notifikasi (disimpan via DataStore).
-- [ ] **Inventory Management** — CRUD (Create, Read, Update, Delete) data stok makanan lengkap dengan kategori.
-- [ ] **Expiry Tracker** — Pemantauan tanggal kedaluwarsa secara real-time dengan status indikator visual.
-- [ ] **Smart Notifications** — Pengingat otomatis sebelum bahan makanan melewati batas waktu konsumsi.
-- [ ] **Navigasi Multi-Screen** — Minimal 5 layar: Dashboard, Inventory, Add Food, AI Assistant, dan Profile.
-- [ ] **State Management** — MVVM + StateFlow untuk alur data yang reaktif dan stabil.
-
-### Bonus (Target)
-- [x] **Koin DI (+10%)** — Dependency Injection setup untuk modularitas kode.
-- [ ] **AI Integration (+10%)** — Integrasi Gemini API untuk asisten resep cerdas berdasarkan sisa bahan di kulkas.
-- [ ] **Waste Analytics (+5%)** — Visualisasi statistik (chart) makanan yang berhasil diselamatkan vs yang terbuang.
-
----
-
-## 🏗️ Arsitektur
-
-Menggunakan pola **Clean Architecture + MVVM** sesuai standar profesional.
-
+### Menjalankan Unit Tests
+Untuk memastikan logika bisnis berjalan dengan benar:
+```powershell
+.\gradlew test
 ```
-┌─────────────────────────────────────────────────┐
-│              PRESENTATION LAYER                  │
-│   Screens (Compose) ◄──► ViewModel (StateFlow)   │
-└────────────────────┬────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────┐
-│               DOMAIN LAYER                       │
-│   Use Cases ◄──► Repository Interfaces          │
-│           (Pure Kotlin Business Logic)           │
-└────────────────────┬────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────┐
-│                DATA LAYER                        │
-│   Repository Implementation                     │
-│   ├── Remote: Ktor + Gemini API (AI)            │
-│   └── Local:  SQLDelight (Inventory Database)   │
-└─────────────────────────────────────────────────┘
+Hasil test dapat dilihat di: `composeApp/build/reports/tests/test/index.html`
+
+### Menjalankan UI Tests
+UI Tests memerlukan emulator atau device Android yang terhubung:
+```powershell
+.\gradlew connectedDebugAndroidTest
+```
+Atau jalankan `CriticalUiTests.kt` langsung dari Android Studio.
+
+### Menjalankan Build & Compile Metadata
+```powershell
+.\gradlew clean build
+.\gradlew :composeApp:compileCommonMainKotlinMetadata
 ```
 
----
+## 📱 Cara Menjalankan Aplikasi
+1. Clone repository ini.
+2. Buka di Android Studio (Ladybug atau versi terbaru).
+3. Pastikan `local.properties` berisi `GEMINI_API_KEY` (opsional untuk fitur AI).
+4. Run konfigurasi `composeApp` pada emulator atau device Android.
 
-## 🛠️ Tech Stack
-
-| Komponen | Teknologi |
-|----------|-----------|
-| **Framework** | Kotlin Multiplatform (KMP), Compose Multiplatform |
-| **Networking** | Ktor Client + Kotlinx Serialization |
-| **Local DB** | SQLDelight (Inventory) |
-| **DI** | Koin |
-| **CI/CD** | GitHub Actions |
-
----
-
-## 🗂️ Project Plan
-
-Detail rencana pengerjaan dapat dilihat pada file [PROJECT_PLAN.md](PROJECT_PLAN.md).
+## 📝 Catatan Penting
+- **Recipe Feature**: Menggunakan kombinasi Rule-based engine untuk kecepatan dan AI untuk variasi.
+- **Stability**: Gunakan tombol "Reset" pada halaman Resep jika ingin membersihkan input manual dengan cepat.
+- **Dark Mode**: Tema akan mengikuti pengaturan sistem secara otomatis.
 
 ---
-
-## 🚀 Setup & Cara Menjalankan
-
-### Prerequisites
-- Android Studio Ladybug (2024.2.1) atau lebih baru
-- JDK 17+
-
-### Langkah Setup
-
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/rdtngh/123140089-123140125-FoodSaver.git
-   ```
-
-2. **Setup `local.properties`**
-   Tambahkan API key Gemini (untuk fitur AI di sprint mendatang):
-   ```properties
-   GEMINI_API_KEY=your_key_here
-   ```
-
-3. **Build & Run**
-   Buka di Android Studio, pilih target `composeApp` dan jalankan.
-
----
-
-## 📄 Lisensi
-
-MIT License — dibuat untuk keperluan pembelajaran Pengembangan Aplikasi Mobile ITERA.
+Dikembangkan oleh: [Nama Anda]
+```

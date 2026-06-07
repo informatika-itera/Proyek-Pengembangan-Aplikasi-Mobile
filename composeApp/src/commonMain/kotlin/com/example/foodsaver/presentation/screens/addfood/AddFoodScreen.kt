@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -54,12 +55,15 @@ fun AddFoodScreen(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        viewModel.onDateChange(Instant.fromEpochMilliseconds(it))
-                    }
-                    showDatePicker = false
-                }) { Text("Pilih", color = MaterialTheme.colorScheme.primary) }
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            viewModel.onDateChange(Instant.fromEpochMilliseconds(it))
+                        }
+                        showDatePicker = false
+                    },
+                    modifier = Modifier.testTag("btn_confirm_date")
+                ) { Text("Pilih", color = MaterialTheme.colorScheme.primary) }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
@@ -103,7 +107,8 @@ fun AddFoodScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(rememberScrollState())
+                        .testTag("add_food_scroll_column"),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Card(
@@ -122,7 +127,7 @@ fun AddFoodScreen(
                                 onValueChange = viewModel::onNameChange,
                                 label = { Text("Nama Makanan") },
                                 placeholder = { Text("Contoh: Susu Sapi") },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().testTag("tf_food_name"),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -136,7 +141,7 @@ fun AddFoodScreen(
                                     value = state.quantity,
                                     onValueChange = viewModel::onQuantityChange,
                                     label = { Text("Jumlah") },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("tf_food_quantity"),
                                     shape = RoundedCornerShape(12.dp),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -150,7 +155,7 @@ fun AddFoodScreen(
                                     options = FoodItem.UNITS,
                                     selectedOption = state.unit,
                                     onOptionSelected = viewModel::onUnitChange,
-                                    modifier = Modifier.weight(1.2f)
+                                    modifier = Modifier.weight(1.2f).testTag("dropdown_unit")
                                 )
                             }
 
@@ -158,7 +163,8 @@ fun AddFoodScreen(
                                 label = "Kategori",
                                 options = FoodItem.CATEGORIES,
                                 selectedOption = state.category,
-                                onOptionSelected = viewModel::onCategoryChange
+                                onOptionSelected = viewModel::onCategoryChange,
+                                modifier = Modifier.testTag("dropdown_category")
                             )
                         }
                     }
@@ -178,18 +184,19 @@ fun AddFoodScreen(
                                 label = "Lokasi Penyimpanan",
                                 options = FoodItem.STORAGE_LOCATIONS,
                                 selectedOption = state.storageLocation,
-                                onOptionSelected = viewModel::onStorageLocationChange
+                                onOptionSelected = viewModel::onStorageLocationChange,
+                                modifier = Modifier.testTag("dropdown_location")
                             )
 
                             OutlinedTextField(
                                 value = state.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),
                                 onValueChange = {},
                                 label = { Text("Estimasi Expired / Segar Hingga") },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().testTag("tf_expiry_date"),
                                 shape = RoundedCornerShape(12.dp),
                                 readOnly = true,
                                 trailingIcon = {
-                                    IconButton(onClick = { showDatePicker = true }) {
+                                    IconButton(onClick = { showDatePicker = true }, modifier = Modifier.testTag("btn_open_date_picker")) {
                                         Icon(Icons.Default.CalendarMonth, contentDescription = "Pilih Tanggal", tint = MaterialTheme.colorScheme.primary)
                                     }
                                 },
@@ -215,7 +222,7 @@ fun AddFoodScreen(
                                 value = state.notes,
                                 onValueChange = viewModel::onNotesChange,
                                 placeholder = { Text("Catatan opsional...") },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().testTag("tf_food_notes"),
                                 shape = RoundedCornerShape(12.dp),
                                 minLines = 3,
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -231,7 +238,7 @@ fun AddFoodScreen(
                             it, 
                             color = MaterialTheme.colorScheme.error, 
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(horizontal = 8.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp).testTag("txt_add_food_error"),
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -242,7 +249,8 @@ fun AddFoodScreen(
                         onClick = viewModel::saveFood,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .height(56.dp)
+                            .testTag("btn_save_food"),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -291,7 +299,8 @@ fun DropdownSelector(
         )
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.testTag("dropdown_menu_$label")
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -299,7 +308,8 @@ fun DropdownSelector(
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
-                    }
+                    },
+                    modifier = Modifier.testTag("dropdown_item_$option")
                 )
             }
         }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Inventory
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -25,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -69,10 +69,10 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onAIClick) {
+                    IconButton(onClick = onAIClick, modifier = Modifier.testTag("btn_ai_assistant")) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = onCalendarClick) {
+                    IconButton(onClick = onCalendarClick, modifier = Modifier.testTag("btn_profile")) {
                         Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
@@ -84,7 +84,8 @@ fun HomeScreen(
                 onClick = onAddFoodClick,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.testTag("fab_add_food")
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Tambah Makanan")
             }
@@ -96,13 +97,12 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search Bar
             SearchBar(
                 query = state.searchQuery,
-                onQueryChange = viewModel::onSearchQueryChange
+                onQueryChange = viewModel::onSearchQueryChange,
+                modifier = Modifier.testTag("search_bar")
             )
 
-            // Category Filter Chips
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,6 +116,7 @@ fun HomeScreen(
                         onClick = { viewModel.onCategoryChange(category) },
                         label = { Text(category) },
                         shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.testTag("chip_$category"),
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -135,14 +136,13 @@ fun HomeScreen(
                         message = state.error ?: "Waduh, ada kendala teknis. Coba lagi yuk!", 
                         onRetry = { viewModel.loadItems() }
                     )
-                } else if (state.items.isEmpty()) {
+                } else if (state.items.isEmpty() && state.searchQuery.isEmpty()) {
                     EmptyState(onAddFoodClick)
                 } else {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().testTag("home_food_list"),
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
-                        // In-App Notification / Urgent Reminder Banner
                         if (state.urgentReminders.isNotEmpty() && state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 UrgentReminderBanner(
@@ -152,28 +152,18 @@ fun HomeScreen(
                             }
                         }
 
-                        // Summary Cards
                         if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
-                            item {
-                                SummarySection(state)
-                            }
+                            item { SummarySection(state) }
                         }
 
-                        // Masak dari Stok Card
                         if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
-                            item {
-                                CookFromStockCard(onClick = onCookFromStockClick)
-                            }
+                            item { CookFromStockCard(onClick = onCookFromStockClick) }
                         }
 
-                        // AI Tips Card
                         if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
-                            item {
-                                AITipsSection(items = state.activeItems)
-                            }
+                            item { AITipsSection(items = state.activeItems) }
                         }
 
-                        // Priority Section (Save Before Waste)
                         if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 Text(
@@ -188,7 +178,7 @@ fun HomeScreen(
                                     LazyRow(
                                         contentPadding = PaddingValues(horizontal = 16.dp),
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        modifier = Modifier.padding(bottom = 16.dp)
+                                        modifier = Modifier.padding(bottom = 16.dp).testTag("priority_list")
                                     ) {
                                         items(state.priorityItems, key = { it.id }) { item ->
                                             PriorityCard(item = item, onClick = { onFoodClick(item.id) })
@@ -225,7 +215,6 @@ fun HomeScreen(
                             }
                         }
 
-                        // All Food List
                         item {
                             val headerTitle = when {
                                 state.searchQuery.isNotEmpty() -> "Hasil pencarianmu"
@@ -244,7 +233,7 @@ fun HomeScreen(
                         if (state.filteredItems.isEmpty()) {
                             item {
                                 Box(
-                                    modifier = Modifier.fillMaxWidth().padding(32.dp), 
+                                    modifier = Modifier.fillMaxWidth().padding(32.dp).testTag("empty_search_result"), 
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -275,6 +264,7 @@ fun CookFromStockCard(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
+            .testTag("card_cook_from_stock")
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
@@ -359,6 +349,7 @@ fun UrgentReminderBanner(reminders: List<FoodItem>, onFoodClick: (Long) -> Unit)
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
+            .testTag("banner_urgent")
             .clickable { onFoodClick(mostUrgent.id) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = finalBgColor),
@@ -410,11 +401,11 @@ fun UrgentReminderBanner(reminders: List<FoodItem>, onFoodClick: (Long) -> Unit)
 }
 
 @Composable
-fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: Modifier = Modifier) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
         placeholder = { Text("Cari bahan, kategori, atau lokasi...") },
@@ -448,14 +439,14 @@ fun SummarySection(state: HomeUiState) {
                 count = state.totalItems.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
                 icon = Icons.Outlined.Inventory,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag("summary_total")
             )
             SummaryItem(
                 label = "Masih Aman",
                 count = state.safeCount.toString(),
                 color = MaterialTheme.colorScheme.primary,
                 icon = Icons.Outlined.CheckCircle,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag("summary_safe")
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -468,14 +459,14 @@ fun SummarySection(state: HomeUiState) {
                 count = state.nearlyExpiredCount.toString(),
                 color = MaterialTheme.colorScheme.secondary,
                 icon = Icons.Outlined.Warning,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag("summary_nearly")
             )
             SummaryItem(
                 label = "Lewat Tanggal",
                 count = state.expiredCount.toString(),
                 color = MaterialTheme.colorScheme.error,
                 icon = Icons.Outlined.ErrorOutline,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag("summary_expired")
             )
         }
     }
@@ -533,6 +524,7 @@ fun PriorityCard(item: FoodItem, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(180.dp)
+            .testTag("priority_card_${item.id}")
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
@@ -581,7 +573,8 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(32.dp)
+            .testTag("empty_home_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -618,7 +611,8 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
             onClick = onAddFoodClick,
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+            modifier = Modifier.testTag("btn_empty_add_food")
         ) {
             Text("Mulai Tambah Makanan", fontWeight = FontWeight.Bold)
         }
@@ -628,7 +622,7 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
 @Composable
 fun ErrorState(message: String, onRetry: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier.fillMaxSize().padding(32.dp).testTag("error_home_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -648,7 +642,8 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = onRetry, 
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            modifier = Modifier.testTag("btn_retry_home")
         ) {
             Text("Coba Lagi Ya", fontWeight = FontWeight.Bold)
         }

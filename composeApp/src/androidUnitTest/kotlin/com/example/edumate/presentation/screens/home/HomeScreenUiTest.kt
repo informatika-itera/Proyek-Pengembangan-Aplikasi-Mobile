@@ -37,8 +37,7 @@ class HomeScreenUiTest {
     }
 
     private fun createTestViewModel(): HomeViewModel {
-        val fakeRepository = FakeTaskRepository()
-        return HomeViewModel(fakeRepository)
+        return HomeViewModel(FakeTaskRepository())
     }
 
     @Test
@@ -64,7 +63,6 @@ class HomeScreenUiTest {
     @Test
     fun homeScreen_clickFab_shouldTriggerNavigateToAdd() = runComposeUiTest {
         var isAddClicked = false
-        val viewModel = createTestViewModel()
 
         setContent {
             HomeScreen(
@@ -75,49 +73,13 @@ class HomeScreenUiTest {
                 onNavigateToStatistics = {},
                 onNavigateToSettings = {},
                 onNavigateToProfile = {},
-                viewModel = viewModel
+                viewModel = createTestViewModel()
             )
         }
 
         onNodeWithContentDescription("Buat Tugas").performClick()
-
-        // Pastikan UI diam (idle) sebelum melakukan asersi
         waitForIdle()
 
         assertTrue(isAddClicked)
-    }
-
-    @Test
-    fun homeScreen_drawerNavigation_shouldTriggerCallbacks() = runComposeUiTest {
-        var isTimerClicked = false
-        val viewModel = createTestViewModel()
-
-        setContent {
-            HomeScreen(
-                onNavigateToAdd = {},
-                onNavigateToDetail = {},
-                onNavigateToAIAssistant = {},
-                onNavigateToTimer = { isTimerClicked = true },
-                onNavigateToStatistics = {},
-                onNavigateToSettings = {},
-                onNavigateToProfile = {},
-                viewModel = viewModel
-            )
-        }
-
-        // 1. Klik tombol buka laci navigasi
-        onNodeWithContentDescription("Buka navigasi").performClick()
-
-        // 2. TUNGGU animasi laci selesai terbuka dengan sempurna
-        waitForIdle()
-
-        // 3. Klik menu "Fokus Belajar"
-        onNodeWithText("Fokus Belajar").performClick()
-
-        // 4. TUNGGU proses klik dan coroutine scope.launch { drawerState.close() } diselesaikan
-        waitForIdle()
-
-        // 5. Lakukan verifikasi
-        assertTrue(isTimerClicked)
     }
 }

@@ -64,6 +64,7 @@ import kelazzz.composeapp.generated.resources.Res
 import kelazzz.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import com.kelazzz.app.presentation.theme.Spacing
 
 @Composable
 fun LoginScreen(
@@ -100,7 +101,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = Spacing.lg),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(80.dp))
@@ -113,7 +114,7 @@ fun LoginScreen(
                     .clip(RoundedCornerShape(18.dp))
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.sm))
 
             Text(
                 text = "Presensi Mahasiswa ITERA",
@@ -121,7 +122,7 @@ fun LoginScreen(
                 color = Color.White.copy(alpha = 0.8f)
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(Spacing.xxl))
 
             // ==================== LOGIN CARD ====================
             Card(
@@ -135,7 +136,7 @@ fun LoginScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .padding(Spacing.lg)
                 ) {
                     Text(
                         text = "Masuk",
@@ -145,18 +146,18 @@ fun LoginScreen(
                     )
 
                     Text(
-                        text = "Gunakan akun Pocket ITERA",
+                        text = "Gunakan akun mahasiswa Pocket ITERA",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(Spacing.lg))
 
                     // ========== EMAIL FIELD ==========
                     OutlinedTextField(
                         value = uiState.username,
                         onValueChange = viewModel::onUsernameChange,
-                        label = { Text("Email ITERA") },
+                        label = { Text("Email Mahasiswa ITERA") },
                         placeholder = { Text("nama.nim@student.itera.ac.id") },
                         leadingIcon = {
                             Icon(

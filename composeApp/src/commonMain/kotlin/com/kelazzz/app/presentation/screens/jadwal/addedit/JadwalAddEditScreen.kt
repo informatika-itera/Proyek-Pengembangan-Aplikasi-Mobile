@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,6 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelazzz.app.domain.model.JenisJadwal
+import com.kelazzz.app.domain.model.ReminderOption
+import com.kelazzz.app.presentation.components.ScheduleDateField
+import com.kelazzz.app.presentation.components.ScheduleTimeField
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -104,38 +109,18 @@ fun JadwalAddEditScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Day / Tanggal Field
-                    OutlinedTextField(
+                    // Date Field
+                    ScheduleDateField(
                         value = uiState.formTanggal,
                         onValueChange = viewModel::onTanggalChange,
-                        label = { Text("Hari / Tanggal") },
-                        placeholder = { Text("cth: Senin atau 25 Mei") },
-                        singleLine = true,
                         isError = uiState.formError != null && uiState.formTanggal.isBlank(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     // Time Field
-                    OutlinedTextField(
+                    ScheduleTimeField(
                         value = uiState.formWaktu,
                         onValueChange = viewModel::onWaktuChange,
-                        label = { Text("Waktu") },
-                        placeholder = { Text("cth: 08:00 - 10:30") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -179,6 +164,55 @@ fun JadwalAddEditScreen(
                                     colors = FilterChipDefaults.elevatedFilterChipColors(
                                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // Notification Reminder Chips
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.size(6.dp))
+                            Text(
+                                text = "Notifikasi",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Opsional. Pilih kapan KelazZz mengingatkan sebelum agenda dimulai.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            ReminderOption.entries.forEach { option ->
+                                ElevatedFilterChip(
+                                    selected = uiState.formReminderOption == option,
+                                    onClick = { viewModel.onReminderOptionChange(option) },
+                                    label = {
+                                        Text(
+                                            text = option.displayName,
+                                            fontSize = 12.sp
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.elevatedFilterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary
                                     ),
                                     shape = RoundedCornerShape(12.dp)
                                 )

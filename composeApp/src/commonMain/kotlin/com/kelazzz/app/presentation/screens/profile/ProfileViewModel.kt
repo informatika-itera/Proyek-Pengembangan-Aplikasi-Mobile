@@ -2,6 +2,8 @@ package com.kelazzz.app.presentation.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kelazzz.app.data.local.datastore.UserPreferences
+import com.kelazzz.app.domain.model.ThemeMode
 import com.kelazzz.app.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val preferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -24,6 +27,7 @@ class ProfileViewModel(
 
     init {
         loadUserData()
+        loadThemeMode()
     }
 
     private fun loadUserData() {
@@ -40,6 +44,20 @@ class ProfileViewModel(
                     )
                 }
             }
+        }
+    }
+
+    private fun loadThemeMode() {
+        viewModelScope.launch {
+            preferences.themeMode.collect { mode ->
+                _uiState.update { it.copy(themeMode = mode) }
+            }
+        }
+    }
+
+    fun onThemeModeChange(mode: ThemeMode) {
+        viewModelScope.launch {
+            preferences.setThemeMode(mode)
         }
     }
 
@@ -68,6 +86,7 @@ data class ProfileUiState(
     val email: String = "-",
     val photoUrl: String = "",
     val level: String = "-",
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isLoading: Boolean = true,
     val showLogoutDialog: Boolean = false
 )

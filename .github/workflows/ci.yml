@@ -32,13 +32,16 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_HOME" >> local.properties
-          echo "GEMINI_API_KEY=ci_placeholder" >> local.properties
+          echo "OPENCODE_API_KEY=ci_placeholder" >> local.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew allTests --no-daemon --stacktrace
+        run: ./gradlew test koverVerify --no-daemon --stacktrace
+
+      - name: Generate coverage report
+        run: ./gradlew koverHtmlReport --no-daemon --stacktrace
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
@@ -51,6 +54,7 @@ jobs:
           path: |
             **/build/reports/tests/
             **/build/test-results/
+            **/build/reports/kover/
           retention-days: 7
 
       - name: Upload debug APK

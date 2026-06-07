@@ -3,6 +3,7 @@ package com.kelazzz.app.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.kelazzz.app.core.notification.JadwalNotificationScheduler
 import com.kelazzz.app.data.local.KelazZzDatabase
 import com.kelazzz.app.domain.model.Jadwal
 import com.kelazzz.app.domain.model.JenisJadwal
@@ -18,7 +19,8 @@ import kotlinx.datetime.Instant
  * Implementasi JadwalRepository — offline-first via SQLDelight
  */
 class JadwalRepositoryImpl(
-    private val database: KelazZzDatabase
+    private val database: KelazZzDatabase,
+    private val notificationScheduler: JadwalNotificationScheduler
 ) : JadwalRepository {
 
     private val queries = database.jadwalQueries
@@ -56,10 +58,13 @@ class JadwalRepositoryImpl(
                 tanggal = jadwal.tanggal,
                 waktu = jadwal.waktu,
                 jenis = jadwal.jenis.name.lowercase(),
+                reminderOffsetMinutes = jadwal.reminderOffsetMinutes,
                 createdAt = jadwal.createdAt.toString(),
                 updatedAt = jadwal.updatedAt.toString()
             )
-            queries.lastInsertId().executeAsOne()
+            val insertedId = queries.lastInsertId().executeAsOne()
+            notificationScheduler.schedule(jadwal.copy(id = insertedId))
+            insertedId
         }
     }
 
@@ -71,15 +76,18 @@ class JadwalRepositoryImpl(
                 tanggal = jadwal.tanggal,
                 waktu = jadwal.waktu,
                 jenis = jadwal.jenis.name.lowercase(),
+                reminderOffsetMinutes = jadwal.reminderOffsetMinutes,
                 updatedAt = jadwal.updatedAt.toString(),
                 id = jadwal.id
             )
+            notificationScheduler.schedule(jadwal)
         }
     }
 
     override suspend fun deleteJadwal(id: Long) {
         withContext(Dispatchers.IO) {
             queries.deleteJadwalById(id)
+            notificationScheduler.cancel(id)
         }
     }
 }
@@ -95,6 +103,7 @@ private fun com.kelazzz.app.data.local.JadwalEntity.toDomain(): Jadwal {
         tanggal = tanggal,
         waktu = waktu,
         jenis = JenisJadwal.fromString(jenis.uppercase()),
+        reminderOffsetMinutes = reminderOffsetMinutes,
         createdAt = runCatching { Instant.parse(createdAt) }.getOrElse { now },
         updatedAt = runCatching { Instant.parse(updatedAt) }.getOrElse { now }
     )

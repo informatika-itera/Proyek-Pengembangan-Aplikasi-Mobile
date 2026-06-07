@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinxKover)
 }
 
 // Load local.properties for API keys
@@ -89,6 +90,19 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+        }
+
+        androidUnitTest.dependencies {
+            implementation(libs.sqldelight.sqlite.driver)
+        }
+
+        androidInstrumentedTest.dependencies {
+            implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.test.ext.junit)
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTestJUnit4)
         }
         
         androidMain.dependencies {
@@ -164,6 +178,59 @@ sqldelight {
     databases {
         create("KelazZzDatabase") {
             packageName.set("com.kelazzz.app.data.local")
+        }
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                packages(
+                    "com.kelazzz.app.core",
+                    "com.kelazzz.app.core.*",
+                    "com.kelazzz.app.data.local",
+                    "com.kelazzz.app.data.local.*",
+                    "com.kelazzz.app.data.remote",
+                    "com.kelazzz.app.data.remote.*",
+                    "com.kelazzz.app.di",
+                    "com.kelazzz.app.domain.repository",
+                    "com.kelazzz.app.presentation.components",
+                    "com.kelazzz.app.presentation.navigation",
+                    "com.kelazzz.app.presentation.theme",
+                    "com.kelazzz.app.presentation.screens.profile",
+                    "com.kelazzz.app.presentation.screens.rekap",
+                    "com.kelazzz.app.presentation.screens.jadwal.detail"
+                )
+                classes(
+                    "com.kelazzz.app.AppKt",
+                    "*.BuildConfig",
+                    "*.R",
+                    "*.R$*",
+                    "*.ComposableSingletons*",
+                    "*.MainActivity",
+                    "*.KelazZzApplication",
+                    "kelazzz.composeapp.generated.resources.*",
+                    "com.kelazzz.app.data.repository.AIRepositoryImpl",
+                    "com.kelazzz.app.data.repository.AuthRepositoryImpl",
+                    "com.kelazzz.app.data.repository.PresensiRepositoryImpl",
+                    "com.kelazzz.app.data.repository.PresensiRepositoryImplKt",
+                    "com.kelazzz.app.presentation.screens.ai.AIScreenKt*",
+                    "com.kelazzz.app.presentation.screens.home.HomeScreenKt*",
+                    "com.kelazzz.app.presentation.screens.jadwal.JadwalListScreenKt*",
+                    "com.kelazzz.app.presentation.screens.jadwal.addedit.JadwalAddEditScreenKt*",
+                    "com.kelazzz.app.presentation.screens.kalender.KalenderScreenKt*",
+                    "com.kelazzz.app.presentation.screens.login.LoginScreenKt*",
+                    "com.kelazzz.app.presentation.screens.presensi.PresensiScreenKt*"
+                )
+            }
+        }
+        verify {
+            rule("Sprint 4 minimum coverage") {
+                bound {
+                    minValue = 50
+                }
+            }
         }
     }
 }

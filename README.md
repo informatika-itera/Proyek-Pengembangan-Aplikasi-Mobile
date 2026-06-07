@@ -1,396 +1,381 @@
-# KelazZz — Aplikasi Presensi Mahasiswa ITERA
+# KelazZz - Aplikasi Presensi dan Agenda Akademik ITERA
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/082ccee7-c661-46bf-9a91-a7ab386d9410" alt="CI" width="500">
+  <img src="https://github.com/user-attachments/assets/082ccee7-c661-46bf-9a91-a7ab386d9410" alt="KelazZz" width="500">
 </p>
 
-> Aplikasi mobile multiplatform yang menghadirkan pengalaman presensi dan layanan akademik yang lebih cepat, cerdas, dan mudah digunakan bagi mahasiswa Institut Teknologi Sumatera.
+KelazZz adalah aplikasi Android berbasis Kotlin Multiplatform dan Compose Multiplatform untuk membantu mahasiswa ITERA melakukan presensi, memantau rekap kehadiran, mengelola jadwal akademik pribadi, dan menggunakan asisten akademik berbasis AI.
 
----
+Project ini dibuat untuk mata kuliah Pengembangan Aplikasi Mobile. Target aktif saat ini adalah Android. Struktur Kotlin Multiplatform tetap dipakai agar sebagian besar logic berada di `commonMain`, tetapi target iOS belum diaktifkan.
 
-## 👥 Tim Pengembang
+> Disclaimer: aplikasi ini dibuat untuk kebutuhan akademik dan pembelajaran. KelazZz tetap menggunakan autentikasi resmi pengguna Pocket ITERA dan tidak melakukan bypass keamanan, modifikasi sistem kampus, atau akses ke akun pengguna lain.
+
+## Tim Pengembang
 
 | Nama | NIM | GitHub | Role |
 |------|-----|--------|------|
 | Muhammad Bintang Al Fasya | 123140098 | [@MuhammadBintangAl-Fasya](https://github.com/MuhammadBintangAl-Fasya) | Mobile Developer |
 | Rifael Eurico Sitorus | 123140077 | [@eltoruz](https://github.com/eltoruz) | Mobile Developer |
 
-**Mata Kuliah:** Pengembangan Aplikasi Mobile (IF25-22017)  
-**Program Studi:** Teknik Informatika — Institut Teknologi Sumatera  
+**Mata Kuliah:** Pengembangan Aplikasi Mobile (IF25-22017)
+**Program Studi:** Teknik Informatika - Institut Teknologi Sumatera
 **Tahun Akademik:** Genap 2025/2026
 
----
+## Status Project
 
-## 📖 Latar Belakang
+Project berada pada tahap final untuk scope akademik saat ini. Fitur utama sudah tersedia, test dan coverage sudah dikonfigurasi, CI siap digunakan, dan APK debug berhasil dibuat.
 
-Aplikasi Pocket ITERA adalah portal akademik resmi yang digunakan oleh seluruh mahasiswa Institut Teknologi Sumatera. Namun dalam penggunaannya sehari-hari, mahasiswa menghadapi sejumlah kendala yang menghambat produktivitas — terutama pada fitur presensi yang paling sering digunakan.
+Hasil verifikasi terakhir:
 
-Proses presensi di Pocket ITERA mengharuskan mahasiswa memindai QR code yang ditampilkan dosen, namun fitur scan di dalam aplikasi kerap gagal bekerja meskipun QR code sudah terbaca oleh kamera biasa. Selain itu, mahasiswa juga kesulitan memantau kondisi kehadiran secara proaktif, tidak memiliki akses cepat ke informasi aturan akademik, serta tidak ada fitur untuk mencatat jadwal dan pengingat kegiatan akademik secara mandiri.
+| Pemeriksaan | Perintah | Status |
+|-------------|----------|--------|
+| Unit test lokal | `./gradlew test` | Lulus, 31/31 test |
+| Compose UI test | `./gradlew :composeApp:compileDebugAndroidTestSources` | Lulus compile, 3 UI test tersedia |
+| Coverage gate | `./gradlew koverVerify` | Lulus minimum 50% |
+| Coverage report | `./gradlew koverHtmlReport` | Report berhasil dibuat, line coverage 65.3% |
+| Debug APK | `./gradlew assembleDebug` | Lulus |
 
-**KelazZz** hadir untuk menjawab semua permasalahan ini dengan pendekatan yang lebih fleksibel, andal, dan cerdas.
+Catatan: Compose UI test berada di `androidInstrumentedTest`. Untuk menjalankannya penuh, gunakan emulator atau perangkat Android dengan `./gradlew :composeApp:connectedDebugAndroidTest`.
 
----
+## Fitur Utama
 
-## 📱 Deskripsi Aplikasi
+### Autentikasi dan Sesi
 
-KelazZz adalah aplikasi mobile berbasis **Kotlin Multiplatform (KMP)** dan **Compose Multiplatform** yang berfungsi sebagai antarmuka alternatif dan pelengkap untuk layanan akademik Pocket ITERA. Aplikasi ini terhubung langsung ke API resmi Pocket ITERA sehingga seluruh data yang ditampilkan — termasuk rekap kehadiran dan data perkuliahan — adalah data nyata dan real-time.
+- Login hanya untuk akun mahasiswa Pocket ITERA dengan email `@student.itera.ac.id`.
+- Token sesi disimpan menggunakan DataStore Preferences.
+- Auto-login selama token masih tersedia.
+- Logout dan penghapusan sesi dari halaman profil.
 
-Fokus utama KelazZz adalah:
-- **Mempersingkat dan mengandal-kan alur presensi** — mahasiswa dapat memindai QR code (dengan pemrosesan yang lebih andal menggunakan ML Kit) atau cukup memasukkan token presensi secara manual ke dalam form
-- **Smart Attendance Analytics** — dashboard analitik kehadiran per mata kuliah dengan indikator risiko dan prediksi status aman/tidak aman
-- **Early warning kehadiran** — peringatan otomatis berbasis data presensi lokal saat jumlah alpha mulai perlu diperhatikan
-- **AI-powered features** — asisten akademik berbasis OpenCode Go API
-- **Offline-first** — data rekap presensi dan kalender akademik pribadi tetap dapat diakses tanpa koneksi internet
+### Presensi QR dan Token Manual
 
-> ⚠️ **Disclaimer**
-> Aplikasi ini dibuat untuk tujuan akademik dan pembelajaran. KelazZz tetap menggunakan autentikasi resmi milik pengguna dan tidak melakukan bypass keamanan maupun modifikasi sistem kampus.
+- QR scanner berbasis CameraX dan ML Kit Barcode Scanner.
+- Input token manual sebagai fallback ketika scan QR bawaan Pocket ITERA bermasalah.
+- Validasi token sebelum request presensi dikirim.
+- Pencegahan submit berulang saat token yang sama sedang diproses.
 
----
+Alur umum:
 
-## ✨ Fitur
-
-### 🔐 Autentikasi & Sesi
-- Login menggunakan kredensial Pocket ITERA (akun resmi mahasiswa)
-- JWT/Bearer token authentication
-- Session disimpan aman dengan **DataStore** — tidak perlu login ulang setiap membuka aplikasi
-- Auto-login persistence
-
----
-
-### 📷 Presensi via QR Code Scan *(Fitur Wajib)*
-Menggunakan **CameraX + ML Kit Barcode Scanner** untuk pemindaian yang lebih cepat dan andal.
-
-**Alur presensi QR:**
-```
-Scan QR → ML Kit Detect QR → Extract Token → Validasi Token → Hit API Presensi → Sukses
+```text
+Scan QR atau input token -> validasi token -> submit ke API Pocket ITERA -> tampilkan hasil
 ```
 
-Fitur scanner:
-- Fast QR detection dengan continuous autofocus
-- Low-light support
-- Duplicate scan prevention
-- Auto submit attendance
+### Rekap Presensi dan Offline Cache
 
----
+- Menampilkan daftar mata kuliah dan riwayat presensi.
+- Data presensi dari Pocket ITERA disimpan ke SQLDelight.
+- Rekap tetap bisa dibaca dari cache ketika koneksi tidak tersedia.
+- Mapping data remote ke domain sudah dilindungi dari data kosong atau format tanggal yang tidak valid.
 
-### ⌨️ Presensi via Input Token Manual ⭐ *(Fitur Wajib)*
-Solusi utama ketika fitur QR scan bawaan Pocket ITERA gagal bekerja.
+### Early Warning Kehadiran
 
+- Home menghitung ringkasan kehadiran dari cache lokal.
+- Mata kuliah dengan alpha lebih dari satu ditampilkan sebagai peringatan.
+- Tidak memakai request API tambahan dan tidak bergantung pada AI.
+
+Contoh output:
+
+```text
+Kalkulus Lanjut - 78.0% - Alpha 2
 ```
-Kamera bawaan → Scan QR → Salin token → Tempel ke form KelazZz → Submit presensi
+
+### Jadwal Akademik Pribadi
+
+- CRUD jadwal offline: tambah, lihat detail, edit, dan hapus.
+- Data tersimpan di SQLDelight melalui tabel `JadwalEntity`.
+- Mendukung pengingat lokal untuk jadwal yang dibuat pengguna.
+- Validasi input jadwal mencegah data kosong atau waktu yang tidak valid.
+
+### Pengingat Lokal
+
+- Pengingat jadwal dibuat secara lokal di Android.
+- Implementasi Android memakai `AlarmManager` dan `BroadcastReceiver`.
+- Project ini belum memakai Firebase Cloud Messaging. Notifikasi yang tersedia saat ini adalah local schedule reminder, bukan push notification dari server.
+
+### AI Asisten Akademik
+
+- Chatbot akademik menggunakan OpenCode Go API.
+- API key dibaca dari `local.properties` melalui `OPENCODE_API_KEY`.
+- Chatbot dapat memakai data akademik lokal seperti jadwal dan ringkasan presensi sebagai konteks.
+
+### Tema
+
+- Mendukung light mode, dark mode, dan system theme.
+- Preferensi tema disimpan di DataStore.
+- UI memakai Compose Material 3.
+
+### CI/CD
+
+- GitHub Actions menjalankan test, coverage verification, coverage report, dan build debug APK.
+- Artifact test report, coverage report, dan APK debug diunggah dari workflow CI.
+
+## Tech Stack
+
+| Area | Teknologi |
+|------|-----------|
+| Bahasa | Kotlin |
+| Framework | Kotlin Multiplatform, Android target aktif |
+| UI | Compose Multiplatform, Material 3 |
+| Arsitektur | Clean Architecture + MVVM |
+| Async | Coroutines, Flow, StateFlow |
+| Networking | Ktor Client, OkHttp Android engine, Kotlinx Serialization |
+| Database lokal | SQLDelight |
+| Preferences | DataStore Preferences |
+| Dependency Injection | Koin |
+| QR Scanner | CameraX, ML Kit Barcode Scanner |
+| AI | OpenCode Go API |
+| Pengingat | Android AlarmManager + BroadcastReceiver |
+| Testing | kotlin.test, kotlinx-coroutines-test, Turbine, SQLDelight SQLite driver, Compose UI Test |
+| Coverage | Kover |
+| CI/CD | GitHub Actions |
+
+## Arsitektur
+
+KelazZz memakai Clean Architecture dengan pemisahan presentation, domain, dan data.
+
+```text
+Presentation
+Screens, ViewModels, UI state, navigation
+      |
+Domain
+Models, repository interfaces, use cases
+      |
+Data
+Remote API, local database, preferences, repository implementations
 ```
 
-Token divalidasi sebelum dikirim ke API untuk mencegah permintaan yang tidak valid.
+Use case utama yang digunakan:
 
----
+- `LoginUseCase`
+- `GetPresensiUseCase`
+- `SubmitPresensiUseCase`
+- `AnalyzeAttendanceUseCase`
+- `GetJadwalUseCase`
+- `SaveJadwalUseCase`
+- `DeleteJadwalUseCase`
+- `UpdateJadwalUseCase`
+- `GetAiResponseUseCase`
 
-### 📊 Dashboard & Rekap Presensi *(Fitur Wajib)*
-Ringkasan akademik dalam satu tampilan:
-- Daftar mata kuliah aktif beserta persentase kehadiran
-- Riwayat kehadiran per pertemuan per mata kuliah
-- Indikator risiko dan prediksi status aman/tidak aman, contoh:
+## Screen yang Tersedia
 
-  ```
-  Kehadiran Basis Data: 72% — ⚠️ Warning
-  Minimal hadir 3x lagi untuk aman
-  ```
+| Screen | Fungsi |
+|--------|--------|
+| Login | Autentikasi mahasiswa Pocket ITERA |
+| Home | Dashboard ringkas, early warning, agenda terdekat |
+| Rekap Presensi | Daftar dan detail rekap kehadiran |
+| Presensi | QR scanner dan input token manual |
+| Jadwal | Daftar jadwal akademik pribadi |
+| Tambah/Edit Jadwal | Form CRUD jadwal |
+| Detail Jadwal | Detail, edit, hapus, dan pengingat jadwal |
+| AI Asisten | Chatbot akademik berbasis OpenCode Go API |
+| Profile | Data pengguna, pilihan tema, dan logout |
 
-- Peringatan kehadiran otomatis berbasis data lokal dan agenda terdekat dari kalender
+Catatan: route `Notifikasi` belum menjadi screen aktif di NavHost. Pengingat jadwal tetap berjalan melalui mekanisme notifikasi lokal Android.
 
----
+## Struktur Proyek
 
-### 📅 Kalender Akademik Pribadi *(Fitur Wajib)*
-Kelola jadwal dan pengingat kegiatan akademik sepenuhnya secara offline.
-- Buat, edit, dan hapus jadwal atau pengingat
-- Data tersimpan permanen di perangkat menggunakan **SQLDelight**
-- Tidak bergantung pada koneksi internet maupun server eksternal
+```text
+.
+|-- .github/workflows/
+|   `-- ci.yml
+|-- composeApp/
+|   |-- build.gradle.kts
+|   `-- src/
+|       |-- commonMain/
+|       |   |-- kotlin/com/kelazzz/app/
+|       |   |   |-- App.kt
+|       |   |   |-- core/
+|       |   |   |   |-- network/
+|       |   |   |   |-- notification/
+|       |   |   |   `-- util/
+|       |   |   |-- data/
+|       |   |   |   |-- local/datastore/
+|       |   |   |   |-- remote/ai/
+|       |   |   |   |-- remote/pocket/
+|       |   |   |   `-- repository/
+|       |   |   |-- di/
+|       |   |   |-- domain/
+|       |   |   |   |-- model/
+|       |   |   |   |-- repository/
+|       |   |   |   `-- usecase/
+|       |   |   `-- presentation/
+|       |   |       |-- components/
+|       |   |       |-- navigation/
+|       |   |       |-- screens/
+|       |   |       |   |-- ai/
+|       |   |       |   |-- home/
+|       |   |       |   |-- jadwal/
+|       |   |       |   |-- kalender/
+|       |   |       |   |-- login/
+|       |   |       |   |-- presensi/
+|       |   |       |   |-- profile/
+|       |   |       |   `-- rekap/
+|       |   |       `-- theme/
+|       |   `-- sqldelight/com/kelazzz/app/data/local/
+|       |       |-- Presensi.sq
+|       |       `-- Jadwal.sq
+|       |-- androidMain/kotlin/com/kelazzz/app/
+|       |   |-- MainActivity.kt
+|       |   |-- KelazZzApplication.kt
+|       |   |-- core/notification/
+|       |   |-- core/network/
+|       |   |-- core/util/
+|       |   |-- core/di/
+|       |   `-- presentation/components/
+|       |-- commonTest/
+|       |-- androidUnitTest/
+|       `-- androidInstrumentedTest/
+|-- docs/
+|   `-- CARA_MENJALANKAN.md
+|-- gradle/
+|-- local.properties.example
+`-- README.md
+```
 
----
+## Database Lokal
 
-### ⚠️ Early Warning Kehadiran
-Setiap kali data presensi dimuat, aplikasi menghitung ringkasan kehadiran secara lokal dari cache **SQLDelight**. Mata kuliah dengan jumlah alpha lebih dari satu ditampilkan di Home agar pengguna dapat memeriksa kondisi kehadirannya lebih awal. Fitur ini tidak menggunakan AI maupun request API tambahan.
-
-Contoh peringatan:
-> *"Kalkulus Lanjut · 78,0% · Alpha 2"*
-
----
-
-### 💬 AI Chatbot Asisten Akademik *(Bonus +10%)*
-Tanya aturan dan prosedur akademik ITERA dalam bahasa sehari-hari, dijawab langsung oleh AI berbasis **OpenCode Go API** yang dilengkapi knowledge base informasi akademik ITERA.
-
-Contoh pertanyaan:
-- *"Kelas saya berikutnya apa?"*
-- *"Berapa minimal kehadiran untuk ikut UAS?"*
-- *"Kalau alpha sekali lagi apakah masih aman?"*
-- *"Bagaimana cara mengajukan cuti akademik?"*
-- *"Hari paling padat minggu ini apa?"*
-
----
-
-### 🔔 Smart Notification *(Bonus)*
-Push notification pintar berbasis **Firebase Cloud Messaging**:
-- **Class Reminder:** *"Kelas Pemrograman Mobile dimulai 15 menit lagi"*
-- **Attendance Warning:** *"Presensi Basis Data tinggal 5% dari batas minimum"*
-
----
-
-### 🌙 Dark Mode *(Bonus +5%)*
-Support tema gelap dan terang menggunakan **Material Design 3 dynamic color**.
-
----
-
-### 📶 Offline First *(Bonus +5%)*
-Data rekap presensi di-cache dengan **SQLDelight**, dapat diakses tanpa koneksi internet. Sinkronisasi otomatis saat kembali online.
-
----
-
-### ⚙️ CI/CD *(Bonus +5%)*
-Build dan test otomatis setiap push dan pull request menggunakan **GitHub Actions**.
-
----
-
-## 🗄️ Penggunaan SQLDelight
-
-SQLDelight digunakan untuk dua kebutuhan penyimpanan data lokal:
+SQLDelight digunakan untuk penyimpanan data lokal.
 
 | Tabel | Kegunaan |
 |-------|----------|
-| `PresensiEntity` | Cache rekap presensi dari API — mendukung fitur Offline First |
-| `JadwalEntity` | Menyimpan jadwal dan pengingat akademik yang dibuat user — mendukung Kalender Akademik Pribadi |
+| `PresensiEntity` | Cache rekap presensi dari API Pocket ITERA |
+| `KelasEntity` | Data kelas atau mata kuliah yang dipakai dalam rekap |
+| `JadwalEntity` | Jadwal dan pengingat akademik pribadi |
 
-Dengan pemisahan ini, fitur presensi tetap dapat diakses saat offline, dan seluruh data kalender pribadi mahasiswa tersimpan permanen di perangkat tanpa bergantung pada koneksi internet maupun server eksternal.
-
----
-
-## 🛠️ Tech Stack
-
-| Komponen | Teknologi |
-|----------|-----------|
-| Framework | Kotlin Multiplatform (KMP) |
-| UI | Compose Multiplatform + Material Design 3 |
-| Arsitektur | Clean Architecture + MVVM |
-| Async | Coroutines + Flow + StateFlow |
-| Networking | Ktor Client + Kotlinx Serialization |
-| QR Scanner | CameraX + ML Kit Barcode Scanner |
-| Database Lokal | SQLDelight (cache presensi + kalender) |
-| Preferences | DataStore Preferences (session token) |
-| Dependency Injection | Koin |
-| AI | OpenCode Go API |
-| Notifications | Firebase Cloud Messaging |
-| Testing | kotlin.test + MockK + Turbine + Compose Test |
-| CI/CD | GitHub Actions |
-
----
-
-## 🏗️ Arsitektur
-
-KelazZz menggunakan **Clean Architecture** dengan tiga lapisan utama yang saling terpisah:
-
-```
-┌──────────────────────────────────────────────────┐
-│              PRESENTATION LAYER                  │
-│  Screens · ViewModels · UI State (Sealed)        │
-└─────────────────────┬────────────────────────────┘
-                      │
-┌─────────────────────▼────────────────────────────┐
-│                DOMAIN LAYER                      │
-│  Use Cases · Repository Interfaces · Models      │
-└─────────────────────┬────────────────────────────┘
-                      │
-┌─────────────────────▼────────────────────────────┐
-│                 DATA LAYER                       │
-│  Remote (Ktor) · Local (SQLDelight · DataStore)  │
-│  Repository Implementations                      │
-└──────────────────────────────────────────────────┘
-```
-
-**Use Cases yang tersedia:**
-`LoginUseCase`, `GetPresensiUseCase`, `SubmitPresensiUseCase`, `AnalyzeAttendanceUseCase`, `GetJadwalUseCase`, `SaveJadwalUseCase`
-
-**Dependency Rule:** Setiap lapisan hanya bergantung ke lapisan di bawahnya. Domain tidak mengetahui tentang Data atau Presentation.
-
----
-
-## 🖥️ Screens (7 Screen)
-
-| # | Screen | Deskripsi |
-|---|--------|-----------|
-| 1 | **Login** | Form login dengan kredensial ITERA |
-| 2 | **Home / Dashboard** | Peringatan kehadiran berbasis data lokal + agenda terdekat |
-| 3 | **Daftar Presensi** | Rekap kehadiran per mata kuliah + analytics (persentase, heatmap, risiko) |
-| 4 | **Presensi** | QR scan (ML Kit) + input token manual |
-| 5 | **Kalender Akademik** | Buat dan kelola jadwal pribadi secara offline |
-| 6 | **AI Asisten** | Chatbot akademik berbasis OpenCode Go API |
-| 7 | **Notifikasi** | Pusat notifikasi class reminder dan attendance warning |
-
----
-
-## 📁 Struktur Proyek
-
-```
-composeApp/
-└── src/
-    ├── commonMain/
-    │   └── kotlin/com/kelazZz/app/
-    │       ├── App.kt
-    │       ├── di/
-    │       │   ├── AppModule.kt
-    │       │   ├── DataModule.kt
-    │       │   └── ViewModelModule.kt
-    │       ├── data/
-    │       │   ├── local/
-    │       │   │   ├── presensi/       # SQLDelight — cache presensi
-    │       │   │   ├── kalender/       # SQLDelight — jadwal akademik
-    │       │   │   └── datastore/      # DataStore — session token
-    │       │   ├── remote/
-    │       │   │   ├── pocket/         # Ktor — Pocket ITERA API
-    │       │   │   └── ai/         # Ktor — OpenCode Go API
-    │       │   ├── repository/
-    │       │   └── model/
-    │       ├── domain/
-    │       │   ├── model/
-    │       │   ├── repository/
-    │       │   └── usecase/
-    │       └── presentation/
-    │           ├── navigation/
-    │           ├── theme/
-    │           ├── components/
-    │           └── screens/
-    │               ├── login/
-    │               ├── home/
-    │               ├── presensi/
-    │               ├── qrscan/
-    │               ├── ai/
-    │               ├── kalender/
-    │               └── notification/
-    ├── androidMain/
-    │   ├── scanner/
-    │   ├── notification/       # FCM
-    │   └── biometrics/
-    └── commonMain/sqldelight/
-```
-
----
-
-## 🛡️ Keamanan
-
-Aplikasi menerapkan:
-- Secure token handling dengan DataStore Preferences
-- Session persistence yang aman
-- Request interceptor dan token validation
-- Duplicate request prevention pada scanner
-
-KelazZz **tidak**:
-- Mem-bypass autentikasi kampus
-- Memodifikasi sistem kampus
-- Mengakses akun pengguna lain
-- Melakukan abuse terhadap endpoint API
-
----
-
-## 🚀 Cara Menjalankan
+## Cara Menjalankan
 
 ### Prasyarat
 
-- Android Studio Ladybug atau lebih baru
-- JDK 17+
-- Android SDK minimum API 24 (target API 34)
-- Kotlin 1.9+
-
-### Clone Repository
-
-```bash
-git clone https://github.com/MuhammadBintangAl-Fasya/KelazZz.git
-cd KelazZz
-```
+- Android Studio Ladybug atau lebih baru.
+- JDK 17.
+- Android SDK dengan compile SDK 35 dan minimum SDK 24.
+- Koneksi internet untuk login Pocket ITERA dan AI assistant.
+- API key OpenCode Go jika ingin memakai fitur AI.
 
 ### Setup `local.properties`
 
+Salin contoh konfigurasi:
+
+```bash
+cp local.properties.example local.properties
+```
+
+Isi nilai berikut sesuai environment lokal:
+
 ```properties
+sdk.dir=/path/to/android/sdk
 OPENCODE_API_KEY=your_api_key_here
 ```
 
-### Build Project
+Di CI, `local.properties` dibuat otomatis oleh GitHub Actions dengan placeholder API key.
+
+### Build APK Debug
 
 ```bash
-./gradlew build
+./gradlew :composeApp:assembleDebug
 ```
 
-### Run Android
+APK debug akan tersedia di:
+
+```text
+composeApp/build/outputs/apk/debug/
+```
+
+### Install ke Perangkat Android
 
 ```bash
 ./gradlew :composeApp:installDebug
 ```
 
-Atau langsung melalui **Run > Run 'composeApp'** di Android Studio.
+Atau jalankan langsung dari Android Studio dengan konfigurasi `composeApp`.
 
----
+## Testing dan Coverage
 
-## 📅 Sprint Plan
+Test otomatis mencakup domain model, use case, ViewModel, repository SQLDelight, dan komponen Compose dasar.
 
-| Sprint | Minggu | Target |
-|--------|--------|--------|
-| Sprint 1 | W11 | Planning, setup repo, CI/CD, arsitektur |
-| Sprint 2 | W12 | Login, navigasi, home screen, DataStore |
-| Sprint 3 | W13 | Daftar presensi, QR scan + ML Kit, manual token, SQLDelight cache |
-| Sprint 4 | W14 | Kalender akademik, OpenCode Go AI, FCM, dark mode, polish |
-| Sprint 5 | W15 | Testing, bug fix, persiapan demo |
-| **UAS** | W16 | **Final Demo Day** |
+Jalankan unit test lokal:
 
-### Task Assignment per Sprint
+```bash
+./gradlew test
+```
 
-#### Sprint 1 — Planning & Setup
-| Task | Assignee |
-|------|----------|
-| Buat repository, push initial project | Rifael |
-| Setup Clean Architecture & Koin DI | Rifael |
-| Setup CI/CD (GitHub Actions) | Bintang |
-| Tulis README & dokumentasi project | Bintang |
+Compile source instrumented UI test:
 
-#### Sprint 2 — Auth & Core Navigation
-| Task | Assignee |
-|------|----------|
-| Login screen + JWT auth via Pocket ITERA API | Bintang |
-| Session persistence dengan DataStore | Bintang |
-| Home/Dashboard screen + Bottom Navigation | Rifael |
-| Navigation setup (NavHost, Routes, arguments) | Rifael |
+```bash
+./gradlew :composeApp:compileDebugAndroidTestSources
+```
 
-#### Sprint 3 — Fitur Presensi
-| Task | Assignee |
-|------|----------|
-| QR Code scanner (CameraX + ML Kit) | Rifael |
-| Input token manual + validasi | Rifael |
-| Rekap presensi screen + API integration | Bintang |
-| SQLDelight cache untuk offline presensi | Bintang |
+Jalankan UI test di emulator atau perangkat:
 
-#### Sprint 4 — Kalender + AI & Polish
-| Task | Assignee |
-|------|----------|
-| Kalender akademik pribadi (CRUD offline) | Bintang |
-| Early warning kehadiran berbasis data lokal | Rifael |
-| AI Chatbot asisten akademik | Rifael |
-| Dark mode + UI polish | Bintang |
+```bash
+./gradlew :composeApp:connectedDebugAndroidTest
+```
 
-#### Sprint 5 — Testing & Final Prep
-| Task | Assignee |
-|------|----------|
-| Unit tests (domain & data layer) | Bintang |
-| UI tests (Compose Test) | Rifael |
-| Bug fixing & performance tuning | Bintang & Rifael |
-| Demo preparation & final documentation | Bintang & Rifael |
+Validasi coverage minimum:
 
----
+```bash
+./gradlew koverVerify
+```
 
-## 📋 Status Sprint
+Buat laporan coverage HTML:
 
-- [x] Sprint 1 — Planning & Setup
-- [ ] Sprint 2 — Auth & Core Navigation
-- [ ] Sprint 3 — Fitur Presensi
-- [ ] Sprint 4 — Kalender + AI Integration & Polish
-- [ ] Sprint 5 — Testing & Final Prep
+```bash
+./gradlew koverHtmlReport
+```
 
----
+Lokasi report:
 
-## 📄 Lisensi
+| Report | Lokasi |
+|--------|--------|
+| Unit test debug | `composeApp/build/reports/tests/testDebugUnitTest/index.html` |
+| Unit test release | `composeApp/build/reports/tests/testReleaseUnitTest/index.html` |
+| Kover HTML | `composeApp/build/reports/kover/html/index.html` |
+
+Kover mengecualikan generated code, Android entry point, wiring DI, API remote langsung, dan Composable rendering murni agar coverage fokus pada business logic yang realistis diuji otomatis. Coverage terakhir yang berhasil dibuat: line 65.3%, instruction 58.7%, branch 35.2%, class 70.8%, method 55.3%.
+
+## CI/CD
+
+Workflow berada di `.github/workflows/ci.yml`.
+
+CI berjalan pada push ke `main`, `develop`, dan `project/**`, serta pull request ke `main` atau `develop`.
+
+Tahapan CI:
+
+1. Checkout repository.
+2. Setup JDK 17.
+3. Setup Gradle.
+4. Generate `local.properties` untuk CI.
+5. Jalankan `./gradlew test koverVerify`.
+6. Generate `./gradlew koverHtmlReport`.
+7. Build `./gradlew assembleDebug`.
+8. Upload test report, coverage report, dan debug APK sebagai artifact.
+
+## Status Implementasi
+
+| Area | Status | Ringkasan |
+|------|--------|-----------|
+| Autentikasi | Selesai | Login mahasiswa, validasi email, penyimpanan sesi, auto-login, dan logout |
+| Presensi | Selesai | QR scanner, input token manual, validasi token, dan submit presensi |
+| Rekap presensi | Selesai | Rekap dari API Pocket ITERA dengan cache lokal SQLDelight |
+| Early warning | Selesai | Peringatan kehadiran berbasis data cache lokal |
+| Jadwal akademik | Selesai | CRUD jadwal offline dan detail jadwal |
+| Pengingat lokal | Selesai | Reminder Android berbasis AlarmManager dan BroadcastReceiver |
+| AI asisten | Selesai | Integrasi OpenCode Go API dengan API key lokal |
+| Tema | Selesai | Light mode, dark mode, system theme, dan persistensi preferensi |
+| Testing | Selesai | Unit test, repository test, ViewModel test, dan Compose UI test |
+| CI/CD | Selesai | GitHub Actions untuk test, coverage, report, dan debug APK |
+
+## Checklist Kualitas
+
+| Pemeriksaan | Status |
+|-------------|--------|
+| Bug prioritas diperbaiki | Selesai |
+| UI polish dan state handling | Selesai |
+| Unit test lokal | Selesai, 31 test lulus |
+| Compose UI test | Selesai, 3 UI test tersedia |
+| Coverage minimum 50% | Selesai, Kover line coverage 65.3% |
+| Instruksi build dan test | Selesai |
+| CI untuk test, coverage, dan build | Selesai |
+
+## Lisensi
 
 Project ini dikembangkan untuk keperluan akademik mata kuliah Pengembangan Aplikasi Mobile, Institut Teknologi Sumatera.

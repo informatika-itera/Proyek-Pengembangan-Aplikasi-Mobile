@@ -75,9 +75,30 @@ data class Jadwal(
     val tanggal: String,
     val waktu: String = "",
     val jenis: JenisJadwal = JenisJadwal.REMINDER,
+    val reminderOffsetMinutes: Long? = null,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
 )
+
+/**
+ * Pilihan reminder notifikasi lokal untuk jadwal.
+ *
+ * offsetMinutes null berarti tidak ada notifikasi.
+ */
+enum class ReminderOption(val displayName: String, val offsetMinutes: Long?) {
+    NONE("Tidak ada", null),
+    ONE_MINUTE("1 menit", 1),
+    TEN_MINUTES("10 menit", 10),
+    THIRTY_MINUTES("30 menit", 30),
+    ONE_HOUR("1 jam", 60),
+    ONE_DAY("1 hari", 24 * 60);
+
+    companion object {
+        fun fromOffset(offsetMinutes: Long?): ReminderOption {
+            return entries.find { it.offsetMinutes == offsetMinutes } ?: NONE
+        }
+    }
+}
 
 /**
  * Jenis jadwal/pengingat akademik

@@ -199,7 +199,7 @@ class PocketApiService(private val client: HttpClient) {
     /**
      * Login ke Pocket ITERA
      *
-     * @param username Email ITERA (format: nama.nim@student.itera.ac.id)
+     * @param username Email mahasiswa ITERA (format: nama.nim@student.itera.ac.id)
      * @param password Password akun ITERA
      * @param device Nama device (e.g. "NE2211")
      * @param deviceId Device ID (e.g. "SKQ1.220617.001")

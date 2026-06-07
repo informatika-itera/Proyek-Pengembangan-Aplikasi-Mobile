@@ -56,8 +56,11 @@ class JadwalListViewModel(
         loadJadwal()
     }
 
+    private var loadJob: kotlinx.coroutines.Job? = null
+
     fun loadJadwal() {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _isLoading.value = true
             repository.getAllJadwal()
                 .catch { e ->

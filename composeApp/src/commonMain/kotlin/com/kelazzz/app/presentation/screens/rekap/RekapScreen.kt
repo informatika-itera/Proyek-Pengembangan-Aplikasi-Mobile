@@ -102,13 +102,7 @@ fun RekapScreen(
             ) {
                 // Header Ringkas & Bar Sinkronisasi Indikator
                 if (uiState.isSyncing) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(3.dp)
-                            .padding(vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    SyncProgressHeader(uiState = uiState)
                 } else {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -206,6 +200,43 @@ fun RekapScreen(
                 onDismiss = { viewModel.dismissKelasDetail() }
             )
         }
+    }
+}
+
+@Composable
+private fun SyncProgressHeader(uiState: RekapUiState) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp)
+    ) {
+        val progressFraction = uiState.syncProgressFraction
+        if (progressFraction != null) {
+            LinearProgressIndicator(
+                progress = { progressFraction.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = uiState.syncProgressText ?: "Memperbarui data presensi...",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -635,6 +666,16 @@ private fun PertemuanItemRow(
                     badgeColor = Color(0xFFFFEBEE)
                     badgeTextColor = Color(0xFFC62828)
                     badgeText = "Alpha"
+                }
+                com.kelazzz.app.domain.model.StatusPresensi.IZIN -> {
+                    badgeColor = Color(0xFFFFF3E0)
+                    badgeTextColor = Color(0xFFE65100)
+                    badgeText = "Izin"
+                }
+                com.kelazzz.app.domain.model.StatusPresensi.SAKIT -> {
+                    badgeColor = Color(0xFFE3F2FD)
+                    badgeTextColor = Color(0xFF1565C0)
+                    badgeText = "Sakit"
                 }
                 com.kelazzz.app.domain.model.StatusPresensi.BELUM_MULAI -> {
                     badgeColor = MaterialTheme.colorScheme.surfaceVariant

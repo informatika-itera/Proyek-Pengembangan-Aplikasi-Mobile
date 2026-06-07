@@ -28,6 +28,9 @@ data class KelasUiModel(
 data class RekapUiState(
     val isLoading: Boolean = false,
     val isSyncing: Boolean = false,
+    val syncCompleted: Int = 0,
+    val syncTotal: Int = 0,
+    val syncCurrentMataKuliah: String? = null,
     val kelasList: List<KelasUiModel> = emptyList(),
     val searchQuery: String = "",
     val error: String? = null,
@@ -46,6 +49,19 @@ data class RekapUiState(
                         it.kelas.namaDosenList.contains(searchQuery, ignoreCase = true)
             }
         }
+
+    val syncProgressText: String?
+        get() = if (isSyncing && syncTotal > 0) {
+            val current = syncCurrentMataKuliah?.let { " • $it" }.orEmpty()
+            "Memperbarui presensi $syncCompleted/$syncTotal mata kuliah$current"
+        } else if (isSyncing) {
+            "Menyiapkan sinkronisasi presensi..."
+        } else {
+            null
+        }
+
+    val syncProgressFraction: Float?
+        get() = if (isSyncing && syncTotal > 0) syncCompleted.toFloat() / syncTotal else null
 }
 
 class RekapViewModel(
@@ -97,14 +113,38 @@ class RekapViewModel(
         if (_uiState.value.isSyncing) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isSyncing = true, syncSuccess = false) }
-            val result = repository.syncPresensi()
+            _uiState.update {
+                it.copy(
+                    isSyncing = true,
+                    syncSuccess = false,
+                    syncCompleted = 0,
+                    syncTotal = 0,
+                    syncCurrentMataKuliah = null
+                )
+            }
+            val result = repository.syncPresensi { progress ->
+                _uiState.update {
+                    it.copy(
+                        syncCompleted = progress.completed,
+                        syncTotal = progress.total,
+                        syncCurrentMataKuliah = progress.currentMataKuliah
+                    )
+                }
+            }
             if (result.isSuccess) {
-                _uiState.update { it.copy(isSyncing = false, syncSuccess = true, error = null) }
+                _uiState.update {
+                    it.copy(
+                        isSyncing = false,
+                        syncSuccess = true,
+                        error = null,
+                        syncCurrentMataKuliah = null
+                    )
+                }
             } else {
                 _uiState.update {
                     it.copy(
                         isSyncing = false,
+                        syncCurrentMataKuliah = null,
                         error = result.exceptionOrNull()?.message ?: "Gagal memperbarui data presensi."
                     )
                 }

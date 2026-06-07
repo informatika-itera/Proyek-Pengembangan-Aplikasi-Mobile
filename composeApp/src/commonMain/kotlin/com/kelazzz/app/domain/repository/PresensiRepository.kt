@@ -5,6 +5,12 @@ import com.kelazzz.app.domain.model.Presensi
 import com.kelazzz.app.domain.model.Kelas
 import kotlinx.coroutines.flow.Flow
 
+data class PresensiSyncProgress(
+    val completed: Int,
+    val total: Int,
+    val currentMataKuliah: String? = null
+)
+
 /**
  * Repository interface untuk data presensi
  * 
@@ -34,5 +40,5 @@ interface PresensiRepository {
     suspend fun syncPresensiForKelas(kelasId: String, mataKuliahNama: String): Result<Unit>
 
     /** Sync data presensi dari API ke local cache */
-    suspend fun syncPresensi(): Result<Unit>
+    suspend fun syncPresensi(onProgress: (PresensiSyncProgress) -> Unit = {}): Result<Unit>
 }

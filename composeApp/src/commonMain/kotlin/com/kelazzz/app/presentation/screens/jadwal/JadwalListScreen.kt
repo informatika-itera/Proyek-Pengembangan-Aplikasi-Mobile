@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelazzz.app.domain.model.Jadwal
 import com.kelazzz.app.domain.model.JenisJadwal
+import com.kelazzz.app.domain.model.ReminderOption
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -260,6 +262,7 @@ private fun ModernJadwalCard(
         JenisJadwal.REMINDER -> Color(0xFF6750A4) // Purple-accent
         else -> MaterialTheme.colorScheme.outline
     }
+    val stripHeight = if (jadwal.reminderOffsetMinutes != null) 124.dp else 96.dp
 
     Card(
         modifier = Modifier
@@ -279,7 +282,7 @@ private fun ModernJadwalCard(
             Box(
                 modifier = Modifier
                     .width(6.dp)
-                    .height(96.dp)
+                    .height(stripHeight)
                     .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
                     .background(jenisColor)
             )
@@ -342,6 +345,26 @@ private fun ModernJadwalCard(
                             text = jadwal.waktu,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (jadwal.reminderOffsetMinutes != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Notifikasi ${ReminderOption.fromOffset(jadwal.reminderOffsetMinutes).displayName} sebelum",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

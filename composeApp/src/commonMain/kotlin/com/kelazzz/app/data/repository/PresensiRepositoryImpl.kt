@@ -14,8 +14,15 @@ import com.kelazzz.app.domain.model.Kelas
 import com.kelazzz.app.domain.model.Presensi
 import com.kelazzz.app.domain.model.StatusPresensi
 import com.kelazzz.app.domain.repository.PresensiRepository
+import com.kelazzz.app.domain.repository.PresensiSyncProgress
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -178,7 +185,7 @@ class PresensiRepositoryImpl(
         }
     }
 
-    override suspend fun syncPresensi(): Result<Unit> {
+    override suspend fun syncPresensi(onProgress: (PresensiSyncProgress) -> Unit): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val token = userPreferences.authToken.first()
@@ -211,35 +218,43 @@ class PresensiRepositoryImpl(
                 saveKelasList(kelasList)
 
                 if (kelasList.isEmpty()) {
+                    onProgress(PresensiSyncProgress(completed = 0, total = 0))
                     return@withContext Result.success(Unit)
                 }
 
                 val failedSyncs = mutableListOf<String>()
-                kelasList.forEach { kelas ->
-                    val detailResult = apiService.getPresensiDetail(
-                        token = token,
-                        deviceId = deviceId,
-                        nim = nim,
-                        kelasKode = kelas.kodeKelas
-                    )
+                val semaphore = Semaphore(MAX_PARALLEL_PRESENSI_SYNC)
+                val progressMutex = Mutex()
+                var completedSyncs = 0
+                onProgress(PresensiSyncProgress(completed = 0, total = kelasList.size))
 
-                    if (detailResult.isSuccess) {
-                        val detailResponse = detailResult.getOrThrow()
-                        if (detailResponse.meta.status) {
-                            savePresensiForKelas(
-                                kelasId = kelas.kodeKelas,
-                                mataKuliahNama = kelas.namaMk,
-                                presensiList = detailResponse.data,
-                                lastSync = Clock.System.now().toString()
+                kelasList.map { kelas ->
+                    async {
+                        semaphore.withPermit {
+                            val failureMessage = syncAndSavePresensiDetail(
+                                token = token,
+                                deviceId = deviceId,
+                                nim = nim,
+                                kelas = kelas
                             )
-                        } else {
-                            failedSyncs += "${kelas.namaMk}: ${detailResponse.meta.message}"
+
+                            progressMutex.withLock {
+                                completedSyncs += 1
+                                onProgress(
+                                    PresensiSyncProgress(
+                                        completed = completedSyncs,
+                                        total = kelasList.size,
+                                        currentMataKuliah = kelas.namaMk
+                                    )
+                                )
+                            }
+
+                            failureMessage
                         }
-                    } else {
-                        val message = detailResult.exceptionOrNull()?.message ?: "Gagal mengambil detail presensi."
-                        failedSyncs += "${kelas.namaMk}: $message"
                     }
-                }
+                }.awaitAll()
+                    .filterNotNull()
+                    .forEach { failedSyncs += it }
 
                 if (failedSyncs.isEmpty()) {
                     Result.success(Unit)
@@ -255,6 +270,38 @@ class PresensiRepositoryImpl(
                 Result.failure(e)
             }
         }
+    }
+
+    private suspend fun syncAndSavePresensiDetail(
+        token: String,
+        deviceId: String,
+        nim: String,
+        kelas: KelasData
+    ): String? {
+        val detailResult = apiService.getPresensiDetail(
+            token = token,
+            deviceId = deviceId,
+            nim = nim,
+            kelasKode = kelas.kodeKelas
+        )
+
+        if (detailResult.isSuccess) {
+            val detailResponse = detailResult.getOrThrow()
+            return if (detailResponse.meta.status) {
+                savePresensiForKelas(
+                    kelasId = kelas.kodeKelas,
+                    mataKuliahNama = kelas.namaMk,
+                    presensiList = detailResponse.data,
+                    lastSync = Clock.System.now().toString()
+                )
+                null
+            } else {
+                "${kelas.namaMk}: ${detailResponse.meta.message}"
+            }
+        }
+
+        val message = detailResult.exceptionOrNull()?.message ?: "Gagal mengambil detail presensi."
+        return "${kelas.namaMk}: $message"
     }
 
     private fun saveKelasList(kelasList: List<KelasData>) {
@@ -298,11 +345,18 @@ class PresensiRepositoryImpl(
     }
 
     private fun PresensiData.toStatus(): String {
+        val normalizedStatus = absenMahasiswa?.trim()?.lowercase()
         return when {
             pertemuan.isNullOrBlank() || waktuMulai.isNullOrBlank() -> "BELUM_MULAI"
-            absenMahasiswa == "1" -> "HADIR"
+            normalizedStatus in listOf("1", "hadir", "h", "true") -> "HADIR"
+            normalizedStatus in listOf("2", "izin", "i") -> "IZIN"
+            normalizedStatus in listOf("3", "sakit", "s") -> "SAKIT"
             else -> "ALPHA"
         }
+    }
+
+    private companion object {
+        const val MAX_PARALLEL_PRESENSI_SYNC = 3
     }
 }
 

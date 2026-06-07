@@ -52,7 +52,7 @@ val dataModule = module {
     
     // ==================== REPOSITORIES ====================
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
-    single<JadwalRepository> { JadwalRepositoryImpl(get()) }
+    single<JadwalRepository> { JadwalRepositoryImpl(get(), get()) }
     single<PresensiRepository> { PresensiRepositoryImpl(get(), get(), get()) }
     single<AIRepository> { AIRepositoryImpl(get(), get()) }
 }

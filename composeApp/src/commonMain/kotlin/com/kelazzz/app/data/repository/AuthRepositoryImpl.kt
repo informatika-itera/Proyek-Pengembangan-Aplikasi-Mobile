@@ -4,6 +4,7 @@ import com.kelazzz.app.data.local.datastore.UserPreferences
 import com.kelazzz.app.data.remote.pocket.PocketApiService
 import com.kelazzz.app.domain.model.User
 import com.kelazzz.app.domain.repository.AuthRepository
+import com.kelazzz.app.domain.validation.StudentEmailPolicy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
@@ -26,8 +27,15 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun login(username: String, password: String): Result<User> {
+        val loginEmail = StudentEmailPolicy.normalizeLoginInput(username)
+        if (!StudentEmailPolicy.isStudentEmail(loginEmail)) {
+            return Result.failure(
+                IllegalArgumentException("KelazZz hanya dapat digunakan oleh akun mahasiswa ITERA.")
+            )
+        }
+
         val apiResult = apiService.login(
-            username = username,
+            username = loginEmail,
             password = password,
             device = DEVICE_NAME,
             deviceId = DEVICE_ID
@@ -45,11 +53,16 @@ class AuthRepositoryImpl(
             val data = response.data
                 ?: throw Exception("Login gagal. Data pengguna tidak ditemukan dari server.")
 
+            val studentEmail = data.email.trim().lowercase()
+            if (!StudentEmailPolicy.isStudentEmail(studentEmail)) {
+                throw Exception("KelazZz hanya dapat digunakan oleh akun mahasiswa ITERA.")
+            }
+
             val user = User(
                 userId = data.userId,
                 nama = data.nama,
                 nim = data.nimnrk,
-                email = data.email,
+                email = studentEmail,
                 unit = data.unit,
                 level = data.level,
                 photoUrl = data.photo,
@@ -67,7 +80,7 @@ class AuthRepositoryImpl(
                 preferences.saveUserInfo(
                     nim = data.nimnrk,
                     name = data.nama,
-                    email = data.email,
+                    email = studentEmail,
                     photoUrl = data.photo.replace("http://", "https://")
                 )
                 preferences.saveDeviceInfo(device = DEVICE_NAME, deviceId = DEVICE_ID)
@@ -80,7 +93,7 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun logout() {
-        preferences.clearAll()
+        preferences.clearSession()
     }
 
     override val isLoggedIn: Flow<Boolean> = preferences.isLoggedIn

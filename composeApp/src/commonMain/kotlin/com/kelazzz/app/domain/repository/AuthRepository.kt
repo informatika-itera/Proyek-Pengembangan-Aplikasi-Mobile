@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
  * Repository interface untuk autentikasi
  */
 interface AuthRepository {
-    /** Login dengan kredensial ITERA */
+    /** Login dengan kredensial mahasiswa ITERA */
     suspend fun login(username: String, password: String): Result<User>
 
     /** Logout — clear session */

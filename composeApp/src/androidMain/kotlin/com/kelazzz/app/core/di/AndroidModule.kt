@@ -1,5 +1,7 @@
 package com.kelazzz.app.core.di
 
+import com.kelazzz.app.core.notification.AndroidJadwalNotificationScheduler
+import com.kelazzz.app.core.notification.JadwalNotificationScheduler
 import com.kelazzz.app.core.util.DatabaseDriverFactory
 import com.kelazzz.app.data.local.datastore.DataStoreFactory
 import org.koin.android.ext.koin.androidContext
@@ -15,4 +17,5 @@ import org.koin.dsl.module
 val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { DataStoreFactory(androidContext()) }
+    single<JadwalNotificationScheduler> { AndroidJadwalNotificationScheduler(androidContext()) }
 }

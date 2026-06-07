@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.kelazzz.app.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -30,6 +31,7 @@ class UserPreferences(
     
     private object Keys {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
         val AUTH_TOKEN = stringPreferencesKey("auth_token")
         val USER_NIM = stringPreferencesKey("user_nim")
         val USER_NAME = stringPreferencesKey("user_name")
@@ -41,22 +43,54 @@ class UserPreferences(
         val DEVICE_ID = stringPreferencesKey("device_id")
     }
     
-    // ==================== DARK MODE ====================
+    // ==================== THEME MODE ====================
     
     /**
-     * Observe dark mode setting
+     * Observe theme mode setting.
+     *
+     * Jika preferensi baru belum ada, gunakan nilai boolean lama sebagai migrasi ringan.
+     * Default tetap SYSTEM agar aplikasi mengikuti tema perangkat.
+     */
+    val themeMode: Flow<ThemeMode> = dataStore.data.map { prefs ->
+        val storedMode = prefs[Keys.THEME_MODE]
+        if (storedMode != null) {
+            ThemeMode.fromStoredValue(storedMode)
+        } else {
+            when (prefs[Keys.DARK_MODE]) {
+                true -> ThemeMode.DARK
+                false -> ThemeMode.SYSTEM
+                null -> ThemeMode.SYSTEM
+            }
+        }
+    }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { prefs ->
+            prefs[Keys.THEME_MODE] = mode.name
+            prefs[Keys.DARK_MODE] = mode == ThemeMode.DARK
+        }
+    }
+
+    /**
+     * Observe dark mode setting.
+     *
+     * Dipertahankan untuk kompatibilitas kode lama. Untuk UI baru gunakan themeMode.
      */
     val isDarkMode: Flow<Boolean> = dataStore.data.map { prefs ->
-        prefs[Keys.DARK_MODE] ?: false
+        when (ThemeMode.fromStoredValue(prefs[Keys.THEME_MODE])) {
+            ThemeMode.DARK -> true
+            ThemeMode.LIGHT,
+            ThemeMode.SYSTEM -> prefs[Keys.DARK_MODE] ?: false
+        }
     }
     
     /**
-     * Set dark mode
+     * Set dark mode.
+     *
+     * Dipertahankan untuk kompatibilitas kode lama.
      */
     suspend fun setDarkMode(enabled: Boolean) {
-        dataStore.edit { prefs ->
-            prefs[Keys.DARK_MODE] = enabled
-        }
+        setThemeMode(if (enabled) ThemeMode.DARK else ThemeMode.LIGHT)
     }
     
     // ==================== AUTH TOKEN (SESSION) ====================
@@ -157,7 +191,23 @@ class UserPreferences(
     }
     
     /**
-     * Clear all preferences (full logout)
+     * Clear only session-related preferences during logout, preserving app preferences (theme, onboarding).
+     */
+    suspend fun clearSession() {
+        dataStore.edit { prefs ->
+            prefs.remove(Keys.AUTH_TOKEN)
+            prefs[Keys.IS_LOGGED_IN] = false
+            prefs.remove(Keys.USER_NIM)
+            prefs.remove(Keys.USER_NAME)
+            prefs.remove(Keys.USER_EMAIL)
+            prefs.remove(Keys.USER_PHOTO_URL)
+            prefs.remove(Keys.DEVICE_NAME)
+            prefs.remove(Keys.DEVICE_ID)
+        }
+    }
+
+    /**
+     * Clear all preferences (full factory reset)
      */
     suspend fun clearAll() {
         dataStore.edit { prefs ->

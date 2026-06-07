@@ -51,7 +51,7 @@ class JadwalDetailViewModel(
                 repository.deleteJadwal(jadwalId)
                 onSuccess()
             } catch (e: Exception) {
-                // error
+                _uiState.value = JadwalDetailUiState.Error(e.message ?: "Gagal menghapus jadwal")
             }
         }
     }

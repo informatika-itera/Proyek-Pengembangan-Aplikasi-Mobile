@@ -124,11 +124,17 @@ Generate file SQLDelight (biasanya otomatis, tapi kalau perlu manual):
 Jalankan unit test (commonTest):
 
 ```bash
-# Semua test di semua target
-./gradlew allTests
+# Semua unit test lokal
+./gradlew test
 
 # Hanya unit test JVM/Android debug
 ./gradlew :composeApp:testDebugUnitTest
+
+# Validasi coverage Sprint 4
+./gradlew test koverVerify
+
+# Generate laporan coverage HTML
+./gradlew koverHtmlReport
 ```
 
 ---

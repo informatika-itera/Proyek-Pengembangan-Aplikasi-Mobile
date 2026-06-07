@@ -9,6 +9,7 @@ CREATE TABLE JadwalEntity (
     tanggal TEXT NOT NULL,
     waktu TEXT NOT NULL DEFAULT '',
     jenis TEXT NOT NULL DEFAULT 'reminder',
+    reminderOffsetMinutes INTEGER,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
 );
@@ -44,8 +45,8 @@ LIMIT ?;
 
 -- Insert jadwal
 insertJadwal:
-INSERT INTO JadwalEntity (judul, deskripsi, tanggal, waktu, jenis, createdAt, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO JadwalEntity (judul, deskripsi, tanggal, waktu, jenis, reminderOffsetMinutes, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Get last inserted ID
 lastInsertId:
@@ -54,7 +55,7 @@ SELECT last_insert_rowid();
 -- Update jadwal
 updateJadwal:
 UPDATE JadwalEntity
-SET judul = ?, deskripsi = ?, tanggal = ?, waktu = ?, jenis = ?, updatedAt = ?
+SET judul = ?, deskripsi = ?, tanggal = ?, waktu = ?, jenis = ?, reminderOffsetMinutes = ?, updatedAt = ?
 WHERE id = ?;
 
 -- Delete jadwal by ID

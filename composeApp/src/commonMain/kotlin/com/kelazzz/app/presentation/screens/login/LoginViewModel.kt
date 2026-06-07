@@ -3,6 +3,7 @@ package com.kelazzz.app.presentation.screens.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelazzz.app.domain.repository.AuthRepository
+import com.kelazzz.app.domain.validation.StudentEmailPolicy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -47,11 +48,8 @@ class LoginViewModel(
 
         if (state.username.isBlank()) {
             usernameError = "Email ITERA tidak boleh kosong"
-        } else if (state.username.contains("@") &&
-            !state.username.trim().endsWith("@student.itera.ac.id") &&
-            !state.username.trim().endsWith("@itera.ac.id")
-        ) {
-            usernameError = "Gunakan email ITERA (@student.itera.ac.id)"
+        } else if (!StudentEmailPolicy.acceptsLoginInput(state.username)) {
+            usernameError = "Gunakan email mahasiswa ITERA (${StudentEmailPolicy.EMAIL_SUFFIX})"
         }
 
         if (state.password.isBlank()) {
@@ -71,12 +69,7 @@ class LoginViewModel(
             return
         }
 
-        // Tambahkan suffix email jika belum ada
-        val email = if (state.username.contains("@")) {
-            state.username.trim()
-        } else {
-            "${state.username.trim()}@student.itera.ac.id"
-        }
+        val email = StudentEmailPolicy.normalizeLoginInput(state.username)
 
         _uiState.update { it.copy(isLoading = true, loginError = null, usernameError = null, passwordError = null) }
 

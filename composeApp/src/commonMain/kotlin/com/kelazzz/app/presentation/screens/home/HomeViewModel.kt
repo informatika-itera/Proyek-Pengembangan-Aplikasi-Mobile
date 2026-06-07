@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class HomeViewModel(
     private val authRepository: AuthRepository,
@@ -26,8 +29,13 @@ class HomeViewModel(
         .map { it?.nama ?: "Mahasiswa" }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Mahasiswa")
 
-    val upcomingJadwal: StateFlow<List<Jadwal>> = jadwalRepository.getAllJadwal()
-        .map { list -> list.take(3) }
+    private val today: String
+        get() = Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+            .toString()
+
+    val upcomingJadwal: StateFlow<List<Jadwal>> = jadwalRepository.getUpcomingJadwal(today, limit = 3)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val attendanceWarnings: StateFlow<List<AttendanceSummary>> =

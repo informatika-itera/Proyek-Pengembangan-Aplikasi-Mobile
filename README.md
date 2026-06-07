@@ -1,6 +1,8 @@
 # 🥗 FoodSaver
 
-![CI](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml/badge.svg)
+[![FoodSaver CI](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml/badge.svg?branch=project/123140089-123140125-FoodSaver)](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml?query=branch%3Aproject%2F123140089-123140125-FoodSaver)
+
+
 
 > Track. Cook. Save Food.
 
@@ -16,8 +18,9 @@ FoodSaver adalah aplikasi mobile multiplatform berbasis Android-first yang memba
 | Raditya Alrasyid Nugroho | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Dev |
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
-**Dosen:** Pak Habib  
-**Institut:** Institut Teknologi Sumatera (ITERA)
+**Dosen Pengampu:** Pak Habib [@mh4Scripts]
+
+(https://github.com/mh4Scripts)
 
 ---
 
@@ -241,6 +244,8 @@ Setiap *Pull Request* akan memicu workflow build otomatis untuk memastikan:
 3. Build artifact (APK) dapat dihasilkan tanpa error.
 
 ---
+## Video Demonstrasi
+https://github.com/user-attachments/assets/6fa632c2-4215-4743-bf04-352040a5a544
 
 ## 📄 Lisensi
 

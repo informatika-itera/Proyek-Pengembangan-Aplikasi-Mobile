@@ -63,7 +63,7 @@ fun VaultScreen(
                                 translation = item,
                                 onClick = { onNavigateToDetail(item.id) },
                                 onVaultClick = { viewModel.unvaultTranslation(item.id) },
-                                onDeleteClick = { }, // Hapus permanen dimatikan di sini
+                                onDeleteClick = { viewModel.deleteTranslation(item.id) },
                                 modifier = Modifier.padding(bottom = 8.dp).animateItem()
                             )
                         }

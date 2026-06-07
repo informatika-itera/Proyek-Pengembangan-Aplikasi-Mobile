@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bridgebit.domain.model.Translation
 import com.example.bridgebit.domain.usecase.GetVaultPhrasesUseCase
 import com.example.bridgebit.domain.usecase.ToggleVaultStatusUseCase
+import com.example.bridgebit.domain.usecase.DeleteTranslationUseCase // <-- Import Baru
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -13,10 +14,10 @@ import kotlinx.coroutines.launch
 
 class VaultViewModel(
     getVaultPhrasesUseCase: GetVaultPhrasesUseCase,
-    private val toggleVaultStatusUseCase: ToggleVaultStatusUseCase
+    private val toggleVaultStatusUseCase: ToggleVaultStatusUseCase,
+    private val deleteTranslationUseCase: DeleteTranslationUseCase // <-- Masukkan ke sini
 ) : ViewModel() {
 
-    // MENGELOMPOKKAN BERDASARKAN KATEGORI SECARA OTOMATIS
     val groupedVaultPhrases: StateFlow<Map<String, List<Translation>>> = getVaultPhrasesUseCase()
         .map { phrases -> phrases.groupBy { it.category } }
         .stateIn(
@@ -27,5 +28,10 @@ class VaultViewModel(
 
     fun unvaultTranslation(id: Long) {
         viewModelScope.launch { toggleVaultStatusUseCase(id) }
+    }
+
+    // <-- FUNGSI BARU UNTUK HAPUS PERMANEN -->
+    fun deleteTranslation(id: Long) {
+        viewModelScope.launch { deleteTranslationUseCase(id) }
     }
 }

@@ -75,9 +75,8 @@ fun AppNavHost(
             val isDarkMode by userPreferences.isDarkMode.collectAsState(initial = false)
             val coroutineScope = rememberCoroutineScope()
 
-            var profileName by remember { mutableStateOf("Ar'rauf Setiawan M. Jabar") }
-            var profileEmail by remember { mutableStateOf("ar'rauf.123140032@student.itera.ac.id") }
-            var profileNim by remember { mutableStateOf("123140032") }
+            var profileName by remember { mutableStateOf("Nama") }
+            var profileEmail by remember { mutableStateOf("email@gmail.com") }
             var isEditingProfile by remember { mutableStateOf(false) }
             var isNotificationEnabled by remember { mutableStateOf(true) }
 
@@ -111,7 +110,6 @@ fun AppNavHost(
                                     Column {
                                         Text(text = profileName, style = MaterialTheme.typography.titleMedium)
                                         Text(text = profileEmail, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
-                                        Text(text = "NIM: $profileNim", style = MaterialTheme.typography.bodySmall)
                                     }
                                     IconButton(onClick = { isEditingProfile = true }) {
                                         Icon(Icons.Default.Edit, contentDescription = "Edit Profil")
@@ -129,13 +127,6 @@ fun AppNavHost(
                                     value = profileEmail,
                                     onValueChange = { profileEmail = it },
                                     label = { Text("Alamat Email") },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                OutlinedTextField(
-                                    value = profileNim,
-                                    onValueChange = { profileNim = it },
-                                    label = { Text("NIM") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))

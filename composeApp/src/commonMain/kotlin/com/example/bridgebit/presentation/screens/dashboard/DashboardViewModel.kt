@@ -5,8 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.bridgebit.domain.model.Translation
 import com.example.bridgebit.domain.usecase.DeleteTranslationUseCase
 import com.example.bridgebit.domain.usecase.SearchHistoryUseCase
-import com.example.bridgebit.domain.usecase.ToggleVaultStatusUseCase // <-- Import baharu
+import com.example.bridgebit.domain.usecase.ToggleVaultStatusUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -17,32 +18,53 @@ sealed interface DashboardUiState {
     data class Error(val message: String) : DashboardUiState
 }
 
+// STRUKTUR DATA BARU UNTUK FILTER MULTIGUNA
+data class FilterState(
+    val isVaultOnly: Boolean = false,
+    val selectedLanguage: String? = null, // null berarti "Semua Bahasa"
+    val selectedCategory: String? = null  // null berarti "Semua Kategori"
+)
+
 class DashboardViewModel(
     private val searchHistoryUseCase: SearchHistoryUseCase,
     private val deleteTranslationUseCase: DeleteTranslationUseCase,
-    private val toggleVaultStatusUseCase: ToggleVaultStatusUseCase // <-- Parameter baharu
+    private val toggleVaultStatusUseCase: ToggleVaultStatusUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    private val _activeFilter = MutableStateFlow("Semua")
-    val activeFilter = _activeFilter.asStateFlow()
+    private val _filterState = MutableStateFlow(FilterState())
+    val filterState = _filterState.asStateFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<DashboardUiState> = combine(
-        _searchQuery.flatMapLatest { query -> searchHistoryUseCase(query) },
-        _activeFilter
+        _searchQuery
+            .debounce(300)
+            .flatMapLatest { query -> searchHistoryUseCase(query) },
+        _filterState
     ) { history, filter ->
-        val filteredHistory = when (filter) {
-            "Vault" -> history.filter { it.isVaulted }
-            "Indonesia" -> history.filter { it.sourceLanguage == "Indonesia" || it.targetLanguage == "Indonesia" }
-            "Inggris" -> history.filter { it.sourceLanguage == "Inggris" || it.targetLanguage == "Inggris" }
-            else -> history
+
+        // LOGIKA PENYARINGAN BERTINGKAT
+        var filteredHistory = history
+
+        if (filter.isVaultOnly) {
+            filteredHistory = filteredHistory.filter { it.isVaulted }
+        }
+
+        if (filter.selectedLanguage != null) {
+            filteredHistory = filteredHistory.filter {
+                it.sourceLanguage == filter.selectedLanguage || it.targetLanguage == filter.selectedLanguage
+            }
+        }
+
+        if (filter.selectedCategory != null) {
+            filteredHistory = filteredHistory.filter { it.category == filter.selectedCategory }
         }
 
         if (filteredHistory.isEmpty()) DashboardUiState.Empty
         else DashboardUiState.Success(filteredHistory)
+
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -53,8 +75,21 @@ class DashboardViewModel(
         _searchQuery.value = query
     }
 
-    fun onFilterChange(filter: String) {
-        _activeFilter.value = filter
+    // FUNGSI-FUNGSI BARU UNTUK MENGUBAH STATUS FILTER
+    fun toggleVaultFilter() {
+        _filterState.update { it.copy(isVaultOnly = !it.isVaultOnly) }
+    }
+
+    fun setLanguageFilter(language: String?) {
+        _filterState.update { it.copy(selectedLanguage = language) }
+    }
+
+    fun setCategoryFilter(category: String?) {
+        _filterState.update { it.copy(selectedCategory = category) }
+    }
+
+    fun resetFilters() {
+        _filterState.value = FilterState()
     }
 
     fun deleteTranslation(id: Long) {
@@ -63,7 +98,6 @@ class DashboardViewModel(
         }
     }
 
-    // <-- FUNGSI BAHARU UNTUK VAULT -->
     fun toggleVaultStatus(id: Long) {
         viewModelScope.launch {
             toggleVaultStatusUseCase(id)

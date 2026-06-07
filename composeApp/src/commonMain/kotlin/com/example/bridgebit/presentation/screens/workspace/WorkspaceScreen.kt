@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,10 +27,8 @@ fun WorkspaceScreen(
 
     var expandedSource by remember { mutableStateOf(false) }
     var expandedTarget by remember { mutableStateOf(false) }
-    var expandedCategory by remember { mutableStateOf(false) } // <-- State Kategori
 
     val availableLanguages = listOf("Indonesia", "Inggris", "Jepang", "Korea", "Arab", "Jerman")
-    val availableCategories = listOf("Umum", "Kuliah", "Bisnis", "Traveling", "Pemrograman", "Percakapan") // <-- List Kategori
 
     Scaffold(
         topBar = {
@@ -39,12 +36,8 @@ fun WorkspaceScreen(
                 title = { Text(if (translationId == null) "Workspace Terjemahan" else "Edit Terjemahan") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.saveTranslation(onSaveSuccess = { onNavigateBack() }) }) {
-                        Icon(Icons.Default.Save, contentDescription = "Simpan")
-                    }
                 }
+                // BLOK ACTIONS (TOMBOL SAVE) SUDAH SEPENUHNYA DIHAPUS DARI SINI
             )
         }
     ) { paddingValues ->
@@ -79,37 +72,44 @@ fun WorkspaceScreen(
                 }
             }
 
-            // <-- DROPDOWN PEMILIHAN KATEGORI BARU -->
-            Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(
-                    onClick = { expandedCategory = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Kategori: ${viewModel.category.value}", color = MaterialTheme.colorScheme.primary)
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                }
-                DropdownMenu(expanded = expandedCategory, onDismissRequest = { expandedCategory = false }) {
-                    availableCategories.forEach { cat ->
-                        DropdownMenuItem(text = { Text(cat) }, onClick = { viewModel.category.value = cat; expandedCategory = false })
-                    }
-                }
-            }
-
             // Input Teks Asal
             OutlinedTextField(
                 value = viewModel.sourceText.value,
                 onValueChange = {
                     viewModel.sourceText.value = it
-                    viewModel.translatedText.value = if (it.isBlank()) "" else "belum bisa menerjemahkan"
+                    if (it.isBlank()) viewModel.translatedText.value = ""
                 },
                 label = { Text("Ketik teks asli di sini...") },
                 modifier = Modifier.fillMaxWidth().weight(1f)
             )
 
+            // Tombol Terjemahkan
+            Button(
+                onClick = { viewModel.translateText() },
+                enabled = !viewModel.isLoading.value && viewModel.sourceText.value.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (viewModel.isLoading.value) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("AI sedang memproses...")
+                } else {
+                    Text("Terjemahkan")
+                }
+            }
+
+            if (viewModel.errorMessage.value != null) {
+                Text(text = viewModel.errorMessage.value ?: "", color = MaterialTheme.colorScheme.error)
+            }
+
             // Output Teks Hasil Terjemahan
             Card(modifier = Modifier.fillMaxWidth().weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                 Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                    Text(text = viewModel.translatedText.value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        text = viewModel.translatedText.value,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

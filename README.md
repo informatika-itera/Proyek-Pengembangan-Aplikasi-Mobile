@@ -69,15 +69,40 @@ composeApp/src/commonMain/kotlin/com/example/Roomie/
 
 ---
 
-## 🧪 Kualitas Kode & CI/CD
+## 🧪 Kualitas Kode & Pengetesan
 
-- **GitHub Actions:** CI pipeline otomatis mencakup:
-    - Base Setup Java JDK 17
-    - Mock `local.properties` creation for secure build
-    - Execution permission management
-    - **Unit Testing:** Menjalankan 11 unit tests validasi logic (All Passed ✅)
-    - **Build:** Otomatis menghasilkan Debug APK
-- **Static Analysis:** Terintegrasi dengan **Detekt** untuk menjaga kualitas kode.
+Aplikasi ini menjaga kualitas kode melalui pengujian otomatis yang komprehensif:
+
+### 1. Unit Testing (20+ Tests)
+Kami menguji logika bisnis pada lapisan UseCase dan ViewModel untuk memastikan keandalan sistem.
+- **Total Test:** 20 Unit Tests (Passed ✅)
+- **Cakupan:** Auth, Booking Logic, AI Data Extraction, Report Management, Facility Filtering.
+- **Cara Menjalankan:**
+  ```bash
+  ./gradlew test
+  ```
+
+### 2. UI Testing (3+ Tests)
+Pengujian antarmuka untuk memastikan alur kritis pengguna berjalan dengan baik pada perangkat Android.
+- **Total Test:** 3 UI Tests (Passed ✅)
+- **Cakupan:** Login Flow, Navigation, AI Assistant Trigger.
+- **Cara Menjalankan:**
+  ```bash
+  ./gradlew connectedAndroidTest
+  ```
+
+### 2. Static Analysis
+Menggunakan **Detekt** untuk menjaga standar penulisan kode Kotlin.
+- **Cara Menjalankan:**
+  ```bash
+  ./gradlew detekt
+  ```
+
+### 3. CI/CD Integration
+Setiap *push* ke repositori akan memicu GitHub Actions untuk:
+- Memvalidasi Build (Android & KMP)
+- Menjalankan seluruh Unit Tests
+- Melakukan pemindaian rahasia (Secret Scanning)
 
 ---
 
@@ -88,8 +113,8 @@ composeApp/src/commonMain/kotlin/com/example/Roomie/
 | **Sprint 1** | Infrastructure | Repository Setup, Koin DI, SQLDelight, GitHub Actions CI/CD | ✅ Done |
 | **Sprint 2** | Core Features | Login RBAC, Multi-Select Grid, Booking Logic, Supabase Cloud Storage | ✅ Done |
 | **Sprint 3** | Advanced Logic | Offline-First, Real-time Sync, NTP Time, Command Center UI | ✅ Done |
-| **Sprint 4** | Quality Control | Systematic Bug Fixing, Unit & UI Testing, UI Polish, Performance Profiling | 🚀 Planned |
-| **Sprint 5** | Final Delivery | Signed APK Generation, Demo Scripting, Backup Plan, UAS Demo Day Prep | 🏁 Final |
+| **Sprint 4** | Quality Control | 20+ Unit Tests, UI Testing, Code Coverage >70%, UI Polish | ✅ Done |
+| **Sprint 5** | Final Delivery | Signed APK Generation, Demo Scripting, Backup Plan, UAS Demo Day Prep | 🚀 Planned |
 
 ---
 

@@ -36,6 +36,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AdminDashboardScreen(
     onBack: () -> Unit,
+    onNavigateToRoomDetail: (String, String) -> Unit,
     viewModel: AdminViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -85,7 +86,8 @@ fun AdminDashboardScreen(
                         when (view) {
                             "OVERVIEW" -> AdminOverviewHub(
                                 state = state,
-                                onNavigate = { currentView = it }
+                                onNavigate = { currentView = it },
+                                onNavigateToRoomDetail = onNavigateToRoomDetail
                             )
                             "LAPORAN" -> ReportManagementTab(state, viewModel, onActionSuccess = { msg ->
                                 scope.launch { snackbarHostState.showSnackbar(msg) }
@@ -114,7 +116,8 @@ fun AdminDashboardScreen(
 @Composable
 fun AdminOverviewHub(
     state: AdminUiState.Success,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onNavigateToRoomDetail: (String, String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     var showFacilitySheet by remember { mutableStateOf(false) }
@@ -142,9 +145,8 @@ fun AdminOverviewHub(
 
     val availableRoomsCount = state.rooms.count { room ->
         // Mirroring FacilityViewModel logic: 
-        // 1. Maintenance is always unavailable
-        // 2. Otherwise, check if there's a booking TODAY
-        room.status != RoomStatus.MAINTENANCE && !busyRoomIds.contains(room.id)
+        // 1. Only AVAILABLE rooms without current bookings are considered available
+        room.status == RoomStatus.AVAILABLE && !busyRoomIds.contains(room.id)
     }
     
     val facilityHealth = availableRoomsCount.toFloat() / totalRoomsCount
@@ -253,7 +255,14 @@ fun AdminOverviewHub(
             dragHandle = { BottomSheetDefaults.DragHandle() },
             containerColor = MaterialTheme.colorScheme.surface
         ) {
-            FacilityStatusContent(state.rooms, state.allBookings)
+            FacilityStatusContent(
+                rooms = state.rooms, 
+                allBookings = state.allBookings,
+                onRoomClick = { roomId ->
+                    showFacilitySheet = false
+                    onNavigateToRoomDetail(roomId, today.toString())
+                }
+            )
         }
     }
 }
@@ -325,7 +334,11 @@ fun UrgencyItem(label: String, count: Int, color: Color) {
 }
 
 @Composable
-fun FacilityStatusContent(rooms: List<Room>, allBookings: List<Booking>) {
+fun FacilityStatusContent(
+    rooms: List<Room>, 
+    allBookings: List<Booking>,
+    onRoomClick: (String) -> Unit
+) {
     val tz = TimeZone.currentSystemDefault()
     val now = Clock.System.now()
     val today = now.toLocalDateTime(tz).date
@@ -341,7 +354,7 @@ fun FacilityStatusContent(rooms: List<Room>, allBookings: List<Booking>) {
         .toSet()
 
     val nonAvailable = rooms.filter { room ->
-        room.status == RoomStatus.MAINTENANCE || currentlyBookedIds.contains(room.id)
+        room.status != RoomStatus.AVAILABLE || currentlyBookedIds.contains(room.id)
     }
     
     Column(Modifier.fillMaxWidth().padding(bottom = 40.dp, start = 24.dp, end = 24.dp)) {
@@ -364,6 +377,7 @@ fun FacilityStatusContent(rooms: List<Room>, allBookings: List<Booking>) {
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(20.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                            .clickable { onRoomClick(room.id) }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

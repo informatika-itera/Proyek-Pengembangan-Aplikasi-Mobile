@@ -37,7 +37,7 @@ class ProfileViewModel(
         observeProfileData()
     }
 
-    private fun observeProfileData() {
+    fun observeProfileData() {
         viewModelScope.launch {
             combine(
                 getCurrentUserUseCase(),
@@ -69,10 +69,21 @@ class ProfileViewModel(
             if (currentState is ProfileUiState.Success) {
                 _uiState.value = currentState.copy(isUploading = true)
                 
-                val url = supabaseService.uploadAvatar(bytes)
-                if (url != null) {
-                    userPreferences.saveAvatar(url)
+                try {
+                    val url = supabaseService.uploadAvatar(bytes)
+                    if (url != null) {
+                        userPreferences.saveAvatar(url)
+                    } else {
+                        // Jika URL null tapi tidak throw exception
+                        _uiState.value = ProfileUiState.Error("Gagal mengupload gambar. Pastikan koneksi stabil.")
+                        return@launch
+                    }
+                } catch (e: Exception) {
+                    _uiState.value = ProfileUiState.Error("Gagal upload: ${e.message}")
+                    return@launch
                 }
+                
+                // Pastikan kita refresh state ke Success setelah upload (biasanya terpicu otomatis oleh collect flow)
                 _uiState.value = currentState.copy(isUploading = false)
             }
         }

@@ -12,9 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.example.Roomie.presentation.assistant.AssistantBottomSheet
 import com.example.Roomie.presentation.util.AppStrings
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -40,9 +39,11 @@ fun HomeScreen(
     onNavigateToAllReports: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToGlobalCalendar: () -> Unit,
+    onNavigateToRoomDetail: (String) -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showAssistant by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -63,6 +64,19 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { showAssistant = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(20.dp),
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
+            ) {
+                Icon(Icons.Default.AutoAwesome, null)
+                Spacer(Modifier.width(8.dp))
+                Text("Roomie AI", fontWeight = FontWeight.Bold)
+            }
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -91,6 +105,16 @@ fun HomeScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+            }
+            
+            if (showAssistant) {
+                AssistantBottomSheet(
+                    onDismiss = { showAssistant = false },
+                    onNavigateToDetail = { roomId ->
+                        showAssistant = false
+                        onNavigateToRoomDetail(roomId)
+                    }
+                )
             }
         }
     }

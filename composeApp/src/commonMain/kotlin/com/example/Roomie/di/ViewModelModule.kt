@@ -13,6 +13,7 @@ import com.example.Roomie.presentation.facility.BookingViewModel
 import com.example.Roomie.presentation.help.HelpViewModel
 import com.example.Roomie.presentation.report.ReportViewModel
 import com.example.Roomie.presentation.profile.ProfileViewModel
+import com.example.Roomie.presentation.assistant.AssistantViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -30,4 +31,5 @@ val viewModelModule = module {
     viewModelOf(::HelpViewModel)
     viewModelOf(::ReportViewModel)
     viewModelOf(::ProfileViewModel)
+    viewModelOf(::AssistantViewModel)
 }

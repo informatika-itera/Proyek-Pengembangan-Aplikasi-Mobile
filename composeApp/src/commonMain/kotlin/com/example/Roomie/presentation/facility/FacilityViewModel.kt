@@ -63,8 +63,10 @@ class FacilityViewModel(
                 
                 // Logic: Merging Room status with Booking data for selected date
                 val roomsWithDynamicStatus = allRooms.map { room ->
-                    // 1. If maintenance, always show maintenance (fixed)
-                    if (room.status == RoomStatus.MAINTENANCE) return@map room
+                    // 1. Jika status database adalah MAINTENANCE atau BOOKED (Manual), gunakan itu
+                    if (room.status == RoomStatus.MAINTENANCE || room.status == RoomStatus.BOOKED) {
+                        return@map room
+                    }
                     
                     // 2. Check if there is an approved booking for this room on this date
                     val isBookedOnThisDate = allBookings.any { booking ->

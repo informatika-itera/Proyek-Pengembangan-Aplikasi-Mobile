@@ -46,8 +46,17 @@ fun ProfileScreen(
         }
     )
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState) {
+        if (uiState is ProfileUiState.Error) {
+            snackbarHostState.showSnackbar((uiState as ProfileUiState.Error).message)
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(AppStrings.PROFILE_TITLE, fontWeight = FontWeight.Bold) },
@@ -65,24 +74,28 @@ fun ProfileScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (val state = uiState) {
-                is ProfileUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
-                }
-                is ProfileUiState.Success -> {
-                    ProfileContent(
-                        state = state,
-                        currentThemeMode = currentThemeMode,
-                        onThemeChange = onThemeChange,
-                        onUpdateAvatar = { avatarPicker.launch() }
-                    )
-                }
-                is ProfileUiState.Error -> {
-                    Text(
-                        text = state.message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+            val state = uiState
+            if (state is ProfileUiState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
+            } else if (state is ProfileUiState.Success) {
+                ProfileContent(
+                    state = state,
+                    currentThemeMode = currentThemeMode,
+                    onThemeChange = onThemeChange,
+                    onUpdateAvatar = { avatarPicker.launch() }
+                )
+            } else if (state is ProfileUiState.Error) {
+                // Jika error tapi kita sudah punya data sebelumnya (misal pas gagal upload), 
+                // jangan tampilkan blank page. Tapi di sini kita handle kasus error awal.
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(24.dp))
+                    Button(onClick = { viewModel.observeProfileData() }) {
+                        Text("Coba Lagi")
+                    }
                 }
             }
         }

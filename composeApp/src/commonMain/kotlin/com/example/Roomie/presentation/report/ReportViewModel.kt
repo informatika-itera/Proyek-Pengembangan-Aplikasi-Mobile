@@ -7,6 +7,7 @@ import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.domain.model.UrgencyLevel
 import com.example.Roomie.domain.repository.ReportRepository
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -72,12 +73,14 @@ class ReportViewModel(
                 
                 // Real Logic Upload ke Supabase
                 _state.value.selectedImage?.let { bytes ->
+                    Napier.d("Report: Mengupload gambar...")
                     finalImageUrl = supabaseService.uploadReportImage(bytes)
                     if (finalImageUrl == null) {
-                        throw Exception("Gagal mengupload gambar ke server")
+                        throw Exception("Upload gambar gagal (URL null).")
                     }
                 }
 
+                Napier.d("Report: Mengirim data laporan ke database...")
                 val newReport = Report(
                     id = Clock.System.now().toEpochMilliseconds().toString(),
                     category = _state.value.category,
@@ -90,8 +93,10 @@ class ReportViewModel(
                 )
                 
                 reportRepository.submitReport(newReport)
+                Napier.d("Report: Berhasil terkirim!")
                 _state.update { it.copy(isLoading = false, isSubmitted = true) }
             } catch (e: Exception) {
+                Napier.e("Report: Error saat kirim: ${e.message}", e)
                 _state.update { it.copy(isLoading = false, error = e.message ?: "Gagal mengirim laporan") }
             }
         }

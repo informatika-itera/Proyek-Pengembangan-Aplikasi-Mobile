@@ -45,6 +45,7 @@ import com.example.Roomie.presentation.profile.NotificationScreen
 import com.example.Roomie.presentation.admin.AdminDashboardScreen
 import com.example.Roomie.presentation.theme.RoomieTheme
 import com.example.Roomie.presentation.util.AppStrings
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -201,7 +202,12 @@ fun App(
                         onNavigateToReport = { navController.navigate(Screen.Report.route) },
                         onNavigateToAllReports = { navController.navigate(Screen.AllReports.route) },
                         onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
-                        onNavigateToGlobalCalendar = { navController.navigate(Screen.GlobalCalendar.route) }
+                        onNavigateToGlobalCalendar = { navController.navigate(Screen.GlobalCalendar.route) },
+                        onNavigateToRoomDetail = { roomId ->
+                            val now = kotlinx.datetime.Clock.System.now()
+                            val today = now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date.toString()
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId, today))
+                        }
                     )
                 }
 
@@ -303,7 +309,12 @@ fun App(
                 }
 
                 composable(Screen.AdminDashboard.route) {
-                    AdminDashboardScreen(onBack = { navController.popBackStack() })
+                    AdminDashboardScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateToRoomDetail = { roomId, date ->
+                            navController.navigate(Screen.RoomDetail.createRoute(roomId, date))
+                        }
+                    )
                 }
             }
         }

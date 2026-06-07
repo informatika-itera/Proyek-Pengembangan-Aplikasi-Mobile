@@ -4,6 +4,7 @@ import com.example.Roomie.data.local.datastore.UserPreferences
 import com.example.Roomie.data.repository.*
 import com.example.Roomie.domain.repository.*
 import com.example.Roomie.data.remote.SupabaseService
+import com.example.Roomie.data.remote.ai.GeminiService
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +65,13 @@ class KoinModuleTest : KoinTest {
                 object : AuditRepository {
                     override fun getAuditLogs() = flowOf(emptyList<com.example.Roomie.domain.model.AuditLog>())
                     override suspend fun addAuditLog(log: com.example.Roomie.domain.model.AuditLog) = Result.success(Unit)
+                }
+            }
+            single { io.ktor.client.HttpClient {} }
+            single { kotlinx.serialization.json.Json { ignoreUnknownKeys = true } }
+            single<GeminiService> { 
+                object : GeminiService(get(), get()) {
+                    override suspend fun processUserCommand(input: String) = null
                 }
             }
             single<SupabaseClient> { 

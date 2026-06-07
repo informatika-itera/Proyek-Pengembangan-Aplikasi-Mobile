@@ -1,5 +1,6 @@
 package com.example.Roomie.data.repository
 
+import com.example.Roomie.core.network.NetworkMonitor
 import com.example.Roomie.data.local.RoomieDatabase
 import com.example.Roomie.data.local.RoomEntity
 import com.example.Roomie.domain.model.Building
@@ -7,19 +8,99 @@ import com.example.Roomie.domain.model.Room
 import com.example.Roomie.domain.model.RoomStatus
 import com.example.Roomie.domain.model.RoomType
 import com.example.Roomie.domain.repository.FacilityRepository
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.postgrest.postgrest
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class BuildingRemoteDto(
+    val id: String,
+    val name: String,
+    val description: String,
+    val is_available: Boolean
+)
+
+@Serializable
+data class RoomRemoteDto(
+    val id: String,
+    val building_id: String,
+    val name: String,
+    val floor: Int,
+    val status: String,
+    val capacity: Int,
+    val has_ac: Boolean,
+    val has_projector: Boolean
+)
 
 class FacilityRepositoryImpl(
-    database: RoomieDatabase
+    database: RoomieDatabase,
+    private val supabaseClient: SupabaseClient,
+    private val networkMonitor: NetworkMonitor,
+    private val scope: CoroutineScope
 ) : FacilityRepository {
     private val queries = database.facilityQueries
+
+    init {
+        observeSync()
+    }
+
+    private fun observeSync() {
+        scope.launch {
+            networkMonitor.isOnline.collect { online ->
+                if (online) {
+                    try {
+                        // 1. Sync Buildings
+                        val remoteBuildings = supabaseClient.postgrest["buildings"]
+                            .select().decodeList<BuildingRemoteDto>()
+                        
+                        withContext(Dispatchers.IO) {
+                            remoteBuildings.forEach { dto ->
+                                queries.insertBuilding(
+                                    id = dto.id,
+                                    name = dto.name,
+                                    description = dto.description,
+                                    isAvailable = if (dto.is_available) 1L else 0L
+                                )
+                            }
+                        }
+
+                        // 2. Sync Rooms
+                        val remoteRooms = supabaseClient.postgrest["rooms"]
+                            .select().decodeList<RoomRemoteDto>()
+                        
+                        withContext(Dispatchers.IO) {
+                            remoteRooms.forEach { dto ->
+                                queries.insertRoom(
+                                    id = dto.id,
+                                    buildingId = dto.building_id,
+                                    name = dto.name,
+                                    floor = dto.floor.toLong(),
+                                    status = dto.status,
+                                    type = "REGULAR", // Default or map if needed
+                                    capacity = dto.capacity.toLong(),
+                                    hasAc = if (dto.has_ac) 1L else 0L,
+                                    hasProjector = if (dto.has_projector) 1L else 0L,
+                                    borrowerName = null,
+                                    maintenanceDescription = null
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Silent fail
+                    }
+                }
+            }
+        }
+    }
 
     override fun getBuildings(): Flow<List<Building>> {
         return queries.getAllBuildings()
@@ -96,12 +177,22 @@ class FacilityRepositoryImpl(
         maintenanceDescription: String?
     ) {
         withContext(Dispatchers.IO) {
-            queries.updateRoomStatus(
-                status = status.name,
-                borrowerName = borrowerName,
-                maintenanceDescription = maintenanceDescription,
-                id = roomId
-            )
+            try {
+                if (networkMonitor.isOnline.value) {
+                    supabaseClient.postgrest["rooms"].update(mapOf("status" to status.name)) {
+                        filter { eq("id", roomId) }
+                    }
+                }
+                queries.updateRoomStatus(
+                    status = status.name,
+                    borrowerName = borrowerName,
+                    maintenanceDescription = maintenanceDescription,
+                    id = roomId
+                )
+            } catch (e: Exception) {
+                // local fallback
+                queries.updateRoomStatus(status.name, borrowerName, maintenanceDescription, roomId)
+            }
         }
     }
 

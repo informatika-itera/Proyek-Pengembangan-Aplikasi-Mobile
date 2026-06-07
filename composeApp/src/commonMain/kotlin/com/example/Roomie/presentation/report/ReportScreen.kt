@@ -34,6 +34,7 @@ fun ReportScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val categories = listOf("Gedung Kuliah", "Lab", "Kantin", "Parkir")
     var expanded by remember { mutableStateOf(false) }
 
@@ -47,8 +48,15 @@ fun ReportScreen(
         }
     )
 
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(AppStrings.REPORT_TITLE, fontWeight = FontWeight.ExtraBold) },

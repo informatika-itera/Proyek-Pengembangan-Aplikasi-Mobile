@@ -168,9 +168,15 @@ fun RoomDetailScreen(
                                 letterSpacing = 1.sp
                             )
                             if (r.status == RoomStatus.BOOKED) {
-                                Text(r.borrowerName ?: "Kegiatan Terjadwal", style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    text = if (r.borrowerName.isNullOrBlank()) "Kegiatan Terjadwal" else r.borrowerName, 
+                                    style = MaterialTheme.typography.bodySmall
+                                )
                             } else if (r.status == RoomStatus.MAINTENANCE) {
-                                Text(r.maintenanceDescription ?: "Dalam Perbaikan", style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    text = if (r.maintenanceDescription.isNullOrBlank()) "Dalam Perbaikan" else r.maintenanceDescription, 
+                                    style = MaterialTheme.typography.bodySmall
+                                )
                             } else {
                                 Text("Ruangan siap digunakan", style = MaterialTheme.typography.bodySmall)
                             }

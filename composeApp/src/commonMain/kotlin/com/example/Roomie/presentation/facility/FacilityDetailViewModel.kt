@@ -29,11 +29,13 @@ class FacilityDetailViewModel(
             if (room == null) return@combine null
             if (date == null) return@combine room
             
-            // If maintenance, always show maintenance
-            if (room.status == RoomStatus.MAINTENANCE) return@combine room
+            // Jika status database adalah MAINTENANCE atau BOOKED (Manual), gunakan itu
+            if (room.status == RoomStatus.MAINTENANCE || room.status == RoomStatus.BOOKED) {
+                return@combine room
+            }
             
-            val targetDate = LocalDate.parse(date)
-            val isBooked = bookings.any { booking ->
+            val targetDate = date?.let { LocalDate.parse(it) }
+            val isBookedBySchedule = bookings.any { booking ->
                 val bookingDate = Instant.fromEpochMilliseconds(booking.startTime)
                     .toLocalDateTime(TimeZone.currentSystemDefault()).date
                 booking.roomId == roomId && 
@@ -41,7 +43,7 @@ class FacilityDetailViewModel(
                 bookingDate == targetDate
             }
             
-            if (isBooked) {
+            if (isBookedBySchedule) {
                 room.copy(status = RoomStatus.BOOKED)
             } else {
                 room.copy(status = RoomStatus.AVAILABLE)

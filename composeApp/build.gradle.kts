@@ -91,6 +91,8 @@ kotlin {
             implementation("io.github.jan-tennert.supabase:storage-kt:2.6.1")
             implementation("io.github.jan-tennert.supabase:gotrue-kt:2.6.1")
             implementation("io.github.jan-tennert.supabase:realtime-kt:2.6.1")
+            implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
 
             // Peekaboo (Media Picker)
             implementation(libs.peekaboo.ui)
@@ -112,6 +114,14 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+        }
+        
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.androidx.test.junit)
+                implementation(libs.androidx.test.espresso.core)
+            }
         }
         
         iosMain.dependencies {

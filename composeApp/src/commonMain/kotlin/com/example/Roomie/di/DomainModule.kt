@@ -1,6 +1,7 @@
 package com.example.Roomie.di
 
 import com.example.Roomie.domain.usecase.*
+import com.example.Roomie.domain.usecase.ai.ProcessAICommandUseCase
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 
@@ -9,6 +10,9 @@ val domainModule = module {
     factoryOf(::GetCurrentUserUseCase)
     factoryOf(::LoginUseCase)
     factoryOf(::LogoutUseCase)
+    
+    // AI UseCases
+    factory { ProcessAICommandUseCase(get(), get(), get()) }
     
     // Facility UseCases
     factoryOf(::GetBuildingsUseCase)

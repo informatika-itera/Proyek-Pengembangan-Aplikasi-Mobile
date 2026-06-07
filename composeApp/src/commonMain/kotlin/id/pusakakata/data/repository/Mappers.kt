@@ -11,6 +11,7 @@ fun WordEntity.toDomain() = Word(
     definition = definition,
     category = category,
     example = example,
+    isFavorite = isFavorite == 1L,
     srsData = SRSData(
         intervalDays = intervalDays.toInt(),
         easeFactor = easeFactor,

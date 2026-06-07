@@ -5,10 +5,12 @@ import kotlinx.coroutines.flow.Flow
 
 interface ItemRepository {
     fun getAllWords(): Flow<List<Word>>
+    fun getFavoriteWords(): Flow<List<Word>>
     suspend fun getWordById(id: String): Word?
     suspend fun insertWord(word: Word)
     suspend fun updateWord(word: Word)
     suspend fun updateSrs(wordId: String, quality: Int)
+    suspend fun toggleFavorite(wordId: String)
     suspend fun deleteWord(id: String)
     suspend fun searchAndSave(word: String): Result<Word>
     suspend fun getAiDefinition(word: String): Result<String>
@@ -20,4 +22,8 @@ interface ItemRepository {
     
     // Quiz logic
     suspend fun getRandomWords(limit: Long): List<Word>
+    
+    // Collection logic
+    fun getCollectedCardIds(): Flow<List<String>>
+    suspend fun saveCollectedCard(cardId: String)
 }

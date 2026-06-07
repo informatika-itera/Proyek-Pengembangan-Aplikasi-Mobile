@@ -47,7 +47,8 @@ class ItemRepositoryImpl(
                         intervalDays = 0,
                         easeFactor = 2.5,
                         nextReview = null,
-                        level = 0
+                        level = 0,
+                        isFavorite = 0
                     )
                 }
                 queries.addTokens(50) // Give some initial tokens
@@ -79,6 +80,12 @@ class ItemRepositoryImpl(
         }
     }
 
+    override fun getFavoriteWords(): Flow<List<Word>> {
+        return queries.getFavoriteWords().asFlow().mapToList(Dispatchers.IO).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
     override suspend fun getWordById(id: String): Word? {
         return queries.getWordById(id).executeAsOneOrNull()?.toDomain()
     }
@@ -94,7 +101,8 @@ class ItemRepositoryImpl(
             intervalDays = word.srsData.intervalDays.toLong(),
             easeFactor = word.srsData.easeFactor,
             nextReview = word.srsData.nextReview?.toEpochMilliseconds(),
-            level = word.srsData.level.toLong()
+            level = word.srsData.level.toLong(),
+            isFavorite = if (word.isFavorite) 1L else 0L
         )
     }
 
@@ -108,8 +116,13 @@ class ItemRepositoryImpl(
             easeFactor = word.srsData.easeFactor,
             nextReview = word.srsData.nextReview?.toEpochMilliseconds(),
             level = word.srsData.level.toLong(),
+            isFavorite = if (word.isFavorite) 1L else 0L,
             id = word.id
         )
+    }
+
+    override suspend fun toggleFavorite(wordId: String) {
+        queries.toggleFavorite(wordId)
     }
 
     override suspend fun deleteWord(id: String) {
@@ -204,5 +217,13 @@ class ItemRepositoryImpl(
 
     override suspend fun getRandomWords(limit: Long): List<Word> {
         return queries.getRandomWords(limit).executeAsList().map { it.toDomain() }
+    }
+
+    override fun getCollectedCardIds(): Flow<List<String>> {
+        return queries.getCollectedCardIds().asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun saveCollectedCard(cardId: String) {
+        queries.insertCollectedCard(cardId, Clock.System.now().toEpochMilliseconds())
     }
 }

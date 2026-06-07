@@ -32,6 +32,7 @@ class GachaViewModel(
                 _uiState.value = GachaUiState.Drawing
                 delay(1500)
                 val card = gachaSystem.drawCard()
+                repository.saveCollectedCard(card.id) // Save to collection
                 _uiState.value = GachaUiState.Result(card)
             } else {
                 _uiState.value = GachaUiState.Error("Token tidak cukup! Selesaikan kuis untuk dapat token.")

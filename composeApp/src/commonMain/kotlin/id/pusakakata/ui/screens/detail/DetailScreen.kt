@@ -1,10 +1,16 @@
 package id.pusakakata.ui.screens.detail
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,7 +18,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import id.pusakakata.ui.components.LoadingIndicator
 import id.pusakakata.ui.components.ErrorMessage
 
@@ -22,14 +33,15 @@ fun DetailScreen(
     viewModel: DetailViewModel,
     onBack: () -> Unit,
     onEdit: (String) -> Unit,
-    onDelete: (String) -> Unit
+    onDelete: (String) -> Unit,
+    onToggleFavorite: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Kata") },
+                title = { },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -38,8 +50,12 @@ fun DetailScreen(
                 actions = {
                     if (uiState is DetailUiState.Success) {
                         val word = (uiState as DetailUiState.Success).word
-                        IconButton(onClick = { /* Implement share */ }) {
-                            Icon(Icons.Default.Share, contentDescription = "Bagikan")
+                        IconButton(onClick = { onToggleFavorite(word.id) }) {
+                            Icon(
+                                imageVector = if (word.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorit",
+                                tint = if (word.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                         IconButton(onClick = { onEdit(word.id) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
@@ -48,7 +64,8 @@ fun DetailScreen(
                             Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }
     ) { padding ->
@@ -64,67 +81,87 @@ fun DetailScreen(
                     val word = state.word
                     Column(
                         modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                             .padding(24.dp)
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Surface(
                             color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialTheme.shapes.medium
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = word.category,
+                                text = word.category.uppercase(),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelLarge,
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                         
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
                         Text(
                             text = word.term,
                             style = MaterialTheme.typography.displayMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Black
                         )
                         
-                        HorizontalDivider()
+                        Spacer(modifier = Modifier.height(32.dp))
                         
                         Text(
-                            text = "Definisi:",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.secondary
+                            text = "Definisi",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold
                         )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
                         
                         Text(
                             text = word.definition,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 28.sp),
+                            textAlign = TextAlign.Justify
                         )
-
+                        
                         if (word.example.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Contoh Kalimat:",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                text = "\"${word.example}\"",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                            )
+                            Spacer(modifier = Modifier.height(40.dp))
+                            
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(24.dp)) {
+                                    Text(
+                                        text = "Contoh Kalimat",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        text = "\"${word.example}\"",
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            fontStyle = FontStyle.Italic,
+                                            lineHeight = 24.sp
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(48.dp))
                         
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
+                        // Action area
+                        Button(
+                            onClick = { /* Implement sharing */ },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(16.dp)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Riwayat Pengetahuan", style = MaterialTheme.typography.titleMedium)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Tersimpan secara lokal di pusaka anda.", style = MaterialTheme.typography.bodySmall)
-                            }
+                            Icon(Icons.Default.Share, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Bagikan Kosakata")
                         }
                     }
                 }

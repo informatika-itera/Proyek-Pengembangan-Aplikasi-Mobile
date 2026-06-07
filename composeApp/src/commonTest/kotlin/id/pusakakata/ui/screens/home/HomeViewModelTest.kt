@@ -1,41 +1,23 @@
 package id.pusakakata.ui.screens.home
 
+import id.pusakakata.data.repository.FakeItemRepository
 import id.pusakakata.domain.model.Word
-import id.pusakakata.domain.repository.WordRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import kotlin.test.*
-
-class FakeWordRepository : WordRepository {
-    private val words = mutableListOf<Word>()
-    override fun getAllWords(): Flow<List<Word>> = flowOf(words)
-    override suspend fun getWordById(id: String): Word? = words.find { it.id == id }
-    override suspend fun insertWord(word: Word) { words.add(word) }
-    override suspend fun updateWord(word: Word) { 
-        val index = words.indexOfFirst { it.id == word.id }
-        if (index != -1) words[index] = word
-    }
-    override suspend fun deleteWord(id: String) { words.removeAll { it.id == id } }
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var repository: FakeWordRepository
+    private lateinit var repository: FakeItemRepository
     private lateinit var viewModel: HomeViewModel
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        repository = FakeWordRepository()
+        repository = FakeItemRepository()
         viewModel = HomeViewModel(repository)
     }
 
@@ -50,19 +32,43 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun loadWords_empty_updatesToEmptyState() = runTest(testDispatcher) {
+    fun loadWords_empty_updatesToEmptyState() = runTest {
         advanceUntilIdle()
         assertEquals(HomeUiState.Empty, viewModel.uiState.value)
     }
 
     @Test
-    fun loadWords_withData_updatesToSuccessState() = runTest(testDispatcher) {
+    fun loadWords_withData_updatesToSuccessState() = runTest {
         repository.insertWord(Word("1", "Term", "Def", "Cat"))
-        
-        // Re-init to trigger collection
-        val vm = HomeViewModel(repository)
         advanceUntilIdle()
         
-        assertTrue(vm.uiState.value is HomeUiState.Success)
+        val state = viewModel.uiState.value
+        assertTrue(state is HomeUiState.Success)
+        assertEquals(1, state.words.size)
+    }
+
+    @Test
+    fun deleteWord_updatesState() = runTest {
+        repository.insertWord(Word("1", "Term", "Def", "Cat"))
+        advanceUntilIdle()
+        
+        viewModel.deleteWord("1")
+        advanceUntilIdle()
+        
+        assertEquals(HomeUiState.Empty, viewModel.uiState.value)
+    }
+
+    @Test
+    fun searchFiltering_worksCorrectly() = runTest {
+        repository.insertWord(Word("1", "Apple", "Def1", "Cat"))
+        repository.insertWord(Word("2", "Banana", "Def2", "Cat"))
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("app")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as HomeUiState.Success
+        assertEquals(1, state.words.size)
+        assertEquals("Apple", state.words[0].term)
     }
 }

@@ -8,6 +8,7 @@ data class Word(
     val definition: String,
     val category: String, // Misal: Sastra, Arkais, Umum
     val example: String = "", // Contoh penggunaan kalimat
+    val isFavorite: Boolean = false,
     val srsData: SRSData = SRSData()
 ) {
     fun copy(
@@ -15,8 +16,9 @@ data class Word(
         definition: String = this.definition,
         category: String = this.category,
         example: String = this.example,
+        isFavorite: Boolean = this.isFavorite,
         srsData: SRSData = this.srsData
-    ) = Word(id, term, definition, category, example, srsData)
+    ) = Word(id, term, definition, category, example, isFavorite, srsData)
 }
 
 data class SRSData(

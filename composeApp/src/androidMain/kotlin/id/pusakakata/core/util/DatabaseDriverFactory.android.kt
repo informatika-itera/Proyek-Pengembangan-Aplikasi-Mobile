@@ -12,7 +12,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = PusakaDatabase.Schema,
             context = context,
-            name = "pusakakata_v3.db"
+            name = "pusakakata_v5.db"
         )
     }
 }

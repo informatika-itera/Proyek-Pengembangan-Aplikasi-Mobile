@@ -94,4 +94,10 @@ class HomeViewModel(private val repository: ItemRepository) : ViewModel() {
             repository.deleteWord(id)
         }
     }
+
+    fun toggleFavorite(id: String) {
+        viewModelScope.launch {
+            repository.toggleFavorite(id)
+        }
+    }
 }

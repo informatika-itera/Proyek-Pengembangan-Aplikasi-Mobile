@@ -83,7 +83,7 @@ class GeminiService(
         val prompt = """
             Berikan definisi singkat satu paragraf dalam bahasa Indonesia untuk kosa kata: $word. 
             Tentukan juga kategorinya dari pilihan berikut: Umum, Sastra, Arkais.
-            Berikan juga satu contoh kalimat penggunaan kata tersebut yang puitis atau formal.
+            Berikan juga satu contoh kalimat penggunaan kata tersebut yang formal atau edukatif.
             Format jawaban harus JSON seperti ini: {"definition": "isi definisi", "category": "Umum/Sastra/Arkais", "example": "contoh kalimat"}.
             Jangan gunakan markdown atau teks lain.
         """.trimIndent()
@@ -93,9 +93,9 @@ class GeminiService(
     suspend fun generateContent(prompt: String): Result<String> {
         return try {
             val trimmedKey = apiKey.trim()
-            if (trimmedKey.isBlank() || !trimmedKey.startsWith("AIza")) {
+            if (trimmedKey.isBlank()) {
                 return Result.failure(
-                    Exception("Gemini API key tidak valid atau belum terbaca.")
+                    Exception("Gemini API key tidak boleh kosong.")
                 )
             }
 

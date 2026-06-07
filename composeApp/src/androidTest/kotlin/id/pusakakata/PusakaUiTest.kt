@@ -3,10 +3,11 @@ package id.pusakakata
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import id.pusakakata.ui.navigation.PusakaNavHost
+import id.pusakakata.ui.navigation.AppNavHost
 import androidx.navigation.compose.rememberNavController
 import org.junit.Rule
 import org.junit.Test
+import id.pusakakata.ui.theme.PusakaKataTheme
 
 class PusakaUiTest {
 
@@ -16,32 +17,38 @@ class PusakaUiTest {
     @Test
     fun homeScreen_isDisplayed() {
         composeTestRule.setContent {
-            val navController = rememberNavController()
-            PusakaNavHost(navController = navController)
+            PusakaKataTheme {
+                val navController = rememberNavController()
+                AppNavHost(navController = navController)
+            }
         }
 
         composeTestRule.onNodeWithText("Pusaka Kata").assertExists()
     }
 
     @Test
-    fun navigateToAbout_isDisplayed() {
+    fun navigateToFavorite_isDisplayed() {
         composeTestRule.setContent {
-            val navController = rememberNavController()
-            PusakaNavHost(navController = navController)
+            PusakaKataTheme {
+                val navController = rememberNavController()
+                AppNavHost(navController = navController)
+            }
         }
 
-        composeTestRule.onNodeWithText("Info").performClick()
-        composeTestRule.onNodeWithText("Tentang PusakaKata").assertExists()
+        composeTestRule.onNodeWithText("Favorit").performClick()
+        composeTestRule.onNodeWithText("Pusaka Favorit ❤️").assertExists()
     }
 
     @Test
-    fun navigateToGacha_isDisplayed() {
+    fun navigateToProfile_isDisplayed() {
         composeTestRule.setContent {
-            val navController = rememberNavController()
-            PusakaNavHost(navController = navController)
+            PusakaKataTheme {
+                val navController = rememberNavController()
+                AppNavHost(navController = navController)
+            }
         }
 
-        composeTestRule.onNodeWithText("Gacha").performClick()
-        composeTestRule.onNodeWithText("Pusaka Gacha").assertExists()
+        composeTestRule.onNodeWithText("Profil").performClick()
+        composeTestRule.onNodeWithText("Profil Pengembara").assertExists()
     }
 }

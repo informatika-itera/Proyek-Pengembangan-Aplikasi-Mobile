@@ -6,6 +6,8 @@ import kotlin.random.Random
 
 class GachaSystem(private val availableCards: List<LegendaryCard>) {
 
+    fun getAllCards(): List<LegendaryCard> = availableCards
+
     fun drawCard(): LegendaryCard {
         val randomValue = Random.nextInt(1, 101) // 1-100
         

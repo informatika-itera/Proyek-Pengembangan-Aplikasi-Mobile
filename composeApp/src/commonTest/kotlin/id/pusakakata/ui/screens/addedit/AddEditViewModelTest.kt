@@ -1,38 +1,23 @@
 package id.pusakakata.ui.screens.addedit
 
-import id.pusakakata.domain.model.Word
-import id.pusakakata.domain.repository.WordRepository
+import id.pusakakata.data.repository.FakeItemRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.*
 import kotlin.test.*
-
-class FakeAddEditRepository : WordRepository {
-    var savedWord: Word? = null
-    override fun getAllWords(): Flow<List<Word>> = emptyFlow()
-    override suspend fun getWordById(id: String): Word? = null
-    override suspend fun insertWord(word: Word) { savedWord = word }
-    override suspend fun updateWord(word: Word) { savedWord = word }
-    override suspend fun deleteWord(id: String) {}
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddEditViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var repository: FakeAddEditRepository
+    private lateinit var repository: FakeItemRepository
     private lateinit var viewModel: AddEditViewModel
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        repository = FakeAddEditRepository()
+        repository = FakeItemRepository()
         viewModel = AddEditViewModel(repository, null)
     }
 
@@ -60,14 +45,26 @@ class AddEditViewModelTest {
     }
 
     @Test
-    fun saveWord_updatesSuccess() = runTest(testDispatcher) {
+    fun saveWord_updatesSuccess() = runTest {
         viewModel.onTermChange("Test")
         viewModel.onDefinitionChange("Def")
         viewModel.saveWord()
         
         advanceUntilIdle()
         assertTrue(viewModel.uiState.value.isSuccess)
-        assertNotNull(repository.savedWord)
-        assertEquals("Test", repository.savedWord?.term)
+        
+        val allWords = repository.getAllWords().first()
+        val word = repository.getWordById(allWords.first().id)
+        assertNotNull(word)
+        assertEquals("Test", word.term)
+    }
+
+    @Test
+    fun searchOnline_updatesDefinition() = runTest {
+        viewModel.onTermChange("Sasmita")
+        viewModel.searchOnline()
+        
+        advanceUntilIdle()
+        assertEquals("AI Definition for Sasmita", viewModel.uiState.value.definition)
     }
 }

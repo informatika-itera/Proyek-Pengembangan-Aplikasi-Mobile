@@ -1,13 +1,12 @@
 package id.pusakakata.ui.screens.gacha
 
+import id.pusakakata.data.repository.FakeItemRepository
 import id.pusakakata.domain.model.LegendaryCard
 import id.pusakakata.domain.model.Rarity
 import id.pusakakata.domain.usecase.GachaSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -19,12 +18,14 @@ class GachaViewModelTest {
         LegendaryCard("1", "Test", "Desc", Rarity.COMMON, "", "Origin")
     )
     private val gachaSystem = GachaSystem(testCards)
+    private lateinit var repository: FakeItemRepository
     private lateinit var viewModel: GachaViewModel
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        viewModel = GachaViewModel(gachaSystem)
+        repository = FakeItemRepository()
+        viewModel = GachaViewModel(gachaSystem, repository)
     }
 
     @AfterTest
@@ -38,7 +39,15 @@ class GachaViewModelTest {
     }
 
     @Test
-    fun drawCard_updatesStateToResult() {
+    fun drawCard_noTokens_showsError() = runTest {
+        viewModel.drawCard()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value is GachaUiState.Error)
+    }
+
+    @Test
+    fun drawCard_withTokens_updatesStateToResult() = runTest {
+        repository.addTokens(10)
         viewModel.drawCard()
         
         // Move to Drawing state
@@ -51,7 +60,8 @@ class GachaViewModelTest {
     }
 
     @Test
-    fun reset_updatesStateToIdle() {
+    fun reset_updatesStateToIdle() = runTest {
+        repository.addTokens(10)
         viewModel.drawCard()
         testDispatcher.scheduler.advanceTimeBy(2000)
         

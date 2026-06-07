@@ -6,5 +6,6 @@ data class LegendaryCard(
     val description: String,
     val rarity: Rarity,
     val imageUrl: String,
-    val origin: String // Asal daerah/mitologi
+    val origin: String, // Asal daerah/mitologi
+    val fullStory: String = "" // Penjelasan rincian cerita
 )

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.RestaurantMenu
+import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ fun HomeScreen(
     val categories = remember { listOf("Semua") + FoodItem.CATEGORIES }
 
     Scaffold(
+        modifier = Modifier.testTag("home_screen"),
         topBar = {
             TopAppBar(
                 title = {
@@ -72,8 +74,8 @@ fun HomeScreen(
                     IconButton(onClick = onAIClick, modifier = Modifier.testTag("btn_ai_assistant")) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = onCalendarClick, modifier = Modifier.testTag("btn_profile")) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = MaterialTheme.colorScheme.primary)
+                    IconButton(onClick = onCalendarClick, modifier = Modifier.testTag("btn_calendar_nav")) {
+                        Icon(Icons.Outlined.Event, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -85,7 +87,7 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.testTag("fab_add_food")
+                modifier = Modifier.testTag("add_food_fab")
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Tambah Makanan")
             }
@@ -100,13 +102,14 @@ fun HomeScreen(
             SearchBar(
                 query = state.searchQuery,
                 onQueryChange = viewModel::onSearchQueryChange,
-                modifier = Modifier.testTag("search_bar")
+                modifier = Modifier.testTag("search_field")
             )
 
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp)
+                    .testTag("category_filter_row"),
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -137,7 +140,7 @@ fun HomeScreen(
                         onRetry = { viewModel.loadItems() }
                     )
                 } else if (state.items.isEmpty() && state.searchQuery.isEmpty()) {
-                    EmptyState(onAddFoodClick)
+                    EmptyHomeState(onAddFoodClick)
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().testTag("home_food_list"),
@@ -157,14 +160,6 @@ fun HomeScreen(
                         }
 
                         if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
-                            item { CookFromStockCard(onClick = onCookFromStockClick) }
-                        }
-
-                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
-                            item { AITipsSection(items = state.activeItems) }
-                        }
-
-                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
                             item {
                                 Text(
                                     "Segera Masak! 🔥",
@@ -178,7 +173,7 @@ fun HomeScreen(
                                     LazyRow(
                                         contentPadding = PaddingValues(horizontal = 16.dp),
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        modifier = Modifier.padding(bottom = 16.dp).testTag("priority_list")
+                                        modifier = Modifier.padding(bottom = 8.dp).testTag("priority_list")
                                     ) {
                                         items(state.priorityItems, key = { it.id }) { item ->
                                             PriorityCard(item = item, onClick = { onFoodClick(item.id) })
@@ -188,10 +183,11 @@ fun HomeScreen(
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                            .animateContentSize(),
                                         shape = RoundedCornerShape(16.dp),
                                         colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                                         )
                                     ) {
                                         Row(
@@ -215,6 +211,14 @@ fun HomeScreen(
                             }
                         }
 
+                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
+                            item { CookFromStockCard(onClick = onCookFromStockClick) }
+                        }
+
+                        if (state.searchQuery.isEmpty() && state.selectedCategory == "Semua") {
+                            item { AITipsSection(items = state.activeItems) }
+                        }
+
                         item {
                             val headerTitle = when {
                                 state.searchQuery.isNotEmpty() -> "Hasil pencarianmu"
@@ -223,7 +227,7 @@ fun HomeScreen(
                             }
                             Text(
                                 headerTitle,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onBackground
@@ -238,7 +242,8 @@ fun HomeScreen(
                                 ) {
                                     Text(
                                         "Wah, yang kamu cari tidak ketemu nih", 
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
@@ -263,15 +268,15 @@ fun CookFromStockCard(onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .testTag("card_cook_from_stock")
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -299,7 +304,7 @@ fun CookFromStockCard(onClick: () -> Unit) {
                     fontWeight = FontWeight.ExtraBold
                 )
                 Text(
-                    "Bikin resep lezat dari bahan yang sudah ada di rumah.",
+                    "Bikin resep dari bahan yang ada di rumah.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                 )
@@ -350,10 +355,11 @@ fun UrgentReminderBanner(reminders: List<FoodItem>, onFoodClick: (Long) -> Unit)
             .fillMaxWidth()
             .padding(16.dp)
             .testTag("banner_urgent")
-            .clickable { onFoodClick(mostUrgent.id) },
+            .clickable { onFoodClick(mostUrgent.id) }
+            .animateContentSize(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = finalBgColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -455,7 +461,7 @@ fun SummarySection(state: HomeUiState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryItem(
-                label = "Perlu Cek",
+                label = "Segera Masak",
                 count = state.nearlyExpiredCount.toString(),
                 color = MaterialTheme.colorScheme.secondary,
                 icon = Icons.Outlined.Warning,
@@ -569,12 +575,12 @@ fun PriorityCard(item: FoodItem, onClick: () -> Unit) {
 }
 
 @Composable
-fun EmptyState(onAddFoodClick: () -> Unit) {
+fun EmptyHomeState(onAddFoodClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp)
-            .testTag("empty_home_state"),
+            .testTag("empty_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -622,7 +628,7 @@ fun EmptyState(onAddFoodClick: () -> Unit) {
 @Composable
 fun ErrorState(message: String, onRetry: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp).testTag("error_home_state"),
+        modifier = Modifier.fillMaxSize().padding(32.dp).testTag("error_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

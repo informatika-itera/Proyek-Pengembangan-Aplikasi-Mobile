@@ -39,17 +39,17 @@ fun AppNavHost() {
     val currentDestination = navBackStackEntry?.destination
 
     val items = listOf(
-        BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory),
-        BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant),
-        BottomNavItem("Resep", "recipe", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu),
-        BottomNavItem("Calendar", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth),
-        BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Outlined.Person)
+        BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory, "bottom_nav_home"),
+        BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant, "bottom_nav_expiry"),
+        BottomNavItem("Resep", "recipe", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu, "bottom_nav_recipe"),
+        BottomNavItem("Calendar", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, "bottom_nav_calendar"),
+        BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Outlined.Person, "bottom_nav_profile")
     )
 
     Scaffold(
         bottomBar = {
             val currentRoute = currentDestination?.route
-            if (items.any { it.route == currentRoute }) {
+            if (items.any { it.route == currentRoute?.split("?")?.get(0) || it.route == currentRoute?.split("/")?.get(0) }) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp,
@@ -58,7 +58,7 @@ fun AppNavHost() {
                     items.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
                         NavigationBarItem(
-                            modifier = Modifier.testTag("nav_${item.route}"),
+                            modifier = Modifier.testTag(item.testTag),
                             icon = { 
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon, 
@@ -109,7 +109,8 @@ fun AppNavHost() {
 
             composable("expiry") {
                 ExpiryScreen(
-                    onFoodClick = { id -> navController.navigate("detail/$id") }
+                    onFoodClick = { id -> navController.navigate("detail/$id") },
+                    onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
 
@@ -120,7 +121,8 @@ fun AppNavHost() {
                         val idsString = if (ids.isEmpty()) "" else ids.joinToString(",")
                         val manualString = if (manual.isEmpty()) "" else manual.joinToString(",")
                         navController.navigate("recipe_recommendation?ids=$idsString&manual=$manualString&prioritize=$prioritize&pref=$pref")
-                    }
+                    },
+                    onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
 
@@ -153,7 +155,9 @@ fun AppNavHost() {
             }
 
             composable("calendar") {
-                CalendarScreen()
+                CalendarScreen(
+                    onAddFoodClick = { navController.navigate("add_food") }
+                )
             }
 
             composable("profile") {
@@ -226,5 +230,6 @@ private data class BottomNavItem(
     val title: String,
     val route: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
+    val testTag: String
 )

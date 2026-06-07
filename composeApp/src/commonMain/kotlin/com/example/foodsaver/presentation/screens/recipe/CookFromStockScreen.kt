@@ -2,6 +2,7 @@ package com.example.foodsaver.presentation.screens.recipe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,6 +39,7 @@ enum class RecipeInputMode {
 fun CookFromStockScreen(
     onNavigateBack: () -> Unit,
     onNavigateToResult: (List<Long>, List<String>, Boolean, String) -> Unit,
+    onAddFoodClick: () -> Unit = {},
     viewModel: CookFromStockViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -54,9 +56,15 @@ fun CookFromStockScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag("recipe_screen"),
         topBar = {
             TopAppBar(
-                title = { Text("Masak dari Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { 
+                    Column {
+                        Text("Masak dari Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                        Text("Buat resep dari bahan yang tersedia.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -95,7 +103,7 @@ fun CookFromStockScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .height(56.dp)
-                        .testTag("btn_generate_recipe"),
+                        .testTag("recipe_generate_button"),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
@@ -116,19 +124,19 @@ fun CookFromStockScreen(
                 selectedTabIndex = selectedMode.ordinal,
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.primary,
-                divider = {}
+                divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) }
             ) {
                 Tab(
                     selected = selectedMode == RecipeInputMode.INVENTORY,
                     onClick = { selectedMode = RecipeInputMode.INVENTORY },
                     text = { Text("Inventory", fontWeight = FontWeight.Bold) },
-                    modifier = Modifier.testTag("tab_inventory")
+                    modifier = Modifier.testTag("recipe_inventory_tab")
                 )
                 Tab(
                     selected = selectedMode == RecipeInputMode.MANUAL,
                     onClick = { selectedMode = RecipeInputMode.MANUAL },
                     text = { Text("Input Manual", fontWeight = FontWeight.Bold) },
-                    modifier = Modifier.testTag("tab_manual")
+                    modifier = Modifier.testTag("recipe_manual_tab")
                 )
             }
 
@@ -145,23 +153,39 @@ fun CookFromStockScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    "Punya bahan seadanya?",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    "Masukkan bahan seperti telur, nasi, bakso, atau sayur. FoodSaver akan bantu kasih ide masakan.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                    }
+
+                    item {
                         Text(
                             if (selectedMode == RecipeInputMode.INVENTORY) "Pilih bahan dari inventory kamu" else "Masukkan bahan secara manual",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
-                        Text(
-                            "Pilih bahan atau masukkan sendiri untuk mendapatkan resep.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     if (selectedMode == RecipeInputMode.INVENTORY) {
                         if (state.ingredients.isEmpty()) {
-                            item { EmptyIngredientsState() }
+                            item { EmptyIngredientsState(onAddFoodClick) }
                         } else {
                             items(state.ingredients, key = { it.id }) { item ->
                                 IngredientSelectableCard(
@@ -176,7 +200,7 @@ fun CookFromStockScreen(
                             OutlinedTextField(
                                 value = manualInput,
                                 onValueChange = { manualInput = it },
-                                modifier = Modifier.fillMaxWidth().testTag("tf_manual_ingredient"),
+                                modifier = Modifier.fillMaxWidth().testTag("manual_ingredient_input"),
                                 placeholder = { Text("Contoh: telur, nasi, bakso") },
                                 label = { Text("Tambah Bahan") },
                                 trailingIcon = {
@@ -308,10 +332,11 @@ fun IngredientSelectableCard(
     onToggle: () -> Unit
 ) {
     val status = item.getStatus()
+    val isDark = isSystemInDarkTheme()
     val statusColor = when (status) {
-        FoodStatus.SAFE -> SafeTextLight
-        FoodStatus.NEAR_EXPIRY -> WarningTextLight
-        else -> ExpiredTextLight
+        FoodStatus.SAFE -> if (isDark) SafeTextDark else SafeTextLight
+        FoodStatus.NEAR_EXPIRY -> if (isDark) WarningTextDark else WarningTextLight
+        else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
     Card(
@@ -376,9 +401,9 @@ fun IngredientSelectableCard(
 }
 
 @Composable
-fun EmptyIngredientsState() {
+fun EmptyIngredientsState(onAddFoodClick: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp).testTag("empty_ingredients_view"),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp).testTag("empty_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -401,6 +426,14 @@ fun EmptyIngredientsState() {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onAddFoodClick,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.testTag("btn_empty_add_food")
+        ) {
+            Text("Tambah Makanan", fontWeight = FontWeight.Bold)
+        }
     }
 }
 

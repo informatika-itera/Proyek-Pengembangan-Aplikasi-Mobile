@@ -34,6 +34,7 @@ fun AddFoodScreen(
     viewModel: AddFoodViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(foodId) {
@@ -97,6 +98,7 @@ fun AddFoodScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -250,7 +252,7 @@ fun AddFoodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
-                            .testTag("btn_save_food"),
+                            .testTag("add_food_save_button"),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(16.dp)
                     ) {

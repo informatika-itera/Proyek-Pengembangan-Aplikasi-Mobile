@@ -1,5 +1,6 @@
 package com.example.foodsaver.presentation.screens.detail
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -65,7 +66,7 @@ fun FoodDetailScreen(
                         viewModel.deleteItem()
                         showDeleteDialog = false
                     },
-                    modifier = Modifier.testTag("btn_confirm_delete"),
+                    modifier = Modifier.testTag("delete_food_button"),
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("Hapus", fontWeight = FontWeight.Bold)
@@ -80,9 +81,10 @@ fun FoodDetailScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag("food_detail_screen"),
         topBar = {
             TopAppBar(
-                title = { Text("Detail Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack, modifier = Modifier.testTag("btn_back_detail")) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -92,7 +94,7 @@ fun FoodDetailScreen(
                     IconButton(onClick = { onNavigateToEdit(foodId) }, modifier = Modifier.testTag("btn_edit_food")) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.testTag("btn_delete_food")) {
+                    IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.testTag("btn_show_delete")) {
                         Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
                     }
                 },
@@ -101,7 +103,7 @@ fun FoodDetailScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding).testTag("food_detail_content")) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
             } else if (state.error != null) {
@@ -284,7 +286,7 @@ fun InfoRow(label: String, value: String, valueColor: Color = MaterialTheme.colo
 
 @Composable
 private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(32.dp).testTag("detail_error_state"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    Column(modifier = Modifier.fillMaxSize().padding(32.dp).testTag("error_state"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(text = message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetry) { Text("Coba Lagi") }

@@ -1,5 +1,6 @@
 package com.example.foodsaver.presentation.screens.recipe
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.foodsaver.domain.model.RecipeRecommendation
 import com.example.foodsaver.presentation.theme.*
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +39,8 @@ fun RecipeRecommendationScreen(
     viewModel: CookFromStockViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var showConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -53,6 +57,9 @@ fun RecipeRecommendationScreen(
                     onClick = {
                         viewModel.markIngredientsAsUsed(ingredientIds) {
                             showConfirmDialog = false
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Bahan berhasil ditandai sebagai habis")
+                            }
                             onNavigateToHome()
                         }
                     },
@@ -70,6 +77,7 @@ fun RecipeRecommendationScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag("recipe_recommendation_screen"),
         topBar = {
             TopAppBar(
                 title = { Text("Rekomendasi Resep", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
@@ -81,6 +89,7 @@ fun RecipeRecommendationScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             state.recommendation?.let {
                 Surface(
@@ -108,7 +117,7 @@ fun RecipeRecommendationScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding).testTag("recipe_recommendation_content")) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding).testTag("recipe_result_card")) {
             if (state.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -121,7 +130,7 @@ fun RecipeRecommendationScreen(
                 }
             } else if (state.error != null || state.recommendation == null) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(32.dp).testTag("error_recipe_state"),
+                    modifier = Modifier.fillMaxSize().padding(32.dp).testTag("empty_state"),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {

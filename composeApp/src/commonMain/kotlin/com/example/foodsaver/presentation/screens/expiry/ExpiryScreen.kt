@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
@@ -33,15 +34,30 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ExpiryScreen(
     onFoodClick: (Long) -> Unit,
+    onAddFoodClick: () -> Unit = {},
     viewModel: ExpiryViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val tabs = listOf("Semua", "Hampir Expired", "Expired")
 
     Scaffold(
+        modifier = Modifier.testTag("expiry_screen"),
         topBar = {
             TopAppBar(
-                title = { Text("Expiry Alert", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { 
+                    Column {
+                        Text(
+                            "Expiry Alert", 
+                            fontWeight = FontWeight.ExtraBold, 
+                            fontSize = 20.sp
+                        ) 
+                        Text(
+                            "Pantau bahan yang hampir kedaluwarsa.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
@@ -60,7 +76,7 @@ fun ExpiryScreen(
                 selectedTabIndex = state.selectedTab,
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.primary,
-                divider = {},
+                divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) },
                 indicator = { tabPositions ->
                     if (state.selectedTab < tabPositions.size) {
                         TabRowDefaults.SecondaryIndicator(
@@ -94,7 +110,7 @@ fun ExpiryScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 } else if (state.filteredItems.isEmpty()) {
-                    EmptyExpiryState(state.selectedTab)
+                    EmptyExpiryState(state.selectedTab, onAddFoodClick)
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().testTag("expiry_food_list"),
@@ -105,7 +121,7 @@ fun ExpiryScreen(
                             FoodItemCard(
                                 item = item,
                                 onClick = { onFoodClick(item.id) },
-                                modifier = Modifier.testTag("expiry_item_${item.id}")
+                                modifier = Modifier.testTag("food_card_${item.id}")
                             )
                         }
                     }
@@ -138,7 +154,8 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
             .padding(16.dp)
             .testTag("expiry_summary_card"),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor)
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -172,7 +189,7 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
 }
 
 @Composable
-fun EmptyExpiryState(tabIndex: Int) {
+fun EmptyExpiryState(tabIndex: Int, onAddFoodClick: () -> Unit) {
     val (message, subMessage, icon) = when (tabIndex) {
         1 -> Triple(
             "Tidak ada makanan hampir expired 🎉",
@@ -192,7 +209,7 @@ fun EmptyExpiryState(tabIndex: Int) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp).testTag("expiry_empty_state"),
+        modifier = Modifier.fillMaxSize().padding(32.dp).testTag("empty_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -218,5 +235,18 @@ fun EmptyExpiryState(tabIndex: Int) {
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Medium
         )
+        
+        if (tabIndex == 0) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(
+                onClick = onAddFoodClick,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.testTag("btn_empty_add_food")
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Tambah Makanan", fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }

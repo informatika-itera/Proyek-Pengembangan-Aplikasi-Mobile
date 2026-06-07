@@ -1,3 +1,5 @@
+@file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
@@ -73,18 +75,10 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
             
-            // Koin DI
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-            
+
             // SQLDelight
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-            
-            // DataStore + Okio
-            implementation(libs.datastore.preferences)
-            implementation(libs.okio)
             
             // Lifecycle & ViewModel
             implementation(libs.lifecycle.viewmodel)
@@ -102,13 +96,31 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            implementation(compose.uiTest)
+            implementation(libs.ktor.client.mock)
         }
         
         androidMain.dependencies {
             implementation(compose.preview)
-            implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+        }
+        
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.robolectric)
+            }
+        }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(compose.uiTest)
+                implementation("androidx.compose.ui:ui-test-junit4:1.7.0")
+                implementation("androidx.test.ext:junit:1.1.5")
+                implementation("androidx.test:rules:1.5.0")
+            }
         }
         
         iosMain.dependencies {
@@ -121,6 +133,12 @@ kotlin {
 android {
     namespace = "com.kosthub.app"
     compileSdk = 35
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
     
     defaultConfig {
         applicationId = "com.kosthub.app"

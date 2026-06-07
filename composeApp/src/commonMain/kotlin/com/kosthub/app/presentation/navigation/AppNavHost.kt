@@ -112,6 +112,7 @@ fun AppNavHost(
             DetailScreen(
                 kostId = id,
                 uiState = uiState,
+                platformContext = platformContext,
                 onBack = { navController.popBackStack() },
                 onToggleFavorite = { viewModel.toggleFavorite(it) }
             )

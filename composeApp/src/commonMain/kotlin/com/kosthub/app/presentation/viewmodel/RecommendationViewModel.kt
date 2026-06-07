@@ -4,6 +4,7 @@ import com.kosthub.app.data.remote.api.GeminiPromptBuilder
 import com.kosthub.app.data.remote.api.GeminiService
 import com.kosthub.app.domain.model.Kost
 import com.kosthub.app.platform.PlatformConfig
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,9 +21,10 @@ sealed class RecommendationState {
 }
 
 class RecommendationViewModel(
-    private val geminiService: GeminiService
+    private val geminiService: GeminiService,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     private val _userPreference = MutableStateFlow("")
     val userPreference: StateFlow<String> = _userPreference

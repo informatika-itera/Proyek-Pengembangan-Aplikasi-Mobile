@@ -59,11 +59,11 @@ Aplikasi ini memenuhi standar wajib proyek akhir:
 
 *Fokus: Stabilitas dan Kualitas Kode* 
 
-- [ ] Perbaikan seluruh bug yang ditemukan dan penanganan *edge cases*.
-- [ ] Polesan UI (konsistensi spasi 8dp, tipografi, dan Material 3).
-- [ ] Penulisan 10+ *Unit Tests* untuk Repository dan ViewModel.
-- [ ] Penulisan 3+ *UI Tests* untuk alur pengguna kritikal.
-- [ ] Analisis performa dan pencapaian target *test coverage* > 50%.
+- [x] Perbaikan seluruh bug yang ditemukan dan penanganan *edge cases*.
+- [x] Polesan UI (konsistensi spasi 8dp, tipografi, dan Material 3).
+- [x] Penulisan 10+ *Unit Tests* untuk Repository dan ViewModel.
+- [x] Penulisan 3+ *UI Tests* untuk alur pengguna kritikal.
+- [x] Analisis performa dan pencapaian target *test coverage* > 50%.
 
 ### Sprint 5: Final Preparation (Week 15)
 

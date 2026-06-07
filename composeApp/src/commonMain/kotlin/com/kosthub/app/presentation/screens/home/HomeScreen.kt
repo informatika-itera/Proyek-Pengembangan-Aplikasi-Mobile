@@ -38,10 +38,10 @@ fun HomeScreen(
 ) {
     val daftarTipe = listOf("Campur", "Perempuan", "Laki-laki")
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
-        Spacer(modifier = Modifier.height(12.dp))
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        Spacer(modifier = Modifier.height(16.dp))
         SearchBar(query = searchQuery, onQueryChange = onQueryChange)
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -63,7 +63,7 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         when (uiState) {
             is UiState.Loading -> LoadingState()
@@ -79,7 +79,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(bottom = 88.dp),
                     modifier = Modifier.weight(1f)
                 ) {

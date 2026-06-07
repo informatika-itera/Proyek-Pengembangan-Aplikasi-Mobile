@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.kosthub.app.domain.model.Kost
+import com.kosthub.app.core.util.formatHargaTahunan
+import com.kosthub.app.core.util.formatJarakKm
 
 @Composable
 fun KostCard(
@@ -105,7 +107,7 @@ fun KostCard(
             }
 
             // Card body
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
                 // Name
                 Text(
                     text = kost.namaKos,
@@ -124,7 +126,7 @@ fun KostCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(3.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${formatJarakKm(kost.jarakKm)} km dari Kampus",
                         style = MaterialTheme.typography.bodySmall,
@@ -155,7 +157,7 @@ fun KostCard(
                     }
 
                     // Facility badges (max 3)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         badgeItems(kost).take(3).forEach { label ->
                             Badge(text = label)
                         }
@@ -175,14 +177,4 @@ private fun badgeItems(kost: Kost): List<String> {
     if (kost.areaDapur == "Ada") items.add("Dapur")
     if (kost.keamananCctv == "Ada") items.add("CCTV")
     return items
-}
-
-private fun formatJarakKm(km: Double): String {
-    return km.toString().replace(".", ",")
-}
-
-private fun formatHargaTahunan(value: Long): String {
-    val digits = value.toString()
-    val grouped = digits.reversed().chunked(3).joinToString(".").reversed()
-    return "Rp$grouped"
 }

@@ -15,8 +15,12 @@ fun Badge(text: String) {
     Box(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
-        Text(text = text, style = MaterialTheme.typography.labelSmall)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     }
 }

@@ -187,9 +187,9 @@ private fun ProfileForm(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = name,
@@ -203,7 +203,7 @@ private fun ProfileForm(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = email,
@@ -220,7 +220,7 @@ private fun ProfileForm(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -245,11 +245,11 @@ private fun ProfileForm(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedTextField(
                         value = latitude,
                         onValueChange = { latitude = it },
@@ -270,7 +270,7 @@ private fun ProfileForm(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedButton(
                     onClick = {
@@ -319,6 +319,8 @@ private fun ProfileForm(
                     !email.contains("@") -> com.kosthub.app.platform.showToast(platformContext, "Format email tidak valid")
                     lat == null -> com.kosthub.app.platform.showToast(platformContext, "Format Latitude tidak valid")
                     lon == null -> com.kosthub.app.platform.showToast(platformContext, "Format Longitude tidak valid")
+                    lat < -90.0 || lat > 90.0 -> com.kosthub.app.platform.showToast(platformContext, "Latitude harus antara -90 dan 90 derajat")
+                    lon < -180.0 || lon > 180.0 -> com.kosthub.app.platform.showToast(platformContext, "Longitude harus antara -180 dan 180 derajat")
                     else -> onSave(profile.copy(name = name.trim(), email = email.trim(), latitude = lat, longitude = lon))
                 }
             },

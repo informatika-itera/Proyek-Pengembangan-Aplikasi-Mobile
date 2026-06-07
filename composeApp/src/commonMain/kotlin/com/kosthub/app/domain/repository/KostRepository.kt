@@ -8,9 +8,6 @@ interface KostRepository {
     fun getAllFlow(): Flow<List<Kost>>
     suspend fun syncRemote()
     suspend fun getById(id: Long): Kost?
-    suspend fun add(kost: Kost): Long
     suspend fun update(kost: Kost)
-    suspend fun delete(id: Long)
-    suspend fun seedIfEmpty(items: List<Kost>)
 }
 

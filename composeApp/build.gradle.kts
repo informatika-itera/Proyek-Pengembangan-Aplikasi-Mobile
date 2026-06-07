@@ -88,8 +88,14 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        val geminiKey = project.findProperty("GEMINI_API_KEY") ?: ""
-        val gameBrainKey = project.findProperty("GAMEBRAIN_API_KEY") ?: ""
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+
+        val geminiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+        val gameBrainKey = localProperties.getProperty("GAMEBRAIN_API_KEY") ?: ""
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
         buildConfigField("String", "GAMEBRAIN_API_KEY", "\"$gameBrainKey\"")

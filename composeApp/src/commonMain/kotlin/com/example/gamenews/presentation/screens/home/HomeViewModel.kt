@@ -25,32 +25,46 @@ class HomeViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Semua game dari API (tidak difilter)
+    private val _allGames = MutableStateFlow<List<Game>>(emptyList())
+
+    // Genre diambil dari semua game, bukan dari yang terfilter
+    val availableGenres: StateFlow<List<String>> = _allGames
+        .map { list -> list.map { it.genre }.distinct().sorted() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Game yang ditampilkan = filter dari _allGames
+    val games: StateFlow<List<Game>> = combine(_allGames, _searchQuery, _selectedGenre) { all, query, genre ->
+        var filtered = all
+        if (query.isNotBlank()) {
+            filtered = filtered.filter { it.title.contains(query, ignoreCase = true) }
+        }
+        if (!genre.isNullOrBlank()) {
+            filtered = filtered.filter { it.genre.equals(genre, ignoreCase = true) }
+        }
+        filtered
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         viewModelScope.launch {
             userPreferences.favoriteGenre.first()?.let { savedGenre ->
                 _selectedGenre.value = savedGenre
             }
         }
+        loadGames()
     }
 
-    val games: StateFlow<List<Game>> = combine(_searchQuery, _selectedGenre) { query, genre ->
-        Pair(query, genre)
-    }
-        .debounce(300)
-        .flatMapLatest { (query, genre) ->
+    private fun loadGames() {
+        viewModelScope.launch {
             _isLoading.value = true
-            repository.searchGames(query = query, genre = genre)
-                .onEach { _isLoading.value = false }
-                .catch {
+            repository.getLatestGames()
+                .catch { _isLoading.value = false }
+                .collect { list ->
+                    _allGames.value = list
                     _isLoading.value = false
-                    emit(emptyList())
                 }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val availableGenres: StateFlow<List<String>> = games
-        .map { list -> list.map { it.genre }.distinct().sorted() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query

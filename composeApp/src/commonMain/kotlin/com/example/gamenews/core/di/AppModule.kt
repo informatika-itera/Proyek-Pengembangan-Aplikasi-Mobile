@@ -16,6 +16,7 @@ import com.example.gamenews.presentation.screens.ai.AIAssistantViewModel
 import com.example.gamenews.presentation.screens.home.HomeViewModel
 import com.example.gamenews.presentation.screens.detail.GameDetailViewModel
 import com.example.gamenews.presentation.screens.wishlist.WishlistViewModel
+import com.example.gamenews.presentation.screens.ai.AIRecommendationViewModel
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -65,6 +66,7 @@ val viewModelModule = module {
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::GameDetailViewModel)
     viewModelOf(::WishlistViewModel)
+    viewModelOf(::AIRecommendationViewModel)
 }
 
 val sharedModules = listOf(

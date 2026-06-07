@@ -69,15 +69,15 @@ class RecommendationViewModelTest {
             viewModel.onPreferenceChange("Dekat kampus, AC")
             viewModel.generateRecommendation(sampleKosts)
 
-            assertEquals(RecommendationState.Loading, awaitItem())
-
-            val state = awaitItem()
             val apiKey = PlatformConfig.geminiApiKey
 
             if (apiKey.isBlank()) {
-                assertTrue(state is RecommendationState.Error)
+                val state = awaitItem()
+                assertTrue(state is RecommendationState.Error, "Expected Error state when API key is blank but got $state")
                 assertTrue((state as RecommendationState.Error).message.contains("API key Gemini belum dikonfigurasi"))
             } else {
+                assertEquals(RecommendationState.Loading, awaitItem())
+                val state = awaitItem()
                 assertTrue(state is RecommendationState.Success, "Expected Success but got $state")
                 assertEquals(mockResponseText, (state as RecommendationState.Success).result)
             }

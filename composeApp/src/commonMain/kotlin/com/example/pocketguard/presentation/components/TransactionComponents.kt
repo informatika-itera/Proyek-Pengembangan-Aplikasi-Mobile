@@ -138,7 +138,18 @@ fun CategoryBadge(
     }
 }
 
-private fun formatAmount(amount: Double): String = amount.toLong().toString()
+private fun formatAmount(amount: Double): String {
+    val absLong = kotlin.math.abs(amount).toLong()
+    val str = absLong.toString()
+    val result = StringBuilder()
+    str.reversed().forEachIndexed { index, c ->
+        if (index > 0 && index % 3 == 0) {
+            result.append('.')
+        }
+        result.append(c)
+    }
+    return result.reverse().toString()
+}
 
 private fun formatTimestamp(timestamp: Long): String {
     val instant = Instant.fromEpochMilliseconds(timestamp)

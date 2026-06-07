@@ -3,6 +3,7 @@ package com.example.pocketguard.presentation.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pocketguard.domain.model.Transaction
+import com.example.pocketguard.domain.model.TransactionType
 import com.example.pocketguard.domain.usecase.DeleteTransactionUseCase
 import com.example.pocketguard.domain.usecase.GetAllTransactionsUseCase
 import com.example.pocketguard.domain.usecase.TransactionSortBy
@@ -17,12 +18,17 @@ class HomeViewModel(
     private val deleteTransactionUseCase: DeleteTransactionUseCase
 ) : ViewModel() {
 
+    /* =====================================================================
+     * STATE HOLDERS
+     * ===================================================================== */
     private val _query = MutableStateFlow("")
-    // 🛠️ PERBAIKAN: Mengganti kategori menjadi filter Bulan
     private val _selectedMonth = MutableStateFlow<String?>(null)
     private val _sortBy = MutableStateFlow(TransactionSortBy.DATE_DESC)
     val sortBy: StateFlow<TransactionSortBy> = _sortBy.asStateFlow()
 
+    /* =====================================================================
+     * UI STATE COMBINATION & BUSINESS LOGIC
+     * ===================================================================== */
     val uiState: StateFlow<HomeUiState> = combine(
         _query,
         _selectedMonth,
@@ -30,24 +36,16 @@ class HomeViewModel(
         getAllTransactionsUseCase()
     ) { query, selectedMonth, sort, transactions ->
 
-        // 1. Ekstrak semua bulan unik dari data transaksi untuk Filter Chips
+        val allTimeIncome = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        val allTimeExpense = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        val absoluteTotalBalance = allTimeIncome - allTimeExpense
+
         val availableMonths = transactions.map { getMonthYear(it.createdAt) }.distinct()
 
-        // 2. Filter berdasarkan Pencarian
-        val filteredByQuery = if (query.isBlank()) {
-            transactions
-        } else {
-            transactions.filter { it.description.contains(query, ignoreCase = true) }
-        }
+        val filteredByQuery = if (query.isBlank()) transactions else transactions.filter { it.description.contains(query, ignoreCase = true) }
 
-        // 3. Filter berdasarkan Bulan
-        val filteredByMonth = if (selectedMonth == null) {
-            filteredByQuery
-        } else {
-            filteredByQuery.filter { getMonthYear(it.createdAt) == selectedMonth }
-        }
+        val filteredByMonth = if (selectedMonth == null) filteredByQuery else filteredByQuery.filter { getMonthYear(it.createdAt) == selectedMonth }
 
-        // 4. Urutkan data
         val sortedTransactions = when (sort) {
             TransactionSortBy.DATE_ASC -> filteredByMonth.sortedBy { it.createdAt }
             TransactionSortBy.DATE_DESC -> filteredByMonth.sortedByDescending { it.createdAt }
@@ -57,9 +55,9 @@ class HomeViewModel(
         }
 
         if (sortedTransactions.isEmpty()) {
-            HomeUiState.Empty(query, selectedMonth, availableMonths)
+            HomeUiState.Empty(query, selectedMonth, availableMonths, absoluteTotalBalance)
         } else {
-            HomeUiState.Success(sortedTransactions, query, selectedMonth, availableMonths)
+            HomeUiState.Success(sortedTransactions, query, selectedMonth, availableMonths, absoluteTotalBalance)
         }
     }.stateIn(
         scope = viewModelScope,
@@ -67,8 +65,9 @@ class HomeViewModel(
         initialValue = HomeUiState.Loading
     )
 
-    // ==================== USER ACTIONS ====================
-
+    /* =====================================================================
+     * USER ACTIONS & EVENTS
+     * ===================================================================== */
     fun onSearchQueryChange(newQuery: String) { _query.value = newQuery }
 
     fun clearSearch() {
@@ -77,6 +76,7 @@ class HomeViewModel(
     }
 
     fun onMonthSelected(month: String?) { _selectedMonth.value = month }
+
     fun onSortByChanged(sort: TransactionSortBy) { _sortBy.value = sort }
 
     fun deleteTransaction(id: Long) {
@@ -85,7 +85,9 @@ class HomeViewModel(
         }
     }
 
-    // 🛠️ FUNGSI HELPER: Mengubah timestamp ms ke format "Bulan Tahun" (Contoh: "Mei 2026")
+    /* =====================================================================
+     * HELPER FUNCTIONS
+     * ===================================================================== */
     private fun getMonthYear(timestamp: Long): String {
         val instant = Instant.fromEpochMilliseconds(timestamp)
         val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -94,8 +96,9 @@ class HomeViewModel(
     }
 }
 
-// ==================== UI STATE MODELS ====================
-
+/* =====================================================================
+ * UI STATE MODELS
+ * ===================================================================== */
 sealed interface HomeUiState {
     data object Loading : HomeUiState
 
@@ -103,13 +106,15 @@ sealed interface HomeUiState {
         val transactions: List<Transaction>,
         val query: String,
         val selectedMonth: String?,
-        val availableMonths: List<String>
+        val availableMonths: List<String>,
+        val totalBalance: Double
     ) : HomeUiState
 
     data class Empty(
         val query: String,
         val selectedMonth: String?,
-        val availableMonths: List<String>
+        val availableMonths: List<String>,
+        val totalBalance: Double
     ) : HomeUiState
 
     data class Error(val message: String) : HomeUiState

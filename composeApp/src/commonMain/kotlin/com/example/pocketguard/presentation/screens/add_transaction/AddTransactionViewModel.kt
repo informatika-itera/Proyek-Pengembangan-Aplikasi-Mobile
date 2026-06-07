@@ -1,5 +1,6 @@
 package com.example.pocketguard.presentation.screens.add_transaction
 
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pocketguard.domain.model.Transaction
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+
 
 class AddTransactionViewModel(
     private val repository: TransactionRepository,
@@ -57,10 +59,11 @@ class AddTransactionViewModel(
 
     // ==================== USER ACTIONS ====================
 
-    fun onAmountChange(amount: String) {
+    fun onAmountChange(newAmount: String) {
         // Hanya izinkan input angka
-        if (amount.all { it.isDigit() || it == '.' }) {
-            _uiState.update { it.copy(amount = amount, amountError = null) }
+        val cleanValue = newAmount.replace(".","")
+        if (cleanValue.all { it.isDigit() }) {
+            _uiState.update { it.copy(amount = cleanValue, amountError = null)}
         }
     }
 
@@ -70,6 +73,9 @@ class AddTransactionViewModel(
 
     fun onCategoryChange(category: TransactionCategory) {
         _uiState.update { it.copy(category = category) }
+    }
+    fun onDateChange(timestamp: Long) {
+        _uiState.update { it.copy(createdAt = timestamp) }
     }
 
     fun onTypeChange(type: TransactionType) {
@@ -113,7 +119,7 @@ class AddTransactionViewModel(
                 description = state.description.trim(),
                 category = state.category,
                 type = state.type,
-                createdAt = if (currentTransactionId == null) Clock.System.now().toEpochMilliseconds() else state.createdAt
+                createdAt = state.createdAt
             )
 
             saveTransactionUseCase(transaction)

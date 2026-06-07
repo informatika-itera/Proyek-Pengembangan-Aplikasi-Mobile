@@ -10,6 +10,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,15 +28,23 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pocketguard.domain.model.TransactionCategory
 import com.example.pocketguard.domain.model.TransactionType
 import com.example.pocketguard.presentation.components.LoadingIndicator
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.compose.material.icons.outlined.CheckCircle
 
+/* =====================================================================
+ * COLORS & CONSTANTS
+ * ===================================================================== */
 private val GreenDark = Color(0xFF1B5E20)
 private val GreenLight = Color(0xFF43A047)
 private val IncomeGreen = Color(0xFF2E7D32)
 private val ExpenseRed = Color(0xFFB71C1C)
 private val ExpenseRedLight = Color(0xFFE53935)
 
+/* =====================================================================
+ * MAIN SCREEN COMPOSABLE
+ * ===================================================================== */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
@@ -46,6 +56,12 @@ fun AddTransactionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // State untuk DatePicker
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = uiState.createdAt
+    )
 
     // Set initial type & category dari bottom sheet
     LaunchedEffect(initialType, initialCategory) {
@@ -103,7 +119,7 @@ fun AddTransactionScreen(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ===== HEADER GRADIENT =====
+                /* ==================== HEADER GRADIENT (NOMINAL) ==================== */
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -161,8 +177,7 @@ fun AddTransactionScreen(
                         )
                         BasicAmountInput(
                             value = uiState.amount,
-                            onValueChange = viewModel::onAmountChange,
-                            isError = uiState.amountError != null
+                            onValueChange = viewModel::onAmountChange
                         )
                         if (uiState.amountError != null) {
                             Text(
@@ -174,13 +189,14 @@ fun AddTransactionScreen(
                     }
                 }
 
-                // ===== FORM =====
+                /* ==================== FORM INPUTS ==================== */
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // --- INPUT DESKRIPSI ---
                     Text(
                         text = "Nama Transaksi",
                         style = MaterialTheme.typography.labelLarge,
@@ -195,6 +211,7 @@ fun AddTransactionScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    // --- INPUT KATEGORI ---
                     Text(
                         text = "Kategori",
                         style = MaterialTheme.typography.labelLarge,
@@ -214,13 +231,8 @@ fun AddTransactionScreen(
                     }
 
                     if (initialCategory != null) {
-                        // ✅ Dari bottom sheet: tampilkan hanya kategori yang dipilih
-                        SelectedCategoryBadge(
-                            category = uiState.category,
-                            accentColor = accentColor
-                        )
+                        SelectedCategoryBadge(category = uiState.category, accentColor = accentColor)
                     } else {
-                        // ✅ Masuk manual: tampilkan semua pilihan kategori
                         CategoryGrid(
                             selectedCategory = uiState.category,
                             availableCategories = availableCategories,
@@ -228,11 +240,44 @@ fun AddTransactionScreen(
                             accentColor = accentColor
                         )
                     }
+
+                    // --- INPUT TANGGAL (DATE PICKER) ---
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Tanggal Transaksi",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    OutlinedCard(
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showDatePicker = true },
+                        colors = CardDefaults.outlinedCardColors(containerColor = Color.Transparent)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 16.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = formatDisplayDate(uiState.createdAt),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Icon(
+                                imageVector = Icons.Outlined.CalendarMonth,
+                                contentDescription = "Pilih Tanggal",
+                                tint = accentColor
+                            )
+                        }
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // ===== TOMBOL SIMPAN =====
+                /* ==================== BUTTON SAVE ==================== */
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -259,18 +304,71 @@ fun AddTransactionScreen(
                 }
             }
         }
+
+        /* ==================== DATE PICKER DIALOG ==================== */
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let { timestamp ->
+                                viewModel.onDateChange(timestamp)
+                            }
+                            showDatePicker = false
+                        }
+                    ) { Text("OK", color = accentColor) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Batal", color = MaterialTheme.colorScheme.outline)
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
     }
 }
 
+/* =====================================================================
+ * FORMATTER UTILS
+ * ===================================================================== */
+private fun formatNumberWithDots(text: String): String {
+    if (text.isEmpty()) return ""
+    val clean = text.replace(".", "")
+    val parsed = clean.toLongOrNull() ?: return text
+
+    val str = parsed.toString()
+    val result = StringBuilder()
+    str.reversed().forEachIndexed { index, c ->
+        if (index > 0 && index % 3 == 0) result.append('.')
+        result.append(c)
+    }
+    return result.reverse().toString()
+}
+
+private fun formatDisplayDate(timestamp: Long): String {
+    val instant = Instant.fromEpochMilliseconds(timestamp)
+    val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val monthNames = arrayOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des")
+    return "${dateTime.dayOfMonth} ${monthNames[dateTime.monthNumber - 1]} ${dateTime.year}"
+}
+
+/* =====================================================================
+ * AMOUNT INPUT COMPONENT
+ * ===================================================================== */
 @Composable
 private fun BasicAmountInput(
     value: String,
-    onValueChange: (String) -> Unit,
-    isError: Boolean
+    onValueChange: (String) -> Unit
 ) {
     androidx.compose.foundation.text.BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = formatNumberWithDots(value),
+        onValueChange = { newValue ->
+            onValueChange(newValue.replace(".", ""))
+        },
         textStyle = androidx.compose.ui.text.TextStyle(
             color = Color.White,
             fontSize = 48.sp,
@@ -296,6 +394,9 @@ private fun BasicAmountInput(
     )
 }
 
+/* =====================================================================
+ * CATEGORY COMPONENTS
+ * ===================================================================== */
 @Composable
 private fun CategoryGrid(
     selectedCategory: TransactionCategory,

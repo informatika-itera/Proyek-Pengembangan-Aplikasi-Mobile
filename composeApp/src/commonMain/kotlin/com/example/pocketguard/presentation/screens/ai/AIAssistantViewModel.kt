@@ -2,6 +2,7 @@ package com.example.pocketguard.presentation.screens.ai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pocketguard.data.remote.api.SystemPrompts
 import com.example.pocketguard.domain.repository.AIRepository
 import com.example.pocketguard.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,15 +55,18 @@ class AIAssistantViewModel(
                 "- ${formatTimestamp(transaction.createdAt)}: ${transaction.description} (Rp ${transaction.amount}) - Kategori: ${transaction.category.displayName}"
             }
 
-            val contextPrompt = """
-                Anda adalah asisten keuangan pribadi. Berikut adalah data transaksi pengguna:
+            val userPrompt = """
+                Berikut adalah riwayat transaksi keuangan saya saat ini:
                 $transactionSummary
                 
-                Instruksi: Analisis data tersebut untuk menjawab pertanyaan berikut:
+                Pertanyaan/Perintah saya:
                 "$prompt"
             """.trimIndent()
 
-            val result = aiRepository.chat(contextPrompt)
+            val result = aiRepository.chat(
+                message = userPrompt,
+                systemPrompt = SystemPrompts.FINANCIAL_ASSISTANT
+            )
 
             result.onSuccess { aiResponse ->
                 val updatedMessages = _uiState.value.messages.toMutableList()

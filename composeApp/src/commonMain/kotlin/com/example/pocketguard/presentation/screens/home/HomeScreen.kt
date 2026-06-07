@@ -36,13 +36,18 @@ import com.example.pocketguard.presentation.components.LoadingIndicator
 import com.example.pocketguard.presentation.components.TransactionCard
 import org.koin.compose.viewmodel.koinViewModel
 
-// Warna tema hijau PocketGuard
+/* =====================================================================
+ * COLORS & CONSTANTS
+ * ===================================================================== */
 private val GreenDark = Color(0xFF1B5E20)
 private val GreenMid = Color(0xFF2E7D32)
 private val GreenLight = Color(0xFF43A047)
 private val IncomeGreen = Color(0xFF2E7D32)
 private val ExpenseRed = Color(0xFFB71C1C)
 
+/* =====================================================================
+ * MAIN SCREEN COMPOSABLE
+ * ===================================================================== */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -60,9 +65,16 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Data transaksi untuk Summary Section (otomatis terfilter per bulan oleh ViewModel)
-    val allTransactions = when (val state = uiState) {
+    val currentFilteredTransactions = when (val state = uiState) {
         is HomeUiState.Success -> state.transactions
         else -> emptyList()
+    }
+
+    // Ekstrak saldo absolut (keseluruhan) dari state
+    val absoluteBalance = when (val state = uiState) {
+        is HomeUiState.Success -> state.totalBalance
+        is HomeUiState.Empty -> state.totalBalance
+        else -> 0.0
     }
 
     // Ekstrak data bulan dari state
@@ -154,14 +166,17 @@ fun HomeScreen(
                 .padding(paddingValues)
         ) {
             // ===== SUMMARY CARD =====
-            SummarySection(transactions = allTransactions)
+            SummarySection(
+                filteredTransactions = currentFilteredTransactions,
+                absoluteBalance = absoluteBalance
+            )
 
             // ===== FILTER BULAN DINAMIS =====
             MonthFilterRow(
                 availableMonths = availableMonths,
                 selectedMonth = selectedMonth,
                 onMonthSelected = { bulan ->
-                    viewModel.onMonthSelected(bulan) // Pemanggilan eksplisit
+                    viewModel.onMonthSelected(bulan)
                 }
             )
 
@@ -224,7 +239,9 @@ fun HomeScreen(
     }
 }
 
-// 🛠️ KOMPONEN FILTER BERDASARKAN BULAN
+/* =====================================================================
+ * FILTER COMPONENTS
+ * ===================================================================== */
 @Composable
 private fun MonthFilterRow(
     availableMonths: List<String>,
@@ -252,7 +269,45 @@ private fun MonthFilterRow(
     }
 }
 
-// ===== BOTTOM SHEET QUICK-ADD =====
+@Composable
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        placeholder = { Text("Cari deskripsi...") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+        trailingIcon = {
+            AnimatedVisibility(visible = query.isNotBlank(), enter = fadeIn(), exit = fadeOut()) {
+                IconButton(onClick = onClear) { Icon(Icons.Default.Close, contentDescription = "Hapus") }
+            }
+        }
+    )
+}
+
+@Composable
+private fun SortDropdownMenu(expanded: Boolean, currentSortBy: TransactionSortBy, onSortSelected: (TransactionSortBy) -> Unit, onDismiss: () -> Unit) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        TransactionSortBy.entries.forEach { sortBy ->
+            DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sortBy.displayName)
+                        if (sortBy == currentSortBy) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("✓", color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
+                onClick = { onSortSelected(sortBy) }
+            )
+        }
+    }
+}
+
+/* =====================================================================
+ * BOTTOM SHEET COMPONENTS
+ * ===================================================================== */
 @Composable
 private fun AddTransactionBottomSheet(
     onNavigateToAdd: (type: String?, category: String?) -> Unit,
@@ -401,7 +456,6 @@ private fun CategoryQuickButton(
     modifier: Modifier = Modifier,
     emoji: String,
     label: String,
-
     onClick: () -> Unit
 ) {
     Card(
@@ -432,12 +486,14 @@ private fun CategoryQuickButton(
     }
 }
 
-// ===== KOMPONEN SUMMARY SECTION =====
+/* =====================================================================
+ * SUMMARY COMPONENTS
+ * ===================================================================== */
 @Composable
-private fun SummarySection(transactions: List<Transaction>) {
-    val totalIncome = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
-    val totalExpense = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-    val totalBalance = totalIncome - totalExpense
+private fun SummarySection(filteredTransactions: List<Transaction>, absoluteBalance: Double) {
+    // Pemasukan & Pengeluaran HANYA dihitung dari transaksi yang terfilter (bulan ini)
+    val monthlyIncome = filteredTransactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+    val monthlyExpense = filteredTransactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
 
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Box(
@@ -464,14 +520,14 @@ private fun SummarySection(transactions: List<Transaction>) {
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Rp ${formatAmount(totalBalance)}",
+                    text = "Rp ${formatAmount(absoluteBalance)}", // Menggunakan Saldo Keseluruhan
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Berdasarkan waktu yang dipilih",
+                    text = "Total keseluruhan saat ini",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.White.copy(alpha = 0.6f)
                 )
@@ -506,7 +562,7 @@ private fun SummarySection(transactions: List<Transaction>) {
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text("Pemasukan", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("+${formatAmount(totalIncome)}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = IncomeGreen)
+                        Text("+${formatAmount(monthlyIncome)}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = IncomeGreen)
                     }
                 }
             }
@@ -533,7 +589,7 @@ private fun SummarySection(transactions: List<Transaction>) {
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text("Pengeluaran", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("-${formatAmount(totalExpense)}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = ExpenseRed)
+                        Text("-${formatAmount(monthlyExpense)}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = ExpenseRed)
                     }
                 }
             }
@@ -541,59 +597,9 @@ private fun SummarySection(transactions: List<Transaction>) {
     }
 }
 
-private fun formatAmount(amount: Double): String {
-    val long = amount.toLong()
-    return when {
-        long >= 1_000_000_000 -> "${long / 1_000_000_000}M"
-        long >= 1_000_000 -> "${long / 1_000_000}Jt"
-        else -> {
-            val str = long.toString()
-            val result = StringBuilder()
-            str.reversed().forEachIndexed { index, c ->
-                if (index > 0 && index % 3 == 0) result.append('.')
-                result.append(c)
-            }
-            result.reverse().toString()
-        }
-    }
-}
-
-@Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = { Text("Cari deskripsi...") },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-        trailingIcon = {
-            AnimatedVisibility(visible = query.isNotBlank(), enter = fadeIn(), exit = fadeOut()) {
-                IconButton(onClick = onClear) { Icon(Icons.Default.Close, contentDescription = "Hapus") }
-            }
-        }
-    )
-}
-
-@Composable
-private fun SortDropdownMenu(expanded: Boolean, currentSortBy: TransactionSortBy, onSortSelected: (TransactionSortBy) -> Unit, onDismiss: () -> Unit) {
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
-        TransactionSortBy.entries.forEach { sortBy ->
-            DropdownMenuItem(
-                text = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(sortBy.displayName)
-                        if (sortBy == currentSortBy) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                },
-                onClick = { onSortSelected(sortBy) }
-            )
-        }
-    }
-}
-
+/* =====================================================================
+ * LIST COMPONENTS
+ * ===================================================================== */
 @Composable
 private fun TransactionsList(transactions: List<Transaction>, onTransactionClick: (Long) -> Unit, onDeleteClick: (Long) -> Unit) {
     LazyColumn(
@@ -608,4 +614,23 @@ private fun TransactionsList(transactions: List<Transaction>, onTransactionClick
             )
         }
     }
+}
+
+/* =====================================================================
+ * FORMATTER UTILS
+ * ===================================================================== */
+private fun formatAmount(amount: Double): String {
+    val isNegative = amount < 0
+    val absLong = kotlin.math.abs(amount).toLong()
+    val str = absLong.toString()
+    val result = StringBuilder()
+    str.reversed().forEachIndexed { index, c ->
+        if (index > 0 && index % 3 == 0) {
+            result.append('.')
+        }
+        result.append(c)
+    }
+    val formatted = result.reversed().toString()
+
+    return if (isNegative) "-$formatted" else formatted
 }

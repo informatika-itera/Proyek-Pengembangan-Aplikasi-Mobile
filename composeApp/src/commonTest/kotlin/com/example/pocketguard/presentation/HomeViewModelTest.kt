@@ -121,25 +121,31 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `category filter should filter transactions`() = runTest {
+    fun `month filter should filter transactions`() = runTest {
         // Arrange
-        repository.insertTransaction(createTestTransaction("Bakso", category = TransactionCategory.FOOD))
-        repository.insertTransaction(createTestTransaction("Tiket Kereta", category = TransactionCategory.TRANSPORT))
+        // createTestTransaction menggunakan Clock.System.now() secara default
+        repository.insertTransaction(createTestTransaction("Gaji Bulan Ini"))
 
         viewModel.uiState.test {
-            skipItems(1) // Loading
-            advanceUntilIdle()
-            skipItems(1) // Success awal
-
-            // Act: Filter kategori "Makanan" (FOOD)
-            viewModel.onCategorySelected(TransactionCategory.FOOD)
+            skipItems(1) // Lewati Loading
             advanceUntilIdle()
 
-            // Assert
-            val state = awaitItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, state.transactions.size)
-            assertEquals(TransactionCategory.FOOD, state.transactions.first().category)
+            // Ambil state Success awal (sebelum difilter)
+            val initialState = awaitItem()
+            assertTrue(initialState is HomeUiState.Success)
+
+            // Ambil nama bulan otomatis dari data yang tersedia
+            val monthToFilter = initialState.availableMonths.firstOrNull() ?: "Jan 2026"
+
+            // Act: Filter berdasarkan bulan
+            viewModel.onMonthSelected(monthToFilter)
+            advanceUntilIdle()
+
+            // Assert: Pastikan state berubah dan datanya sesuai bulan yang difilter
+            val stateAfterFilter = awaitItem()
+            assertTrue(stateAfterFilter is HomeUiState.Success)
+            assertEquals(1, stateAfterFilter.transactions.size)
+            assertEquals(monthToFilter, stateAfterFilter.selectedMonth)
 
             cancelAndIgnoreRemainingEvents()
         }

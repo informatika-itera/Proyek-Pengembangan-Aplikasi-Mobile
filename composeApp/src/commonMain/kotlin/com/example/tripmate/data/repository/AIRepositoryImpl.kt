@@ -4,7 +4,7 @@ import com.example.tripmate.data.remote.api.GeminiService
 import com.example.tripmate.domain.repository.AIRepository
 import com.example.tripmate.domain.repository.WritingStyle
 
-class AIRepositoryImpl(
+open class AIRepositoryImpl(
     private val geminiService: GeminiService
 ) : AIRepository {
 
@@ -52,7 +52,7 @@ class AIRepositoryImpl(
         )
     }
 
-    suspend fun generateItinerary(
+    open suspend fun generateItinerary(
         destination: String,
         duration: Int,
         budget: Double,

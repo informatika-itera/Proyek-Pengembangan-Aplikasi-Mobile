@@ -93,6 +93,62 @@ class TripViewModelTest {
         }
     }
 
+    @Test
+    fun `insertTrip should add trip to repository`() = runTest {
+        val vm = TripViewModel(repository)
+        advanceUntilIdle()
+
+        vm.insertTrip(createTestTrip("Bali"))
+        advanceUntilIdle()
+
+        vm.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is HomeUiState.Success)
+            assertEquals(1, (state as HomeUiState.Success).trips.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `updateTrip should modify existing trip`() = runTest {
+        repository.insertTrip(createTestTrip("Jakarta"))
+        val vm = TripViewModel(repository)
+        advanceUntilIdle()
+
+        repository.getAllTrips().test {
+            val trip = awaitItem().first()
+            cancelAndIgnoreRemainingEvents()
+            vm.updateTrip(trip.copy(destination = "Surabaya"))
+            advanceUntilIdle()
+        }
+
+        vm.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is HomeUiState.Success)
+            assertEquals("Surabaya", (state as HomeUiState.Success).trips.first().destination)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `onSearchQueryChange should filter trips`() = runTest {
+        repository.insertTrip(createTestTrip("Bali"))
+        repository.insertTrip(createTestTrip("Bandung"))
+        val vm = TripViewModel(repository)
+        advanceUntilIdle()
+
+        vm.onSearchQueryChange("Bali")
+        advanceUntilIdle()
+
+        vm.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is HomeUiState.Success)
+            assertEquals(1, (state as HomeUiState.Success).trips.size)
+            assertEquals("Bali", (state as HomeUiState.Success).trips.first().destination)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private fun createTestTrip(destination: String = "Test"): Trip {
         return Trip(
             id = 0,

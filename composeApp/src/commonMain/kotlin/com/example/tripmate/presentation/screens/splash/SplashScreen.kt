@@ -2,12 +2,14 @@ package com.example.tripmate.presentation.screens.splash
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,17 +22,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.painterResource
+import tripmate.composeapp.generated.resources.Res
+import tripmate.composeapp.generated.resources.ic_tripmate
 
 @Composable
 fun SplashScreen(onFinished: () -> Unit) {
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        // Fade in
         alpha.animateTo(1f, animationSpec = tween(700))
-        // Tahan 2.5 detik
         delay(2500)
-        // Fade out
         alpha.animateTo(0f, animationSpec = tween(500))
         onFinished()
     }
@@ -43,11 +45,10 @@ fun SplashScreen(onFinished: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Placeholder logo — ganti dengan Image() nanti
-            Text(
-                text = "✈",
-                fontSize = 72.sp,
-                color = MaterialTheme.colorScheme.onPrimary
+            Image(
+                painter = painterResource(Res.drawable.ic_tripmate),
+                contentDescription = "TripMate Logo",
+                modifier = Modifier.size(120.dp)
             )
             Spacer(Modifier.height(24.dp))
             Text(

@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlinx.kover")
 }
 
 // Load local.properties for API keys
@@ -154,6 +155,39 @@ sqldelight {
     databases {
         create("TripDatabase") {
             packageName.set("com.example.tripmate.data.local")
+        }
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "*.BuildConfig",
+                    "com.example.tripmate.data.local.*",
+                    "com.example.tripmate.data.remote.dto.*",
+                    "com.example.tripmate.core.network.*",
+                    "com.example.tripmate.core.util.*",
+                    "com.example.tripmate.core.di.*",
+                    "com.example.tripmate.presentation.theme.*",
+                    "com.example.tripmate.presentation.navigation.*",
+                    "com.example.tripmate.presentation.screens.addedit.*",
+                    "com.example.tripmate.presentation.screens.detail.*",
+                    "com.example.tripmate.presentation.screens.profile.*",
+                    "com.example.tripmate.presentation.screens.statistics.*",
+                    "com.example.tripmate.presentation.screens.splash.*",
+                    "tripmate.composeapp.generated.*",
+                    "*.MainActivity",
+                    "*.TripMateApplication",
+                )
+                annotatedBy("androidx.compose.runtime.Composable")
+            }
+        }
+        total {
+            html {
+                onCheck = false
+            }
         }
     }
 }

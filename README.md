@@ -115,6 +115,38 @@ TripMate/
 
 ---
 
+## 🧪 Testing
+
+### Menjalankan Unit Tests
+```bash
+./gradlew :composeApp:testDebugUnitTest
+```
+
+### Menjalankan UI Tests (butuh emulator/device aktif)
+```bash
+./gradlew :composeApp:connectedDebugAndroidTest
+```
+
+### Coverage Report (Kover)
+```bash
+./gradlew :composeApp:koverHtmlReportDebug
+```
+Report tersedia di: `composeApp/build/reports/kover/html/index.html`
+
+### Ringkasan Tests Sprint 4
+
+| Test Class | Jumlah | Cakupan |
+|---|---|---|
+| TripRepositoryTest | 6 | Repository CRUD |
+| TripViewModelTest | 6 | ViewModel state & actions |
+| PackingRepositoryTest | 3 | Packing CRUD |
+| PackingViewModelTest | 3 | Packing ViewModel |
+| AIViewModelTest | 2 | AI state & validasi |
+| HomeScreenTest (UI) | 3 | Critical UI flows |
+| **Total** | **23** | **53% class coverage** |
+
+---
+
 ## 👥 Tim Pengembang
 
 | NIM | Nama |
@@ -147,4 +179,4 @@ Template dasar menggunakan **NoteAI** oleh mh4Scripts.
 
 ---
 
-*Last updated: Sprint 1, Week 11*
+*Last updated: Sprint 4, Week 14*

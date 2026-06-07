@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,31 +57,10 @@ import com.example.neurodeck.domain.model.ThemeMode
 import com.example.neurodeck.presentation.components.ConfirmDialog
 import com.example.neurodeck.presentation.components.LoadingIndicator
 import com.example.neurodeck.presentation.components.SectionTitle
+import com.example.neurodeck.presentation.theme.NeurodeckTheme
 import org.koin.compose.viewmodel.koinViewModel
 
-// ════════════════════════════════════════════════════════════════════════════
-// ProfileScreen.kt — Sprint 2 P3e.3
-//
-// 👤 Profile Tab — user info + achievement + settings + data management + about.
-//
-// Layout (LazyColumn, top to bottom):
-//   1. ProfileHeader      — avatar + name + bio + tombol Edit
-//   2. Achievement Stats  — 4 stat: Decks / Cards / Reviews / Streak
-//   3. Settings Section
-//        - Dark Mode (3 chip: Light/Dark/System)
-//        - Notifications toggle (UI only Sprint 2)
-//        - Language (UI only, ID default)
-//   4. Data Management Section
-//        - Reset All Data (double-confirm dialog)
-//   5. About Section
-//        - App version + tap → AboutScreen
-//
-// NO Scaffold/TopBar — chrome dari AppNavHost.
-// ════════════════════════════════════════════════════════════════════════════
-
 /**
- * Profile Tab screen.
- *
  * @param onEditProfile  Navigate ke EditProfileScreen.
  * @param onAbout        Navigate ke AboutScreen.
  */
@@ -105,9 +85,7 @@ fun ProfileScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // ════════════════════════════════════════════════════════════════
             // 1. HEADER (avatar + name + bio + Edit button)
-            // ════════════════════════════════════════════════════════════════
             item {
                 ProfileHeader(
                     name = uiState.profile.name,
@@ -118,9 +96,7 @@ fun ProfileScreen(
                 )
             }
 
-            // ════════════════════════════════════════════════════════════════
             // 2. ACHIEVEMENT STATS
-            // ════════════════════════════════════════════════════════════════
             item { SectionTitle(text = "Pencapaian") }
             item {
                 AchievementGrid(
@@ -131,9 +107,7 @@ fun ProfileScreen(
                 )
             }
 
-            // ════════════════════════════════════════════════════════════════
             // 3. SETTINGS
-            // ════════════════════════════════════════════════════════════════
             item { SectionTitle(text = "Pengaturan") }
             item {
                 ThemeModeSelector(
@@ -160,9 +134,7 @@ fun ProfileScreen(
                 )
             }
 
-            // ════════════════════════════════════════════════════════════════
             // 4. DATA MANAGEMENT
-            // ════════════════════════════════════════════════════════════════
             item { SectionTitle(text = "Data") }
             item {
                 SettingRow(
@@ -174,9 +146,7 @@ fun ProfileScreen(
                 )
             }
 
-            // ════════════════════════════════════════════════════════════════
             // 5. ABOUT
-            // ════════════════════════════════════════════════════════════════
             item { SectionTitle(text = "Tentang") }
             item {
                 SettingRow(
@@ -187,7 +157,7 @@ fun ProfileScreen(
                 )
             }
 
-            // Bottom spacer untuk hindari nempel bottom nav
+            // Bottom spacer
             item { Spacer(modifier = Modifier.height(16.dp)) }
         }
 
@@ -207,13 +177,7 @@ fun ProfileScreen(
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
     // RESET CONFIRMATION DIALOGS (double-confirm)
-    // ════════════════════════════════════════════════════════════════════════
-    // Pattern Material 3 untuk destructive action:
-    //   1st dialog: "Yakin reset?"
-    //   2nd dialog: "Beneran beneran yakin? Tidak bisa di-undo"
-    // Mencegah accidental tap.
 
     if (showResetConfirm) {
         ConfirmDialog(
@@ -244,9 +208,7 @@ fun ProfileScreen(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // PRIVATE COMPONENTS
-// ════════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun ProfileHeader(
@@ -256,23 +218,21 @@ private fun ProfileHeader(
     avatarUri: String?,
     onEdit: () -> Unit,
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-        shape = RoundedCornerShape(20.dp),
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(NeurodeckTheme.extras.heroBrush)
+            .padding(20.dp),
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar — render foto user kalau ada, fallback ke icon
                 Box(
                     modifier = Modifier
                         .size(72.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                        .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (avatarUri != null) {
@@ -288,7 +248,7 @@ private fun ProfileHeader(
                         Icon(
                             imageVector = Icons.Outlined.Person,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            tint = Color.White,
                             modifier = Modifier.size(40.dp),
                         )
                     }
@@ -299,19 +259,19 @@ private fun ProfileHeader(
                         text = name,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = Color.White,
                     )
                     Text(
                         text = username,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        color = Color.White.copy(alpha = 0.8f),
                     )
                 }
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = "Edit profil",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = Color.White,
                     )
                 }
             }
@@ -321,7 +281,7 @@ private fun ProfileHeader(
                 Text(
                     text = bio,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = Color.White.copy(alpha = 0.9f),
                 )
             }
         }
@@ -335,8 +295,6 @@ private fun AchievementGrid(
     totalReviews: Int,
     streakDays: Int,
 ) {
-    // 2x2 grid pakai 2 Row supaya tidak butuh dependency LazyVerticalGrid
-    // (yang punya issue di KMP versi lama).
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -347,11 +305,13 @@ private fun AchievementGrid(
             AchievementCard(
                 value = totalDecks.toString(),
                 label = "Total Decks",
+                accentColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f),
             )
             AchievementCard(
                 value = totalCards.toString(),
                 label = "Total Kartu",
+                accentColor = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -359,11 +319,13 @@ private fun AchievementGrid(
             AchievementCard(
                 value = totalReviews.toString(),
                 label = "Total Review",
+                accentColor = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.weight(1f),
             )
             AchievementCard(
                 value = "$streakDays hari",
                 label = "Streak",
+                accentColor = NeurodeckTheme.extras.streakIcon,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -375,6 +337,7 @@ private fun AchievementCard(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     OutlinedCard(
         modifier = modifier,
@@ -382,7 +345,7 @@ private fun AchievementCard(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(16.dp),
     ) {
         Column(
             modifier = Modifier
@@ -394,7 +357,7 @@ private fun AchievementCard(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = accentColor,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -481,8 +444,6 @@ private fun ThemeChip(
 }
 
 /**
- * Generic setting row dengan icon kiri + label + subtitle + trailing (text atau arrow).
- *
  * @param isDestructive Tint icon & label dengan error color (untuk Reset action).
  */
 @Composable

@@ -2,127 +2,119 @@ package com.example.neurodeck.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ════════════════════════════════════════════════════════════════════════════
-// NeuroDeck Color System
-//
-// 2 palette terpisah untuk light & dark mode (sesuai design spec Stitch):
-//   - ☀️ Vivid Logic (light)  → vibrant purple + black + yellow sticky note
-//   - 🌑 Midnight (dark)       → soft lavender + neon green + warm orange
-//
-// Naming convention: BRAND_<role>_<modifier?>
-//   - Brand colors = identity (purple primary, yellow accent dll)
-//   - Neutral colors = background, surface, text
-//
-// Tidak pakai ColorScheme.surfaceContainer (Material 3 expressive) supaya
-// kompatibel dengan AGP 8.5 baseline. Pakai konvensi M3 baseline saja.
-// ════════════════════════════════════════════════════════════════════════════
+// BRAND PALETTE
+object Brand {
+    val Violet500 = Color(0xFF8B5CF6)
+    val Violet600 = Color(0xFF7C3AED)
+    val Violet300 = Color(0xFFC4B5FD)
+    val Violet200 = Color(0xFFCECBF6)
+    val Violet100 = Color(0xFFEDE9FE)
+    val Violet900 = Color(0xFF4C1D95)
 
-// ════════════════════════════════════════════════════════════════════════════
-// 🎨 SHARED BRAND COLORS — sama di light & dark (constants identity)
-// ════════════════════════════════════════════════════════════════════════════
+    val Indigo500 = Color(0xFF6366F1)
+    val Indigo600 = Color(0xFF4F46E5)
+    val Indigo300 = Color(0xFF818CF8)
+    val Indigo100 = Color(0xFFE0E7FF)
+    val Indigo900 = Color(0xFF312E81)
 
-object BrandPurple {
-    val Primary = Color(0xFF8B5CF6)        // Vivid violet — main CTA color
-    val PrimaryDark = Color(0xFFA78BFA)    // Lighter for dark mode visibility
-    val Container = Color(0xFFF3E8FF)      // Light pastel container (light mode)
-    val ContainerDark = Color(0xFF2A1F45)  // Deep purple container (dark mode)
-    val OnContainer = Color(0xFF3B0764)    // Dark text on light container
-    val OnContainerDark = Color(0xFFE9D5FF) // Light text on dark container
+    val Pink400 = Color(0xFFF472B6)
+    val Pink600 = Color(0xFFDB2777)
+    val Pink100 = Color(0xFFFCE7F3)
+    val Pink900 = Color(0xFF831843)
+
+    val Lavender = Color(0xFFA78BFA)
 }
 
-object BrandYellow {
-    val StickyNote = Color(0xFFFFDE59)     // Yellow sticky note (light)
-    val OnStickyNote = Color(0xFF000000)   // Black text on yellow
-}
-
-object BrandOrange {
-    val WarmAccent = Color(0xFFFB923C)     // Orange (dark mode tertiary)
-    val OnWarmAccent = Color(0xFF12141C)   // Dark text on orange
-}
-
-object BrandGreen {
-    val NeonAccent = Color(0xFF4ADE80)     // Neon green (dark mode secondary)
-    val OnNeonAccent = Color(0xFF12141C)   // Dark text on green
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// ☀️ LIGHT THEME — "Vivid Logic"
-// Background base #F4F4F4, headlines pure black, accent purple
-// ════════════════════════════════════════════════════════════════════════════
+// LIGHT THEME
 
 object LightTokens {
-    // Primary = purple (CTAs, active states)
-    val Primary = BrandPurple.Primary
+    val Primary = Brand.Violet600
     val OnPrimary = Color(0xFFFFFFFF)
-    val PrimaryContainer = BrandPurple.Container
-    val OnPrimaryContainer = BrandPurple.OnContainer
+    val PrimaryContainer = Brand.Violet100
+    val OnPrimaryContainer = Brand.Violet900
 
-    // Secondary = BLACK (inverted buttons, dark CTAs)
-    val Secondary = Color(0xFF000000)
+    val Secondary = Brand.Indigo500
     val OnSecondary = Color(0xFFFFFFFF)
-    val SecondaryContainer = Color(0xFFE5E5E5)
-    val OnSecondaryContainer = Color(0xFF000000)
+    val SecondaryContainer = Brand.Indigo100
+    val OnSecondaryContainer = Brand.Indigo900
 
-    // Tertiary = yellow sticky note
-    val Tertiary = BrandYellow.StickyNote
-    val OnTertiary = BrandYellow.OnStickyNote
-    val TertiaryContainer = Color(0xFFFEF3C7)
-    val OnTertiaryContainer = Color(0xFF422006)
+    val Tertiary = Brand.Pink600
+    val OnTertiary = Color(0xFFFFFFFF)
+    val TertiaryContainer = Brand.Pink100
+    val OnTertiaryContainer = Brand.Pink900
 
-    // Error = vibrant red
     val Error = Color(0xFFEF4444)
     val OnError = Color(0xFFFFFFFF)
     val ErrorContainer = Color(0xFFFEE2E2)
     val OnErrorContainer = Color(0xFF7F1D1D)
 
-    // Neutral system
-    val Background = Color(0xFFF4F4F4)
-    val OnBackground = Color(0xFF000000)
+    // Neutral system — soft, clean
+    val Background = Color(0xFFF6F5FB)
+    val OnBackground = Color(0xFF1A1A2E)
     val Surface = Color(0xFFFFFFFF)
-    val OnSurface = Color(0xFF000000)
-    val SurfaceVariant = Color(0xFFE5E5E5)
-    val OnSurfaceVariant = Color(0xFF525252)
-    val Outline = Color(0xFF000000)        // Black border (Vivid Logic signature)
-    val OutlineVariant = Color(0xFFD4D4D4)
+    val OnSurface = Color(0xFF1A1A2E)
+    val SurfaceVariant = Color(0xFFF1F0F7)
+    val OnSurfaceVariant = Color(0xFF6B7280)
+    val Outline = Color(0xFFE3E1EE)
+    val OutlineVariant = Color(0xFFECECF1)
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 🌑 DARK THEME — "Midnight"
-// Background deep navy-black #12141C, accent soft lavender + neon green/orange
-// ════════════════════════════════════════════════════════════════════════════
+// DARK THEME
 
 object DarkTokens {
-    // Primary = soft lavender purple (better contrast on dark)
-    val Primary = BrandPurple.PrimaryDark
-    val OnPrimary = Color(0xFF12141C)
-    val PrimaryContainer = BrandPurple.ContainerDark
-    val OnPrimaryContainer = BrandPurple.OnContainerDark
+    val Primary = Brand.Lavender
+    val OnPrimary = Color(0xFF1A1726)
+    val PrimaryContainer = Color(0xFF2E2747)
+    val OnPrimaryContainer = Color(0xFFE9D5FF)
 
-    // Secondary = neon GREEN (dark mode accent — beda dari light yang black!)
-    val Secondary = BrandGreen.NeonAccent
-    val OnSecondary = BrandGreen.OnNeonAccent
-    val SecondaryContainer = Color(0xFF14532D)
-    val OnSecondaryContainer = Color(0xFFBBF7D0)
+    // Secondary = indigo terang
+    val Secondary = Brand.Indigo300
+    val OnSecondary = Color(0xFF1A1726)
+    val SecondaryContainer = Brand.Indigo900
+    val OnSecondaryContainer = Color(0xFFC7D2FE)
 
-    // Tertiary = warm orange (dark mode warning/critical highlight)
-    val Tertiary = BrandOrange.WarmAccent
-    val OnTertiary = BrandOrange.OnWarmAccent
-    val TertiaryContainer = Color(0xFF7C2D12)
-    val OnTertiaryContainer = Color(0xFFFED7AA)
+    val Tertiary = Brand.Pink400
+    val OnTertiary = Color(0xFF1A1726)
+    val TertiaryContainer = Brand.Pink900
+    val OnTertiaryContainer = Color(0xFFFBCFE8)
 
-    // Error = soft red (less harsh on dark)
     val Error = Color(0xFFFCA5A5)
     val OnError = Color(0xFF7F1D1D)
     val ErrorContainer = Color(0xFF7F1D1D)
     val OnErrorContainer = Color(0xFFFECACA)
 
-    // Neutral system
-    val Background = Color(0xFF12141C)
-    val OnBackground = Color(0xFFFAFAFA)
-    val Surface = Color(0xFF1E2030)
-    val OnSurface = Color(0xFFFAFAFA)
-    val SurfaceVariant = Color(0xFF2D2F40)
-    val OnSurfaceVariant = Color(0xFFA1A1AA)
-    val Outline = Color(0xFF3F3F46)        // Subtle border (dark mode)
-    val OutlineVariant = Color(0xFF27272A)
+    val Background = Color(0xFF131019)
+    val OnBackground = Color(0xFFF5F3FF)
+    val Surface = Color(0xFF211E2E)
+    val OnSurface = Color(0xFFF5F3FF)
+    val SurfaceVariant = Color(0xFF2A2738)
+    val OnSurfaceVariant = Color(0xFF9A95B5)
+    val Outline = Color(0xFF332F44)
+    val OutlineVariant = Color(0xFF252233)
+}
+
+// EXTRA ACCENT COLORS : untuk stat cards (streak amber, success green)
+
+object StreakAccentLight {
+    val Container = Color(0xFFFEF3C7)
+    val OnContainer = Color(0xFF92400E)
+    val Icon = Color(0xFFB45309)
+}
+
+object StreakAccentDark {
+    val Container = Color(0xFF2E2410)
+    val OnContainer = Color(0xFFFDE68A)
+    val Icon = Color(0xFFFBBF24)
+}
+
+object SuccessAccentLight {
+    val Container = Color(0xFFDCFCE7)
+    val OnContainer = Color(0xFF14532D)
+    val Icon = Color(0xFF15803D)
+}
+
+object SuccessAccentDark {
+    val Container = Color(0xFF122A1B)
+    val OnContainer = Color(0xFF86EFAC)
+    val Icon = Color(0xFF4ADE80)
 }

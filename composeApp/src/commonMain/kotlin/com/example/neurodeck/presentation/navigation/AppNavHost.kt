@@ -40,30 +40,6 @@ import com.example.neurodeck.presentation.screens.stats.StatsScreen
 import com.example.neurodeck.presentation.screens.studysession.StudySessionScreen
 import kotlinx.coroutines.launch
 
-// ════════════════════════════════════════════════════════════════════════════
-// AppNavHost.kt — commonMain
-//
-// Sprint 2 — Prioritas 3a.4 (Navigation Infrastructure FINALE)
-//
-// Root composable navigation NeuroDeck. Bertanggung jawab:
-//   1. Wrap entire app dalam ModalNavigationDrawer (untuk side drawer)
-//   2. Scaffold dengan TopBar (top) + BottomNavBar (bottom) + NavHost (content)
-//   3. Show/hide TopBar+BottomBar berdasarkan apakah current route adalah
-//      main tab (show) atau sub-screen (hide — full-screen experience untuk
-//      StudySession, AddCard, dll)
-//   4. Wire semua composable destinations (main tabs + sub-screens)
-//   5. Provide placeholder screens untuk route yang belum di-implement
-//      (akan di-replace one-by-one di P3c, P3e, P3f, P4)
-//
-// PATTERN: Single NavHost, Scaffold wraps NavHost (BUKAN sebaliknya).
-// Ini Material 3 recommended pattern untuk bottom-nav-style apps:
-//   - TopBar + BottomBar persistent across all destinations (kalau show)
-//   - Content area animate antar destinasi (NavHost transitions)
-//
-// Alternative pattern (Scaffold per-screen) ditolak karena:
-//   - Duplicate TopBar/BottomBar setup di setiap screen
-//   - Transition antar tab terlihat janky (TopBar/BottomBar flash)
-// ════════════════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,39 +47,21 @@ fun AppNavHost(
     navController: NavHostController,
     startDestination: String = Screen.Home.route,
 ) {
-    // ════════════════════════════════════════════════════════════════════════
-    // STATE: Drawer + scope untuk open/close drawer dari coroutine
-    // ════════════════════════════════════════════════════════════════════════
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Helper lambdas — hindari `scope.launch { drawerState.xxx() }` boilerplate
-    // di multiple call sites.
     val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
     val closeDrawer: () -> Unit = { scope.launch { drawerState.close() } }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // CURRENT ROUTE — di-observe untuk:
-    //   1. Decide show/hide TopBar+BottomBar
-    //   2. Auto-set TopBar title via resolveTopBarTitle()
-    // ════════════════════════════════════════════════════════════════════════
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val isMainTab = currentRoute in mainRoutes
-    // "chrome" = TopBar + BottomBar collectively. Hanya muncul di main tab,
-    // sub-screen render full-screen tanpa chrome (untuk immersive experience,
-    // dan supaya sub-screen bisa render TopBar custom-nya sendiri).
     val showChrome = isMainTab
 
-    // ════════════════════════════════════════════════════════════════════════
     // ROOT WRAPPER: ModalNavigationDrawer
-    // ════════════════════════════════════════════════════════════════════════
     ModalNavigationDrawer(
         drawerState = drawerState,
-        // Drawer hanya bisa di-gesture-swipe di main tabs.
-        // Di sub-screens (StudySession, AddCard) gesture bisa conflict dengan
-        // content gestures — disable swipe, user masih bisa back via tombol.
         gesturesEnabled = isMainTab,
         drawerContent = {
             AppDrawer(
@@ -112,12 +70,12 @@ fun AppNavHost(
             )
         },
     ) {
-        // ════════════════════════════════════════════════════════════════════
-        // SCAFFOLD: TopBar (conditional) + BottomBar (conditional) + content
-        // ════════════════════════════════════════════════════════════════════
+
+        // SCAFFOLD
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
+                // TopBar (dengan hamburger) muncul di semua main tab — konsisten.
                 if (showChrome) {
                     AppTopBar(
                         title = resolveTopBarTitle(currentRoute),
@@ -125,7 +83,6 @@ fun AppNavHost(
                         onNavigationClick = openDrawer,
                     )
                 }
-                // else: no TopBar — sub-screens render their own (or none)
             },
             bottomBar = {
                 if (showChrome) {
@@ -133,8 +90,6 @@ fun AppNavHost(
                 }
             },
         ) { innerPadding ->
-            // NavHost content area — Scaffold provides innerPadding accounting
-            // for TopBar + BottomBar height (kalau ada).
             NavHost(
                 navController = navController,
                 startDestination = startDestination,
@@ -142,20 +97,15 @@ fun AppNavHost(
                     .fillMaxSize()
                     .padding(innerPadding),
             ) {
-                // ════════════════════════════════════════════════════════════
-                // MAIN TABS (5) — Show TopBar + BottomBar
-                // ════════════════════════════════════════════════════════════
+                // MAIN TABS
 
-                // 🏠 HOME TAB — Dashboard ringkas + Continue Learning
+                // HOME TAB
                 composable(route = Screen.Home.route) {
                     HomeScreen(
                         onCreateDeck = {
                             navController.navigate(Screen.CreateDeck.route)
                         },
                         onStudyNow = {
-                            // Tidak ada concept "global session" — arahkan ke
-                            // Decks tab, user pilih deck untuk study. Pakai
-                            // popUpTo pattern supaya konsisten dengan tab nav.
                             navController.navigate(Screen.Decks.route) {
                                 popUpTo(navController.graph.startDestinationId) {
                                     saveState = true
@@ -170,7 +120,7 @@ fun AppNavHost(
                     )
                 }
 
-                // 📚 DECKS TAB — wire ke existing DeckLibraryScreen (refactored P3d)
+                // DECKS TAB
                 composable(route = Screen.Decks.route) {
                     DeckLibraryScreen(
                         onDeckClick = { deckId ->
@@ -180,26 +130,22 @@ fun AppNavHost(
                             navController.navigate(Screen.CreateDeck.route)
                         },
                         onImportGenerate = {
-                            // Quick AI generate dari Decks tab — deckId=0L
-                            // berarti "buat deck baru sambil generate".
-                            // Sementara CreateDeck dulu (user input nama),
-                            // baru AI generate. Simpler than supporting both flows.
                             navController.navigate(Screen.CreateDeck.route)
                         },
                     )
                 }
 
-                // 💬 AI CHAT TAB — Tutor AI conversational (P3f)
+                // AI CHAT TAB
                 composable(route = Screen.AIChat.route) {
                     AIChatScreen()
                 }
 
-                // 📊 STATS TAB — Analytics belajar mendalam (P4)
+                // STATS TAB
                 composable(route = Screen.Stats.route) {
                     StatsScreen()
                 }
 
-                // 👤 PROFILE TAB — User info + Settings + Data Management (P3e)
+                // PROFILE TAb
                 composable(route = Screen.Profile.route) {
                     ProfileScreen(
                         onEditProfile = { navController.navigate(Screen.EditProfile.route) },
@@ -207,9 +153,7 @@ fun AppNavHost(
                     )
                 }
 
-                // ════════════════════════════════════════════════════════════
                 // SUB-SCREENS — Hide TopBar + BottomBar (full-screen experience)
-                // ════════════════════════════════════════════════════════════
 
                 // CARD LIST — sudah ada (existing screen)
                 composable(
@@ -228,7 +172,7 @@ fun AppNavHost(
                     )
                 }
 
-                // ADD CARD — sudah ada
+                // ADD CARD
                 composable(
                     route = Screen.AddCard.route,
                     arguments = listOf(
@@ -243,7 +187,7 @@ fun AppNavHost(
                     )
                 }
 
-                // EDIT CARD — sudah ada
+                // EDIT CARD
                 composable(
                     route = Screen.EditCard.route,
                     arguments = listOf(
@@ -258,7 +202,7 @@ fun AppNavHost(
                     )
                 }
 
-                // STUDY SESSION — sudah ada
+                // STUDY SESSION
                 composable(
                     route = Screen.StudySession.route,
                     arguments = listOf(
@@ -272,11 +216,7 @@ fun AppNavHost(
                     )
                 }
 
-                // ════════════════════════════════════════════════════════════
-                // SUB-SCREENS YANG BELUM ADA — Placeholder dengan TopBar+back
-                // ════════════════════════════════════════════════════════════
-
-                // IMPORT GENERATE (AI flashcard generation) — REAL screen P3d.3
+                 // IMPORT GENERATE (AI flashcard generation)
                 composable(
                     route = Screen.ImportGenerate.route,
                     arguments = listOf(
@@ -288,9 +228,6 @@ fun AppNavHost(
                         deckId = deckId,
                         onBack = { navController.popBackStack() },
                         onCompleted = { savedDeckId, savedCount ->
-                            // Setelah selesai save, navigate ke CardList deck tersebut.
-                            // popUpTo(ImportGenerate inclusive) supaya back tidak balik
-                            // ke form generate (user sudah selesai).
                             navController.navigate(Screen.CardList.createRoute(savedDeckId)) {
                                 popUpTo(Screen.ImportGenerate.route) { inclusive = true }
                             }
@@ -298,20 +235,16 @@ fun AppNavHost(
                     )
                 }
 
-                // CREATE DECK — form bikin deck baru (P3d.2)
                 composable(route = Screen.CreateDeck.route) {
                     CreateDeckScreen(
                         onBack = { navController.popBackStack() },
                         onSavedManual = { deckId ->
-                            // Manual = navigate ke CardList, user add cards manually via FAB.
-                            // popUpTo(CreateDeck inclusive) supaya back dari CardList
-                            // langsung ke Decks tab, tidak balik ke form CreateDeck.
                             navController.navigate(Screen.CardList.createRoute(deckId)) {
                                 popUpTo(Screen.CreateDeck.route) { inclusive = true }
                             }
                         },
                         onSavedAIGenerate = { deckId ->
-                            // AI Generate = langsung ke ImportGenerate flow.
+                            // AI Generate
                             navController.navigate(Screen.ImportGenerate.createRoute(deckId)) {
                                 popUpTo(Screen.CreateDeck.route) { inclusive = true }
                             }
@@ -319,7 +252,7 @@ fun AppNavHost(
                     )
                 }
 
-                // EDIT PROFILE — real screen P3e
+                // EDIT PROFILE
                 composable(route = Screen.EditProfile.route) {
                     EditProfileScreen(
                         onBack = { navController.popBackStack() },
@@ -327,7 +260,7 @@ fun AppNavHost(
                     )
                 }
 
-                // SETTINGS — placeholder (existing route)
+                // SETTINGS
                 composable(route = Screen.Settings.route) {
                     PlaceholderSubScreen(
                         title = "Pengaturan",
@@ -336,7 +269,7 @@ fun AppNavHost(
                     )
                 }
 
-                // ABOUT — real screen P3e
+                // ABOUT
                 composable(route = Screen.About.route) {
                     AboutScreen(
                         onBack = { navController.popBackStack() },
@@ -347,17 +280,8 @@ fun AppNavHost(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PLACEHOLDER COMPOSABLES — Visual stub untuk route yang belum di-implement
-// ════════════════════════════════════════════════════════════════════════════
+// PLACEHOLDER COMPOSABLES
 
-/**
- * Placeholder untuk MAIN TAB yang belum dibangun (Home/AIChat/Stats/Profile).
- *
- * Tidak punya TopBar sendiri karena AppNavHost sudah render TopBar untuk
- * main tabs. Hanya konten body sederhana untuk feedback visual ke user
- * (atau dosen yang demo): "tab ada, tinggal di-implement".
- */
 @Composable
 private fun PlaceholderTabScreen(
     emoji: String,
@@ -392,12 +316,6 @@ private fun PlaceholderTabScreen(
     }
 }
 
-/**
- * Placeholder untuk SUB-SCREEN yang belum dibangun.
- *
- * Beda dengan PlaceholderTabScreen: PUNYA TopBar sendiri dengan back arrow,
- * karena sub-screens tidak dapat chrome dari Scaffold root (showChrome = false).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlaceholderSubScreen(

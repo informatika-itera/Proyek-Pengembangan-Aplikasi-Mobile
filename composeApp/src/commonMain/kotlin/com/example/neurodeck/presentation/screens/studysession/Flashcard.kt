@@ -35,20 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.neurodeck.presentation.components.StickyNoteBadge
 
-// ════════════════════════════════════════════════════════════════════════════
-// Flashcard.kt — REFACTORED to Vivid Logic style (Sprint 2 UI polish)
-//
-// Perubahan visual:
-//   - Card pakai OutlinedCard border tegas (signature Vivid Logic)
-//   - Category badge "FLASHCARD" di pojok atas (sticky note style)
-//   - Tap hint pakai icon + text yang lebih halus (bukan emoji 👆)
-//   - Divider lebih tegas di FlashcardBack
-//   - Animasi flip horizontal tetap dipertahankan (sudah OK)
-//
-// Decision: tidak implement 3D flip animation. AnimatedContent slide horizontal
-// sudah cukup intuitive dan tidak distract dari belajar.
-// ════════════════════════════════════════════════════════════════════════════
-
 @Composable
 fun Flashcard(
     front: String,
@@ -61,7 +47,7 @@ fun Flashcard(
         modifier = modifier
             .fillMaxSize()
             .clickable(enabled = !showingBack, onClick = onTap),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
@@ -70,7 +56,6 @@ fun Flashcard(
         AnimatedContent(
             targetState = showingBack,
             transitionSpec = {
-                // Slide horizontal: konten masuk dari kanan, keluar ke kiri
                 (slideInHorizontally(
                     animationSpec = tween(durationMillis = 300),
                     initialOffsetX = { fullWidth -> fullWidth },
@@ -92,9 +77,6 @@ fun Flashcard(
     }
 }
 
-/**
- * Front side: badge category + pertanyaan + tap hint icon.
- */
 @Composable
 private fun FlashcardFront(front: String) {
     Column(
@@ -102,7 +84,7 @@ private fun FlashcardFront(front: String) {
             .fillMaxSize()
             .padding(20.dp),
     ) {
-        // Header: category badge
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -121,7 +103,6 @@ private fun FlashcardFront(front: String) {
             )
         }
 
-        // Center: pertanyaan
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -137,7 +118,7 @@ private fun FlashcardFront(front: String) {
             )
         }
 
-        // Footer: tap hint
+        // Footer
         Text(
             text = "Tap untuk lihat jawaban",
             style = MaterialTheme.typography.labelMedium,
@@ -150,9 +131,6 @@ private fun FlashcardFront(front: String) {
     }
 }
 
-/**
- * Back side: badge "JAWABAN" + pertanyaan kecil di atas + jawaban besar di tengah.
- */
 @Composable
 private fun FlashcardBack(front: String, back: String) {
     Column(
@@ -160,14 +138,13 @@ private fun FlashcardBack(front: String, back: String) {
             .fillMaxSize()
             .padding(20.dp),
     ) {
-        // Header: badge "JAWABAN" (tertiary yellow biar beda dari front)
+        // Header
         StickyNoteBadge(
             text = "JAWABAN",
-            containerColor = MaterialTheme.colorScheme.tertiary,
-            contentColor = MaterialTheme.colorScheme.onTertiary,
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
         )
 
-        // Pertanyaan kecil sebagai context
         Text(
             text = front,
             style = MaterialTheme.typography.bodyMedium,
@@ -183,7 +160,6 @@ private fun FlashcardBack(front: String, back: String) {
             color = MaterialTheme.colorScheme.outline,
         )
 
-        // Jawaban besar di tengah, prominent
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -199,7 +175,7 @@ private fun FlashcardBack(front: String, back: String) {
             )
         }
 
-        // Footer: prompt rating
+        // Footer
         Text(
             text = "Seberapa mudah kamu menjawab?",
             style = MaterialTheme.typography.labelMedium,

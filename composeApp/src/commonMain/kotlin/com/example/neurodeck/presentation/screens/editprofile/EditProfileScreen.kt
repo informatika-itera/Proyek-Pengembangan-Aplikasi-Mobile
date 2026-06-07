@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
@@ -46,11 +47,6 @@ import com.example.neurodeck.presentation.util.rememberImagePickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * EditProfile screen — form edit nama, username, bio.
- *
- * Avatar picker NOT included Sprint 2 (butuh platform-specific picker
- * + file copy ke internal storage). Placeholder dipakai, edit di Sprint 3+.
- *
  * @param onBack    Pop back stack (cancel).
  * @param onSaved   Dipanggil saat save berhasil — caller harus popBackStack.
  */
@@ -63,7 +59,6 @@ fun EditProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Trigger navigation back saat save sukses
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) onSaved()
     }
@@ -91,9 +86,7 @@ fun EditProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
-            // Avatar — tappable untuk pilih foto dari galeri
             val avatarPicker = rememberImagePickerLauncher { path ->
-                // path = file:// hasil copy, atau null kalau batal
                 if (path != null) {
                     viewModel.onAvatarChange(path)
                 }
@@ -115,7 +108,6 @@ fun EditProfileScreen(
                 ) {
                     val avatar = uiState.avatarUri
                     if (avatar != null) {
-                        // Render foto user via Coil
                         AsyncImage(
                             model = avatar,
                             contentDescription = "Foto profil",
@@ -125,7 +117,6 @@ fun EditProfileScreen(
                             contentScale = ContentScale.Crop,
                         )
                     } else {
-                        // Placeholder kalau belum ada foto
                         Icon(
                             imageVector = Icons.Outlined.PhotoCamera,
                             contentDescription = "Pilih foto",
@@ -144,7 +135,6 @@ fun EditProfileScreen(
                 textAlign = TextAlign.Center,
             )
 
-            // Tombol hapus foto (hanya muncul kalau ada foto)
             if (uiState.avatarUri != null) {
                 TextButton(
                     onClick = { viewModel.onAvatarChange(null) },
@@ -216,6 +206,7 @@ fun EditProfileScreen(
                 onClick = viewModel::save,
                 enabled = uiState.canSave,
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
                 contentPadding = PaddingValues(vertical = 14.dp),
             ) {
                 if (uiState.isSaving) {

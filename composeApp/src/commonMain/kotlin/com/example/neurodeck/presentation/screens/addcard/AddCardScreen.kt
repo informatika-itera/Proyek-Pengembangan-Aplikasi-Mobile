@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -105,12 +106,13 @@ fun AddCardScreen(
                 )
             }
 
-            //AVE BUTTON
+            //SAVE BUTTON
             Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = { viewModel.saveCard(onSuccess = onSaved) },
                     enabled = uiState.canSave,
-                    contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 32.dp, vertical = 14.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     if (uiState.isSaving) {

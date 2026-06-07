@@ -1,7 +1,9 @@
 package com.example.neurodeck.presentation.screens.home.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,17 +15,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Style
-import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,102 +37,256 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.example.neurodeck.domain.model.Deck
-import com.example.neurodeck.presentation.components.StickyNoteBadge
+import com.example.neurodeck.presentation.theme.NeurodeckTheme
 
-// ════════════════════════════════════════════════════════════════════════════
-// HomeComponents.kt — REFACTORED to Vivid Logic style (Sprint 2 UI polish)
-//
-// Perubahan dari versi sebelumnya:
-//   - GreetingCard: pakai big bold headline (display style) + sticky badge streak
-//   - StatMiniCard: OutlinedCard dengan black border (Vivid Logic signature)
-//   - QuickActionsRow: inverted black button + filled purple
-//   - RecentDeckItem: OutlinedCard dengan colored left accent strip
-//   - TipsCard: tetap tertiary container, lebih flat
-// ════════════════════════════════════════════════════════════════════════════
-
-/**
- * GreetingCard — big bold headline "Morning, Brainiac!" style.
- *
- * Layout:
- *   "Selamat Pagi 👋"               <-- caption
- *   "<userName>"                    <-- big bold display
- *
- * Tidak pakai Card container — biarkan flat di background, lebih airy.
- */
 @Composable
 fun GreetingCard(
     greeting: String,
     userName: String,
+    avatarUri: String?,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = userName,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "$greeting 👋 — siap rangkai memori baru?",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "$greeting,",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = userName,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (avatarUri != null) {
+                AsyncImage(
+                    model = avatarUri,
+                    contentDescription = "Foto profil",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = "Profil",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(26.dp),
+                )
+            }
+        }
     }
 }
 
-/**
- * Mini stat card — outlined dengan black border (Vivid Logic style).
- *
- * @param accentColor Warna icon — variasi visual untuk Due/Streak/Today.
- */
 @Composable
-fun StatMiniCard(
-    icon: ImageVector,
+fun HeroCard(
+    dueCount: Int,
+    reviewedToday: Int,
+    onStudyNow: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val extras = NeurodeckTheme.extras
+    val totalToday = reviewedToday + dueCount
+    val progress = if (totalToday > 0) reviewedToday.toFloat() / totalToday else 1f
+
+    val hasDue = dueCount > 0
+    val title = if (hasDue) "Target hari ini" else "Kerja bagus!"
+    val ctaLabel = if (hasDue) "Mulai belajar" else "Belajar lagi"
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(extras.heroBrush)
+            .padding(18.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.85f),
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                if (hasDue) {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = dueCount.toString(),
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "kartu jatuh tempo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.9f),
+                            modifier = Modifier.padding(bottom = 6.dp),
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Semua kartu selesai 🎉",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                    )
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                // CTA button — putih solid, teks ungu
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .clickable(onClick = onStudyNow)
+                        .padding(horizontal = 18.dp, vertical = 10.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.PlayArrow,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = ctaLabel,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+
+            // Progress ring
+            ProgressRing(
+                progress = progress,
+                centerValue = reviewedToday.toString(),
+                centerCaption = "/ $totalToday",
+            )
+        }
+    }
+}
+@Composable
+private fun ProgressRing(
+    progress: Float,
+    centerValue: String,
+    centerCaption: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier.size(74.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(modifier = Modifier.size(74.dp)) {
+            val stroke = 8.dp.toPx()
+            val inset = stroke / 2
+            val arcSize = androidx.compose.ui.geometry.Size(
+                size.width - stroke,
+                size.height - stroke,
+            )
+            val topLeft = androidx.compose.ui.geometry.Offset(inset, inset)
+            // Track
+            drawArc(
+                color = Color.White.copy(alpha = 0.25f),
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = stroke, cap = StrokeCap.Round),
+            )
+            // Progress
+            drawArc(
+                color = Color(0xFFFACC15),
+                startAngle = -90f,
+                sweepAngle = 360f * progress.coerceIn(0f, 1f),
+                useCenter = false,
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = stroke, cap = StrokeCap.Round),
+            )
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = centerValue,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+            )
+            Text(
+                text = centerCaption,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.85f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     value: String,
     label: String,
+    container: Color,
+    onContainer: Color,
+    iconTint: Color,
     modifier: Modifier = Modifier,
-    accentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
 ) {
-    OutlinedCard(
-        modifier = modifier,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(14.dp),
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(container)
+            .padding(14.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+        Column {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = accentColor,
-                modifier = Modifier.size(24.dp),
+                tint = iconTint,
+                modifier = Modifier.size(22.dp),
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = onContainer,
             )
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
+                color = onContainer.copy(alpha = 0.8f),
             )
         }
     }
@@ -137,45 +294,38 @@ fun StatMiniCard(
 
 @Composable
 fun StatsRow(
-    dueCount: Int,
     streakDays: Int,
     reviewedToday: Int,
     modifier: Modifier = Modifier,
 ) {
+    val extras = NeurodeckTheme.extras
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        StatMiniCard(
-            icon = Icons.Outlined.Timer,
-            value = dueCount.toString(),
-            label = "Due Cards",
-            accentColor = MaterialTheme.colorScheme.error,
-            modifier = Modifier.weight(1f),
-        )
-        StatMiniCard(
+        StatCard(
             icon = Icons.Outlined.LocalFireDepartment,
-            value = "$streakDays hari",
-            label = "Streak",
-            accentColor = MaterialTheme.colorScheme.tertiary,
+            value = streakDays.toString(),
+            label = "hari beruntun",
+            container = extras.streakContainer,
+            onContainer = extras.onStreakContainer,
+            iconTint = extras.streakIcon,
             modifier = Modifier.weight(1f),
         )
-        StatMiniCard(
-            icon = Icons.Outlined.School,
+        StatCard(
+            icon = Icons.Outlined.CheckCircle,
             value = reviewedToday.toString(),
-            label = "Hari Ini",
-            accentColor = MaterialTheme.colorScheme.primary,
+            label = "kartu hari ini",
+            container = extras.successContainer,
+            onContainer = extras.onSuccessContainer,
+            iconTint = extras.successIcon,
             modifier = Modifier.weight(1f),
         )
     }
 }
 
-/**
- * Quick action buttons — INVERTED (black) untuk "Belajar Sekarang" dan
- * OUTLINED untuk "Deck Baru". Sesuai pattern Stitch button system.
- */
 @Composable
 fun QuickActionsRow(
     onCreateDeck: () -> Unit,
@@ -188,61 +338,59 @@ fun QuickActionsRow(
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        OutlinedButton(
-            onClick = onCreateDeck,
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(vertical = 14.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            shape = RoundedCornerShape(10.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Add,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = "Deck Baru",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
-        // Filled primary button = main CTA "Belajar Sekarang"
         Button(
-            onClick = onStudyNow,
+            onClick = onCreateDeck,
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(14.dp),
+        ) {
+            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Buat Deck", fontWeight = FontWeight.SemiBold)
+        }
+        OutlinedButton(
+            onClick = onStudyNow,
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(vertical = 14.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            shape = RoundedCornerShape(14.dp),
         ) {
             Icon(
-                imageVector = Icons.Outlined.PlayArrow,
+                Icons.Outlined.Style,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Belajar Sekarang",
+                "Semua Deck",
                 fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
     }
 }
 
-/**
- * Recent deck item — OutlinedCard dengan colored accent strip di kiri.
- * Mimicking Stitch library card style.
- */
 @Composable
 fun RecentDeckItem(
     deck: Deck,
+    dueCount: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val extras = NeurodeckTheme.extras
+    val iconBrush = if (deck.id % 2L == 0L) extras.deckBrushPrimary else extras.deckBrushPink
+
+    val subtitle = if (dueCount > 0) {
+        "${deck.cardCount} kartu · $dueCount jatuh tempo"
+    } else {
+        "${deck.cardCount} kartu"
+    }
+
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
@@ -251,75 +399,55 @@ fun RecentDeckItem(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(18.dp),
         onClick = onClick,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Left accent strip (purple)
             Box(
                 modifier = Modifier
-                    .width(4.dp)
-                    .height(70.dp)
-                    .clip(RoundedCornerShape(topStart = 2.dp, bottomStart = 2.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-            )
-
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(iconBrush),
+                contentAlignment = Alignment.Center,
             ) {
-                // Icon container — square outlined
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Style,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.Style,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = deck.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                    )
-                    if (deck.description.isNotBlank()) {
-                        Text(
-                            text = deck.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "${deck.cardCount} kartu",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = deck.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (dueCount > 0) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    fontWeight = if (dueCount > 0) FontWeight.SemiBold else FontWeight.Normal,
+                )
             }
         }
     }
 }
 
-/**
- * Tips card — sticky-note look (yellow tertiary) untuk tip of the day.
- */
 @Composable
 fun TipsCard(
     tip: String,
@@ -330,21 +458,35 @@ fun TipsCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(16.dp),
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            StickyNoteBadge(text = "TIPS HARI INI")
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = tip,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
+        Row(
+            modifier = Modifier.padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.TipsAndUpdates,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(22.dp),
             )
+            Column {
+                Text(
+                    text = "Tips hari ini",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = tip,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
         }
     }
 }
-
-// (End of file)

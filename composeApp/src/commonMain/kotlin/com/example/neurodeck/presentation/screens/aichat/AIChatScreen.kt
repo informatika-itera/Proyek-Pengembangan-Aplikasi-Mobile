@@ -50,29 +50,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.example.neurodeck.presentation.theme.NeurodeckTheme
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.neurodeck.domain.model.ChatMessage
 import com.example.neurodeck.domain.model.MessageRole
 import com.example.neurodeck.presentation.components.ConfirmDialog
 import org.koin.compose.viewmodel.koinViewModel
-
-// ════════════════════════════════════════════════════════════════════════════
-// AIChatScreen.kt — Sprint 2 P3f.4
-//
-// 💬 AI Chat Tab — Tutor AI conversational.
-//
-// Layout (bottom-up):
-//   1. Chat input row di paling bawah (sticky)
-//   2. Typing indicator (kalau AI sedang reply) di atas chat input
-//   3. LazyColumn message bubbles (auto-scroll ke bottom saat ada new msg)
-//   4. Welcome state kalau chat kosong: greeting + suggestion chips
-//
-// Note: TopBar action button "clear chat" tidak ditambahkan ke AppTopBar
-// supaya AppNavHost tetap simple (chrome generic). Sebagai gantinya, tombol
-// clear di-letakkan inline di body (header chat) — accessible via scroll up.
-// Trade-off acceptable Sprint 2.
-// ════════════════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,20 +67,14 @@ fun AIChatScreen(
     val listState = rememberLazyListState()
     var showClearConfirm by remember { mutableStateOf(false) }
 
-    // Auto-scroll ke pesan terbaru saat list bertambah atau saat AI typing.
-    // LaunchedEffect key = messages.size + isAITyping supaya re-trigger.
     LaunchedEffect(uiState.messages.size, uiState.isAITyping) {
         if (uiState.messages.isNotEmpty()) {
-            // animateScrollToItem ke index terakhir (+1 kalau ada typing indicator)
             listState.animateScrollToItem(uiState.messages.size)
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // ════════════════════════════════════════════════════════════════
-            // MAIN CONTENT — chat list OR welcome state
-            // ════════════════════════════════════════════════════════════════
             Box(modifier = Modifier.weight(1f)) {
                 if (uiState.isEmpty) {
                     EmptyChatWelcome(
@@ -113,9 +91,6 @@ fun AIChatScreen(
                 }
             }
 
-            // ════════════════════════════════════════════════════════════════
-            // INPUT ROW — sticky di bottom
-            // ════════════════════════════════════════════════════════════════
             ChatInputRow(
                 text = uiState.inputText,
                 canSend = uiState.canSend,
@@ -140,7 +115,6 @@ fun AIChatScreen(
         }
     }
 
-    // Clear chat confirmation dialog
     if (showClearConfirm) {
         ConfirmDialog(
             title = "Hapus Riwayat Chat?",
@@ -156,9 +130,7 @@ fun AIChatScreen(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// EMPTY STATE — Welcome + suggestion chips
-// ════════════════════════════════════════════════════════════════════════════
+// EMPTY STATE
 
 @Composable
 private fun EmptyChatWelcome(
@@ -202,7 +174,6 @@ private fun EmptyChatWelcome(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Vertical list of suggestion chips (each on its own row, full width)
         suggestions.forEach { suggestion ->
             Spacer(modifier = Modifier.height(8.dp))
             SuggestionChip(
@@ -246,9 +217,7 @@ private fun SuggestionChip(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // CHAT MESSAGE LIST
-// ════════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun ChatMessageList(
@@ -263,8 +232,6 @@ private fun ChatMessageList(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Header inline dengan tombol Clear (karena TopBar shared global tidak
-        // bisa di-customize per-screen di P3a setup).
         item {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
@@ -296,23 +263,17 @@ private fun ChatMessageList(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MESSAGE BUBBLE — alternating left/right alignment by role
-// ════════════════════════════════════════════════════════════════════════════
+// MESSAGE BUBBLE
 
 @Composable
 private fun MessageBubble(message: ChatMessage) {
     val isUser = message.role == MessageRole.User
+    val extras = NeurodeckTheme.extras
 
-    val backgroundColor = when {
-        message.isError -> MaterialTheme.colorScheme.errorContainer
-        isUser -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
     val textColor = when {
         message.isError -> MaterialTheme.colorScheme.onErrorContainer
-        isUser -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+        isUser -> Color.White
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     Row(
@@ -332,9 +293,14 @@ private fun MessageBubble(message: ChatMessage) {
                     end = if (isUser) 0.dp else 48.dp,
                 )
                 .clip(bubbleShape)
-                .background(backgroundColor)
                 .then(
-                    // AI/error bubble dapat border tegas (Vivid Logic); user bubble tidak
+                    when {
+                        isUser -> Modifier.background(extras.navActiveBrush)
+                        message.isError -> Modifier.background(MaterialTheme.colorScheme.errorContainer)
+                        else -> Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                    },
+                )
+                .then(
                     if (!isUser) {
                         Modifier.border(
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
@@ -353,9 +319,7 @@ private fun MessageBubble(message: ChatMessage) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// TYPING INDICATOR — animated 3 dots
-// ════════════════════════════════════════════════════════════════════════════
+// TYPING INDICATOR
 
 @Composable
 private fun TypingIndicatorBubble() {
@@ -409,9 +373,7 @@ private fun TypingDot(delayMillis: Int) {
     )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CHAT INPUT ROW — sticky bottom
-// ════════════════════════════════════════════════════════════════════════════
+// CHAT INPUT ROW
 
 @Composable
 private fun ChatInputRow(

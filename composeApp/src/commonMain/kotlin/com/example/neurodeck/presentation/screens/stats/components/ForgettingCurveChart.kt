@@ -32,38 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.exp
 
-// ════════════════════════════════════════════════════════════════════════════
-// ForgettingCurveChart.kt — Sprint 2 P4 STRETCH GOAL ⭐
-//
-// 🧠 UNIQUE SELLING POINT NeuroDeck — visualisasi Ebbinghaus Forgetting Curve.
-//
-// KONSEP:
-//   Formula Ebbinghaus (1885): R(t) = e^(-t/S)
-//     - R = probabilitas recall (0-1)
-//     - t = waktu (hari) sejak review terakhir
-//     - S = stability (memory strength), dalam praktik proxy dari SM-2 interval
-//
-//   Insight kunci spaced repetition:
-//     - Kartu baru (S=1): cepat dilupakan — hari ke-3 sudah lupa 95%
-//     - Kartu learning (S=6): hari ke-14 ingat 10%, hari ke-30 ingat 0.7%
-//     - Kartu mastered (S=30): hari ke-30 ingat 37%, hari ke-90 ingat 5%
-//
-//   SM-2 menjadwalkan review TEPAT sebelum probabilitas turun di bawah ~85%
-//   (sweet spot untuk strengthening tanpa over-studying). Inilah mengapa
-//   "spaced repetition lebih efektif daripada cramming".
-//
-// VISUALISASI:
-//   3 kurva overlay di Canvas:
-//     - 🔴 Light blue (S=1):  proxy kartu baru
-//     - 🟡 Medium blue (S=6): proxy kartu learning
-//     - 🟢 Deep blue (S=30):  proxy kartu mastered
-//
-//   X-axis: 0 hingga 30 hari ke depan
-//   Y-axis: 0% hingga 100% retention probability
-//
-//   Plus annotation: "Tanpa review, kartu baru kamu lupa dalam X hari"
-// ════════════════════════════════════════════════════════════════════════════
-
 /**
  * Forgetting Curve chart dengan 3 kurva overlay representasi tipe kartu.
  *
@@ -92,7 +60,7 @@ fun ForgettingCurveChart(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Header
@@ -111,7 +79,6 @@ fun ForgettingCurveChart(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Canvas chart
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,9 +89,7 @@ fun ForgettingCurveChart(
                 val originX = 24.dp.toPx()                    // reserve left for y-labels
                 val originY = 0f
 
-                // ════════════════════════════════════════════════════════════
                 // GRID LINES (4 horizontal: 0%, 25%, 50%, 75%, 100%)
-                // ════════════════════════════════════════════════════════════
                 val gridStroke = Stroke(width = 1.dp.toPx())
                 for (i in 0..4) {
                     val y = originY + (i.toFloat() / 4f) * chartHeight
@@ -136,11 +101,6 @@ fun ForgettingCurveChart(
                     )
                 }
 
-                // ════════════════════════════════════════════════════════════
-                // 85% SM-2 SWEET SPOT — dashed horizontal line
-                // ════════════════════════════════════════════════════════════
-                // SM-2 jadwalkan review sebelum retention drop di bawah ~85%.
-                // Visualkan threshold ini biar user paham "kenapa SM-2 work".
                 val sweetSpotY = originY + (1f - 0.85f) * chartHeight
                 drawLine(
                     color = targetThresholdColor,
@@ -153,22 +113,15 @@ fun ForgettingCurveChart(
                     ),
                 )
 
-                // ════════════════════════════════════════════════════════════
-                // 3 KURVA forgetting curve
-                // Formula: y(t) = exp(-t / S)
-                // Sample 60 titik (setiap 0.5 hari) untuk smooth curve
-                // ════════════════════════════════════════════════════════════
                 val daysRange = 30
                 val sampleCount = 60
 
-                // Helper: convert (day, retentionFraction) ke canvas (x, y)
                 fun toCanvasPoint(day: Float, retention: Float): Offset {
                     val x = originX + (day / daysRange) * chartWidth
                     val y = originY + (1f - retention) * chartHeight
                     return Offset(x, y)
                 }
 
-                // Helper: draw curve untuk stability tertentu
                 fun drawCurve(stability: Double, color: Color, strokeWidth: Float) {
                     val path = Path()
                     var first = true
@@ -200,9 +153,7 @@ fun ForgettingCurveChart(
                 drawCurve(stability = 30.0, color = masteredColor, strokeWidth = 2.5.dp.toPx())
             }
 
-            // ════════════════════════════════════════════════════════════════
             // X-AXIS LABELS (Hari 0, 7, 14, 21, 30)
-            // ════════════════════════════════════════════════════════════════
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -220,9 +171,7 @@ fun ForgettingCurveChart(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ════════════════════════════════════════════════════════════════
-            // LEGEND — 3 colored dots + label
-            // ════════════════════════════════════════════════════════════════
+            // LEGEND
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 LegendItem(
                     color = newCardColor,
@@ -257,9 +206,7 @@ fun ForgettingCurveChart(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ════════════════════════════════════════════════════════════════
             // INSIGHT FOOTER
-            // ════════════════════════════════════════════════════════════════
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(

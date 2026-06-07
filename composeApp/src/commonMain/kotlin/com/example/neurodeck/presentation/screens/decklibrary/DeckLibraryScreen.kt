@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,7 +19,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.ui.draw.clip
-import com.example.neurodeck.presentation.components.StickyNoteBadge
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -28,8 +26,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -46,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,55 +52,30 @@ import com.example.neurodeck.domain.model.Deck
 import com.example.neurodeck.presentation.components.EmptyState
 import com.example.neurodeck.presentation.components.ErrorMessage
 import com.example.neurodeck.presentation.components.LoadingIndicator
+import com.example.neurodeck.presentation.theme.NeurodeckTheme
 import org.koin.compose.viewmodel.koinViewModel
 
-// ════════════════════════════════════════════════════════════════════════════
-// DeckLibraryScreen.kt — REFACTORED untuk Sprint 2 P3d
-//
-// Perubahan dari versi sebelumnya:
-//   ❌ Scaffold + TopAppBar dihapus — chrome di-handle oleh AppNavHost
-//   ❌ FAB Scaffold dihapus — dipindah ke ExtendedFAB inline (bisa custom layout)
-//   ✅ Search bar di atas list (cicilan Sprint 3 Search/Filter 25% rubric)
-//   ✅ State NoSearchResults baru untuk UX search yang lebih jelas
-//   ✅ 2 entry point create: FAB biasa (manual) + button "AI Generate" (ke ImportGenerate)
-//   ✅ Delete dialog pakai ConfirmDialog reusable dari components/Dialogs.kt
-//
-// Kenapa tidak Scaffold di sini?
-//   AppNavHost punya Scaffold root dengan TopBar+BottomNav.
-//   Kalau screen juga punya Scaffold sendiri → double Scaffold = bug visual:
-//   FAB akan terpotong bottom nav, padding double, dll.
-//   Pattern Material 3 untuk bottom-nav apps: Scaffold di ROOT, screen
-//   render content saja.
-// ════════════════════════════════════════════════════════════════════════════
-
 /**
- * Decks Tab — list semua deck dengan search bar + 2 entry point create.
- *
- * Navigation contract:
  *   @param onDeckClick           User tap deck card → navigate ke CardList.
  *   @param onCreateDeck          User tap FAB "Buat Deck" → CreateDeck screen.
  *   @param onImportGenerate      User tap "AI Generate" → ImportGenerate (deckId=0).
- *
- * UI state pattern: collect StateFlow dari ViewModel, exhaustive when di body.
  */
 @Composable
 fun DeckLibraryScreen(
     onDeckClick: (deckId: Long) -> Unit,
-    onCreateDeck: () -> Unit = {},          // P3d.2 — placeholder default biar tidak break call site lama
-    onImportGenerate: () -> Unit = {},      // P3d.3 — placeholder default
+    onCreateDeck: () -> Unit = {},
+    onImportGenerate: () -> Unit = {},
     viewModel: DeckLibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    // Edit dialog state (lokal — tidak perlu di ViewModel karena tidak persist)
+    // Edit dialog state (lokal)
     var deckToEdit by remember { mutableStateOf<Deck?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // ════════════════════════════════════════════════════════════════
-            // SEARCH BAR — selalu tampil (kecuali state Empty awal)
-            // ════════════════════════════════════════════════════════════════
+            // SEARCH BAR
             if (uiState !is DeckLibraryUiState.Empty &&
                 uiState !is DeckLibraryUiState.Loading
             ) {
@@ -111,15 +85,10 @@ fun DeckLibraryScreen(
                     onClear = viewModel::clearSearch,
                 )
 
-                // Tombol AI Generate sebagai shortcut button di bawah search bar.
-                // Visible kalau ada deck atau search active — supaya user selalu
-                // bisa quick-access AI feature.
                 AIGenerateBanner(onClick = onImportGenerate)
             }
 
-            // ════════════════════════════════════════════════════════════════
-            // CONTENT — state-dependent
-            // ════════════════════════════════════════════════════════════════
+            // CONTENT
             when (val state = uiState) {
                 DeckLibraryUiState.Loading -> LoadingIndicator()
 
@@ -148,9 +117,7 @@ fun DeckLibraryScreen(
             }
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        // FAB Create Deck — overlay di pojok kanan bawah
-        // ════════════════════════════════════════════════════════════════════
+        // FAB Create Deck
         ExtendedFloatingActionButton(
             onClick = onCreateDeck,
             modifier = Modifier
@@ -161,9 +128,7 @@ fun DeckLibraryScreen(
         )
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // EDIT DIALOG — opens saat user tap icon edit di DeckCard
-    // ════════════════════════════════════════════════════════════════════════
+    // EDIT DIALOG
     deckToEdit?.let { deck ->
         DeckFormDialog(
             initialDeck = deck,
@@ -176,14 +141,8 @@ fun DeckLibraryScreen(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // PRIVATE COMPOSABLES
-// ════════════════════════════════════════════════════════════════════════════
 
-/**
- * Search bar — OutlinedTextField dengan search icon kiri + clear icon kanan.
- * Clear icon hanya muncul kalau query non-empty (clean UX).
- */
 @Composable
 private fun SearchBar(
     query: String,
@@ -225,46 +184,47 @@ private fun SearchBar(
     )
 }
 
-/**
- * Banner "AI Generate" — Card horizontal yang clickable, di bawah search bar.
- * Eye-catching dengan tertiaryContainer color + sparkle icon.
- */
 @Composable
 private fun AIGenerateBanner(onClick: () -> Unit) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        ),
-        shape = RoundedCornerShape(12.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(NeurodeckTheme.extras.heroBrush)
+            .clickable(onClick = onClick)
+            .padding(14.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(
-                imageVector = Icons.Outlined.AutoAwesome,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(modifier = Modifier.size(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "AI Generate Kartu",
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
                 )
                 Text(
                     text = "Paste materi → AI bikin flashcard otomatis",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = Color.White.copy(alpha = 0.9f),
                 )
             }
         }
@@ -285,9 +245,6 @@ private fun NoSearchResultsState(
     )
 }
 
-/**
- * Daftar deck dalam LazyColumn (efficient scrolling).
- */
 @Composable
 private fun DeckList(
     decks: List<Deck>,
@@ -300,7 +257,6 @@ private fun DeckList(
             start = 16.dp,
             end = 16.dp,
             top = 8.dp,
-            // Extra bottom padding biar last item tidak ke-cover oleh FAB.
             bottom = 96.dp,
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -325,6 +281,12 @@ private fun DeckCard(
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
+    val iconBrush = if (deck.id % 2L == 0L) {
+        NeurodeckTheme.extras.deckBrushPrimary
+    } else {
+        NeurodeckTheme.extras.deckBrushPink
+    }
+
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -333,57 +295,67 @@ private fun DeckCard(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(18.dp),
     ) {
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Left accent strip (purple) — Vivid Logic signature
             Box(
                 modifier = Modifier
-                    .width(4.dp)
-                    .height(88.dp)
-                    .background(MaterialTheme.colorScheme.primary),
-            )
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(iconBrush),
+                contentAlignment = Alignment.Center,
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Icon(
+                    imageVector = Icons.Outlined.Style,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = deck.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                )
+                if (deck.description.isNotBlank()) {
                     Text(
-                        text = deck.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    if (deck.description.isNotBlank()) {
-                        Text(
-                            text = deck.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    StickyNoteBadge(
-                        text = "${deck.cardCount} KARTU",
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        text = deck.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        modifier = Modifier.padding(top = 2.dp),
                     )
                 }
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit Deck",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                IconButton(onClick = { showDeleteConfirm = true }) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Hapus Deck",
-                        tint = MaterialTheme.colorScheme.error,
-                    )
-                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${deck.cardCount} kartu",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            IconButton(onClick = onEdit) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit Deck",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            IconButton(onClick = { showDeleteConfirm = true }) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Hapus Deck",
+                    tint = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }
@@ -417,16 +389,6 @@ private fun DeckCard(
     }
 }
 
-/**
- * Dialog form deck — dipakai untuk EDIT (CREATE sekarang via CreateDeckScreen).
- *
- * Mode di-detect dari [initialDeck]:
- * - non-null → EDIT mode (field pre-filled, title "Edit Deck")
- *
- * NOTE: CREATE mode masih supported (initialDeck=null) tapi sekarang flow
- * create utama via CreateDeckScreen sub-screen, bukan dialog. Dialog ini
- * tetap dipertahankan kalau perlu quick-create future.
- */
 @Composable
 private fun DeckFormDialog(
     initialDeck: Deck?,

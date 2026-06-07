@@ -5,26 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-
-// ════════════════════════════════════════════════════════════════════════════
-// NeuroDeck Theme Entry Point
-//
-// Apply ke root composition di App.kt:
-//   neurodeckTheme(darkTheme = isSystemInDarkTheme()) {
-//       AppNavHost(...)
-//   }
-//
-// Theme menyediakan:
-//   1. ColorScheme — Vivid Logic (light) / Midnight (dark)
-//   2. Typography  — Bricolage Grotesque + JetBrains Mono
-//
-// Default: ikut system (light atau dark). User bisa override via
-// UserPreferencesRepository.themeMode (Light/Dark/System).
-// ════════════════════════════════════════════════════════════════════════════
-
-// ════════════════════════════════════════════════════════════════════════════
-// COLOR SCHEMES — Material 3 standard mapping
-// ════════════════════════════════════════════════════════════════════════════
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val LightColorScheme = lightColorScheme(
     primary = LightTokens.Primary,
@@ -88,9 +69,7 @@ private val DarkColorScheme = darkColorScheme(
     outlineVariant = DarkTokens.OutlineVariant,
 )
 
-// ════════════════════════════════════════════════════════════════════════════
 // THEME COMPOSABLE
-// ════════════════════════════════════════════════════════════════════════════
 
 /**
  * Root theme wrapper untuk NeuroDeck.
@@ -105,10 +84,13 @@ fun neurodeckTheme(
     content: @Composable () -> Unit,
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val extras = if (darkTheme) darkExtras() else lightExtras()
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = neuroDeckTypography(),
-        content = content,
-    )
+    CompositionLocalProvider(LocalNeurodeckExtras provides extras) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = neuroDeckTypography(),
+            content = content,
+        )
+    }
 }

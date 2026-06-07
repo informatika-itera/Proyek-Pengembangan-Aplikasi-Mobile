@@ -44,27 +44,8 @@ import com.example.neurodeck.presentation.components.SectionTitle
 import com.example.neurodeck.presentation.navigation.AppTopBar
 import org.koin.compose.viewmodel.koinViewModel
 
-// ════════════════════════════════════════════════════════════════════════════
-// CreateDeckScreen.kt — Sprint 2 P3d.2
-//
-// Form 2-step utk bikin deck baru:
-//   1. Input nama (required, min 3 char) + deskripsi (opsional)
-//   2. Pilih cara fill kartu: Manual atau AI Generate
-//   3. Setelah "Lanjutkan" → save deck → navigate sesuai pilihan
-//
-// UX pattern: user pilih METODE generation DULU sebelum input nama? Atau
-// nama dulu? Saya pilih NAMA DULU karena:
-//   - Nama deck adalah informasi inti (mandatory), generation method adalah
-//     workflow choice (bisa di-defer).
-//   - Kalau user pilih AI tapi ganti pikiran ke Manual, dia tidak perlu
-//     re-input nama.
-//   - Pattern sama dengan Notion/Anki: nama dulu, content method kemudian.
-// ════════════════════════════════════════════════════════════════════════════
 
 /**
- * CreateDeck screen — form bikin deck baru + pilih metode generation.
- *
- * Navigation contract:
  *   @param onBack            User tap back arrow → popBackStack.
  *   @param onSavedManual     Deck saved + user pilih MANUAL → navigate ke
  *                            CardList(deckId) untuk add card manually.
@@ -81,9 +62,6 @@ fun CreateDeckScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Local state: pilihan metode generation. Default Manual.
-    // Bisa pakai ViewModel field tapi overkill — ini pure UI state, tidak
-    // perlu survive process death.
     var selectedMethod by remember { mutableStateOf(GenerationMethod.Manual) }
 
     Scaffold(
@@ -101,9 +79,6 @@ fun CreateDeckScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            // ════════════════════════════════════════════════════════════════
-            // STEP 1: Form Input
-            // ════════════════════════════════════════════════════════════════
             SectionTitle(text = "Informasi Deck")
 
             OutlinedTextField(
@@ -146,9 +121,6 @@ fun CreateDeckScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ════════════════════════════════════════════════════════════════
-            // STEP 2: Pilih Metode Generation
-            // ════════════════════════════════════════════════════════════════
             SectionTitle(text = "Cara Buat Kartu")
 
             Column(
@@ -174,9 +146,7 @@ fun CreateDeckScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ════════════════════════════════════════════════════════════════
-            // ERROR MESSAGE (kalau ada)
-            // ════════════════════════════════════════════════════════════════
+            // ERROR MESSAGE
             uiState.errorMessage?.let { msg ->
                 Text(
                     text = msg,
@@ -187,9 +157,7 @@ fun CreateDeckScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // ════════════════════════════════════════════════════════════════
             // SUBMIT BUTTON
-            // ════════════════════════════════════════════════════════════════
             Button(
                 onClick = {
                     viewModel.saveDeck { deckId ->
@@ -203,6 +171,7 @@ fun CreateDeckScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(14.dp),
                 contentPadding = PaddingValues(vertical = 14.dp),
             ) {
                 if (uiState.isSaving) {
@@ -223,24 +192,12 @@ fun CreateDeckScreen(
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // SUPPORTING TYPES & COMPOSABLES
-// ════════════════════════════════════════════════════════════════════════════
-
-/**
- * Pilihan metode generation. Pakai enum supaya:
- *   - Compile-time exhaustive when di Screen
- *   - Mudah extend kalau tambah method baru (e.g. Import from CSV)
- */
 private enum class GenerationMethod {
     Manual,
     AIGenerate,
 }
 
-/**
- * Selectable card untuk pilih metode generation.
- * Selected state ditandai via border tebal + primaryContainer background.
- */
 @Composable
 private fun MethodOptionCard(
     title: String,
@@ -259,7 +216,7 @@ private fun MethodOptionCard(
                 MaterialTheme.colorScheme.surface
             },
         ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(
             width = if (selected) 2.dp else 1.dp,
             color = if (selected) {

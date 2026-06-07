@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -31,15 +32,6 @@ import com.example.neurodeck.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/**
- * EditCard screen — edit kartu existing.
- *
- * Hampir identik dengan AddCardScreen, tapi:
- * - Title "Edit Kartu" (bukan "Kartu Baru")
- * - Field pre-filled saat load
- * - Save button label "Simpan Perubahan" (bukan "Simpan Kartu")
- * - Loading state saat init (load card dari DB)
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditCardScreen(
@@ -102,7 +94,7 @@ private fun EditCardForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // ===== FRONT (Pertanyaan) =====
+        //FRONT (Pertanyaan)
         Text(
             text = "Pertanyaan",
             style = MaterialTheme.typography.titleMedium,
@@ -118,7 +110,7 @@ private fun EditCardForm(
             enabled = !uiState.isSaving,
         )
 
-        // ===== BACK (Jawaban) =====
+        // BACK (Jawaban
         Text(
             text = "Jawaban",
             style = MaterialTheme.typography.titleMedium,
@@ -135,7 +127,7 @@ private fun EditCardForm(
             enabled = !uiState.isSaving,
         )
 
-        // ===== ERROR MESSAGE (kalau ada) =====
+        // ERROR MESSAGE
         uiState.errorMessage?.let { error ->
             Text(
                 text = error,
@@ -144,11 +136,12 @@ private fun EditCardForm(
             )
         }
 
-        // ===== SAVE BUTTON =====
+        // SAVE BUTTON
         Button(
             onClick = onSave,
             enabled = uiState.canSave,
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp),
+            shape = RoundedCornerShape(14.dp),
+            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 14.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
             if (uiState.isSaving) {

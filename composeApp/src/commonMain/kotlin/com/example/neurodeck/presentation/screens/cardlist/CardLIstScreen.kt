@@ -17,8 +17,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
@@ -46,12 +48,19 @@ import com.example.neurodeck.presentation.components.ErrorMessage
 import com.example.neurodeck.presentation.components.LoadingIndicator
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.compose.material.icons.filled.Edit
 
+/**
+ * - [onAddCard]: navigate ke AddCardScreen dengan deckId
+ * - [onStartStudy]: navigate ke StudySessionScreen dengan deckId
+ * - [onBack]: pop back stack
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardListScreen(
     deckId: Long,
     onAddCard: (Long) -> Unit,
+    onEditCard: (Long) -> Unit,
     onStartStudy: (Long) -> Unit,
     onBack: () -> Unit,
     viewModel: CardListViewModel = koinViewModel { parametersOf(deckId) },
@@ -80,7 +89,6 @@ fun CardListScreen(
             )
         },
         floatingActionButton = {
-            // FAB hanya muncul saat state Success (tidak Loading/Error)
             if (uiState is CardListUiState.Success) {
                 FloatingActionButton(onClick = { onAddCard(deckId) }) {
                     Icon(Icons.Default.Add, contentDescription = "Tambah Kartu")
@@ -107,6 +115,7 @@ fun CardListScreen(
                         CardListContent(
                             cards = state.cards,
                             onStartStudy = { onStartStudy(deckId) },
+                            onEditCard = onEditCard,
                             onDeleteCard = viewModel::deleteCard,
                         )
                     }
@@ -120,10 +129,11 @@ fun CardListScreen(
 private fun CardListContent(
     cards: List<Card>,
     onStartStudy: () -> Unit,
+    onEditCard: (Long) -> Unit,
     onDeleteCard: (Long) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header: tombol Mulai Belajar
+        // Header: tombol Mulai Belajar (full width, prominent)
         ExtendedFloatingActionButton(
             onClick = onStartStudy,
             modifier = Modifier
@@ -150,6 +160,7 @@ private fun CardListContent(
             items(items = cards, key = { it.id }) { card ->
                 CardItem(
                     card = card,
+                    onEdit = { onEditCard(card.id) },
                     onDelete = { onDeleteCard(card.id) },
                 )
             }
@@ -160,15 +171,21 @@ private fun CardListContent(
 @Composable
 private fun CardItem(
     card: Card,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    Card(
+    OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline,
+        ),
+        shape = RoundedCornerShape(16.dp),
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -186,6 +203,13 @@ private fun CardItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                     maxLines = 2,
+                )
+            }
+            IconButton(onClick = onEdit) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit Kartu",
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
             IconButton(onClick = { showDeleteConfirm = true }) {

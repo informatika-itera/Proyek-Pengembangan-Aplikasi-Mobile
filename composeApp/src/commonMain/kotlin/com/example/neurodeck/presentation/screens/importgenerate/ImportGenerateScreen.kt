@@ -46,24 +46,8 @@ import com.example.neurodeck.presentation.navigation.AppTopBar
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-// ════════════════════════════════════════════════════════════════════════════
-// ImportGenerateScreen.kt — Sprint 2 P3d.3
-//
-// AI Flashcard Generation flow. 4 visual phases:
-//
-//   📝 INPUT      → TextField materi (multiline) + slider jumlah cards + tombol Generate
-//   ⏳ GENERATING → progress indicator + "AI sedang berpikir..."
-//   👁️ PREVIEW    → LazyColumn drafts editable, tombol "Simpan Semua"
-//   💾 SAVING     → progress indicator + "Menyimpan ke deck..."
-//   ✅ DONE       → trigger onCompleted callback (LaunchedEffect)
-//   ❌ ERROR      → error message + Retry button
-//
-// State driven by ImportGenerateViewModel.uiState.phase.
-// ════════════════════════════════════════════════════════════════════════════
 
 /**
- * AI Flashcard Generation screen.
- *
  * @param deckId       Target deck. Pass dari nav argument.
  * @param onBack       Pop back stack (cancel).
  * @param onCompleted  Dipanggil saat semua cards selesai di-save.
@@ -76,14 +60,11 @@ fun ImportGenerateScreen(
     onBack: () -> Unit,
     onCompleted: (deckId: Long, savedCount: Int) -> Unit,
     viewModel: ImportGenerateViewModel = koinViewModel(
-        // Pass deckId sebagai parameter ke factory di Koin module.
         parameters = { parametersOf(deckId) },
     ),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Side effect: saat phase = Done, trigger callback navigation.
-    // LaunchedEffect dengan key = phase → re-run setiap kali phase berubah.
     LaunchedEffect(uiState.phase) {
         if (uiState.phase == GeneratePhase.Done) {
             onCompleted(deckId, uiState.savedCardsCount)
@@ -142,10 +123,6 @@ fun ImportGenerateScreen(
         }
     }
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE COMPOSABLES
-// ════════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun InputPhase(
@@ -232,11 +209,11 @@ private fun InputPhase(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // CTA: Generate button
         Button(
             onClick = onGenerate,
             enabled = state.canGenerate,
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
             contentPadding = PaddingValues(vertical = 14.dp),
         ) {
             Icon(
@@ -290,7 +267,7 @@ private fun PreviewPhase(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             ),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -343,6 +320,7 @@ private fun PreviewPhase(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
+            shape = RoundedCornerShape(14.dp),
             contentPadding = PaddingValues(vertical = 14.dp),
         ) {
             Text("Simpan ${state.drafts.size} Kartu ke Deck")
@@ -366,10 +344,9 @@ private fun DraftCard(
             1.dp,
             MaterialTheme.colorScheme.outline,
         ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            // Header row dengan delete button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

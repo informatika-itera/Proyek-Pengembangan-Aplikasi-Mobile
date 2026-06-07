@@ -18,9 +18,7 @@ FoodSaver adalah aplikasi mobile multiplatform berbasis Android-first yang memba
 | Raditya Alrasyid Nugroho | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Dev |
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
-**Dosen Pengampu:** Pak Habib [@mh4Scripts]
-
-(https://github.com/mh4Scripts)
+**Dosen Pengampu:** Pak Habib [@mh4Scripts](https://github.com/mh4Scripts)
 
 ---
 

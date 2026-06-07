@@ -113,10 +113,12 @@ composeApp/src/
 - [x] At least 1 bonus feature implemented (Share Music Progress)
 - [x] All core features dari Sprint 2 tetap working
 
-### Sprint 4: AI & Polish
-- [ ] Integrasikan fitur AI baru
-- [ ] UI polish dan animasi
-- [ ] Tambahkan unit tests
+### Sprint 4: Quality Assurance & UI Polish
+- [x] All known bugs fixed (Dialog konfirmasi & SnackBar)
+- [x] UI polished (Genre Chips, Custom Genre selection dinamis)
+- [x] 10+ unit tests (11 tests for Home & AddMusic ViewModels)
+- [x] 50%+ code coverage achieved
+- [x] README updated dengan progres terbaru
 
 ### Sprint 5: Final
 - [ ] Bug fixes

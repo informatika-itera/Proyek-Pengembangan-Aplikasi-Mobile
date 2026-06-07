@@ -1,6 +1,8 @@
 package com.example.musickeep.presentation.screens.addmusic
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -62,14 +64,37 @@ fun AddMusicScreen(
                 singleLine = true
             )
 
-            OutlinedTextField(
-                value = uiState.genre,
-                onValueChange = viewModel::onGenreChange,
-                label = { Text("Genre / Kategori") },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Contoh: Pop, Rock, Jazz") },
-                singleLine = true
-            )
+            Text("Pilih Genre", style = MaterialTheme.typography.titleSmall)
+            
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(uiState.presetGenres) { genre ->
+                    FilterChip(
+                        selected = uiState.genre == genre && !uiState.isCustomGenre,
+                        onClick = { viewModel.onGenreSelect(genre) },
+                        label = { Text(genre) }
+                    )
+                }
+                item {
+                    FilterChip(
+                        selected = uiState.isCustomGenre,
+                        onClick = { viewModel.onGenreSelect("Lainnya") },
+                        label = { Text("Lainnya") }
+                    )
+                }
+            }
+
+            if (uiState.isCustomGenre) {
+                OutlinedTextField(
+                    value = uiState.genre,
+                    onValueChange = viewModel::onCustomGenreChange,
+                    label = { Text("Kategori Kustom") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Ketik kategori di sini...") },
+                    singleLine = true
+                )
+            }
 
             if (uiState.errorMessage != null) {
                 Text(

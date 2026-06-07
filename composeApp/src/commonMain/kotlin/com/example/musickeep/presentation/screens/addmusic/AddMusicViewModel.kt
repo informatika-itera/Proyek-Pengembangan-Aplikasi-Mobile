@@ -15,9 +15,11 @@ data class AddMusicUiState(
     val title: String = "",
     val artist: String = "",
     val genre: String = "",
+    val isCustomGenre: Boolean = false,
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val presetGenres: List<String> = listOf("Pop", "Rock", "Jazz", "Hip Hop", "RnB")
 )
 
 class AddMusicViewModel(
@@ -31,12 +33,14 @@ class AddMusicViewModel(
             _uiState.update { it.copy(isLoading = true) }
             val music = repository.getMusicById(id)
             if (music != null) {
+                val isCustom = music.genre != null && music.genre !in _uiState.value.presetGenres
                 _uiState.update {
                     it.copy(
                         id = music.id,
                         title = music.title,
                         artist = music.artist,
                         genre = music.genre ?: "",
+                        isCustomGenre = isCustom,
                         isLoading = false
                     )
                 }
@@ -52,7 +56,15 @@ class AddMusicViewModel(
         _uiState.update { it.copy(artist = newArtist) }
     }
 
-    fun onGenreChange(newGenre: String) {
+    fun onGenreSelect(selectedGenre: String) {
+        if (selectedGenre == "Lainnya") {
+            _uiState.update { it.copy(isCustomGenre = true, genre = "") }
+        } else {
+            _uiState.update { it.copy(isCustomGenre = false, genre = selectedGenre) }
+        }
+    }
+
+    fun onCustomGenreChange(newGenre: String) {
         _uiState.update { it.copy(genre = newGenre) }
     }
 

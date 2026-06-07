@@ -11,13 +11,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.musickeep.domain.model.Music
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,8 +28,13 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    
+    var musicToDelete by remember { mutableStateOf<Music?>(null) }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Katalog Musik") },
@@ -58,7 +62,7 @@ fun HomeScreen(
                 shape = MaterialTheme.shapes.medium
             )
 
-            // Filter Chips (Genre)
+            // Filter Chips
             LazyRow(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -90,12 +94,42 @@ fun HomeScreen(
                         MusicItem(
                             music = music,
                             onClick = { music.id?.let { onNavigateToDetail(it) } },
-                            onDelete = { music.id?.let { viewModel.deleteMusic(it) } }
+                            onDelete = { musicToDelete = music }
                         )
                     }
                 }
             }
         }
+    }
+
+    // Dialog Konfirmasi Hapus (UI Polish - Edge Case)
+    if (musicToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { musicToDelete = null },
+            title = { Text("Hapus Lagu?") },
+            text = { Text("Apakah kamu yakin ingin menghapus '${musicToDelete?.title}' dari katalog?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        musicToDelete?.id?.let { 
+                            viewModel.deleteMusic(it)
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Lagu berhasil dihapus")
+                            }
+                        }
+                        musicToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Hapus")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { musicToDelete = null }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }
 

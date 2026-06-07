@@ -12,28 +12,30 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class NoteRepositoryImpl(
     private val database: StudyMateDatabase
 ) : NoteRepository {
-    private val queries = database.noteQueries
 
     override fun getAllNotes(): Flow<List<Note>> {
-        return queries.selectAllNotes()
+        return database.noteQueries.selectAllNotes()
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { list -> list.map { it.toDomain() } }
     }
 
     override fun getNoteById(id: Long): Flow<Note?> {
-        return queries.selectNoteById(id)
+        return database.noteQueries.selectNoteById(id)
             .asFlow()
             .mapToOneOrNull(Dispatchers.IO)
             .map { it?.toDomain() }
     }
 
     override fun getNotesBySubject(subject: String): Flow<List<Note>> {
-        return queries.selectNotesBySubject(subject)
+        return database.noteQueries.selectNotesBySubject(subject)
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { list -> list.map { it.toDomain() } }
@@ -41,7 +43,7 @@ class NoteRepositoryImpl(
 
     override suspend fun insertNote(note: Note): Long {
         return withContext(Dispatchers.IO) {
-            queries.insertNote(
+            database.noteQueries.insertNote(
                 title = note.title,
                 rawContent = note.rawContent,
                 refinedContent = note.refinedContent,
@@ -50,13 +52,21 @@ class NoteRepositoryImpl(
                 createdAt = note.createdAt,
                 updatedAt = note.updatedAt
             )
-            queries.lastInsertRowId().executeAsOne()
+            val noteId = database.noteQueries.lastInsertRowId().executeAsOne()
+            
+            // Record activity
+            val today = Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date.toString()
+            database.activityQueries.incrementNotesCount(today)
+            
+            noteId
         }
     }
 
     override suspend fun updateNote(note: Note) {
         withContext(Dispatchers.IO) {
-            queries.updateNote(
+            database.noteQueries.updateNote(
                 title = note.title,
                 refinedContent = note.refinedContent,
                 isRefined = if (note.isRefined) 1L else 0L,
@@ -68,7 +78,7 @@ class NoteRepositoryImpl(
 
     override suspend fun deleteNote(id: Long) {
         withContext(Dispatchers.IO) {
-            queries.deleteNote(id)
+            database.noteQueries.deleteNote(id)
         }
     }
 

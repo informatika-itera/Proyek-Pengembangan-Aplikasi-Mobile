@@ -1,0 +1,21 @@
+CREATE TABLE ReminderEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    dueDate INTEGER NOT NULL,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL
+);
+
+insertReminder:
+INSERT INTO ReminderEntity(title, description, dueDate, createdAt)
+VALUES (?, ?, ?, ?);
+
+selectAllReminders:
+SELECT * FROM ReminderEntity ORDER BY dueDate ASC;
+
+deleteReminder:
+DELETE FROM ReminderEntity WHERE id = :id;
+
+lastInsertId:
+SELECT last_insert_rowid();

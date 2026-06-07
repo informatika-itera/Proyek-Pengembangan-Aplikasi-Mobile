@@ -1,6 +1,11 @@
 package com.studymate.core.network
 
-object ApiConfig {
+expect object ApiConfig {
+    val geminiApiKey: String
+    val googleWebClientId: String
+}
+
+object ApiConstants {
     const val GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
     const val GEMINI_MODEL = "gemini-1.5-flash"
 
@@ -12,7 +17,7 @@ object ApiConfig {
                 """
                     Tolong berikan penjelasan mendalam mengenai teks berikut:
                     
-                    $rawNote
+                    ${rawNote}
                     
                     Instruksi:
                     - Berikan penjelasan yang mudah dipahami.
@@ -23,7 +28,7 @@ object ApiConfig {
                 """
                     Tolong ubah teks mentah berikut menggunakan format AI Smart Refine:
                     
-                    $rawNote
+                    ${rawNote}
                     
                     Instruksi:
                     - Berikan Ringkasan terstruktur (poin per poin yang jelas).
@@ -44,15 +49,18 @@ object ApiConfig {
             }
         }
 
-        fun generateQuiz(refinedNote: String): String {
+        fun generateQuiz(noteContent: String): String {
             return """
-                Buatlah 5 soal pilihan ganda berdasarkan catatan berikut:
+                Buatlah 5 soal pilihan ganda berdasarkan materi berikut:
                 
-                $refinedNote
+                ${noteContent}
                 
-                Instruksi:
+                Instruksi Penting:
+                - Prioritaskan membuat soal dari ISI CATATAN secara mendalam.
+                - Pastikan soal menanyakan konsep kunci yang ada dalam materi.
                 - Output harus dalam format JSON murni.
-                - Struktur JSON: { "questions": [{ "question": "", "options": [], "correct": 0, "explanation": "" }] }
+                - Struktur JSON: { "questions": [{ "question": "", "options": ["", "", "", ""], "correct": 0, "explanation": "" }] }
+                - Field "correct" adalah index (0-3) dari jawaban yang benar.
                 - Kembalikan HANYA JSON tanpa teks penjelasan lain di awal atau akhir.
             """.trimIndent()
         }

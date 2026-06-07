@@ -1,0 +1,16 @@
+CREATE TABLE MantraEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL UNIQUE
+);
+
+countMantras:
+SELECT COUNT(*) FROM MantraEntity;
+
+insertMantra:
+INSERT OR IGNORE INTO MantraEntity(text) VALUES (?);
+
+selectRandomMantra:
+SELECT text FROM MantraEntity ORDER BY RANDOM() LIMIT 1;
+
+selectRandomMantraExcluding:
+SELECT text FROM MantraEntity WHERE text != ? ORDER BY RANDOM() LIMIT 1;

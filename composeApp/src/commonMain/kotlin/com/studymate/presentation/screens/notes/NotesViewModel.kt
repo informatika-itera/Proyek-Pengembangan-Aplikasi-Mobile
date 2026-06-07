@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studymate.domain.model.Note
 import com.studymate.domain.repository.NoteRepository
+import com.studymate.domain.repository.ActivityRepository
 import com.studymate.domain.usecase.RefineNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,8 @@ sealed class NoteEvent {
 
 class NotesViewModel(
     private val noteRepository: NoteRepository,
-    private val refineNoteUseCase: RefineNoteUseCase
+    private val refineNoteUseCase: RefineNoteUseCase,
+    private val activityRepository: ActivityRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
@@ -89,6 +91,7 @@ class NotesViewModel(
         if (title.isBlank() || rawContent.isBlank()) return
         viewModelScope.launch {
             noteRepository.insertNote(Note(title = title, rawContent = rawContent, subject = subject))
+            activityRepository.recordNoteCreation()
             _events.emit(NoteEvent.ShowMessage("Catatan berhasil disimpan!"))
         }
     }

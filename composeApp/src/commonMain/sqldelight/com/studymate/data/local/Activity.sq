@@ -1,0 +1,26 @@
+CREATE TABLE ActivityHeatmapEntity (
+    date TEXT NOT NULL PRIMARY KEY, -- Format "YYYY-MM-DD"
+    quizCount INTEGER NOT NULL DEFAULT 0,
+    notesCount INTEGER NOT NULL DEFAULT 0,
+    totalPoints INTEGER NOT NULL DEFAULT 0
+);
+
+incrementQuizCount:
+INSERT INTO ActivityHeatmapEntity(date, quizCount, notesCount, totalPoints)
+VALUES (:date, 1, 0, 1)
+ON CONFLICT(date) DO UPDATE SET
+    quizCount = quizCount + 1,
+    totalPoints = totalPoints + 1;
+
+incrementNotesCount:
+INSERT INTO ActivityHeatmapEntity(date, quizCount, notesCount, totalPoints)
+VALUES (:date, 0, 1, 1)
+ON CONFLICT(date) DO UPDATE SET
+    notesCount = notesCount + 1,
+    totalPoints = totalPoints + 1;
+
+getActivityHeatmap:
+SELECT * FROM ActivityHeatmapEntity WHERE date >= :startDate;
+
+getTotalQuizCountInDateRange:
+SELECT SUM(quizCount) AS totalQuiz FROM ActivityHeatmapEntity WHERE date >= :startDate AND date <= :endDate;

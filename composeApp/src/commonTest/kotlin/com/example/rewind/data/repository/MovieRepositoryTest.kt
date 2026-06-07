@@ -91,6 +91,127 @@ class MovieRepositoryTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+    @Test
+    fun `getMoviesByStatus should return only matching status`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Selesai", status = WatchStatus.COMPLETED))
+        repository.insertMovie(createTestMovie(title = "Rencana", status = WatchStatus.PLAN_TO_WATCH))
+
+        repository.getMoviesByStatus(WatchStatus.COMPLETED).test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            assertEquals("Selesai", result.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getMoviesByGenre should return only matching genre`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Film Drama", genre = MovieGenre.DRAMA))
+        repository.insertMovie(createTestMovie(title = "Film Aksi", genre = MovieGenre.ACTION))
+
+        repository.getMoviesByGenre(MovieGenre.DRAMA).test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            assertEquals("Film Drama", result.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getMoviesByType should return only matching type`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Film Biasa", type = MovieType.MOVIE))
+        repository.insertMovie(createTestMovie(title = "Serial TV", type = MovieType.SERIES))
+
+        repository.getMoviesByType(MovieType.SERIES).test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            assertEquals("Serial TV", result.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getFavoriteMovies should return movies with rating 8 or above`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Favorit", rating = 9.0f))
+        repository.insertMovie(createTestMovie(title = "Biasa", rating = 5.0f))
+        repository.insertMovie(createTestMovie(title = "Belum Dirating", rating = null))
+
+        repository.getFavoriteMovies().test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            assertEquals("Favorit", result.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchMovies should return empty when no match`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Interstellar"))
+
+        repository.searchMovies("Avengers").test {
+            val result = awaitItem()
+            assertTrue(result.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchMovies should be case insensitive`() = runTest {
+        repository.insertMovie(createTestMovie(title = "Interstellar"))
+
+        repository.searchMovies("interstellar").test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getMovieByID should return null for non-existing id`() = runTest {
+        repository.getMovieByID(999L).test {
+            val result = awaitItem()
+            assertTrue(result == null)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `updateMovie should not affect other movies`() = runTest {
+        val id1 = repository.insertMovie(createTestMovie(title = "Film A"))
+        val id2 = repository.insertMovie(createTestMovie(title = "Film B"))
+
+        repository.updateMovie(createTestMovie(id = id1, title = "Film A Updated"))
+
+        repository.getMovieByID(id2).test {
+            val movie = awaitItem()
+            assertEquals("Film B", movie?.title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `deleteMovie should not affect other movies`() = runTest {
+        val id1 = repository.insertMovie(createTestMovie(title = "Tetap Ada"))
+        val id2 = repository.insertMovie(createTestMovie(title = "Dihapus"))
+
+        repository.deleteMovie(id2)
+
+        repository.getAllMovies().test {
+            val movies = awaitItem()
+            assertEquals(1, movies.size)
+            assertEquals("Tetap Ada", movies.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getAllMovies should return empty list initially`() = runTest {
+        repository.getAllMovies().test {
+            val movies = awaitItem()
+            assertTrue(movies.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
     private fun createTestMovie(
         id: Long = 0,

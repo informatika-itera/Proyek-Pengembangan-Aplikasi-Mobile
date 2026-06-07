@@ -89,6 +89,13 @@ https://github.com/user-attachments/assets/f2e51409-5ccb-4ddc-a641-064c27d1e5c3
 
 https://github.com/user-attachments/assets/1207e725-c0d3-4f95-8303-b1aa204dc24a
 
+https://github.com/user-attachments/assets/07a0acd1-b2a4-4492-9075-09447b0dc128
+
+## Coverage Report
+
+<img width="1600" height="900" alt="WhatsApp Image 2026-06-07 at 22 53 30" src="https://github.com/user-attachments/assets/52f5b318-3207-4e22-8509-1ca7ae53e2ca" />
+
+
 ## 🚀 Setup & Installation
 1. **Clone Repository:**
    ```bash
@@ -102,7 +109,7 @@ https://github.com/user-attachments/assets/1207e725-c0d3-4f95-8303-b1aa204dc24a
 * Pilih konfigurasi run target (`composeApp` untuk Android Emulator/Device atau Desktop).
 * Klik tombol **Run** (ikon segitiga hijau).
 
-> *Proyek ini masih dalam tahap awal pengembangan (Sprint 3).*
+> *Proyek ini masih dalam tahap awal pengembangan (Sprint 4).*
 
 ## 👨‍🏫 Dosen Pengampu
 ### Muhammad Habib Algifari, S.Kom., M.TI.

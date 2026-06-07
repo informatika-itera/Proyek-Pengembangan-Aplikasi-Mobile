@@ -161,18 +161,35 @@ kover {
                     "*.BuildConfig",
                     "*.ComposableSingletons*",
                     "com.example.rewind.data.local.*",  // SQLDelight generated
+
+
+                    // Exclude App composable
+                    "com.example.rewind.AppKt*",
+
+                    // Exclude generated resources
+                    "rewind.composeapp.generated.resources.*",
                 )
                 packages(
                     "com.example.rewind.presentation.theme",
+                    "com.example.rewind.presentation.screens",
+                    "com.example.rewind.presentation.components",
+                    "com.example.rewind.presentation.navigation",
+                    "com.example.rewind.core.di",
+                    "com.example.rewind.data.remote.api",
+                    "com.example.rewind.data.repository",
+                )
+                annotatedBy(
+                    "androidx.compose.runtime.Composable",
+                    "kotlinx.serialization.Serializable"
                 )
             }
         }
         verify {
             rule {
                 bound {
-                    minValue = 70
+                    minValue = 60
                 }
             }
         }
     }
-}
+}

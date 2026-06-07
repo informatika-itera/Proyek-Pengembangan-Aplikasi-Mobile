@@ -1,7 +1,7 @@
 package com.example.rosea.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier // 👈 Tambahan import untuk Modifier
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -17,18 +17,20 @@ import com.example.rosea.presentation.screens.profile.ProfileScreen
 fun AppNavHost(
     navController: NavHostController,
     startDestination: String = Routes.HOME,
-    modifier: Modifier = Modifier // 👈 Tambahan parameter agar jarak layar pas dengan menu bawah
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier // 👈 Modifier dipasang di sini
+        modifier = modifier
     ) {
         composable(Routes.HOME) {
             HomeScreen(
-                // 👇 Hanya tersisa Detail, karena Cart, AI, dan Profil pindah ke Menu Bawah
                 onNavigateToDetail = { productId ->
                     navController.navigate(Routes.createDetailRoute(productId))
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Routes.PROFILE)
                 }
             )
         }
@@ -40,7 +42,8 @@ fun AppNavHost(
             val productId = backStackEntry.arguments?.getLong("productId") ?: return@composable
             DetailScreen(
                 productId = productId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCart = { navController.navigate(Routes.CART) }
             )
         }
 
@@ -58,7 +61,15 @@ fun AppNavHost(
 
         composable(Routes.PROFILE) {
             ProfileScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCart = { navController.navigate(Routes.CART) },
+                onNavigateToEditProfile = { /* TODO */ },
+                onNavigateToNotifications = { /* TODO */ },
+                onNavigateToVouchers = { /* TODO */ },
+                onNavigateToHistory = { /* TODO */ },
+                onNavigateToAddress = { /* TODO */ },
+                onNavigateToHelp = { /* TODO */ },
+                onNavigateToSettings = { /* TODO */ }
             )
         }
     }

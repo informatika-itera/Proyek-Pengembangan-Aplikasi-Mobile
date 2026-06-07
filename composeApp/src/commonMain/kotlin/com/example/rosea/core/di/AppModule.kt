@@ -10,24 +10,17 @@ import com.example.rosea.data.remote.api.GeminiService
 import com.example.rosea.data.repository.AIRepositoryImpl
 import com.example.rosea.domain.repository.AIRepository
 import com.example.rosea.data.remote.api.ProductApiService
-
-// IMPORT REPOSITORY LAMA
 import com.example.rosea.domain.repository.ProductRepository
 import com.example.rosea.data.repository.ProductRepositoryImpl
 import com.example.rosea.domain.repository.CartRepository
 import com.example.rosea.data.repository.CartRepositoryImpl
-
-// === 🌟 IMPORT KELAS BARU UNTUK FITUR OFFLINE CHECKOUT ===
 import com.example.rosea.domain.repository.OrderRepository
 import com.example.rosea.data.repository.OrderRepositoryImpl
 import com.example.rosea.domain.usecase.OrderSyncManager
-
-// IMPORT VIEWMODEL
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
 import com.example.rosea.presentation.screens.home.HomeViewModel
 import com.example.rosea.presentation.screens.detail.DetailViewModel
 import com.example.rosea.presentation.screens.cart.CartViewModel
-
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -55,15 +48,13 @@ val preferencesModule = module {
 }
 
 val repositoryModule = module {
-    singleOf(::ProductRepositoryImpl) bind ProductRepository::class
-    singleOf(::CartRepositoryImpl) bind CartRepository::class
+    single<ProductRepository> { ProductRepositoryImpl(get(), get()) }
+    single<CartRepository> { CartRepositoryImpl(get()) }
     singleOf(::AIRepositoryImpl) bind AIRepository::class
-    // Daftarkan OrderRepository
-    singleOf(::OrderRepositoryImpl) bind OrderRepository::class
+    single<OrderRepository> { OrderRepositoryImpl(get()) }
 }
 
 val useCaseModule = module {
-    // Daftarkan Mesin Sinkronisasi
     singleOf(::OrderSyncManager)
 }
 

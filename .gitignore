@@ -4,7 +4,7 @@ build/
 !gradle-wrapper.jar
 
 # IntelliJ IDEA / Android Studio
-.idea/
+# .idea/  <-- Commented out to investigate gradle.xml
 *.iml
 *.ipr
 *.iws
@@ -14,7 +14,7 @@ out/
 .kotlin/
 
 # Local configuration (secrets, machine-specific paths)
-local.properties
+# local.properties <-- Commented out to investigate
 
 # Android
 captures/
@@ -46,4 +46,4 @@ caches/
 daemon/
 kotlin-profile/
 native/
-wrapper/
+# Removed wrapper/ to allow gradle-wrapper.properties

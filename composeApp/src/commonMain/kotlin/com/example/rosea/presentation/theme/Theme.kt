@@ -14,75 +14,74 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// ==================== MODERN SOFT PINK PALETTE ====================
+// ==================== BRIGHT & SOFT ROSE PALETTE ====================
 
-// Light Colors - Soft, Airy, Professional
-private val RosePrimary = Color(0xFFE91E63) // Pink yang berwibawa
-private val RoseOnPrimary = Color(0xFFFFFFFF)
-private val RosePrimaryContainer = Color(0xFFFCE4EC) // Sangat lembut
-private val RoseOnPrimaryContainer = Color(0xFF880E4F)
+// Colors that are bright ("terang") but remain soft ("soft") and clean.
+private val BrightRose = Color(0xFFFF85A1)     // Main Primary: Bright, cheerful pink
+private val SoftRose = Color(0xFFFFB3C6)       // Secondary: Lighter pink
+private val PaleRose = Color(0xFFFFE5EC)       // Tertiary: Very soft background-ish pink
+private val White = Color(0xFFFFFFFF)
+private val OffWhiteRose = Color(0xFFFFF9FA)   // Background: Clean white with a hint of rose
 
-private val RoseSecondary = Color(0xFF9C27B0) // Ungu lembut sebagai aksen
-private val RoseBackground = Color(0xFFFFFAFB) // Putih dengan semburat pink
-private val RoseSurface = Color(0xFFFFFFFF)
-private val RoseOutline = Color(0xFFE0B0B6)
-
-// Dark Colors - Elegant Dark Rose
-private val RosePrimaryDark = Color(0xFFF48FB1)
-private val RoseOnPrimaryDark = Color(0xFF4A0021)
-private val RoseBackgroundDark = Color(0xFF1A1114)
-private val RoseSurfaceDark = Color(0xFF251A1D)
-
-// ==================== COLOR SCHEMES ====================
+// Text Colors (Avoid pure Black)
+private val DeepRoseText = Color(0xFF5F4349)   // Dark Muted Rose for main text
+private val MediumRoseText = Color(0xFF8E6E74) // Lighter version for secondary text
 
 private val LightColorScheme = lightColorScheme(
-    primary = RosePrimary,
-    onPrimary = RoseOnPrimary,
-    primaryContainer = RosePrimaryContainer,
-    onPrimaryContainer = RoseOnPrimaryContainer,
-    secondary = RoseSecondary,
-    background = RoseBackground,
-    surface = RoseSurface,
-    onSurface = Color(0xFF352F30),
-    outline = RoseOutline,
-    surfaceVariant = Color(0xFFF5E9EB)
+    primary = BrightRose,
+    onPrimary = White,
+    primaryContainer = PaleRose,
+    onPrimaryContainer = BrightRose,
+    secondary = SoftRose,
+    onSecondary = White,
+    background = OffWhiteRose,
+    onBackground = DeepRoseText,
+    surface = White,
+    onSurface = DeepRoseText,
+    outline = BrightRose.copy(alpha = 0.2f),
+    surfaceVariant = PaleRose.copy(alpha = 0.5f),
+    onSurfaceVariant = DeepRoseText
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = RosePrimaryDark,
-    onPrimary = RoseOnPrimaryDark,
-    background = RoseBackgroundDark,
-    surface = RoseSurfaceDark,
-    onSurface = Color(0xFFECE0E1)
+    primary = BrightRose,
+    onPrimary = Color.Black,
+    background = Color(0xFF2D1F21), // Deep Warm Brownish-Rose
+    onBackground = Color(0xFFFFE5EC),
+    surface = Color(0xFF3D2C2E),
+    onSurface = Color(0xFFFFE5EC),
+    primaryContainer = Color(0xFF880E4F),
+    onPrimaryContainer = PaleRose
 )
-
-// ==================== TYPOGRAPHY ====================
 
 private val RoseTypography = Typography(
     headlineLarge = TextStyle(
         fontWeight = FontWeight.Bold,
         fontSize = 30.sp,
-        letterSpacing = (-0.5).sp
+        letterSpacing = (-0.5).sp,
+        color = DeepRoseText
     ),
     titleLarge = TextStyle(
         fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp
+        fontSize = 20.sp,
+        color = DeepRoseText
     ),
     bodyLarge = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 24.sp
+        lineHeight = 24.sp,
+        color = DeepRoseText
     ),
     labelMedium = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
-        color = RosePrimary
+        color = MediumRoseText
     )
 )
 
 private val RoseShapes = Shapes(
     small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(20.dp), // Lebih bulat, lebih modern
+    medium = RoundedCornerShape(20.dp),
     large = RoundedCornerShape(28.dp)
 )
 

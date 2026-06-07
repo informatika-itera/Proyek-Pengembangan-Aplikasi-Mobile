@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,9 +27,15 @@ fun AIAssistantScreen(
     onNavigateBack: () -> Unit,
     viewModel: AIAssistantViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var message by remember { mutableStateOf("") }
+    val messages by viewModel.messages.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    var inputText by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+
+    // Auto-scroll ke bawah saat pesan baru bertambah
+    LaunchedEffect(messages.size, isLoading) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
 
     Scaffold(
         topBar = {
@@ -65,29 +70,30 @@ fun AIAssistantScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
-                        .padding(vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    when (val state = uiState) {
-                        is AIUiState.Initial -> {
-                            AiChatBubble("Halo! Saya asisten kecantikan ROSÉA. Tanyakan apa saja tentang rutinitas skincare atau rekomendasi produk untuk kulitmu. ✨")
-                        }
-                        is AIUiState.Loading -> {
-                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primary)
-                            }
-                        }
-                        is AIUiState.Success -> {
-                            AiChatBubble(state.response)
-                        }
-                        is AIUiState.Error -> {
-                            AiChatBubble("Maaf, terjadi kendala teknis: ${state.message}", isError = true)
+                    messages.forEach { msg ->
+                        ChatBubble(msg)
+                    }
+
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .padding(8.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
@@ -96,20 +102,19 @@ fun AIAssistantScreen(
             // Input Area
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 8.dp,
-                shadowElevation = 16.dp,
+                tonalElevation = 4.dp, // Mengurangi sedikit agar lebih clean
+                shadowElevation = 8.dp,
                 color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .navigationBarsPadding()
-                        .imePadding(),
+                        .padding(horizontal = 16.dp, vertical = 8.dp) // Padding dikurangi sedikit
+                        .imePadding(), // HAPUS .navigationBarsPadding() di sini karena sudah ada di MainScreen
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
-                        value = message,
-                        onValueChange = { message = it },
+                        value = inputText,
+                        onValueChange = { inputText = it },
                         modifier = Modifier
                             .weight(1f)
                             .clip(CircleShape),
@@ -127,12 +132,15 @@ fun AIAssistantScreen(
                     
                     FloatingActionButton(
                         onClick = {
-                            if (message.isNotBlank()) {
-                                viewModel.sendMessage(message)
-                                message = ""
+                            if (inputText.isNotBlank() && !isLoading) {
+                                viewModel.sendMessage(inputText)
+                                inputText = ""
                             }
                         },
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = if (inputText.isNotBlank() && !isLoading) 
+                            MaterialTheme.colorScheme.primary 
+                        else 
+                            MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = CircleShape,
                         modifier = Modifier.size(48.dp),
@@ -147,25 +155,40 @@ fun AIAssistantScreen(
 }
 
 @Composable
-fun AiChatBubble(text: String, isError: Boolean = false) {
-    Row(
+fun ChatBubble(message: ChatMessage) {
+    val bubbleColor = when {
+        message.isError -> MaterialTheme.colorScheme.errorContainer
+        message.isUser -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+    }
+
+    val textColor = when {
+        message.isError -> MaterialTheme.colorScheme.onErrorContainer
+        message.isUser -> Color.White
+        else -> MaterialTheme.colorScheme.onSecondaryContainer
+    }
+
+    val alignment = if (message.isUser) Alignment.End else Alignment.Start
+    val shape = if (message.isUser) {
+        RoundedCornerShape(topStart = 20.dp, topEnd = 4.dp, bottomEnd = 20.dp, bottomStart = 20.dp)
+    } else {
+        RoundedCornerShape(topStart = 4.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp)
+    }
+
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+        horizontalAlignment = alignment
     ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 300.dp)
-                .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp))
-                .background(
-                    if (isError) MaterialTheme.colorScheme.errorContainer 
-                    else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                )
-                .padding(16.dp)
+        Surface(
+            color = bubbleColor,
+            shape = shape,
+            modifier = Modifier.widthIn(max = 280.dp)
         ) {
             Text(
-                text = text,
+                text = message.text,
+                modifier = Modifier.padding(12.dp),
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
+                color = textColor,
                 lineHeight = 22.sp
             )
         }

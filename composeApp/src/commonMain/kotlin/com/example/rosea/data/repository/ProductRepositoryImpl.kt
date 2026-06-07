@@ -3,19 +3,19 @@ package com.example.rosea.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.rosea.data.local.NoteDatabase
+import com.example.rosea.data.local.ProductEntity
 import com.example.rosea.data.remote.api.ProductApiService
 import com.example.rosea.domain.model.Product
 import com.example.rosea.domain.repository.ProductRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
 class ProductRepositoryImpl(
-    db: NoteDatabase,
-    private val apiService: ProductApiService // <--- Menyuntikkan kurir API Ktor
+    private val db: NoteDatabase,
+    private val apiService: ProductApiService
 ) : ProductRepository {
 
     private val queries = db.productQueries
@@ -23,8 +23,8 @@ class ProductRepositoryImpl(
     override fun getAllProducts(): Flow<List<Product>> {
         return queries.getAllProducts()
             .asFlow()
-            .mapToList(Dispatchers.IO)
-            .map { entities ->
+            .mapToList(Dispatchers.Default)
+            .map { entities: List<ProductEntity> ->
                 entities.map { entity ->
                     Product(
                         id = entity.id,
@@ -40,16 +40,10 @@ class ProductRepositoryImpl(
                 }
             }
             .onStart {
-                // Mekanisme Utama Cache-First / Offline-First saat aliran data dimulai
                 try {
-                    // 1. Ambil data produk kecantikan segar langsung dari internet
                     val remoteProducts = apiService.getBeautyProducts()
-
                     if (remoteProducts.isNotEmpty()) {
-                        // 2. Bersihkan cache produk kosmetik lama di SQLite lokal
                         queries.deleteAllProducts()
-
-                        // 3. Simpan data baru hasil download ke dalam penyimpanan internal HP
                         remoteProducts.forEach { product ->
                             queries.insertProduct(
                                 id = product.id,
@@ -65,15 +59,13 @@ class ProductRepositoryImpl(
                         }
                     }
                 } catch (e: Exception) {
-                    // JIKA OFFLINE: Tangkap error jaringan agar aplikasi tidak crash,
-                    // sistem akan otomatis langsung mengandalkan data lokal yang ada di SQLite.
-                    println("ROSÉA Offline Mode aktif: ${e.message}")
+                    println("ROSÉA Offline: ${e.message}")
                 }
             }
     }
 
     override suspend fun getProductById(id: Long): Product? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             queries.getProductById(id).executeAsOneOrNull()?.let { entity ->
                 Product(
                     id = entity.id,
@@ -94,8 +86,8 @@ class ProductRepositoryImpl(
         val formattedQuery = "%$query%"
         return queries.searchProducts(query = formattedQuery)
             .asFlow()
-            .mapToList(Dispatchers.IO)
-            .map { entities ->
+            .mapToList(Dispatchers.Default)
+            .map { entities: List<ProductEntity> ->
                 entities.map { entity ->
                     Product(
                         id = entity.id, name = entity.name, brand = entity.brand,
@@ -110,8 +102,8 @@ class ProductRepositoryImpl(
     override fun getProductsByCategory(category: String): Flow<List<Product>> {
         return queries.getProductsByCategory(category)
             .asFlow()
-            .mapToList(Dispatchers.IO)
-            .map { entities ->
+            .mapToList(Dispatchers.Default)
+            .map { entities: List<ProductEntity> ->
                 entities.map { entity ->
                     Product(
                         id = entity.id, name = entity.name, brand = entity.brand,
@@ -124,7 +116,7 @@ class ProductRepositoryImpl(
     }
 
     override suspend fun insertProduct(product: Product) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             queries.insertProduct(
                 id = product.id,
                 name = product.name,
@@ -140,7 +132,7 @@ class ProductRepositoryImpl(
     }
 
     override suspend fun deleteAllProducts() {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             queries.deleteAllProducts()
         }
     }

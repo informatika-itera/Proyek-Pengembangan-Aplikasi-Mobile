@@ -7,14 +7,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -41,10 +41,18 @@ fun CartScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("TAS BELANJA", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, letterSpacing = 2.sp) },
+                title = { 
+                    Text(
+                        "SHOPPING BAG", 
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
+                        )
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -58,10 +66,9 @@ fun CartScreen(
                 if (items.isNotEmpty()) {
                     val totalPrice = items.sumOf { it.price * it.quantity }
                     CartBottomBar(totalPrice = totalPrice, onCheckoutClick = {
-                        // 🌟 PERUBAHAN ADA DI SINI: Kirim items dan totalPrice ke ViewModel
                         viewModel.checkout(items, totalPrice)
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Berhasil masuk antrean! Barangmu segera diproses ✨")
+                            snackbarHostState.showSnackbar("Order placed successfully! ✨")
                         }
                     })
                 }
@@ -76,7 +83,9 @@ fun CartScreen(
         ) {
             when (val state = uiState) {
                 is CartUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
                 }
                 is CartUiState.Success -> {
                     if (state.items.isEmpty()) {
@@ -112,9 +121,9 @@ fun ModernCartItemCard(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 1.dp
     ) {
         Row(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
@@ -124,8 +133,8 @@ fun ModernCartItemCard(
                 model = item.imageUrl,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(90.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentScale = ContentScale.Crop
             )
@@ -134,15 +143,15 @@ fun ModernCartItemCard(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = item.brand.uppercase(),
+                    text = item.brand,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color.Gray,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = item.productName,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -150,18 +159,23 @@ fun ModernCartItemCard(
                 Text(
                     text = "Rp ${formatRupiah((item.price * item.quantity).toLong())}",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.ExtraBold
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
                     QuantityButton(text = "−", onClick = { onQuantityChange(false) })
                     Text(
                         text = item.quantity.toString(),
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
                     QuantityButton(text = "+", onClick = { onQuantityChange(true) })
@@ -174,8 +188,8 @@ fun ModernCartItemCard(
             ) {
                 Icon(
                     Icons.Default.DeleteOutline,
-                    contentDescription = "Hapus",
-                    tint = MaterialTheme.colorScheme.outline
+                    contentDescription = "Remove",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
                 )
             }
         }
@@ -186,13 +200,13 @@ fun ModernCartItemCard(
 fun QuantityButton(text: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.size(32.dp),
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        modifier = Modifier.size(28.dp),
+        shape = RoundedCornerShape(6.dp),
+        color = Color.White,
+        shadowElevation = 1.dp
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(text = text, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = text, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -201,8 +215,9 @@ fun QuantityButton(text: String, onClick: () -> Unit) {
 fun CartBottomBar(totalPrice: Double, onCheckoutClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shadowElevation = 24.dp,
-        color = MaterialTheme.colorScheme.surface
+        shadowElevation = 16.dp,
+        color = Color.White,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Row(
             modifier = Modifier
@@ -213,21 +228,21 @@ fun CartBottomBar(totalPrice: Double, onCheckoutClick: () -> Unit) {
         ) {
             Column {
                 Text(
-                    "Total Belanja",
+                    "Total Price",
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.outline
+                    color = Color.Gray
                 )
                 Text(
                     text = "Rp ${formatRupiah(totalPrice.toLong())}",
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Button(
                 onClick = onCheckoutClick,
-                modifier = Modifier.height(54.dp).width(160.dp),
-                shape = CircleShape,
+                modifier = Modifier.height(56.dp).width(160.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("CHECKOUT", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
@@ -243,10 +258,23 @@ private fun EmptyCartView() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Icon(
+            imageVector = Icons.Outlined.ShoppingBag,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.outlineVariant
+        )
+        Spacer(Modifier.height(24.dp))
         Text(
-            "Tas belanja Anda kosong.",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.outline
+            "Your bag is empty",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Items added to your bag will show up here.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
         )
     }
 }

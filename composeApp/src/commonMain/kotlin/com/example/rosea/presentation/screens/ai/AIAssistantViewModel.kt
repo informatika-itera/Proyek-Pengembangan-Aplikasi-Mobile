@@ -10,27 +10,37 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
+data class ChatMessage(
+    val text: String,
+    val isUser: Boolean,
+    val isError: Boolean = false
+)
+
 class AIAssistantViewModel(
     private val aiRepository: AIRepository,
     private val cartRepository: CartRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<AIUiState>(AIUiState.Initial)
-    val uiState: StateFlow<AIUiState> = _uiState.asStateFlow()
+    private val _messages = MutableStateFlow<List<ChatMessage>>(
+        listOf(ChatMessage("Halo! Saya asisten kecantikan ROSÉA. Tanyakan apa saja tentang rutinitas skincare atau rekomendasi produk untuk kulitmu. ✨", false))
+    )
+    val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     fun sendMessage(message: String) {
         if (message.isBlank()) return
 
-        viewModelScope.launch {
-            _uiState.value = AIUiState.Loading
-            try {
-                // 1. Ambil data keranjang saat ini secara ringkas
-                val cartItems = cartRepository.getCartItems().firstOrNull() ?: emptyList()
+        // 1. Tambahkan pesan user ke daftar
+        val userMsg = ChatMessage(text = message, isUser = true)
+        _messages.value = _messages.value + userMsg
 
-                // 2. Susun konteks minimalis untuk menghemat token secara signifikan
-                val cartContext = if (cartItems.isNotEmpty()) {
-                    "Konteks: Pengguna memiliki [${cartItems.firstOrNull()?.productName}] di keranjang."
-                } else ""
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                // 2. Ambil data keranjang saat ini secara ringkas
+                val cartItems = cartRepository.getCartItems().firstOrNull() ?: emptyList()
 
                 // 3. Gabungkan konteks dengan batasan tegas
                 val enrichedMessage = if (cartItems.isNotEmpty()) {
@@ -40,27 +50,26 @@ class AIAssistantViewModel(
                     message
                 }
 
-                // 4. Kirim pesan hemat token ke AI
+                // 4. Kirim pesan ke AI
                 val response = aiRepository.chat(enrichedMessage)
 
                 response.fold(
-                    onSuccess = { _uiState.value = AIUiState.Success(it) },
-                    onFailure = { _uiState.value = AIUiState.Error(it.message ?: "Terjadi kesalahan") }
+                    onSuccess = { 
+                        _messages.value = _messages.value + ChatMessage(text = it, isUser = false)
+                    },
+                    onFailure = { 
+                        _messages.value = _messages.value + ChatMessage(text = "Maaf, terjadi kendala: ${it.message}", isUser = false, isError = true)
+                    }
                 )
             } catch (e: Exception) {
-                _uiState.value = AIUiState.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui")
+                _messages.value = _messages.value + ChatMessage(text = "Kesalahan sistem: ${e.message}", isUser = false, isError = true)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
-    fun resetState() {
-        _uiState.value = AIUiState.Initial
+    fun clearChat() {
+        _messages.value = listOf(ChatMessage("Halo! Saya asisten kecantikan ROSÉA. Tanyakan apa saja tentang rutinitas skincare atau rekomendasi produk untuk kulitmu. ✨", false))
     }
-}
-
-sealed interface AIUiState {
-    object Initial : AIUiState
-    object Loading : AIUiState
-    data class Success(val response: String) : AIUiState
-    data class Error(val message: String) : AIUiState
 }

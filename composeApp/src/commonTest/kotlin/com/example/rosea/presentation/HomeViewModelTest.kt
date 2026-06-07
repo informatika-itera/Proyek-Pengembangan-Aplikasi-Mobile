@@ -1,15 +1,11 @@
 package com.example.rosea.presentation
 
 import app.cash.turbine.test
-import com.example.rosea.data.repository.FakeNoteRepository
-import com.example.rosea.domain.model.Note
-import com.example.rosea.domain.model.NoteCategory
-import com.example.rosea.domain.model.NoteColor
-import com.example.rosea.domain.usecase.DeleteNoteUseCase
-import com.example.rosea.domain.usecase.GetAllNotesUseCase
-import com.example.rosea.domain.usecase.SearchNotesUseCase
+import com.example.rosea.data.repository.FakeProductRepository
+import com.example.rosea.domain.model.Product
 import com.example.rosea.presentation.screens.home.HomeUiState
 import com.example.rosea.presentation.screens.home.HomeViewModel
+import com.example.rosea.presentation.screens.home.SortOrder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -17,240 +13,140 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.datetime.Clock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Unit Tests untuk HomeViewModel
- * 
- * Testing Guidelines:
- * 1. Setup test dispatcher untuk control coroutines
- * 2. Gunakan Turbine untuk test StateFlow
- * 3. Test UI state transformations
- * 4. Test user actions
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    
+
     private val testDispatcher = StandardTestDispatcher()
-    
-    private lateinit var repository: FakeNoteRepository
-    private lateinit var getAllNotesUseCase: GetAllNotesUseCase
-    private lateinit var searchNotesUseCase: SearchNotesUseCase
-    private lateinit var deleteNoteUseCase: DeleteNoteUseCase
+    private lateinit var repository: FakeProductRepository
     private lateinit var viewModel: HomeViewModel
-    
+
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        
-        repository = FakeNoteRepository()
-        getAllNotesUseCase = GetAllNotesUseCase(repository)
-        searchNotesUseCase = SearchNotesUseCase(repository)
-        deleteNoteUseCase = DeleteNoteUseCase(repository)
-        
-        viewModel = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
+        repository = FakeProductRepository()
+        viewModel = HomeViewModel(repository)
     }
-    
+
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
     }
-    
-    // ==================== UI STATE TESTS ====================
-    
+
     @Test
-    fun `initial state should be Loading then Empty`() = runTest {
+    fun `initial state should be Loading`() = runTest {
         viewModel.uiState.test {
-            // Initial loading state
-            val loading = awaitItem()
-            assertTrue(loading is HomeUiState.Loading)
-            
-            // After loading, should be empty (no notes)
-            advanceUntilIdle()
-            val empty = awaitItem()
-            assertTrue(empty is HomeUiState.Empty)
-            
+            assertTrue(awaitItem() is HomeUiState.Loading)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
-    fun `state should be Success when notes exist`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Note 1"))
-        repository.insertNote(createTestNote("Note 2"))
+    fun `should show products when repository has data`() = runTest {
+        repository.insertProduct(createTestProduct(id = 1, name = "Product A"))
         
-        // Create new viewmodel after inserting notes
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        // Act & Assert
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
+        viewModel.uiState.test {
+            skipItems(1) // Skip Loading
+            
+            // Advance time for initial debounce in combine
+            testScheduler.advanceTimeBy(301)
             
             val state = awaitItem()
             assertTrue(state is HomeUiState.Success)
-            assertEquals(2, (state as HomeUiState.Success).notes.size)
-            
+            assertEquals(1, (state as HomeUiState.Success).products.size)
+            assertEquals("Product A", state.products.first().name)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== SEARCH TESTS ====================
-    
+
     @Test
-    fun `search should filter notes by query`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Kotlin Guide"))
-        repository.insertNote(createTestNote("Java Tutorial"))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
-            skipItems(1) // Skip initial success
-            
-            // Act
-            vm.onSearchQueryChange("Kotlin")
-            advanceUntilIdle()
-            
-            // Assert - wait for debounce
-            testScheduler.advanceTimeBy(400)
-            advanceUntilIdle()
-            
-            val state = expectMostRecentItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals("Kotlin Guide", state.notes.first().title)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    @Test
-    fun `clearSearch should reset query`() = runTest {
-        // Act
-        viewModel.onSearchQueryChange("test query")
-        viewModel.clearSearch()
-        
-        // Assert
+    fun `search query change should filter products`() = runTest {
+        repository.insertProduct(createTestProduct(id = 1, name = "Apple"))
+        repository.insertProduct(createTestProduct(id = 2, name = "Banana"))
+
         viewModel.uiState.test {
-            val state = awaitItem()
-            when (state) {
-                is HomeUiState.Success -> assertEquals("", state.query)
-                is HomeUiState.Empty -> assertEquals("", state.query)
-                else -> {} // OK
-            }
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== CATEGORY FILTER TESTS ====================
-    
-    @Test
-    fun `category filter should filter notes`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
-        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
             skipItems(1) // Loading
-            advanceUntilIdle()
-            skipItems(1) // Initial success
             
-            // Act
-            vm.onCategorySelected(NoteCategory.WORK)
-            advanceUntilIdle()
+            viewModel.onSearchQueryChange("Apple")
             
-            // Assert
+            // Advance time for debounce (300ms)
+            testScheduler.advanceTimeBy(301)
+            
             val state = expectMostRecentItem()
             assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals(NoteCategory.WORK, state.notes.first().category)
+            assertEquals(1, state.products.size)
+            assertEquals("Apple", state.products.first().name)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `category selection should filter products`() = runTest {
+        repository.insertProduct(createTestProduct(id = 1, category = "Electronics"))
+        repository.insertProduct(createTestProduct(id = 2, category = "Food"))
+
+        viewModel.uiState.test {
+            skipItems(1) // Loading
             
+            // Tunggu debounce awal selesai
+            testScheduler.advanceTimeBy(301)
+            
+            viewModel.onCategorySelect("Electronics")
+            
+            // Tunggu emisi baru
+            testScheduler.advanceTimeBy(1)
+            
+            val state = expectMostRecentItem()
+            assertTrue(state is HomeUiState.Success)
+            assertEquals(1, state.products.size)
+            assertEquals("Electronics", state.products.first().category)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== ACTION TESTS ====================
-    
+
     @Test
-    fun `togglePin should toggle note pin status`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Pin Me"))
-        
-        // Act
-        viewModel.togglePin(noteId)
-        advanceUntilIdle()
-        
-        // Assert
-        repository.getNoteById(noteId).test {
-            val note = awaitItem()
-            assertTrue(note?.isPinned == true)
+    fun `sort order change should sort products by price low to high`() = runTest {
+        repository.insertProduct(createTestProduct(id = 1, price = 100.0))
+        repository.insertProduct(createTestProduct(id = 2, price = 50.0))
+
+        viewModel.uiState.test {
+            skipItems(1) // Loading
+            
+            // Tunggu debounce awal selesai
+            testScheduler.advanceTimeBy(301)
+            
+            viewModel.onSortOrderChange(SortOrder.PRICE_LOW_TO_HIGH)
+            
+            // Tunggu emisi baru
+            testScheduler.advanceTimeBy(1)
+            
+            val state = expectMostRecentItem()
+            assertTrue(state is HomeUiState.Success)
+            assertEquals(50.0, state.products[0].price)
+            assertEquals(100.0, state.products[1].price)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    @Test
-    fun `deleteNote should remove note`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Delete Me"))
-        
-        // Act
-        viewModel.deleteNote(noteId)
-        advanceUntilIdle()
-        
-        // Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertTrue(notes.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== HELPER FUNCTIONS ====================
-    
-    private fun createTestNote(
-        title: String,
-        category: NoteCategory = NoteCategory.GENERAL
-    ): Note {
-        return Note(
-            id = 0,
-            title = title,
-            content = "Test content",
-            category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = false,
-            createdAt = Clock.System.now(),
-            updatedAt = Clock.System.now()
-        )
-    }
+
+    private fun createTestProduct(
+        id: Long = 0,
+        name: String = "Test",
+        category: String = "Test Category",
+        price: Double = 100.0
+    ) = Product(
+        id = id,
+        name = name,
+        brand = "Brand",
+        description = "Desc",
+        price = price,
+        category = category,
+        imageUrl = "",
+        createdAt = 0L,
+        updatedAt = 0L
+    )
 }

@@ -1,7 +1,13 @@
 package com.example.foodsaver.presentation.screens.home
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import com.example.foodsaver.data.local.datastore.UserPreferences
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.repository.FoodRepository
+import com.example.foodsaver.domain.usecase.DeleteFoodUseCase
+import com.example.foodsaver.domain.usecase.GetAllFoodUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -36,8 +42,20 @@ class HomeViewModelTest {
             override suspend fun deleteFoodItem(id: Long) {}
             override suspend fun updateFoodItem(foodItem: FoodItem) {}
         }
-        
-        viewModel = HomeViewModel(repository)
+
+        val dataStore = object : DataStore<Preferences> {
+            override val data = flowOf(emptyPreferences())
+            override suspend fun updateData(transform: suspend (Preferences) -> Preferences): Preferences {
+                return transform(emptyPreferences())
+            }
+        }
+        val userPreferences = UserPreferences(dataStore)
+
+        viewModel = HomeViewModel(
+            GetAllFoodUseCase(repository),
+            DeleteFoodUseCase(repository),
+            userPreferences
+        )
     }
 
     @AfterTest

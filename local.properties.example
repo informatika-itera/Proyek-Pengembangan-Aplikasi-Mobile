@@ -7,15 +7,14 @@
 # (sudah di-ignore lewat .gitignore).
 # ================================================
 
-# Android SDK location
-# Android Studio akan mengisi ini secara otomatis saat sync pertama.
-# Atau set manual sesuai lokasi SDK Anda:
-#   - macOS  : sdk.dir=/Users/<USERNAME>/Library/Android/sdk
-#   - Linux  : sdk.dir=/home/<USERNAME>/Android/Sdk
-#   - Windows: sdk.dir=C\:\\Users\\<USERNAME>\\AppData\\Local\\Android\\Sdk
-#sdk.dir=
+# Android SDK location (Isi otomatis oleh Studio)
+#sdk.dir=C\:\\Users\\YourName\\AppData\\Local\\Android\\Sdk
 
 # Google Gemini API Key
-# Dapatkan API key gratis di: https://aistudio.google.com/
-# Tanpa key ini, fitur AI tidak akan berjalan (app tetap bisa dibuka).
-GEMINI_API_KEY=your_api_key_here
+# Dapatkan di: https://aistudio.google.com/
+GEMINI_API_KEY=AIzaSyBM9H9uN6jtjHrgZqobyJ6X1CpKqsUx6BY
+
+# Jamendo Client ID (Untuk Streaming Musik)
+# Dapatkan di: https://developer.jamendo.com/
+# Jika kosong, aplikasi akan menggunakan ID fallback default.
+JAMENDO_CLIENT_ID=cbb32072

@@ -30,11 +30,8 @@ class SearchScreenViewModel(
     private fun searchRecipient(name: String) {
         viewModelScope.launch {
             _searchState.value = UiState.Loading
-            // Menggunakan flow dari repository untuk pencarian real-time
-            letterRepository.getLetters()
-                .map { letters ->
-                    letters.filter { it.recipient.contains(name, ignoreCase = true) }
-                }
+            // Menggunakan fungsi searchLetters dari repository yang sudah menggabungkan data lokal & dummy
+            letterRepository.searchLetters(name)
                 .catch { e ->
                     _searchState.value = UiState.Error(e.message ?: "Search failed")
                 }

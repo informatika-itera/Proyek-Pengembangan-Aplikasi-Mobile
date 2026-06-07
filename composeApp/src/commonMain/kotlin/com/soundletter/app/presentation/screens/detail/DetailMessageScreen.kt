@@ -9,15 +9,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +26,6 @@ import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.components.GlassCard
 import com.soundletter.app.presentation.screens.settings.SettingsViewModel
-import com.soundletter.app.presentation.theme.SoundLetterColors
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,52 +36,39 @@ fun DetailMessageScreen(
     viewModel: DetailMessageScreenViewModel = koinViewModel(),
     settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsState()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
+
+    val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
+    val primaryColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
 
     LaunchedEffect(messageId) {
         viewModel.loadMessage(messageId)
     }
 
     Scaffold(
+        containerColor = backgroundColor,
         topBar = {
             TopAppBar(
-                title = { Text("Letter Detail") },
+                title = { Text("Isi Surat", fontWeight = FontWeight.Bold, color = primaryColor) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = primaryColor)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.primary
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Brush.verticalGradient(SoundLetterColors.getBackgroundGradient(isDarkMode)))
-                .padding(padding)
-        ) {
-            when (val state = uiState) {
-                is UiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                is UiState.Success -> {
-                    val message = state.data
-                    DetailContent(message)
-                }
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            when (val letterState = state.letterState) {
+                is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = primaryColor)
+                is UiState.Success -> DetailContent(letterState.data, viewModel, isDarkMode)
                 is UiState.Error -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = state.message, color = Color.White)
-                        Button(onClick = { viewModel.loadMessage(messageId) }) {
-                            Text("Retry")
-                        }
+                    Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = letterState.message, color = primaryColor)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadMessage(messageId) }) { Text("Coba Lagi") }
                     }
                 }
                 else -> {}
@@ -94,116 +78,119 @@ fun DetailMessageScreen(
 }
 
 @Composable
-private fun DetailContent(message: Note) {
+private fun DetailContent(message: Note, viewModel: DetailMessageScreenViewModel, isDarkMode: Boolean) {
+    val state by viewModel.state.collectAsState()
+    
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        VinylRecord()
-
         Spacer(modifier = Modifier.height(32.dp))
+        VinylRecord(isPlaying = state.isPlaying)
+        Spacer(modifier = Modifier.height(48.dp))
 
-        GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Column {
+        GlassCard(modifier = Modifier.fillMaxWidth(), isDarkMode = isDarkMode) {
+            Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    text = "To: ${message.recipient}",
+                    text = "Untuk: ${message.recipient}",
                     style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (isDarkMode) Color.White else Color(0xFF007ACC)
                     )
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = message.content,
-                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                    textAlign = TextAlign.Start
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "— From ${message.sender}",
-                    style = MaterialTheme.typography.labelMedium.copy(color = Color.Gray),
+                    text = message.content,
+                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
+                    color = if (isDarkMode) Color.White.copy(alpha = 0.9f) else Color.Black
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "— Dari ${message.sender}",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Gray
+                    ),
                     modifier = Modifier.align(Alignment.End)
                 )
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        MusicControls(message.songTitle ?: "Unknown Song")
+        MusicControls(message, viewModel)
+        Spacer(modifier = Modifier.height(48.dp))
     }
 }
 
 @Composable
-fun VinylRecord() {
-    val infiniteTransition = rememberInfiniteTransition()
+fun VinylRecord(isPlaying: Boolean) {
+    val infiniteTransition = rememberInfiniteTransition(label = "vinyl")
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(5000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
-        )
+        ),
+        label = "rotation"
     )
 
     Box(
         modifier = Modifier
-            .size(240.dp)
-            .rotate(rotation)
+            .size(220.dp)
+            .rotate(if (isPlaying) rotation else 0f)
             .clip(CircleShape)
             .background(Color.Black)
-            .border(4.dp, Color.DarkGray, CircleShape),
+            .border(6.dp, Color.DarkGray, CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            for (i in 1..5) {
+            for (i in 1..8) {
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.1f),
-                    radius = (size.minDimension / 2) * (i / 5f),
-                    style = Stroke(width = 2f)
+                    color = Color.White.copy(alpha = 0.05f),
+                    radius = (size.minDimension / 2) * (i / 8f),
+                    style = Stroke(width = 1f)
                 )
             }
         }
-
         Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
+            modifier = Modifier.size(70.dp).clip(CircleShape).background(Color(0xFF007ACC)),
             contentAlignment = Alignment.Center
         ) {
-            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color.Black))
+            Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(Color.Black))
         }
     }
 }
 
 @Composable
-fun MusicControls(songTitle: String) {
+fun MusicControls(message: Note, viewModel: DetailMessageScreenViewModel) {
+    val state by viewModel.state.collectAsState()
+    val hasPreview = !message.songPreviewUrl.isNullOrBlank()
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = songTitle,
+            text = message.songTitle ?: "Tanpa Judul",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.secondary
+            color = if (state.isPlaying) Color(0xFF007ACC) else Color.Gray
         )
-        Text(text = "Now Playing", style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray))
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            IconButton(onClick = {}) { Icon(Icons.Default.SkipPrevious, contentDescription = null, modifier = Modifier.size(32.dp)) }
-            FloatingActionButton(onClick = {}, containerColor = MaterialTheme.colorScheme.primary, shape = CircleShape) {
-                Icon(Icons.Default.Pause, contentDescription = null, tint = Color.Black)
-            }
-            IconButton(onClick = {}) { Icon(Icons.Default.SkipNext, contentDescription = null, modifier = Modifier.size(32.dp)) }
-        }
+        Text(
+            text = if (state.isPlaying) "Sedang Memutar Preview" else "Klik Play untuk Preview",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(24.dp))
-        LinearProgressIndicator(
-            progress = { 0.4f },
-            modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = Color.DarkGray
-        )
+        
+        FloatingActionButton(
+            onClick = { if (hasPreview) viewModel.toggleAudio(message.songPreviewUrl) },
+            containerColor = if (hasPreview) Color(0xFF007ACC) else Color.LightGray,
+            shape = CircleShape,
+            elevation = FloatingActionButtonDefaults.elevation(0.dp)
+        ) {
+            Icon(
+                imageVector = if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }

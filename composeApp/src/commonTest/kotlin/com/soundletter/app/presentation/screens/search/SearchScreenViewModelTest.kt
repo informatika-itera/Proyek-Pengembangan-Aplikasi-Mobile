@@ -25,10 +25,23 @@ class FakeSearchRepository : LetterRepository {
         if (shouldFail) throw Exception("Search Error")
         emitAll(flow)
     }
+
+    override fun getGlobalLetters(): Flow<List<Note>> = emptyFlow()
+
+    override fun searchLetters(query: String): Flow<List<Note>> = flow {
+        if (shouldFail) throw Exception("Search Error")
+        emitAll(flow.map { list -> 
+            list.filter { it.recipient.contains(query, ignoreCase = true) } 
+        })
+    }
     
     override suspend fun getLetterById(id: Long): Note? = null
-    override suspend fun sendLetter(letter: Note) {}
+    
+    override suspend fun sendLetter(letter: Note): Boolean = true
+    
     override suspend fun deleteLetter(id: Long) {}
+    
+    override suspend fun clearHistory() {}
 
     suspend fun emit(data: List<Note>) = flow.emit(data)
 }
@@ -62,15 +75,15 @@ class SearchScreenViewModelTest {
             assertIs<UiState.Idle>(awaitItem())
             viewModel.onQueryChange("Dzakky")
             
-            val loadingState = awaitItem()
-            assertIs<UiState.Loading>(loadingState)
+            assertIs<UiState.Loading>(awaitItem())
             
             repository.emit(mockData)
             
             val successState = awaitItem()
             assertIs<UiState.Success<List<Note>>>(successState)
-            assertEquals(1, successState.data.size)
-            assertEquals("Dzakky", successState.data[0].recipient)
+            val results = successState.data
+            assertEquals(1, results.size)
+            assertEquals("Dzakky", results[0].recipient)
         }
     }
 
@@ -82,8 +95,7 @@ class SearchScreenViewModelTest {
             assertIs<UiState.Idle>(awaitItem())
             viewModel.onQueryChange("Unknown")
             
-            val loadingState = awaitItem()
-            assertIs<UiState.Loading>(loadingState)
+            assertIs<UiState.Loading>(awaitItem())
             
             repository.emit(mockData)
             
@@ -100,15 +112,12 @@ class SearchScreenViewModelTest {
             assertIs<UiState.Idle>(awaitItem())
             viewModel.onQueryChange("Fail")
             
-            val nextState = awaitItem()
-            if (nextState is UiState.Loading) {
-                val errorState = awaitItem()
-                assertIs<UiState.Error>(errorState)
-                assertEquals("Search Error", errorState.message)
-            } else {
-                assertIs<UiState.Error>(nextState)
-                assertEquals("Search Error", (nextState as UiState.Error).message)
+            var state = awaitItem()
+            if (state is UiState.Loading) {
+                state = awaitItem()
             }
+            assertIs<UiState.Error>(state)
+            assertEquals("Search Error", (state as UiState.Error).message)
         }
     }
 }

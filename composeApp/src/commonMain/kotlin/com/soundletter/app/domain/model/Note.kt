@@ -2,7 +2,9 @@ package com.soundletter.app.domain.model
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Note(
     val id: Long = 0,
     val recipient: String,
@@ -10,6 +12,8 @@ data class Note(
     val content: String,
     val songTitle: String? = null,
     val songArtist: String? = null,
+    val songPreviewUrl: String? = null,
+    val songAlbumArtUrl: String? = null,
     val category: NoteCategory = NoteCategory.GENERAL,
     val color: NoteColor = NoteColor.DEFAULT,
     val isPinned: Boolean = false,
@@ -20,6 +24,7 @@ data class Note(
         get() = if (content.length > 100) content.take(100) + "..." else content
 }
 
+@Serializable
 enum class NoteCategory {
     GENERAL, WORK, PERSONAL, IDEAS, TODO, STUDY;
 
@@ -30,6 +35,7 @@ enum class NoteCategory {
     }
 }
 
+@Serializable
 enum class NoteColor {
     DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK;
 

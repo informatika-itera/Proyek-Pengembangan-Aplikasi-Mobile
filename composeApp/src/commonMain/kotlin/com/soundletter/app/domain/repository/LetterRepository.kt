@@ -10,15 +10,19 @@ interface LetterRepository {
     fun getLetters(): Flow<List<Note>>
     
     /**
-     * Feed Global: Data dari Supabase (Cloud)
+     * Feed Global: Data statis dummy (Pengganti Supabase)
      */
     fun getGlobalLetters(): Flow<List<Note>>
+
+    /**
+     * Pencarian Hybrid: Mencari dari Database Lokal dan Data Dummy Global
+     */
+    fun searchLetters(query: String): Flow<List<Note>>
 
     suspend fun getLetterById(id: Long): Note?
     
     /**
-     * Mengirim pesan ke Supabase (jika online) dan menyimpannya di lokal.
-     * @return true jika berhasil sinkron ke cloud, false jika hanya tersimpan di lokal (offline).
+     * Mengirim pesan: Hanya disimpan di lokal (Offline-only mode)
      */
     suspend fun sendLetter(letter: Note): Boolean
 

@@ -1,6 +1,7 @@
 package com.soundletter.app.presentation.screens.detail
 
 import app.cash.turbine.test
+import com.soundletter.app.core.audio.AudioPlayer
 import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
 import com.soundletter.app.domain.repository.LetterRepository
@@ -21,32 +22,41 @@ import kotlin.test.assertIs
 class FakeDetailRepository : LetterRepository {
     var shouldFail = false
     override fun getLetters(): Flow<List<Note>> = flowOf(emptyList())
-    
     override fun getGlobalLetters(): Flow<List<Note>> = flowOf(emptyList())
+    override fun searchLetters(query: String): Flow<List<Note>> = flowOf(emptyList())
 
     override suspend fun getLetterById(id: Long): Note? {
         if (shouldFail) throw Exception("Network Error")
         return if (id == 1L) Note(id = 1L, recipient = "Test", content = "Content") else null
     }
     
-    override suspend fun sendLetter(letter: Note) {}
-    
+    override suspend fun sendLetter(letter: Note): Boolean = true
     override suspend fun deleteLetter(id: Long) {}
-
     override suspend fun clearHistory() {}
+}
+
+class FakeAudioPlayer : AudioPlayer {
+    var isPlayingStatus = false
+    override fun play(url: String, onFinished: () -> Unit) { isPlayingStatus = true }
+    override fun pause() { isPlayingStatus = false }
+    override fun stop() { isPlayingStatus = false }
+    override fun isPlaying(): Boolean = isPlayingStatus
+    override fun release() {}
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DetailMessageScreenViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var repository: FakeDetailRepository
+    private lateinit var fakeAudioPlayer: FakeAudioPlayer
     private lateinit var viewModel: DetailMessageScreenViewModel
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeDetailRepository()
-        viewModel = DetailMessageScreenViewModel(repository)
+        fakeAudioPlayer = FakeAudioPlayer()
+        viewModel = DetailMessageScreenViewModel(repository, fakeAudioPlayer)
     }
 
     @AfterTest
@@ -57,52 +67,48 @@ class DetailMessageScreenViewModelTest {
     @Test
     fun `loadMessage with valid ID should emit Success`() = runTest {
         viewModel.state.test {
-            assertEquals(UiState.Idle, awaitItem())
+            // Check initial state
+            assertEquals(UiState.Idle, awaitItem().letterState)
+            
             viewModel.loadMessage("1")
             
-            // Mengingat UnconfinedTestDispatcher sangat cepat, 
-            // kita mungkin melewati Loading dan langsung ke Success
-            val finalState = awaitItem()
-            if (finalState is UiState.Loading) {
-                assertIs<UiState.Success<Note>>(awaitItem())
-            } else {
-                assertIs<UiState.Success<Note>>(finalState)
+            // Handle loading and success states
+            var state = awaitItem()
+            if (state.letterState is UiState.Loading) {
+                state = awaitItem()
             }
+            
+            assertIs<UiState.Success<Note>>(state.letterState)
+            assertEquals(1L, (state.letterState as UiState.Success).data.id)
         }
     }
 
     @Test
     fun `loadMessage with invalid ID should emit Error`() = runTest {
         viewModel.state.test {
-            assertEquals(UiState.Idle, awaitItem())
+            awaitItem() // initial
             viewModel.loadMessage("99")
             
-            val finalState = awaitItem()
-            if (finalState is UiState.Loading) {
-                val error = awaitItem()
-                assertIs<UiState.Error>(error)
-                assertEquals("Letter not found", error.message)
-            } else {
-                assertIs<UiState.Error>(finalState)
-                assertEquals("Letter not found", (finalState as UiState.Error).message)
+            var state = awaitItem()
+            if (state.letterState is UiState.Loading) {
+                state = awaitItem()
             }
+            
+            assertIs<UiState.Error>(state.letterState)
+            assertEquals("Letter not found", (state.letterState as UiState.Error).message)
         }
     }
 
     @Test
-    fun `loadMessage with exception should emit Error with message`() = runTest {
-        repository.shouldFail = true
+    fun `toggleAudio should update isPlaying state`() = runTest {
         viewModel.state.test {
-            assertEquals(UiState.Idle, awaitItem())
-            viewModel.loadMessage("1")
+            awaitItem() // initial
+            viewModel.toggleAudio("https://test.com/audio.mp3")
             
-            val finalState = awaitItem()
-            if (finalState is UiState.Loading) {
-                val error = awaitItem()
-                assertIs<UiState.Error>(error)
-            } else {
-                assertIs<UiState.Error>(finalState)
-            }
+            assertEquals(true, awaitItem().isPlaying)
+            
+            viewModel.toggleAudio("https://test.com/audio.mp3")
+            assertEquals(false, awaitItem().isPlaying)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.soundletter.app.domain.repository
 
+import com.soundletter.app.domain.model.MusicTrack
+
 interface MusicRepository {
-    // Spotify API placeholder
-    suspend fun searchSongs(query: String): List<String>
+    suspend fun searchSongs(query: String): List<MusicTrack>
 }

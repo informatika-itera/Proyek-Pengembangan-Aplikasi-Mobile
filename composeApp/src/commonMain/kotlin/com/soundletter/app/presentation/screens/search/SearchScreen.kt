@@ -12,16 +12,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.soundletter.app.core.util.UiState
-import com.soundletter.app.domain.model.Note
 import com.soundletter.app.presentation.components.EmptyStateView
 import com.soundletter.app.presentation.components.LoadingView
 import com.soundletter.app.presentation.screens.home.MessageCard
 import com.soundletter.app.presentation.screens.settings.SettingsViewModel
-import com.soundletter.app.presentation.theme.SoundLetterColors
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,17 +34,19 @@ fun SearchScreen(
     val query by viewModel.query.collectAsState()
     val searchState by viewModel.searchState.collectAsState()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+
+    val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
+    val primaryColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
 
     Scaffold(
-        containerColor = Color.Transparent,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = backgroundColor,
         topBar = {
             TopAppBar(
                 title = { 
                     Text(
-                        "Search Letter",
-                        color = if (isDarkMode) Color.White else MaterialTheme.colorScheme.primary
+                        "Cari Surat",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = primaryColor
                     ) 
                 },
                 navigationIcon = {
@@ -53,83 +54,80 @@ fun SearchScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack, 
                             contentDescription = "Back",
-                            tint = if (isDarkMode) Color.White else MaterialTheme.colorScheme.primary
+                            tint = primaryColor
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(SoundLetterColors.getBackgroundGradient(isDarkMode)))
                 .padding(padding)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                SearchBar(
-                    query = query,
-                    onQueryChange = { viewModel.onQueryChange(it) },
-                    onSearch = {},
-                    active = false,
-                    onActiveChange = {},
-                    placeholder = { Text("Search recipient name...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    colors = SearchBarDefaults.colors(
-                        containerColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.8f)
-                    )
-                ) {}
+            // Search Bar Polish
+            OutlinedTextField(
+                value = query,
+                onValueChange = { viewModel.onQueryChange(it) },
+                placeholder = { Text("Ketik nama penerima...", color = Color.Gray) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = primaryColor) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                shape = MaterialTheme.shapes.medium,
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = primaryColor.copy(alpha = 0.3f),
+                    focusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.White,
+                    unfocusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.White,
+                    focusedTextColor = if (isDarkMode) Color.White else Color.Black,
+                    unfocusedTextColor = if (isDarkMode) Color.White else Color.Black
+                )
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                when (val state = searchState) {
-                    is UiState.Loading -> {
-                        LoadingView()
-                    }
-                    is UiState.Success -> {
-                        if (state.data.isEmpty()) {
-                            EmptyStateView(
-                                icon = Icons.Default.SearchOff,
-                                title = "Tidak Ditemukan",
-                                description = "Kami tidak menemukan surat untuk nama tersebut."
-                            )
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(24.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                items(state.data, key = { it.id }) { note ->
-                                    Box(modifier = Modifier.animateItem()) {
-                                        MessageCard(
-                                            message = note, 
-                                            isDarkMode = isDarkMode,
-                                            onClick = { onNavigateToDetail(note.id.toString()) }
-                                        )
-                                    }
-                                }
+            when (val state = searchState) {
+                is UiState.Loading -> LoadingView()
+                is UiState.Success -> {
+                    if (state.data.isEmpty()) {
+                        EmptyStateView(
+                            icon = Icons.Default.SearchOff,
+                            title = "Tidak Ditemukan",
+                            description = "Coba cari dengan kata kunci lain."
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(state.data, key = { it.id }) { note ->
+                                MessageCard(
+                                    message = note, 
+                                    isDarkMode = isDarkMode,
+                                    onClick = { onNavigateToDetail(note.id.toString()) }
+                                )
                             }
                         }
                     }
-                    is UiState.Error -> {
-                        LaunchedEffect(state.message) {
-                            snackbarHostState.showSnackbar("Pencarian gagal: ${state.message}")
-                        }
-                    }
-                    is UiState.Idle -> {
-                        EmptyStateView(
-                            icon = Icons.Default.Search,
-                            title = "Mulai Mencari",
-                            description = "Ketik nama penerima untuk menemukan surat tersembunyi."
-                        )
+                }
+                is UiState.Idle -> {
+                    EmptyStateView(
+                        icon = Icons.Default.Search,
+                        title = "Mulai Mencari",
+                        description = "Cari pesan musik yang pernah kamu kirim."
+                    )
+                }
+                is UiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = state.message, color = Color.Red)
                     }
                 }
+                else -> {}
             }
         }
     }

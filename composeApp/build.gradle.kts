@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -9,17 +8,28 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.kover)
 }
 
-// Load local.properties for API keys
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
-        load(localPropertiesFile.inputStream())
+        localPropertiesFile.inputStream().use { load(it) }
     }
 }
 
+val jamendoIdValue = (localProperties.getProperty("JAMENDO_CLIENT_ID") ?: "cbb32072").replace("\"", "")
+val geminiKeyValue = (localProperties.getProperty("GEMINI_API_KEY") ?: "").replace("\"", "")
+
 kotlin {
+    androidTarget {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+
     jvmToolchain(17)
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -27,9 +37,6 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    androidTarget {
-    }
-    
     listOf(
         iosX64(),
         iosArm64(),
@@ -69,55 +76,63 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
-            implementation(libs.supabase.postgrest)
-            implementation(libs.supabase.realtime)
         }
+
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
+            implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
             implementation(libs.ktor.client.mock)
         }
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
         }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            implementation(libs.sqldelight.native.driver)
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.androidx.test.junit)
+                implementation(libs.compose.ui.test)
+                implementation(libs.compose.ui.test.junit4)
+            }
         }
+    }
+}
+
+buildkonfig {
+    packageName = "com.soundletter.app"
+    defaultConfigs {
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "JAMENDO_CLIENT_ID", "\"$jamendoIdValue\"")
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "GEMINI_API_KEY", "\"$geminiKeyValue\"")
     }
 }
 
 android {
     namespace = "com.soundletter.app"
     compileSdk = 35
-    
     defaultConfig {
         applicationId = "com.soundletter.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures { buildConfig = true }
 
-        buildConfigField("String", "GEMINI_API_KEY", "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\"")
-        buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"${localProperties.getProperty("SPOTIFY_CLIENT_ID", "")}\"")
-        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"${localProperties.getProperty("SPOTIFY_CLIENT_SECRET", "")}\"")
-        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "")}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperties.getProperty("SUPABASE_ANON_KEY", "")}\"")
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
-    
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+}
 
-    buildFeatures {
-        buildConfig = true
-    }
+dependencies {
+    debugImplementation(libs.compose.ui.test.manifest)
 }
 
 sqldelight {
@@ -128,6 +143,12 @@ sqldelight {
     }
 }
 
-dependencies {
-    debugImplementation(libs.compose.ui.test.manifest)
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*.BuildConfig", "*.BR", "*_Factory", "*_MembersInjector")
+            }
+        }
+    }
 }

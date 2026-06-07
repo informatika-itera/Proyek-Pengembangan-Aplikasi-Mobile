@@ -2,12 +2,8 @@ package com.soundletter.app
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import com.soundletter.app.presentation.screens.compose.ComposeScreen
-import com.soundletter.app.presentation.screens.history.HistoryScreen
-import com.soundletter.app.presentation.theme.SoundLetterTheme
 import org.junit.Rule
 import org.junit.Test
-import org.koin.compose.KoinContext
 
 class SoundLetterUiTest {
 
@@ -15,79 +11,77 @@ class SoundLetterUiTest {
     val composeTestRule = createComposeRule()
 
     /**
-     * Test 1 (Input Interaction):
-     * Memastikan teks yang diketik di TextField "To" muncul di UI.
+     * Skenario 1a: Flow mengirim pesan dari awal sampai tersimpan di history.
      */
     @Test
-    fun testRecipientInput_ShouldDisplayTypedText() {
-        composeTestRule.setContent {
-            SoundLetterTheme {
-                KoinContext {
-                    ComposeScreen(onNavigateBack = {})
-                }
-            }
+    fun testFlow_SendMessage_AndVerifyInHistory() {
+        composeTestRule.setContent { App() }
+
+        // 1. Tunggu Splash Screen selesai (Masuk Home)
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("SoundLetter").fetchSemanticsNodes().isNotEmpty()
         }
 
-        // Mencari TextField dengan teks label "To"
-        composeTestRule.onNodeWithText("To")
-            .performTextInput("Dzaky")
+        // 2. Klik FAB untuk Compose
+        composeTestRule.onNodeWithContentDescription("Compose").performClick()
 
-        // Memastikan teks "Dzaky" kini ada di dalam TextField tersebut
-        composeTestRule.onNodeWithText("Dzaky")
-            .assertIsDisplayed()
+        // 3. Isi Form
+        composeTestRule.onNodeWithText("Untuk").performTextInput("Automation User")
+        composeTestRule.onNodeWithText("Isi Pesan").performTextInput("Pesan testing Sprint 4")
+        
+        // 4. Kirim
+        composeTestRule.onNodeWithText("Kirim Surat Musik").performClick()
+
+        // 5. Tunggu kembali ke Home dan cek History via Bottom Bar
+        composeTestRule.waitUntil(timeoutMillis = 8000) {
+            composeTestRule.onAllNodesWithContentDescription("history").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithContentDescription("history").performClick()
+
+        // 6. Verifikasi data muncul
+        composeTestRule.onNodeWithText("To: Automation User", substring = true).assertIsDisplayed()
     }
 
     /**
-     * Test 2 (Action & Feedback Validation):
-     * Memastikan pesan error muncul jika tombol kirim ditekan saat input kosong.
+     * Skenario 1b: Flow mencari (search) surat dan verifikasi hasil muncul di list.
      */
     @Test
-    fun testSendButton_EmptyFields_ShowsError() {
-        composeTestRule.setContent {
-            SoundLetterTheme {
-                KoinContext {
-                    ComposeScreen(onNavigateBack = {})
-                }
-            }
+    fun testFlow_SearchLetter_VerifyResult() {
+        composeTestRule.setContent { App() }
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithContentDescription("search").fetchSemanticsNodes().isNotEmpty()
         }
 
-        // Klik tombol "Send Letter" tanpa mengisi TextField
-        composeTestRule.onNodeWithText("Send Letter")
-            .performClick()
+        // 1. Navigasi ke Search
+        composeTestRule.onNodeWithContentDescription("search").performClick()
 
-        // Menunggu hingga Snackbar muncul. 
-        // Kita mencari teks spesifik yang dilempar oleh ComposeViewModel.
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule
-                .onAllNodesWithText("cannot be empty", substring = true)
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        // 2. Ketik nama penerima (Gunakan data dummy 'Atalie')
+        composeTestRule.onNodeWithText("Ketik nama penerima...").performTextInput("Atalie")
 
-        // Memastikan indikator error ditampilkan di layar
-        composeTestRule.onNodeWithText("cannot be empty", substring = true)
-            .assertIsDisplayed()
+        // 3. Verifikasi hasil muncul
+        composeTestRule.onNodeWithText("To: Atalie Salsabila", substring = true).assertIsDisplayed()
     }
 
     /**
-     * Test 3 (List Rendering):
-     * Memastikan HistoryScreen menampilkan daftar kartu pesan.
+     * Skenario 1c: Flow navigasi Home -> Settings -> Home (Tanpa Dead End).
      */
     @Test
-    fun testHistoryScreen_RendersMessageCards() {
-        composeTestRule.setContent {
-            SoundLetterTheme {
-                KoinContext {
-                    HistoryScreen(
-                        onNavigateBack = {},
-                        onNavigateToDetail = {}
-                    )
-                }
-            }
+    fun testFlow_Navigation_HomeToSettingsAndBack() {
+        composeTestRule.setContent { App() }
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithContentDescription("settings").fetchSemanticsNodes().isNotEmpty()
         }
 
-        // Memastikan kartu pesan dengan awalan "To:" (dari data dummy) tampil
-        composeTestRule.onAllNodesWithText("To:", substring = true)
-            .onFirst()
-            .assertIsDisplayed()
+        // 1. Ke Settings
+        composeTestRule.onNodeWithContentDescription("settings").performClick()
+        composeTestRule.onNodeWithText("Pengaturan").assertIsDisplayed()
+
+        // 2. Klik Back
+        composeTestRule.onNodeWithContentDescription("Back").performClick()
+
+        // 3. Verifikasi kembali ke Home
+        composeTestRule.onNodeWithText("SoundLetter").assertIsDisplayed()
     }
 }

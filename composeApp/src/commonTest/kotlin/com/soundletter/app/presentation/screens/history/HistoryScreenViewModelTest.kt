@@ -31,9 +31,11 @@ class FakeHistoryRepository : LetterRepository {
 
     override fun getGlobalLetters(): Flow<List<Note>> = emptyFlow()
 
+    override fun searchLetters(query: String): Flow<List<Note>> = emptyFlow()
+
     override suspend fun getLetterById(id: Long): Note? = null
     
-    override suspend fun sendLetter(letter: Note) {}
+    override suspend fun sendLetter(letter: Note): Boolean = true
     
     override suspend fun deleteLetter(id: Long) {
         lastDeletedId = id
@@ -84,14 +86,13 @@ class HistoryScreenViewModelTest {
         viewModel = HistoryScreenViewModel(repository)
         
         viewModel.historyState.test {
-            val state = awaitItem()
-            // Karena error dilempar di init, state mungkin sudah Error saat mulai test
+            var state = awaitItem()
+            // Menangani loading state jika muncul di dispatcher
             if (state is UiState.Loading) {
-                assertIs<UiState.Error>(awaitItem())
-            } else {
-                assertIs<UiState.Error>(state)
-                assertEquals("Database Connection Error", (state as UiState.Error).message)
+                state = awaitItem()
             }
+            assertIs<UiState.Error>(state)
+            assertEquals("Database Connection Error", (state as UiState.Error).message)
         }
     }
 

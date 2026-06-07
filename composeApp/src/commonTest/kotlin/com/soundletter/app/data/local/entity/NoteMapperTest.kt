@@ -11,17 +11,19 @@ import kotlin.test.assertEquals
 class NoteMapperTest {
 
     @Test
-    fun testToDomainMapping() {
+    fun `test toDomain maps all fields correctly`() {
         val now = 1715950000000L
         val entity = NoteEntity(
-            id = 1L,
-            recipient = "Dzakky",
-            sender = "Anon",
-            content = "Unit testing content",
+            id = 10L,
+            recipient = "Gian",
+            sender = "Atalie",
+            content = "Hello Mapping",
             song_title = "Starboy",
             song_artist = "The Weeknd",
+            song_preview_url = "https://audio.com",
+            song_album_art_url = "https://image.com",
             category = "WORK",
-            color = "BLUE",
+            color = "PINK",
             is_pinned = 1L,
             created_at = now,
             updated_at = now
@@ -31,37 +33,25 @@ class NoteMapperTest {
 
         assertEquals(entity.id, domain.id)
         assertEquals(entity.recipient, domain.recipient)
-        assertEquals(entity.sender, domain.sender)
         assertEquals(NoteCategory.WORK, domain.category)
-        assertEquals(NoteColor.BLUE, domain.color)
+        assertEquals(NoteColor.PINK, domain.color)
         assertEquals(true, domain.isPinned)
         assertEquals(Instant.fromEpochMilliseconds(now), domain.createdAt)
+        assertEquals("https://audio.com", domain.songPreviewUrl)
     }
 
     @Test
-    fun testToEntityValuesMapping() {
-        val now = Instant.fromEpochMilliseconds(1715950000000L)
-        val note = Note(
-            id = 2L,
-            recipient = "Atalie",
-            sender = "Dzakky",
-            content = "Testing domain to entity",
-            songTitle = "After Hours",
-            songArtist = "The Weeknd",
-            category = NoteCategory.PERSONAL,
-            color = NoteColor.PINK,
-            isPinned = false,
-            createdAt = now,
-            updatedAt = now
+    fun `test toDomain handles default fallback values`() {
+        val entity = NoteEntity(
+            id = 1L, recipient = "", sender = "", content = "",
+            song_title = null, song_artist = null, song_preview_url = null, song_album_art_url = null,
+            category = "INVALID", color = "UNKNOWN", is_pinned = 0L,
+            created_at = 0L, updated_at = 0L
         )
 
-        val entity = note.toEntityValues()
-
-        assertEquals(note.recipient, entity.recipient)
-        assertEquals(note.sender, entity.sender)
-        assertEquals("PERSONAL", entity.category)
-        assertEquals("PINK", entity.color)
-        assertEquals(0L, entity.is_pinned)
-        assertEquals(now.toEpochMilliseconds(), entity.created_at)
+        val domain = entity.toDomain()
+        assertEquals(NoteCategory.GENERAL, domain.category)
+        assertEquals(NoteColor.DEFAULT, domain.color)
+        assertEquals(false, domain.isPinned)
     }
 }

@@ -21,14 +21,18 @@ class FakeHomeRepository : LetterRepository {
     private val flow = MutableSharedFlow<List<Note>>()
     var shouldFail = false
 
-    override fun getLetters(): Flow<List<Note>> = flow {
+    override fun getLetters(): Flow<List<Note>> = emptyFlow()
+
+    override fun getGlobalLetters(): Flow<List<Note>> = flow {
         if (shouldFail) throw Exception("Network Error")
         emitAll(flow)
     }
 
+    override fun searchLetters(query: String): Flow<List<Note>> = emptyFlow()
     override suspend fun getLetterById(id: Long): Note? = null
-    override suspend fun sendLetter(letter: Note) {}
+    override suspend fun sendLetter(letter: Note): Boolean = true
     override suspend fun deleteLetter(id: Long) {}
+    override suspend fun clearHistory() {}
 
     suspend fun emit(data: List<Note>) = flow.emit(data)
 }
@@ -56,13 +60,18 @@ class HomeScreenViewModelTest {
         val mockData = listOf(Note(id = 1, recipient = "Test", content = "Msg"))
         
         viewModel.uiState.test {
-            val initialState = awaitItem()
-            if (initialState is UiState.Loading) {
+            var state = awaitItem()
+            if (state is UiState.Loading) {
                 repository.emit(mockData)
-                assertIs<UiState.Success<List<Note>>>(awaitItem())
-            } else {
-                assertIs<UiState.Success<List<Note>>>(initialState)
+                state = awaitItem()
+            } else if (state is UiState.Idle) {
+                state = awaitItem() // loading
+                repository.emit(mockData)
+                state = awaitItem() // success
             }
+            
+            assertIs<UiState.Success<List<Note>>>(state)
+            assertEquals(1, state.data.size)
         }
     }
 
@@ -72,15 +81,12 @@ class HomeScreenViewModelTest {
         viewModel = HomeScreenViewModel(repository)
         
         viewModel.uiState.test {
-            val state = awaitItem()
-            if (state is UiState.Loading) {
-                val errorState = awaitItem()
-                assertIs<UiState.Error>(errorState)
-                assertEquals("Network Error", errorState.message)
-            } else {
-                assertIs<UiState.Error>(state)
-                assertEquals("Network Error", (state as UiState.Error).message)
+            var state = awaitItem()
+            if (state is UiState.Loading || state is UiState.Idle) {
+                state = awaitItem()
             }
+            assertIs<UiState.Error>(state)
+            assertEquals("Network Error", state.message)
         }
     }
 }

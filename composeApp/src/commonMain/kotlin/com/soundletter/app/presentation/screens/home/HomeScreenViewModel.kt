@@ -22,7 +22,8 @@ class HomeScreenViewModel(
     fun loadLetters() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            letterRepository.getLetters()
+            // Menggunakan getGlobalLetters() agar menampilkan data dummy "user lain"
+            letterRepository.getGlobalLetters()
                 .catch { e -> _uiState.value = UiState.Error(e.message ?: "Unknown Error") }
                 .collect { letters -> _uiState.value = UiState.Success(letters) }
         }

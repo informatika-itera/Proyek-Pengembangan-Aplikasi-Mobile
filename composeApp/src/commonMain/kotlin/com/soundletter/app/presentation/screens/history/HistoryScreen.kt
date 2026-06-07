@@ -11,8 +11,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.soundletter.app.core.util.UiState
 import com.soundletter.app.domain.model.Note
@@ -20,7 +20,6 @@ import com.soundletter.app.presentation.components.EmptyStateView
 import com.soundletter.app.presentation.components.LoadingView
 import com.soundletter.app.presentation.screens.home.MessageCard
 import com.soundletter.app.presentation.screens.settings.SettingsViewModel
-import com.soundletter.app.presentation.theme.SoundLetterColors
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,15 +34,19 @@ fun HistoryScreen(
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
+    val primaryColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
+
     Scaffold(
-        containerColor = Color.Transparent,
+        containerColor = backgroundColor,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { 
                     Text(
-                        "Sent History",
-                        color = if (isDarkMode) Color.White else MaterialTheme.colorScheme.primary
+                        "Riwayat Terkirim",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = primaryColor
                     ) 
                 },
                 navigationIcon = {
@@ -51,29 +54,23 @@ fun HistoryScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack, 
                             contentDescription = "Back",
-                            tint = if (isDarkMode) Color.White else MaterialTheme.colorScheme.primary
+                            tint = primaryColor
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(SoundLetterColors.getBackgroundGradient(isDarkMode)))
                 .padding(padding)
         ) {
             when (val state = uiState) {
-                is UiState.Loading -> {
-                    LoadingView()
-                }
+                is UiState.Loading -> LoadingView()
                 is UiState.Success -> {
-                    val letters = state.data
-                    if (letters.isEmpty()) {
+                    if (state.data.isEmpty()) {
                         EmptyStateView(
                             icon = Icons.Default.Inbox,
                             title = "Riwayat Kosong",
@@ -82,17 +79,15 @@ fun HistoryScreen(
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(24.dp),
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(letters, key = { it.id }) { note: Note ->
-                                Box(modifier = Modifier.animateItem()) {
-                                    MessageCard(
-                                        message = note,
-                                        isDarkMode = isDarkMode,
-                                        onClick = { onNavigateToDetail(note.id.toString()) }
-                                    )
-                                }
+                            items(state.data, key = { it.id }) { note ->
+                                MessageCard(
+                                    message = note,
+                                    isDarkMode = isDarkMode,
+                                    onClick = { onNavigateToDetail(note.id.toString()) }
+                                )
                             }
                         }
                     }

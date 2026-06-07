@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -59,6 +58,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -127,7 +127,7 @@ fun HomeScreen(
                     title = { Text("EduMate") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Buka sidebar")
+                            Icon(Icons.Default.Menu, contentDescription = "Buka navigasi")
                         }
                     },
                     actions = {
@@ -141,7 +141,7 @@ fun HomeScreen(
                         IconButton(onClick = onNavigateToTimer) {
                             Icon(
                                 Icons.Default.Timer,
-                                contentDescription = "Fokus Belajar",
+                                contentDescription = "Fokus",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -161,8 +161,12 @@ fun HomeScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = onNavigateToAdd) {
-                    Icon(Icons.Default.Add, contentDescription = "Tambah Tugas")
+                FloatingActionButton(
+                    onClick = onNavigateToAdd,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Buat Tugas")
                 }
             }
         ) { paddingValues ->
@@ -176,13 +180,13 @@ fun HomeScreen(
                     onValueChange = { viewModel.updateSearchQuery(it) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("Cari tugas...") },
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    placeholder = { Text("Pencarian tugas...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Cari") },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { viewModel.updateSearchQuery("") }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Hapus Pencarian")
+                                Icon(Icons.Default.Clear, contentDescription = "Hapus")
                             }
                         }
                     },
@@ -197,8 +201,8 @@ fun HomeScreen(
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(TaskFilter.entries) { filter ->
                         FilterChip(
@@ -217,17 +221,29 @@ fun HomeScreen(
 
                         is HomeUiState.Empty -> {
                             Column(
-                                modifier = Modifier.align(Alignment.Center),
+                                modifier = Modifier.align(Alignment.Center).padding(32.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                Icon(
+                                    Icons.Default.Assessment,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(bottom = 16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                                 Text(
-                                    text = "Belum ada tugas. Tap + untuk membuat tugas baru.",
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    text = "Tidak ada tugas yang terdaftar saat ini.",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Silakan tekan tombol tambah untuk membuat tugas baru.",
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
                                 Button(onClick = onNavigateToAdd) {
-                                    Text("Tambah tugas")
+                                    Text("Buat Tugas Baru")
                                 }
                             }
                         }
@@ -258,21 +274,21 @@ fun HomeScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                                 if (searchQuery.isNotEmpty() || currentFilter != TaskFilter.ALL) {
                                     Button(onClick = {
                                         viewModel.updateSearchQuery("")
                                         viewModel.updateFilter(TaskFilter.ALL)
                                     }) {
                                         Icon(Icons.Default.Refresh, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Hapus Filter")
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Setel Ulang Filter")
                                     }
                                 } else {
                                     Button(onClick = { viewModel.refresh() }) {
                                         Icon(Icons.Default.Refresh, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Coba lagi")
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Muat Ulang")
                                     }
                                 }
                             }
@@ -295,7 +311,7 @@ private fun HomeDrawerContent(
 ) {
     Column(
         modifier = Modifier
-            .width(300.dp)
+            .width(320.dp)
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
@@ -306,7 +322,7 @@ private fun HomeDrawerContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Icon(
@@ -314,21 +330,22 @@ private fun HomeDrawerContent(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "EduMate",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Sidebar navigasi cepat",
+                    text = "Asisten Belajar Akademik",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         NavigationDrawerItem(
             label = { Text("Beranda") },
@@ -349,30 +366,30 @@ private fun HomeDrawerContent(
             onClick = onNavigateTimer
         )
         NavigationDrawerItem(
-            label = { Text("Statistik") },
+            label = { Text("Statistik Akademik") },
             icon = { Icon(Icons.Default.Assessment, contentDescription = null) },
             selected = false,
             onClick = onNavigateStatistics
         )
         NavigationDrawerItem(
-            label = { Text("AI Assistant") },
+            label = { Text("Asisten Cerdas") },
             icon = { Icon(Icons.Default.AutoAwesome, contentDescription = null) },
             selected = false,
             onClick = onNavigateAI
         )
         NavigationDrawerItem(
-            label = { Text("Pengaturan") },
+            label = { Text("Pengaturan Aplikasi") },
             icon = { Icon(Icons.Default.Settings, contentDescription = null) },
             selected = false,
             onClick = onNavigateSettings
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider()
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Gunakan sidebar untuk pindah cepat ke halaman penting.",
+            text = "Gunakan panel ini untuk bernavigasi ke fitur lainnya.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -414,27 +431,29 @@ private fun TaskCard(
                     style = MaterialTheme.typography.titleMedium,
                     textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
                     color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 if (task.deadline != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "⏳ Deadline: ${task.deadline.toDateText()}",
+                        text = "Batas Waktu: ${task.deadline.toDateText()}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
 
                 if (task.description.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = task.description,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2
                     )
                 }
             }

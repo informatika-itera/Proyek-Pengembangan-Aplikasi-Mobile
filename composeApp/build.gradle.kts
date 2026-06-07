@@ -26,7 +26,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -37,7 +37,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         commonMain.dependencies {
             // Compose
@@ -48,56 +48,68 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            
+
             // Kotlin
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            
+
             // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
-            
+
             // Koin DI
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-            
+
             // SQLDelight
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-            
+
             // DataStore + Okio
             implementation(libs.datastore.preferences)
             implementation(libs.okio)
-            
+
             // Lifecycle & ViewModel
             implementation(libs.lifecycle.viewmodel)
             implementation(libs.lifecycle.runtime.compose)
-            
+
             // Navigation
             implementation(libs.navigation.compose)
-            
+
             // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
-        
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+
+            // Compose UI Testing Library
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
         }
-        
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation("junit:junit:4.13.2")
+                implementation("org.robolectric:robolectric:4.12.2")
+                // debugImplementation DIHAPUS DARI SINI
+            }
+        }
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
         }
-        
+
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqldelight.native.driver)
@@ -105,13 +117,18 @@ kotlin {
     }
 }
 
+// --- SOLUSI: TOP-LEVEL DEPENDENCIES KHUSUS ANDROID ---
+dependencies {
+    // Memasukkan ComponentActivity kosong untuk testing UI Compose
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.7")
+}
+// -----------------------------------------------------
+
 android {
-    // 1. UBAH namespace menjadi edumate
     namespace = "com.example.edumate"
     compileSdk = 35
 
     defaultConfig {
-        // 2. UBAH applicationId menjadi edumate
         applicationId = "com.example.edumate"
         minSdk = 24
         targetSdk = 35
@@ -145,6 +162,13 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -153,9 +177,7 @@ android {
 
 sqldelight {
     databases {
-        // 3. UBAH NoteDatabase menjadi TaskDatabase
         create("TaskDatabase") {
-            // 4. UBAH package name databasenya
             packageName.set("com.example.edumate.data.local")
         }
     }

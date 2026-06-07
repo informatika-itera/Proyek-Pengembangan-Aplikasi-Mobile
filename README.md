@@ -18,8 +18,12 @@
 | ![Sanctuary](screenshots/SS3.png) | ![Insights](screenshots/SS4.png) |
 | *Interactive breathing & meditation* | *Real-time data-driven mood trends* |
 
-### 🎥 Live Demo
-[![Watch the Demo](https://img.shields.io/badge/Demo-Watch%20Now-red?style=for-the-badge&logo=youtube)](https://youtube.com/shorts/RYtQWypN5Vo)
+### 🎥 Video Demos
+
+| 🛠️ Software Testing Results | ✨ UI/UX Experience |
+| :---: | :---: |
+| [![Testing Demo](https://img.shields.io/badge/Testing-Watch%20Now-blue?style=for-the-badge&logo=youtube)](https://youtu.be/oN2sHhMo2hg) | [![UI Demo](https://img.shields.io/badge/UI/UX-Watch%20Now-purple?style=for-the-badge&logo=youtube)](https://youtube.com/shorts/FZ3bgCcHjKI) |
+| *Automated test execution & validation* | *Cinematic transitions & AI resonance* |
 
 ---
 
@@ -44,6 +48,49 @@
 - [x] **Local Audio Engine**: Offline-first ambient playback for Sonic Zen.
 - [x] **Search & Filter**: High-performance pill-shaped search with category filtering and multi-sort.
 
+### 🚀 Sprint 4: Stability & Testing (100% Complete)
+- [x] **Comprehensive Testing Suite**: Expanded Unit, UseCase, and UI testing (45+ Unit Tests, 3+ UI Tests).
+- [x] **Automated Coverage**: Kover integration achieving **79.5% Line Coverage** (Exceeding the 70% bonus target).
+- [x] **Visual Polish & Edge Cases**: Minimalist error/loading/empty states across all screens with Skeleton support.
+- [x] **Critical Bug Fixes**: Resolved nested coroutine, calendar offset, stale data, and text overflow issues.
+
+### 🚀 Sprint 5: Advanced Experience (100% Complete)
+- [x] **Sensory Interaction**: Haptic feedback integration and dynamic Shooting Star animations.
+- [x] **Cinematic Navigation**: Shared Element Transitions between galaxy and detail views.
+- [x] **User Onboarding**: Immersive 3-slide introduction to the Synesthesia ecosystem.
+- [x] **Platform Integration**: Android Home Screen Widget (Glance) and daily Journaling Reminders.
+- [x] **Utility Features**: Cross-platform memory sharing (native Intent sharing).
+
+---
+
+## 🧪 Software Testing & QA
+
+Synesthesia emphasizes reliability through a rigorous testing strategy:
+
+### 1. Running Unit Tests
+To execute all local unit tests (Domain & Presentation):
+```bash
+./gradlew :composeApp:testDebugUnitTest
+```
+**Current Status**: 45/45 Passed ✅
+
+### 2. Code Coverage Report
+We use **Kover** to measure test coverage. 
+
+![Kover Coverage Summary](screenshots/SS%20Test.png)
+
+To generate the HTML report locally:
+```bash
+./gradlew :composeApp:koverHtmlReport
+```
+The report will be available at `composeApp/build/reports/kover/html/index.html`.
+
+### 3. Running UI Tests
+To run instrumentation tests on an Android device/emulator:
+```bash
+./gradlew connectedDebugAndroidTest
+```
+
 ---
 
 ## 🏗️ Architecture & Technology Stack
@@ -60,7 +107,7 @@ Synesthesia is built following **Clean Architecture** principles to ensure a sca
 | **Language** | Kotlin (100%) |
 | **Framework** | Compose Multiplatform (1.7.0) |
 | **Dependency Injection** | Koin (4.0.0) |
-| **AI Integration** | Google Gemini API |
+| **AI Integration** | Google Gemini API (Model: 2.5-flash) |
 | **Database** | SQLDelight (2.0.2) |
 | **Networking** | Ktor Client (3.0.1) |
 | **Concurrency** | Kotlin Coroutines & Flow |

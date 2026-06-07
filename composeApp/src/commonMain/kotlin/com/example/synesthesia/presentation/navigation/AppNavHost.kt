@@ -14,6 +14,7 @@ import com.example.synesthesia.presentation.screens.ai.AIAssistantScreen
 import com.example.synesthesia.presentation.screens.detail.MemoryDetailScreen
 import com.example.synesthesia.presentation.screens.home.HomeScreen
 import com.example.synesthesia.presentation.screens.main.MainScreen
+import com.example.synesthesia.presentation.screens.onboarding.OnboardingScreen
 import androidx.compose.runtime.getValue
 import com.example.synesthesia.presentation.screens.settings.SettingsScreen
 
@@ -30,13 +31,23 @@ fun AppNavHost(
     val navigationActions = createNavigationActions(navController)
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
+    val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
     
     SharedTransitionLayout {
         NavHost(
             navController = navController,
-            startDestination = Route.Constellation,
+            startDestination = if (isOnboardingCompleted) Route.Constellation else Route.Onboarding,
             modifier = modifier
         ) {
+            composable<Route.Onboarding> {
+                OnboardingScreen(
+                    onFinish = {
+                        viewModel.completeOnboarding()
+                        navigationActions.navigateToConstellation()
+                    }
+                )
+            }
+
             composable<Route.Constellation> {
                 MainScreen(
                     themeMode = themeMode,
@@ -44,7 +55,9 @@ fun AppNavHost(
                     onNavigateToAddNote = { navigationActions.navigateToAddMemory() },
                     onNavigateToDetail = { noteId -> navigationActions.navigateToMemoryDetail(noteId) },
                     onNavigateToAI = { navigationActions.navigateToAIAssistant() },
-                    onNavigateToSettings = { navigationActions.navigateToSettings() }
+                    onNavigateToSettings = { navigationActions.navigateToSettings() },
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@composable
                 )
             }
             
@@ -71,7 +84,9 @@ fun AppNavHost(
                 MemoryDetailScreen(
                     noteId = route.memoryId,
                     onNavigateBack = { navigationActions.navigateBack() },
-                    onNavigateToEdit = { navigationActions.navigateToAddMemory(it) }
+                    onNavigateToEdit = { navigationActions.navigateToAddMemory(it) },
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@composable
                 )
             }
             
@@ -98,6 +113,12 @@ fun AppNavHost(
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
+        override fun navigateToOnboarding() {
+            navController.navigate(Route.Onboarding) {
+                popUpTo(Route.Onboarding) { inclusive = true }
+            }
+        }
+
         override fun navigateToConstellation() {
             navController.navigate(Route.Constellation) {
                 popUpTo(Route.Constellation) { inclusive = true }

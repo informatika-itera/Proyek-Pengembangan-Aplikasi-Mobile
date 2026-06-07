@@ -21,6 +21,7 @@ import com.example.synesthesia.presentation.theme.BrightYellow
 import com.example.synesthesia.presentation.theme.RoyalBlue
 import com.example.synesthesia.presentation.theme.ThemeMode
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MainScreen(
     themeMode: ThemeMode,
@@ -28,7 +29,9 @@ fun MainScreen(
     onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAI: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     var currentTab by remember { mutableStateOf<Route>(Route.Constellation) }
     val isAstronomy = themeMode == ThemeMode.ASTRONOMY
@@ -137,7 +140,9 @@ fun MainScreen(
                             onNavigateToAddNote = onNavigateToAddNote,
                             onNavigateToDetail = onNavigateToDetail,
                             onNavigateToAI = onNavigateToAI,
-                            onNavigateToSettings = onNavigateToSettings
+                            onNavigateToSettings = onNavigateToSettings,
+                            sharedTransitionScope = sharedTransitionScope,
+                            animatedVisibilityScope = animatedVisibilityScope
                         )
                     }
                     Route.SonicZen -> SonicZenScreen()

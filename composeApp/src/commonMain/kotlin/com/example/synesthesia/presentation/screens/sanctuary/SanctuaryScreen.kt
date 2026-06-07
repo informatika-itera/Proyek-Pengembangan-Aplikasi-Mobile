@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -176,36 +177,49 @@ fun SanctuaryScreen(
                         shape = RoundedCornerShape(32.dp),
                         colors = CardDefaults.cardColors(containerColor = activeRitual!!.color)
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            if (activeRitual!!.id == "breathing") {
-                                BreathingCircle(phaseText, breatheScale)
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(120.dp)
-                                        .background(Color.White.copy(alpha = 0.3f), CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        activeRitual!!.icon, 
-                                        contentDescription = null, 
-                                        modifier = Modifier.size(60.dp),
-                                        tint = Color.White
-                                    )
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            IconButton(
+                                onClick = { isRitualActive = false },
+                                modifier = Modifier.padding(16.dp).align(Alignment.TopStart)
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Color.White
+                                )
+                            }
+                            
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                if (activeRitual!!.id == "breathing") {
+                                    BreathingCircle(phaseText, breatheScale)
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(120.dp)
+                                            .background(Color.White.copy(alpha = 0.3f), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            activeRitual!!.icon, 
+                                            contentDescription = null, 
+                                            modifier = Modifier.size(60.dp),
+                                            tint = Color.White
+                                        )
+                                    }
                                 }
-                            }
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text(phaseText, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
-                            if (activeRitual!!.id != "breathing") {
-                                Text("${secondsLeft / 60}:${(secondsLeft % 60).toString().padStart(2, '0')} remaining", color = Color.White.copy(alpha = 0.8f))
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            TextButton(onClick = { isRitualActive = false }) {
-                                Text("END SESSION", color = Color.White, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(24.dp))
+                                Text(phaseText, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
+                                if (activeRitual!!.id != "breathing") {
+                                    Text("${secondsLeft / 60}:${(secondsLeft % 60).toString().padStart(2, '0')} remaining", color = Color.White.copy(alpha = 0.8f))
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                TextButton(onClick = { isRitualActive = false }) {
+                                    Text("END SESSION", color = Color.White, fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }
@@ -261,7 +275,10 @@ fun SanctuaryScreen(
                 )
             }
 
-            items(rituals.chunked(2)) { pair ->
+            items(
+                items = rituals.chunked(2),
+                key = { it.joinToString("-") { ritual -> ritual.id } }
+            ) { pair ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     pair.forEach { ritual ->
                         RitualCard(
@@ -433,7 +450,9 @@ fun RitualCard(
                     fontWeight = FontWeight.Black, 
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
         }

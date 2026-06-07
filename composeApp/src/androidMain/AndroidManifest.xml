@@ -4,6 +4,7 @@
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".NoteAIApplication"
@@ -17,13 +18,28 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.NoteAI">
+            android:theme="@style/Theme.NoteAI"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|mcc|navigation|uiMode"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
+        <receiver
+            android:name=".presentation.widget.SynesthesiaWidgetReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:label="Synesthesia Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/synesthesia_widget_info" />
+        </receiver>
+
     </application>
     
 </manifest>

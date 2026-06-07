@@ -27,32 +27,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.synesthesia.domain.model.NoteCategory
+import com.example.synesthesia.presentation.components.CelestialBackground
+import com.example.synesthesia.presentation.components.EmptyStateView
 import com.example.synesthesia.presentation.theme.BrightYellow
 import com.example.synesthesia.presentation.theme.RoyalBlue
 import com.example.synesthesia.presentation.theme.SpaceBlack
+import com.example.synesthesia.presentation.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(
     onNavigateToAddNote: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAI: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     var isSearchActive by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
     
-    val query = when (val state = uiState) {
-        is HomeUiState.Success -> state.query
-        is HomeUiState.Empty -> state.query
-        else -> ""
-    }
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -87,11 +87,11 @@ fun HomeScreen(
                             exit = shrinkHorizontally() + fadeOut()
                         ) {
                             OutlinedTextField(
-                                value = query,
+                                value = searchQuery,
                                 onValueChange = viewModel::onSearchQueryChange,
                                 modifier = Modifier
                                     .fillMaxWidth(0.7f)
-                                    .padding(end = 8.dp),
+                                    .padding(end = Spacing.sm),
                                 shape = RoundedCornerShape(50.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.15f),
@@ -107,7 +107,7 @@ fun HomeScreen(
                                     )
                                 },
                                 trailingIcon = {
-                                    if (query.isNotEmpty()) {
+                                    if (searchQuery.isNotEmpty()) {
                                         IconButton(onClick = viewModel::clearSearch) {
                                             Icon(Icons.Default.Clear, contentDescription = "Clear")
                                         }
@@ -130,7 +130,7 @@ fun HomeScreen(
                                     contentDescription = "Search",
                                     tint = if (MaterialTheme.colorScheme.background == SpaceBlack) BrightYellow else RoyalBlue
                                 )
-                                if (!isSearchActive && query.isNotEmpty()) {
+                                if (!isSearchActive && searchQuery.isNotEmpty()) {
                                     Surface(
                                         modifier = Modifier
                                             .size(8.dp)
@@ -156,7 +156,7 @@ fun HomeScreen(
                                     shape = CircleShape,
                                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                                 ) {
-                                    Icon(Icons.Default.Person, contentDescription = "Profile", modifier = Modifier.padding(8.dp))
+                                    Icon(Icons.Default.Settings, contentDescription = "Settings", modifier = Modifier.padding(8.dp))
                                 }
                             }
                         }
@@ -183,24 +183,29 @@ fun HomeScreen(
         ) {
             when (val state = uiState) {
                 is HomeUiState.Success -> {
+                    val memoryCount = remember(state.notes) { state.notes.size }
+                    
                     ConstellationCanvas(
                         notes = state.notes,
                         onNoteClick = onNavigateToDetail,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
                         modifier = Modifier.fillMaxSize()
                     )
                     
                     // Small Insight Overlay (Top Left)
-                    val infiniteTransition = rememberInfiniteTransition()
+                    val infiniteTransition = rememberInfiniteTransition(label = "badge")
                     val badgeScale by infiniteTransition.animateFloat(
                         initialValue = 1.0f,
                         targetValue = 1.1f,
                         animationSpec = infiniteRepeatable(
                             animation = tween(2000, easing = FastOutSlowInEasing),
                             repeatMode = RepeatMode.Reverse
-                        )
+                        ),
+                        label = "scale"
                     )
 
-                    Column(modifier = Modifier.padding(16.dp).align(Alignment.TopStart)) {
+                    Column(modifier = Modifier.padding(Spacing.md).align(Alignment.TopStart)) {
                         Surface(
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
                             shape = RoundedCornerShape(12.dp),
@@ -209,7 +214,7 @@ fun HomeScreen(
                             Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp), tint = RoyalBlue)
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("${state.notes.size} Memories in Galaxy", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                                Text("$memoryCount Memories in Galaxy", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -218,26 +223,18 @@ fun HomeScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is HomeUiState.Empty -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (state.query.isNotEmpty()) {
-                            Icon(
-                                Icons.Default.SearchOff,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-                            )
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                "No memories found for \"${state.query}\"",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        } else {
-                            Text("No memories yet", style = MaterialTheme.typography.titleMedium)
-                            Text("Your galaxy is empty", style = MaterialTheme.typography.bodyMedium)
-                        }
+                    if (state.query.isNotEmpty()) {
+                        EmptyStateView(
+                            title = "No matches found",
+                            description = "Your galaxy doesn't contain memories matching \"${state.query}\"",
+                            icon = Icons.Default.SearchOff
+                        )
+                    } else {
+                        EmptyStateView(
+                            title = "Quiet Galaxy",
+                            description = "Begin your journey by engraving your first memory.",
+                            icon = Icons.Default.AutoAwesome
+                        )
                     }
                 }
                 is HomeUiState.Error -> {
@@ -250,7 +247,7 @@ fun HomeScreen(
                 onClick = onNavigateToAI,
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(24.dp)
+                    .padding(Spacing.lg)
                     .size(48.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer)
@@ -301,7 +298,7 @@ fun FilterSortBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp, start = 24.dp, end = 24.dp)
+                .padding(bottom = Spacing.xl, start = Spacing.lg, end = Spacing.lg)
         ) {
             Text(
                 "Filter Memories",

@@ -31,12 +31,13 @@ fun MoodCalendar(
     modifier: Modifier = Modifier
 ) {
     val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-    val today = now.dayOfMonth
+    val currentMonth = Month.valueOf(monthName.uppercase())
+    val today = if (now.month == currentMonth && now.year == year) now.dayOfMonth else -1
     
     // Calculate days in month and start offset
-    val firstDayOfMonth = LocalDate(year, now.month, 1)
+    val firstDayOfMonth = LocalDate(year, currentMonth, 1)
     val dayOfWeekOffset = (firstDayOfMonth.dayOfWeek.isoDayNumber - 1) % 7
-    val daysInMonth = when (now.month) {
+    val daysInMonth = when (currentMonth) {
         Month.FEBRUARY -> if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) 29 else 28
         Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
         else -> 31
@@ -84,7 +85,10 @@ fun MoodCalendar(
                     Spacer(modifier = Modifier.padding(2.dp).aspectRatio(1f))
                 }
 
-                items(daysInMonth) { index ->
+                items(
+                    count = daysInMonth,
+                    key = { index -> "day-${index + 1}-$monthName" }
+                ) { index ->
                     val day = index + 1
                     val emotionColorHex = calendarData[day]
                     val backgroundColor = if (emotionColorHex != null) {

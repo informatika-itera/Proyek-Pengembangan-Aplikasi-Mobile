@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -106,30 +107,48 @@ fun SonicZenScreen() {
                         .shadow(16.dp, RoundedCornerShape(24.dp)),
                     colors = CardDefaults.cardColors(containerColor = track.color.copy(alpha = 0.9f))
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(track.emoji, fontSize = 40.sp)
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(track.title, color = Color.White, fontWeight = FontWeight.Black, style = MaterialTheme.typography.titleLarge)
-                                Text("Now Resonating...", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(top = 32.dp, start = 20.dp, end = 20.dp, bottom = 20.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(track.emoji, fontSize = 40.sp)
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(track.title, color = Color.White, fontWeight = FontWeight.Black, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Text("Now Resonating...", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
+                                }
+                                IconButton(onClick = { isPlaying = !isPlaying }) {
+                                    Icon(
+                                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
                             }
-                            IconButton(onClick = { isPlaying = !isPlaying }) {
-                                Icon(
-                                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LinearProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
+                                color = Color.White,
+                                trackColor = Color.White.copy(alpha = 0.2f)
+                            )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        LinearProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
-                            color = Color.White,
-                            trackColor = Color.White.copy(alpha = 0.2f)
-                        )
+
+                        IconButton(
+                            onClick = {
+                                playingTrack = null
+                                isPlaying = false
+                                stopAudio()
+                            },
+                            modifier = Modifier.padding(4.dp).align(Alignment.TopStart)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Hide Player",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -139,7 +158,10 @@ fun SonicZenScreen() {
             verticalArrangement = Arrangement.spacedBy(20.dp),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            items(audioTracks) { track ->
+            items(
+                items = audioTracks,
+                key = { it.resName }
+            ) { track ->
                 ModernAudioCard(
                     track = track,
                     isActive = playingTrack == track,
@@ -199,8 +221,8 @@ fun ModernAudioCard(track: AudioTrack, isActive: Boolean, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.width(16.dp))
                 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(track.title, fontWeight = FontWeight.Black, style = MaterialTheme.typography.titleMedium)
-                    Text(track.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text(track.title, fontWeight = FontWeight.Black, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    Text(track.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
                 
                 Icon(

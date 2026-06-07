@@ -33,6 +33,8 @@ class HomeViewModel(
 ) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     private val _selectedCategory = MutableStateFlow<NoteCategory?>(null)
     private val _sortBy = MutableStateFlow(NoteSortBy.UPDATED_DESC)
     private val _isLoading = MutableStateFlow(false)

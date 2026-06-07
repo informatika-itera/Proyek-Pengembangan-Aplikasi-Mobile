@@ -3,7 +3,7 @@ package com.example.synesthesia.presentation.screens.insights
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.synesthesia.data.local.datastore.UserPreferences
-import com.example.synesthesia.data.remote.api.GeminiService
+import com.example.synesthesia.domain.repository.AIRepository
 import com.example.synesthesia.domain.model.EmotionSystem
 import com.example.synesthesia.domain.model.Note
 import com.example.synesthesia.domain.repository.NoteRepository
@@ -18,7 +18,7 @@ import kotlinx.datetime.toLocalDateTime
 class InsightsViewModel(
     private val repository: NoteRepository,
     private val userPreferences: UserPreferences,
-    private val geminiService: GeminiService
+    private val aiRepository: AIRepository
 ) : ViewModel() {
     
     private val tz = TimeZone.currentSystemDefault()
@@ -42,18 +42,20 @@ class InsightsViewModel(
             val total = notes.size
             if (total == 0) return@map InsightsUiState.Empty
 
-            val labels = listOf("joy", "calm", "melancholy", "anger")
-            val distribution = labels.associateWith { label ->
-                val count = notes.count { it.emotion?.lowercase() == label }
-                (count.toFloat() / total * 100).toInt()
+            val distribution = EmotionSystem.categories.associate { category ->
+                val count = notes.count { note ->
+                    note.artToken == category.name || category.subEmotions.contains(note.emotion)
+                }
+                category.id to (count.toFloat() / total * 100).toInt()
             }
 
             val last7DaysData = (0..6).map { i ->
                 val date = now.minus(i, DateTimeUnit.DAY, tz)
                 val dayNotes = notes.filter { it.createdAt.toLocalDateTime(tz).date == date.toLocalDateTime(tz).date }
                 val count = dayNotes.size.toFloat()
-                val dominant = dayNotes.groupBy { it.emotion?.lowercase() ?: "calm" }.maxByOrNull { it.value.size }?.key ?: "calm"
-                count to dominant
+                val dominant = dayNotes.groupBy { it.emotion }.maxByOrNull { it.value.size }?.key
+                val dominantCategoryId = EmotionSystem.getCategoryBySubEmotion(dominant)?.id ?: "LEP"
+                count to dominantCategoryId
             }.reversed()
 
             val currentMonth = now.toLocalDateTime(tz).month
@@ -122,7 +124,7 @@ class InsightsViewModel(
                 Sampaikan dengan hangat dan empatik seperti seorang teman.
             """.trimIndent()
             
-            geminiService.generateContent(prompt).onSuccess { summary ->
+            aiRepository.chat(prompt).onSuccess { summary ->
                 _weeklySummary.value = summary
             }.onFailure {
                 _weeklySummary.value = "Gagal memproses analisis jiwa."

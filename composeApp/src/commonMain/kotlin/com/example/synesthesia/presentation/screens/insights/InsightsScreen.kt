@@ -25,8 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.synesthesia.presentation.theme.AngerColor
 import com.example.synesthesia.presentation.theme.BrightYellow
+import com.example.synesthesia.presentation.theme.CalmColor
 import com.example.synesthesia.presentation.theme.JoyColor
+import com.example.synesthesia.presentation.theme.MelancholyColor
 import com.example.synesthesia.presentation.theme.RoyalBlue
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -79,7 +82,7 @@ fun InsightsScreen(
                                 modifier = Modifier.fillMaxWidth()
                             )
                         } else {
-                            Text(userName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+                            Text(userName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             Text("Stargazer Level 12", style = MaterialTheme.typography.labelSmall, color = RoyalBlue)
                         }
                     }
@@ -101,7 +104,7 @@ fun InsightsScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
-                    Text(userBio, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                    Text(userBio, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
             }
         }
@@ -175,11 +178,13 @@ fun InsightsScreen(
                 Text("EMOTION DISTRIBUTION", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                state.emotionDistribution.forEach { (emotion, percentage) ->
+                val distribution = remember(state.emotionDistribution) { state.emotionDistribution }
+                
+                distribution.forEach { (emotionId, percentage) ->
                     EmotionStatRow(
-                        label = emotion.replaceFirstChar { it.uppercase() },
+                        label = getEmotionLabel(emotionId),
                         percentage = percentage,
-                        color = getEmotionColor(emotion)
+                        color = getEmotionColor(emotionId)
                     )
                 }
 
@@ -200,13 +205,23 @@ fun InsightsScreen(
     }
 }
 
-private fun getEmotionColor(emotion: String): Color {
-    return when (emotion.lowercase()) {
-        "joy" -> Color(0xFFFFD700)
-        "calm" -> Color(0xFF34D399)
-        "melancholy" -> Color(0xFF60A5FA)
-        "anger" -> Color(0xFFF87171)
+private fun getEmotionColor(emotionId: String): Color {
+    return when (emotionId.uppercase()) {
+        "HEP" -> JoyColor
+        "LEP" -> CalmColor
+        "LEU" -> MelancholyColor
+        "HEU" -> AngerColor
         else -> RoyalBlue
+    }
+}
+
+private fun getEmotionLabel(emotionId: String): String {
+    return when (emotionId.uppercase()) {
+        "HEP" -> "Joyful"
+        "HEU" -> "Intense"
+        "LEP" -> "Peaceful"
+        "LEU" -> "Reflective"
+        else -> "Balanced"
     }
 }
 

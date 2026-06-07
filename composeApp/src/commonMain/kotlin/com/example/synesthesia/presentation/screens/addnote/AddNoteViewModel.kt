@@ -92,9 +92,9 @@ class AddNoteViewModel(
     fun saveNote() {
         val state = _uiState.value
         
-        if (state.content.isBlank()) {
+        if (state.content.length < 5) {
             viewModelScope.launch {
-                _events.emit(AddNoteEvent.Error("Tuliskan curhatanmu terlebih dahulu"))
+                _events.emit(AddNoteEvent.Error("Tuliskan minimal 5 karakter curhatanmu"))
             }
             return
         }
@@ -132,10 +132,10 @@ class AddNoteViewModel(
                         _uiState.update { it.copy(isSaving = false) }
                         _events.emit(AddNoteEvent.Error(error.message ?: "Gagal menyimpan"))
                     }
-            }.onFailure { error ->
+            }.onFailure {
                 // FALLBACK: Save without AI if analysis fails
                 _uiState.update { it.copy(isAnalyzing = false, isSaving = true) }
-                _events.emit(AddNoteEvent.Error("AI gagal: Menggunakan mode hemat daya (offline save)."))
+                _events.emit(AddNoteEvent.Error("AI offline: Menggunakan mode hemat daya."))
                 
                 val fallbackNote = Note(
                     id = currentNoteId ?: 0,
@@ -150,16 +150,14 @@ class AddNoteViewModel(
                     updatedAt = Clock.System.now()
                 )
 
-                viewModelScope.launch {
-                    saveNoteUseCase(fallbackNote)
-                        .onSuccess {
-                            _events.emit(AddNoteEvent.NoteSaved)
-                        }
-                        .onFailure { saveError ->
-                            _uiState.update { it.copy(isSaving = false) }
-                            _events.emit(AddNoteEvent.Error("Gagal menyimpan: ${saveError.message}"))
-                        }
-                }
+                saveNoteUseCase(fallbackNote)
+                    .onSuccess {
+                        _events.emit(AddNoteEvent.NoteSaved)
+                    }
+                    .onFailure { saveError ->
+                        _uiState.update { it.copy(isSaving = false) }
+                        _events.emit(AddNoteEvent.Error("Gagal menyimpan: ${saveError.message}"))
+                    }
             }
         }
     }

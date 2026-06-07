@@ -11,5 +11,5 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - run: chmod +x gradlew
-      - run: ./gradlew test
-      - run: ./gradlew :composeApp:assembleDebug
+      - run: ./gradlew test --stacktrace
+      - run: ./gradlew :composeApp:assembleDebug --stacktrace

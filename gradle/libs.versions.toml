@@ -13,6 +13,9 @@ okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+kover = "0.8.3"
+uiTest = "1.7.0"
+junit = "4.13.2"
 
 # Testing
 turbine = "1.2.0"
@@ -67,6 +70,9 @@ coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", v
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "uiTest" }
+ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "uiTest" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -76,3 +82,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

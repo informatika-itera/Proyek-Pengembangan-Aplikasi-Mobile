@@ -1,40 +1,69 @@
 package com.example.synesthesia.presentation.screens.home
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.synesthesia.domain.model.Note
 import com.example.synesthesia.domain.model.EmotionSystem
+import com.example.synesthesia.domain.model.EmotionCategory
 import com.example.synesthesia.presentation.theme.BrightYellow
 import com.example.synesthesia.presentation.theme.RoyalBlue
 import com.example.synesthesia.presentation.theme.SpaceBlack
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.random.Random
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ConstellationCanvas(
     notes: List<Note>,
     onNoteClick: (Long) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier
 ) {
     val isAstronomy = MaterialTheme.colorScheme.background == SpaceBlack
     var offset by remember { mutableStateOf(Offset.Zero) }
     var scale by remember { mutableStateOf(1f) }
     var selectedNoteId by remember { mutableStateOf<Long?>(null) }
+    var clickedHubCategory by remember { mutableStateOf<EmotionCategory?>(null) }
+    val haptic = LocalHapticFeedback.current
+
+    // Positions of individual note nodes
+    val notePositions = remember(notes) {
+        mutableMapOf<Long, Offset>()
+    }
+
+    // Positions of Hubs for click detection and popup anchoring
+    val hubPositions = remember(notes) { mutableStateMapOf<String, Offset>() }
 
     val infiniteTransition = rememberInfiniteTransition()
     val floatAnim by infiniteTransition.animateFloat(
@@ -55,39 +84,90 @@ fun ConstellationCanvas(
         )
     )
 
-    // Positions of individual note nodes
-    val notePositions = remember(notes) {
-        mutableMapOf<Long, Offset>()
-    }
-
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale *= zoom
-                    offset += pan
+                detectTransformGestures { centroid, pan, zoom, _ ->
+                    val newScale = (scale * zoom).coerceIn(0.2f, 5f)
+                    val actualZoom = newScale / scale
+                    // Adjust offset to zoom around centroid
+                    offset = (centroid - (centroid - offset) * actualZoom) + pan
+                    scale = newScale
                 }
             }
             .pointerInput(notes) {
                 detectTapGestures { tapOffset ->
                     val adjustedTap = (tapOffset - offset) / scale
                     var found = false
-                    notePositions.forEach { (id, pos) ->
+
+                    // Check Hubs first (priority)
+                    hubPositions.forEach { entry ->
+                        val id = entry.key
+                        val pos = entry.value
                         val dx = adjustedTap.x - pos.x
                         val dy = adjustedTap.y - pos.y
-                        if (sqrt(dx * dx + dy * dy) <= 40f) {
-                            selectedNoteId = id
-                            onNoteClick(id)
+                        if (sqrt(dx * dx + dy * dy) <= 60f) {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            clickedHubCategory = EmotionSystem.categories.find { it.id == id }
+                            selectedNoteId = null
                             found = true
                         }
                     }
-                    if (!found) selectedNoteId = null
+
+                    if (!found) {
+                        notePositions.forEach { entry ->
+                            val id = entry.key
+                            val pos = entry.value
+                            val dx = adjustedTap.x - pos.x
+                            val dy = adjustedTap.y - pos.y
+                            if (sqrt(dx * dx + dy * dy) <= 40f) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                selectedNoteId = id
+                                onNoteClick(id)
+                                clickedHubCategory = null
+                                found = true
+                            }
+                        }
+                    }
+
+                    if (!found) {
+                        selectedNoteId = null
+                        clickedHubCategory = null
+                    }
                 }
             }
     ) {
         val centerX = constraints.maxWidth / 2f
         val centerY = constraints.maxHeight / 2f
+
+        // Shooting Star Animation State
+        var lastNoteCount by remember { mutableStateOf(notes.size) }
+        val shootingStarAnim = remember { Animatable(0f) }
+        var shootingStarStart by remember { mutableStateOf(Offset.Zero) }
+        var shootingStarTarget by remember { mutableStateOf(Offset.Zero) }
+
+        LaunchedEffect(notes.size) {
+            if (notes.size > lastNoteCount) {
+                // Pick a random edge for start
+                val side = (0..3).random()
+                shootingStarStart = when(side) {
+                    0 -> Offset(Random.nextFloat() * constraints.maxWidth.toFloat(), -100f)
+                    1 -> Offset(constraints.maxWidth.toFloat() + 100f, Random.nextFloat() * constraints.maxHeight.toFloat())
+                    2 -> Offset(Random.nextFloat() * constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat() + 100f)
+                    else -> Offset(-100f, Random.nextFloat() * constraints.maxHeight.toFloat())
+                }
+                // Target is approximately the center or a random hub
+                shootingStarTarget = Offset(centerX, centerY)
+                
+                shootingStarAnim.snapTo(0f)
+                shootingStarAnim.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(1200, easing = LinearOutSlowInEasing)
+                )
+            }
+            lastNoteCount = notes.size
+        }
 
         Canvas(
             modifier = Modifier
@@ -96,7 +176,8 @@ fun ConstellationCanvas(
                     scaleX = scale,
                     scaleY = scale,
                     translationX = offset.x,
-                    translationY = offset.y
+                    translationY = offset.y,
+                    transformOrigin = TransformOrigin(0f, 0f)
                 )
         ) {
             val starColor = if (isAstronomy) Color.White else Color(0xFFB39DDB) // Pastel Purple
@@ -110,6 +191,32 @@ fun ConstellationCanvas(
                         x = (i * 777f % size.width),
                         y = (i * 333f % size.height)
                     )
+                )
+            }
+
+            // Shooting Star Effect
+            if (shootingStarAnim.value > 0f && shootingStarAnim.value < 1f) {
+                val progress = shootingStarAnim.value
+                val currentX = shootingStarStart.x + (shootingStarTarget.x - shootingStarStart.x) * progress
+                val currentY = shootingStarStart.y + (shootingStarTarget.y - shootingStarStart.y) * progress
+                val currentPos = Offset(currentX, currentY)
+                
+                drawCircle(
+                    color = Color.White,
+                    radius = 3.dp.toPx(),
+                    center = currentPos
+                )
+                
+                // Simple Trail
+                val trailProgress = (progress - 0.2f).coerceAtLeast(0f)
+                val trailX = shootingStarStart.x + (shootingStarTarget.x - shootingStarStart.x) * trailProgress
+                val trailY = shootingStarStart.y + (shootingStarTarget.y - shootingStarStart.y) * trailProgress
+                
+                drawLine(
+                    color = Color.White.copy(alpha = 0.4f * (1f - progress)),
+                    start = Offset(trailX, trailY),
+                    end = currentPos,
+                    strokeWidth = 2.dp.toPx()
                 )
             }
 
@@ -131,6 +238,7 @@ fun ConstellationCanvas(
                     hubBasePos.x + sin(floatAnim + hubIndex) * 15f,
                     hubBasePos.y + cos(floatAnim * 0.5f + hubIndex) * 15f
                 )
+                hubPositions[category.id] = hubCurrentPos
 
                 // 1. Draw Hub Glow
                 drawCircle(
@@ -166,7 +274,7 @@ fun ConstellationCanvas(
                         hubCurrentPos.x + cos(noteAngle) * noteRadius,
                         hubCurrentPos.y + sin(noteAngle) * noteRadius
                     )
-                    
+
                     val noteCurrentPos = Offset(
                         noteBasePos.x + sin(floatAnim * 1.2f + noteIndex) * 10f,
                         noteBasePos.y + cos(floatAnim * 0.8f + noteIndex) * 10f
@@ -206,6 +314,81 @@ fun ConstellationCanvas(
                 }
             }
         }
+
+        // Anchored Emotion Hub Popup
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    translationX = offset.x
+                    translationY = offset.y
+                    transformOrigin = TransformOrigin(0f, 0f)
+                }
+        ) {
+            // Shared Element Placeholders (for transition)
+            notes.forEach { note ->
+                val pos = notePositions[note.id] ?: Offset.Zero
+                with(sharedTransitionScope) {
+                    Box(
+                        modifier = Modifier
+                            .offset { IntOffset(pos.x.roundToInt() - 20, pos.y.roundToInt() - 20) }
+                            .size(40.dp)
+                            .sharedElement(
+                                rememberSharedContentState(key = "note-${note.id}"),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
+                    )
+                }
+            }
+
+            clickedHubCategory?.let { category ->
+                val hubPos = hubPositions[category.id] ?: Offset.Zero
+                val hubColor = parseHexColor(category.color)
+
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(
+                                (hubPos.x - 190f).roundToInt(),
+                                (hubPos.y - 160f).roundToInt()
+                            )
+                        }
+                        .wrapContentSize(Alignment.BottomCenter)
+                ) {
+                    AnimatedVisibility(
+                        visible = true, // State controlled by outer null check
+                        enter = fadeIn() + expandVertically(expandFrom = Alignment.Bottom),
+                        exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Bottom)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(IntrinsicSize.Max)
+                        ) {
+                            // The Label Bubble
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White.copy(alpha = 0.5f))
+                                    .border(1.dp, hubColor, RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = category.name,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.widthIn(max = 120.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -213,7 +396,7 @@ private fun parseHexColor(hex: String?): Color {
     if (hex == null || !hex.startsWith("#")) return Color.Gray
     return try {
         Color(hex.removePrefix("#").toLong(16) or 0xFF000000)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         Color.Gray
     }
 }

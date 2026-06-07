@@ -38,7 +38,7 @@ enum class ThemeMode {
 private val LightColorScheme = lightColorScheme(
     primary = RoyalBlue,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFDBEAFE),
+    primaryContainer = Color(0xFFE0E7FF), // Brighter blue-white for contrast
     onPrimaryContainer = RoyalBlue,
     secondary = JoyColor,
     onSecondary = DeepIndigo,

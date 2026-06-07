@@ -3,7 +3,7 @@ package com.example.synesthesia.presentation.screens.sanctuary
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.synesthesia.data.remote.api.GeminiService
+import com.example.synesthesia.domain.repository.AIRepository
 import com.example.synesthesia.domain.model.EmotionSystem
 import com.example.synesthesia.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.*
@@ -15,7 +15,7 @@ import kotlinx.datetime.minus
 
 class SanctuaryViewModel(
     private val repository: NoteRepository,
-    private val geminiService: GeminiService
+    private val aiRepository: AIRepository
 ) : ViewModel() {
     
     private val tz = TimeZone.currentSystemDefault()
@@ -72,7 +72,7 @@ class SanctuaryViewModel(
                     IDs: breathing, meditation, sleep, focus, gratitude, energy.
                 """.trimIndent()
 
-                geminiService.generateContent(prompt).onSuccess { json ->
+                aiRepository.chat(prompt).onSuccess { json ->
                     val ritualId = if (json.contains("meditation")) "meditation" else if (json.contains("focus")) "focus" else if (json.contains("sleep")) "sleep" else if (json.contains("gratitude")) "gratitude" else if (json.contains("energy")) "energy" else "breathing"
                     val reason = if (json.contains("\"reason\": \"")) json.substringAfter("\"reason\": \"").substringBefore("\"") else "AI merekomendasikan sesi ini untuk keseimbanganmu."
                     
@@ -102,7 +102,7 @@ class SanctuaryViewModel(
             viewModelScope.launch {
                 val inputStr = _groundingList.value.joinToString(", ")
                 val prompt = "User baru saja melakukan grounding 5-4-3-2-1 dengan input: $inputStr. Berikan satu kalimat penenang yang singkat dan empatik."
-                geminiService.generateContent(prompt).onSuccess { res ->
+                aiRepository.chat(prompt).onSuccess { res ->
                     _vaultAiResponse.value = res
                 }
             }
@@ -118,7 +118,7 @@ class SanctuaryViewModel(
         _isVaultLocked.value = true
         viewModelScope.launch {
             val prompt = "User merasa khawatir tentang: ${_worryVaultText.value}. Berikan counter-thought positif yang logis dan singkat (max 20 kata)."
-            geminiService.generateContent(prompt).onSuccess { res ->
+            aiRepository.chat(prompt).onSuccess { res ->
                 _vaultAiResponse.value = res
             }
         }

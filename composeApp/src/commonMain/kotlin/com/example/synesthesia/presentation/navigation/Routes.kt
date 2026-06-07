@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 sealed interface Route {
     
     @Serializable
+    data object Onboarding : Route
+
+    @Serializable
     data object Constellation : Route // Home Screen (Main Graph)
 
     @Serializable
@@ -33,6 +36,7 @@ sealed interface Route {
 }
 
 interface NavigationActions {
+    fun navigateToOnboarding()
     fun navigateToConstellation()
     fun navigateToAddMemory(memoryId: Long? = null)
     fun navigateToMemoryDetail(memoryId: Long)

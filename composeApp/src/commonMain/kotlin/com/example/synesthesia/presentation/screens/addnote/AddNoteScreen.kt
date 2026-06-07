@@ -20,6 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,7 @@ fun AddNoteScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val haptic = LocalHapticFeedback.current
     
     // We assume the theme mode is handled by the parent, but for background we check if it's dark
     val isAstronomy = MaterialTheme.colorScheme.background == SpaceBlack
@@ -84,7 +87,10 @@ fun AddNoteScreen(
                         }
                     },
                     actions = {
-                        TextButton(onClick = { viewModel.saveNote() }) {
+                        TextButton(onClick = { 
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.saveNote() 
+                        }) {
                             Text("FINISH", fontWeight = FontWeight.Bold)
                         }
                     }
@@ -124,7 +130,8 @@ fun JournalingStep(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     if (isAnalyzing) "AI is sensing your emotions..." else "Saving to your galaxy...",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         } else {
@@ -159,7 +166,16 @@ fun JournalingStep(
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                         focusedBorderColor = MaterialTheme.colorScheme.primary
-                    )
+                    ),
+                    supportingText = {
+                        Text(
+                            text = "${content.length} characters",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (content.length < 5) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
                 )
             }
         }

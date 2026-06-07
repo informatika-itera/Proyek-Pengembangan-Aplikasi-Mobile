@@ -9,10 +9,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class AppViewModel(
-    userPreferences: UserPreferences,
-    networkMonitor: NetworkMonitor
+    private val userPreferences: UserPreferences,
+    private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
     val isOnline: StateFlow<Boolean> = networkMonitor.isOnline
@@ -36,4 +37,17 @@ class AppViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ThemeMode.NORMAL
         )
+
+    val isOnboardingCompleted: StateFlow<Boolean> = userPreferences.isOnboardingCompleted
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            userPreferences.setOnboardingCompleted()
+        }
+    }
 }

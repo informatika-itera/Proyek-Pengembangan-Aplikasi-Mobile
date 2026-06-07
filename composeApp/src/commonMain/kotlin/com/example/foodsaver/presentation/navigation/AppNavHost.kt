@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -37,26 +38,27 @@ fun AppNavHost() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Konfigurasi Item Bottom Navigation: Home | Expiry | Resep | Calendar | Profile
     val items = listOf(
-        BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory),
-        BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant),
-        BottomNavItem("Resep", "recipe", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu),
-        BottomNavItem("Calendar", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth),
-        BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Outlined.Person)
+        BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory, "bottom_nav_home"),
+        BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant, "bottom_nav_expiry"),
+        BottomNavItem("Resep", "recipe", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu, "bottom_nav_recipe"),
+        BottomNavItem("Calendar", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, "bottom_nav_calendar"),
+        BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Outlined.Person, "bottom_nav_profile")
     )
 
     Scaffold(
         bottomBar = {
             val currentRoute = currentDestination?.route
-            if (items.any { it.route == currentRoute }) {
+            if (items.any { it.route == currentRoute?.split("?")?.get(0) || it.route == currentRoute?.split("/")?.get(0) }) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp
+                    tonalElevation = 8.dp,
+                    modifier = Modifier.testTag("bottom_nav")
                 ) {
                     items.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
                         NavigationBarItem(
+                            modifier = Modifier.testTag(item.testTag),
                             icon = { 
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon, 
@@ -68,7 +70,6 @@ fun AppNavHost() {
                             onClick = {
                                 if (!selected) {
                                     navController.navigate(item.route) {
-                                        // Menggunakan route start destination agar lebih aman di Compose Multiplatform
                                         val startRoute = navController.graph.findStartDestination().route ?: "home"
                                         popUpTo(startRoute) {
                                             saveState = true
@@ -108,7 +109,8 @@ fun AppNavHost() {
 
             composable("expiry") {
                 ExpiryScreen(
-                    onFoodClick = { id -> navController.navigate("detail/$id") }
+                    onFoodClick = { id -> navController.navigate("detail/$id") },
+                    onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
 
@@ -119,7 +121,8 @@ fun AppNavHost() {
                         val idsString = if (ids.isEmpty()) "" else ids.joinToString(",")
                         val manualString = if (manual.isEmpty()) "" else manual.joinToString(",")
                         navController.navigate("recipe_recommendation?ids=$idsString&manual=$manualString&prioritize=$prioritize&pref=$pref")
-                    }
+                    },
+                    onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
 
@@ -152,7 +155,9 @@ fun AppNavHost() {
             }
 
             composable("calendar") {
-                CalendarScreen()
+                CalendarScreen(
+                    onAddFoodClick = { navController.navigate("add_food") }
+                )
             }
 
             composable("profile") {
@@ -204,6 +209,19 @@ fun AppNavHost() {
                     onRecipeClick = { recipeId -> navController.navigate("recipe_detail/$recipeId") }
                 )
             }
+
+            composable(
+                route = "recipe_detail/{recipeId}",
+                arguments = listOf(
+                    navArgument("recipeId") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+                RecipeDetailScreen(
+                    recipeId = recipeId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
@@ -212,5 +230,6 @@ private data class BottomNavItem(
     val title: String,
     val route: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
+    val testTag: String
 )

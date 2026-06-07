@@ -1,5 +1,6 @@
 package com.example.foodsaver.presentation.screens.detail
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -19,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,13 +66,14 @@ fun FoodDetailScreen(
                         viewModel.deleteItem()
                         showDeleteDialog = false
                     },
+                    modifier = Modifier.testTag("delete_food_button"),
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("Hapus", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                TextButton(onClick = { showDeleteDialog = false }, modifier = Modifier.testTag("btn_cancel_delete")) {
                     Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -78,19 +81,20 @@ fun FoodDetailScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag("food_detail_screen"),
         topBar = {
             TopAppBar(
-                title = { Text("Detail Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { Text("Detail Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = onNavigateBack, modifier = Modifier.testTag("btn_back_detail")) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onNavigateToEdit(foodId) }) {
+                    IconButton(onClick = { onNavigateToEdit(foodId) }, modifier = Modifier.testTag("btn_edit_food")) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = { showDeleteDialog = true }) {
+                    IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.testTag("btn_show_delete")) {
                         Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
                     }
                 },
@@ -113,14 +117,10 @@ fun FoodDetailScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Header Emoji & Status Card
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().testTag("card_detail_header"),
                             shape = RoundedCornerShape(28.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            ),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -142,7 +142,8 @@ fun FoodDetailScreen(
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.testTag("txt_detail_name")
                                 )
                                 Text(
                                     text = food.category,
@@ -155,9 +156,8 @@ fun FoodDetailScreen(
                             }
                         }
 
-                        // Info Detail Card
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().testTag("card_detail_info"),
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -187,46 +187,32 @@ fun FoodDetailScreen(
                             }
                         }
 
-                        // Recommendation Card
                         RecommendationCard(status = food.getStatus())
                         
-                        // Notes Card
                         if (!food.notes.isNullOrBlank()) {
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().testTag("card_detail_notes"),
                                 shape = RoundedCornerShape(24.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Column(modifier = Modifier.padding(20.dp)) {
-                                    Text(
-                                        text = "Catatan tambahan",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
+                                    Text("Catatan tambahan", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.ExtraBold)
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = food.notes,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        lineHeight = 20.sp
-                                    )
+                                    Text(text = food.notes, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
                         
-                        // Action Buttons
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Button(
                                 onClick = { viewModel.toggleConsumed() },
-                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                modifier = Modifier.fillMaxWidth().height(56.dp).testTag("btn_toggle_consumed"),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (food.isConsumed) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
-                                    contentColor = if (food.isConsumed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
+                                    containerColor = if (food.isConsumed) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
                                 )
                             ) {
                                 Icon(if (food.isConsumed) Icons.Default.Inventory else Icons.Default.CheckCircle, contentDescription = null)
@@ -237,12 +223,11 @@ fun FoodDetailScreen(
                             if (!food.isConsumed) {
                                 OutlinedButton(
                                     onClick = { viewModel.toggleDiscarded() },
-                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    modifier = Modifier.fillMaxWidth().height(56.dp).testTag("btn_toggle_discarded"),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = if (food.isDiscarded) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
-                                    ),
-                                    border = if (food.isDiscarded) null else ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error))
+                                    )
                                 ) {
                                     Icon(if (food.isDiscarded) Icons.Default.RestoreFromTrash else Icons.Default.DeleteForever, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
@@ -279,60 +264,29 @@ fun RecommendationCard(status: FoodStatus) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag("card_detail_recommendation"),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Inventory,
-                contentDescription = null,
-                tint = textColor,
-                modifier = Modifier.size(24.dp)
-            )
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Inventory, contentDescription = null, tint = textColor, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor,
-                fontWeight = FontWeight.Bold
-            )
+            Text(text = message, style = MaterialTheme.typography.bodyMedium, color = textColor, fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Composable
 fun InfoRow(label: String, value: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label, 
-            style = MaterialTheme.typography.bodyMedium, 
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium
-        )
-        Text(
-            text = value, 
-            style = MaterialTheme.typography.bodyMedium, 
-            fontWeight = FontWeight.Bold,
-            color = valueColor
-        )
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+        Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = valueColor)
     }
 }
 
 @Composable
 private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+    Column(modifier = Modifier.fillMaxSize().padding(32.dp).testTag("error_state"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(text = message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetry) { Text("Coba Lagi") }

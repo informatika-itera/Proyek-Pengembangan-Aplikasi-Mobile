@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class CalendarUiState(
+    val foodItems: List<FoodItem> = emptyList(),
     val upcomingItems: List<FoodItem> = emptyList(),
     val pastItems: List<FoodItem> = emptyList(),
     val isLoading: Boolean = false
@@ -41,6 +42,7 @@ class CalendarViewModel(
                 }.sortedByDescending { it.expiryDate }
 
                 _state.update { it.copy(
+                    foodItems = activeItems,
                     upcomingItems = upcoming, 
                     pastItems = past,
                     isLoading = false

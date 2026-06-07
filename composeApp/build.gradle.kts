@@ -98,6 +98,14 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.datastore.android)
         }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.androidx.compose.ui.test.junit4)
+                implementation(libs.junit)
+                implementation(libs.androidx.test.ext.junit)
+            }
+        }
         
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -123,6 +131,8 @@ android {
             "GEMINI_API_KEY",
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     
     packaging {

@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,34 @@ import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.theme.*
 import com.example.foodsaver.core.util.formatQuantity
+
+@Composable
+fun StandardPageHeader(
+    title: String,
+    subtitle: String? = null,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        if (subtitle != null) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +96,8 @@ fun SwipeableFoodItem(
         content = {
             FoodItemCard(
                 item = item,
-                onClick = { onClick(item.id) }
+                onClick = { onClick(item.id) },
+                modifier = Modifier.testTag("food_card_${item.id}")
             )
         }
     )
@@ -88,7 +118,6 @@ fun FoodItemCard(
         else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
-    // Expiry Highlight: subtle background tint for expired items
     val cardBgColor = if (status == FoodStatus.EXPIRED || status == FoodStatus.EXPIRED_TODAY) {
         statusColor.copy(alpha = 0.05f)
     } else {

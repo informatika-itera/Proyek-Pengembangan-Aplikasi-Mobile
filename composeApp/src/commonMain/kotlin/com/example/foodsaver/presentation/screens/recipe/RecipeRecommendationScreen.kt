@@ -1,5 +1,6 @@
 package com.example.foodsaver.presentation.screens.recipe
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,12 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.foodsaver.domain.model.RecipeRecommendation
 import com.example.foodsaver.presentation.theme.*
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,9 +39,10 @@ fun RecipeRecommendationScreen(
     viewModel: CookFromStockViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-    // Generate recommendation when entering the screen
     LaunchedEffect(Unit) {
         viewModel.generateRecommendation(ingredientIds, manualIngredients, prioritizeExpired, preference)
     }
@@ -53,9 +57,13 @@ fun RecipeRecommendationScreen(
                     onClick = {
                         viewModel.markIngredientsAsUsed(ingredientIds) {
                             showConfirmDialog = false
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Bahan berhasil ditandai sebagai habis")
+                            }
                             onNavigateToHome()
                         }
-                    }
+                    },
+                    modifier = Modifier.testTag("btn_confirm_use_ingredients")
                 ) {
                     Text("Ya, Sudah Digunakan")
                 }
@@ -69,6 +77,7 @@ fun RecipeRecommendationScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag("recipe_recommendation_screen"),
         topBar = {
             TopAppBar(
                 title = { Text("Rekomendasi Resep", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
@@ -80,6 +89,7 @@ fun RecipeRecommendationScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             state.recommendation?.let {
                 Surface(
@@ -93,7 +103,8 @@ fun RecipeRecommendationScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .height(56.dp),
+                            .height(56.dp)
+                            .testTag("btn_mark_used"),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
@@ -106,14 +117,35 @@ fun RecipeRecommendationScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding).testTag("recipe_result_card")) {
             if (state.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.height(16.dp))
+                    Text("AI sedang meracik resep lezat untukmu...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-            } else if (state.recommendation == null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Gagal memuat resep atau bahan tidak cukup.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else if (state.error != null || state.recommendation == null) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp).testTag("empty_state"),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(Icons.Default.RestaurantMenu, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        state.error ?: "Wah, AI kami belum menemukan resep yang cocok. Coba ganti kombinasi bahannya ya!",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(24.dp))
+                    Button(onClick = onNavigateBack) {
+                        Text("Kembali Pilih Bahan")
+                    }
                 }
             } else {
                 state.recommendation?.let { recipe ->
@@ -126,7 +158,7 @@ fun RecipeRecommendationScreen(
                     ) {
                         // Header Card
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().testTag("recipe_header_card"),
                             shape = RoundedCornerShape(28.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -155,7 +187,8 @@ fun RecipeRecommendationScreen(
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.testTag("txt_recipe_title")
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(

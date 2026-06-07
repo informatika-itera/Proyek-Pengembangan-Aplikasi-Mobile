@@ -2,11 +2,10 @@ package com.example.foodsaver.presentation.screens.recipe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,9 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +27,7 @@ import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.components.getEmojiForCategory
 import com.example.foodsaver.presentation.theme.*
+import com.example.foodsaver.core.util.formatQuantity
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class RecipeInputMode {
@@ -40,6 +39,7 @@ enum class RecipeInputMode {
 fun CookFromStockScreen(
     onNavigateBack: () -> Unit,
     onNavigateToResult: (List<Long>, List<String>, Boolean, String) -> Unit,
+    onAddFoodClick: () -> Unit = {},
     viewModel: CookFromStockViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -56,14 +56,18 @@ fun CookFromStockScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag("recipe_screen"),
         topBar = {
             TopAppBar(
-                title = { Text("Masak dari Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { 
+                    Column {
+                        Text("Masak dari Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                        Text("Buat resep dari bahan yang tersedia.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
                 navigationIcon = {
-                    if (onNavigateBack != {}) {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
-                        }
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
@@ -92,13 +96,14 @@ fun CookFromStockScreen(
                                 state.preference
                             )
                         } else {
-                            viewModel.addManualIngredient("") // Trigger "Pilih atau masukkan minimal satu bahan"
+                            viewModel.addManualIngredient("") 
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                        .height(56.dp),
+                        .height(56.dp)
+                        .testTag("recipe_generate_button"),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
@@ -115,22 +120,23 @@ fun CookFromStockScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Mode Selector
             TabRow(
                 selectedTabIndex = selectedMode.ordinal,
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.primary,
-                divider = {}
+                divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) }
             ) {
                 Tab(
                     selected = selectedMode == RecipeInputMode.INVENTORY,
                     onClick = { selectedMode = RecipeInputMode.INVENTORY },
-                    text = { Text("Inventory", fontWeight = FontWeight.Bold) }
+                    text = { Text("Inventory", fontWeight = FontWeight.Bold) },
+                    modifier = Modifier.testTag("recipe_inventory_tab")
                 )
                 Tab(
                     selected = selectedMode == RecipeInputMode.MANUAL,
                     onClick = { selectedMode = RecipeInputMode.MANUAL },
-                    text = { Text("Input Manual", fontWeight = FontWeight.Bold) }
+                    text = { Text("Input Manual", fontWeight = FontWeight.Bold) },
+                    modifier = Modifier.testTag("recipe_manual_tab")
                 )
             }
 
@@ -147,25 +153,39 @@ fun CookFromStockScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    "Punya bahan seadanya?",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    "Masukkan bahan seperti telur, nasi, bakso, atau sayur. FoodSaver akan bantu kasih ide masakan.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                    }
+
+                    item {
                         Text(
                             if (selectedMode == RecipeInputMode.INVENTORY) "Pilih bahan dari inventory kamu" else "Masukkan bahan secara manual",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
-                        Text(
-                            "Pilih bahan atau masukkan sendiri untuk mendapatkan resep.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     if (selectedMode == RecipeInputMode.INVENTORY) {
                         if (state.ingredients.isEmpty()) {
-                            item {
-                                EmptyIngredientsState()
-                            }
+                            item { EmptyIngredientsState(onAddFoodClick) }
                         } else {
                             items(state.ingredients, key = { it.id }) { item ->
                                 IngredientSelectableCard(
@@ -180,15 +200,18 @@ fun CookFromStockScreen(
                             OutlinedTextField(
                                 value = manualInput,
                                 onValueChange = { manualInput = it },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().testTag("manual_ingredient_input"),
                                 placeholder = { Text("Contoh: telur, nasi, bakso") },
                                 label = { Text("Tambah Bahan") },
                                 trailingIcon = {
-                                    IconButton(onClick = {
-                                        viewModel.addManualIngredient(manualInput)
-                                        manualInput = ""
-                                        focusManager.clearFocus()
-                                    }) {
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.addManualIngredient(manualInput)
+                                            manualInput = ""
+                                            focusManager.clearFocus()
+                                        },
+                                        modifier = Modifier.testTag("btn_add_manual")
+                                    ) {
                                         Icon(Icons.Default.Add, contentDescription = "Tambah")
                                     }
                                 },
@@ -269,7 +292,8 @@ fun CookFromStockScreen(
                             }
                             Switch(
                                 checked = state.prioritizeExpired,
-                                onCheckedChange = { viewModel.setPrioritizeExpired(it) }
+                                onCheckedChange = { viewModel.setPrioritizeExpired(it) },
+                                modifier = Modifier.testTag("switch_prioritize")
                             )
                         }
                         
@@ -288,12 +312,12 @@ fun CookFromStockScreen(
                                     selected = state.preference == pref,
                                     onClick = { viewModel.setPreference(pref) },
                                     label = { Text(pref) },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f).testTag("chip_pref_$pref")
                                 )
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(80.dp)) // Extra space for bottom bar
+                        Spacer(modifier = Modifier.height(80.dp)) 
                     }
                 }
             }
@@ -308,23 +332,18 @@ fun IngredientSelectableCard(
     onToggle: () -> Unit
 ) {
     val status = item.getStatus()
+    val isDark = isSystemInDarkTheme()
     val statusColor = when (status) {
-        FoodStatus.SAFE -> SafeTextLight
-        FoodStatus.NEAR_EXPIRY -> WarningTextLight
-        else -> ExpiredTextLight
-    }
-
-    // Formatting quantity: 12.0 -> 12, 12.5 -> 12.5
-    val quantityText = if (item.quantity % 1.0 == 0.0) {
-        item.quantity.toInt().toString()
-    } else {
-        item.quantity.toString()
+        FoodStatus.SAFE -> if (isDark) SafeTextDark else SafeTextLight
+        FoodStatus.NEAR_EXPIRY -> if (isDark) WarningTextDark else WarningTextLight
+        else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onToggle() },
+            .clickable { onToggle() }
+            .testTag("ingredient_card_${item.id}"),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) 
@@ -357,7 +376,7 @@ fun IngredientSelectableCard(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "$quantityText ${item.unit}",
+                        item.quantity.formatQuantity(item.unit),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -374,16 +393,17 @@ fun IngredientSelectableCard(
             Checkbox(
                 checked = isSelected,
                 onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.testTag("checkbox_${item.id}")
             )
         }
     }
 }
 
 @Composable
-fun EmptyIngredientsState() {
+fun EmptyIngredientsState(onAddFoodClick: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp).testTag("empty_state"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -406,6 +426,14 @@ fun EmptyIngredientsState() {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onAddFoodClick,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.testTag("btn_empty_add_food")
+        ) {
+            Text("Tambah Makanan", fontWeight = FontWeight.Bold)
+        }
     }
 }
 

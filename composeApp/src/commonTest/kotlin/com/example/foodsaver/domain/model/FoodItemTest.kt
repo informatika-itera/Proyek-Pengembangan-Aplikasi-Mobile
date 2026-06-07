@@ -4,15 +4,12 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class FoodItemTest {
 
     private val now = Clock.System.now()
-    private val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     @Test
     fun `getStatus should return EXPIRED when expiry date is in the past`() {
@@ -21,21 +18,27 @@ class FoodItemTest {
     }
 
     @Test
-    fun `getStatus should return NEAR_EXPIRY when expiry date is within 3 days`() {
+    fun `getStatus should return EXPIRED_TODAY when expiry date is today`() {
+        val todayFood = createFoodWithExpiry(now)
+        assertEquals(FoodStatus.EXPIRED_TODAY, todayFood.getStatus())
+    }
+
+    @Test
+    fun `getStatus should return NEAR_EXPIRY when expiry date is between 1 to 3 days`() {
         val nearExpiryFood = createFoodWithExpiry(now.plus(2, DateTimeUnit.DAY, TimeZone.currentSystemDefault()))
         assertEquals(FoodStatus.NEAR_EXPIRY, nearExpiryFood.getStatus())
     }
 
     @Test
-    fun `getStatus should return SAFE when expiry date is far in the future`() {
-        val safeFood = createFoodWithExpiry(now.plus(10, DateTimeUnit.DAY, TimeZone.currentSystemDefault()))
+    fun `getStatus should return SAFE when expiry date is more than 3 days`() {
+        val safeFood = createFoodWithExpiry(now.plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault()))
         assertEquals(FoodStatus.SAFE, safeFood.getStatus())
     }
 
     @Test
-    fun `getDaysRemaining should return correct count`() {
+    fun `getStatusLabel should return correct text for safe items`() {
         val food = createFoodWithExpiry(now.plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault()))
-        assertEquals(5, food.getDaysRemaining())
+        assertEquals("Masih segar, 5 hari lagi", food.getStatusLabel())
     }
 
     private fun createFoodWithExpiry(expiry: kotlinx.datetime.Instant): FoodItem {

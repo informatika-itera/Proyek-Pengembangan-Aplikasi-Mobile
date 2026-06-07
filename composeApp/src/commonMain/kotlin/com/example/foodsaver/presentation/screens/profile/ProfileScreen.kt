@@ -22,12 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.foodsaver.data.local.datastore.ThemeMode
 import com.example.foodsaver.presentation.theme.*
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,13 +39,21 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var showThemeDialog by remember { mutableStateOf(false) }
     var showNotificationDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = Modifier.testTag("profile_screen"),
         topBar = {
             TopAppBar(
-                title = { Text("Profil & Pengaturan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
+                title = { 
+                    Column {
+                        Text("Profil & Pengaturan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                        Text("Atur preferensi FoodSaver kamu.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
@@ -55,6 +65,7 @@ fun ProfileScreen(
                 )
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
@@ -109,13 +120,35 @@ fun ProfileScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Statistik Inventory", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Statistik Inventory", 
+                        fontWeight = FontWeight.Bold, 
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                     Spacer(modifier = Modifier.height(20.dp))
                     
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        StatItem("Aktif", state.totalItems.toString(), MaterialTheme.colorScheme.onSurface)
-                        StatItem("Aman", state.safeCount.toString(), MaterialTheme.colorScheme.primary)
-                        StatItem("Expired", state.expiredCount.toString(), MaterialTheme.colorScheme.error)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(), 
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        StatItem(
+                            label = "Aktif", 
+                            value = state.totalItems.toString(), 
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        VerticalDivider(modifier = Modifier.height(40.dp).padding(horizontal = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        StatItem(
+                            label = "Aman", 
+                            value = state.safeCount.toString(), 
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        VerticalDivider(modifier = Modifier.height(40.dp).padding(horizontal = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        StatItem(
+                            label = "Expired", 
+                            value = state.expiredCount.toString(), 
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }
@@ -128,14 +161,16 @@ fun ProfileScreen(
                     "Pengaturan", 
                     fontWeight = FontWeight.Bold, 
                     modifier = Modifier.padding(bottom = 12.dp, start = 8.dp),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 
                 SettingsItem(
                     icon = Icons.Outlined.Notifications, 
                     title = "Notifikasi & Reminder", 
                     subtitle = if (state.notificationsEnabled) "Aktif (${state.reminderDays} hari sebelum)" else "Nonaktif",
-                    onClick = { showNotificationDialog = true }
+                    onClick = { showNotificationDialog = true },
+                    modifier = Modifier.testTag("notification_setting_button")
                 )
                 SettingsItem(
                     icon = Icons.Outlined.Palette, 
@@ -145,14 +180,14 @@ fun ProfileScreen(
                         ThemeMode.DARK -> "Gelap"
                         ThemeMode.SYSTEM -> "Ikuti Sistem"
                     },
-                    onClick = { showThemeDialog = true }
+                    onClick = { showThemeDialog = true },
+                    modifier = Modifier.testTag("theme_setting_button")
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
 
-    // Dialogs remain the same...
     if (showThemeDialog) {
         ThemeSelectionDialog(
             currentMode = state.themeMode,
@@ -160,6 +195,7 @@ fun ProfileScreen(
             onSelectMode = { 
                 viewModel.setThemeMode(it)
                 showThemeDialog = false
+                scope.launch { snackbarHostState.showSnackbar("Tema berhasil diubah") }
             }
         )
     }
@@ -170,7 +206,10 @@ fun ProfileScreen(
             reminderDays = state.reminderDays,
             onDismiss = { showNotificationDialog = false },
             onToggleEnabled = { viewModel.setNotificationsEnabled(it) },
-            onSelectDays = { viewModel.setReminderDays(it) }
+            onSelectDays = { 
+                viewModel.setReminderDays(it)
+                scope.launch { snackbarHostState.showSnackbar("Pengaturan notifikasi diperbarui") }
+            }
         )
     }
 }
@@ -239,15 +278,15 @@ fun ReminderOption(text: String, days: Int, selected: Boolean, onClick: () -> Un
 @Composable
 fun StatItem(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontWeight = FontWeight.Black, fontSize = 20.sp, color = color)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontWeight = FontWeight.Black, fontSize = 24.sp, color = color)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
     }
 }
 
 @Composable
-fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surface).clickable(onClick = onClick).padding(16.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surface).clickable(onClick = onClick).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)

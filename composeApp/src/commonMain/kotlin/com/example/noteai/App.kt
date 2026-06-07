@@ -1,6 +1,13 @@
 package com.example.noteai
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.example.noteai.presentation.AppState
+import com.example.noteai.presentation.JourneyLog
 import com.example.noteai.presentation.navigation.AppNavHost
 import com.example.noteai.presentation.theme.NoteAITheme
 import com.movein.di.networkModule
@@ -17,9 +24,23 @@ val sprint3DataModule = module {
 
 @Composable
 fun App() {
+    var isLightMode by rememberSaveable { mutableStateOf(false) }
+    var appState by rememberSaveable { mutableStateOf(AppState.NEUTRAL) }
+    var momentum by rememberSaveable { mutableStateOf(0) }
+    var logs by remember { mutableStateOf(listOf<JourneyLog>()) }
+
     KoinContext {
-        NoteAITheme {
-            AppNavHost()
+        NoteAITheme(darkTheme = !isLightMode) {
+            AppNavHost(
+                isLightMode = isLightMode,
+                onThemeToggle = { isLightMode = it },
+                appState = appState,
+                onAppStateChange = { appState = it },
+                momentum = momentum,
+                onMomentumChange = { momentum = it },
+                logs = logs,
+                onLogsChange = { logs = it }
+            )
         }
     }
 }

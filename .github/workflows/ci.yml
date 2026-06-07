@@ -1,4 +1,4 @@
-name: CI
+name: MoveIn CI
 
 on:
   push:
@@ -11,29 +11,32 @@ on:
       - main
       - develop
       - "Project/123140169-123140186-MoveIn"
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-test:
+    name: Build and Test Android Debug
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java JDK 17
+      - name: Set Up Java JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
+          cache: gradle
 
-      - name: Setup Gradle (Sesuaikan ke 8.7)
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: 8.7
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x ./gradlew
 
-      - name: Create Mock local.properties for Gemini API Key
+      - name: Create Mock local.properties
         run: echo "GEMINI_API_KEY=mock_key_for_ci_build" > local.properties
 
-      - name: Compile Assemble Debug (Bypass Wrapper)
-        run: gradle assembleDebug
+      - name: Build Debug APK
+        run: ./gradlew :composeApp:assembleDebug --stacktrace
+
+      - name: Run Unit Test
+        run: ./gradlew :composeApp:testDebugUnitTest --stacktrace

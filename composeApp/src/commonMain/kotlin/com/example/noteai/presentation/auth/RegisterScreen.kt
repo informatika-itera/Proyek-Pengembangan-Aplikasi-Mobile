@@ -1,25 +1,17 @@
 package com.example.noteai.presentation.auth
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.noteai.presentation.components.MoveInBentoCard
-import com.example.noteai.presentation.components.MoveInPrimaryButton
-import com.example.noteai.presentation.components.MoveInScreenFrame
-import com.example.noteai.presentation.components.MoveInTextField
+import com.example.noteai.presentation.components.*
+import com.example.noteai.presentation.theme.MoveInTheme
+import com.example.noteai.presentation.theme.NoteAITheme
 
 @Composable
 fun RegisterScreen(
@@ -31,90 +23,99 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
-    MoveInScreenFrame(
-        accent = Color(0xFF22D3EE),
-        background = Color(0xFF050505),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        TextButton(
-            onClick = onNavigateBack
-        ) {
-            Text(
-                text = "← Kembali",
-                color = Color.White.copy(alpha = 0.75f)
-            )
-        }
+    NoteAITheme(darkTheme = true) {
+        MoveInScaffold {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                TextButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Text(
+                        text = "← Kembali",
+                        style = MoveInTheme.typography.labelLarge.copy(color = MoveInTheme.colors.textMuted)
+                    )
+                }
 
-        Text(
-            text = "Buat akun",
-            color = Color.White,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
-
-        Text(
-            text = "Akun ini masih mock lokal untuk kebutuhan Sprint 2.",
-            color = Color.White.copy(alpha = 0.68f),
-            fontSize = 14.sp,
-            lineHeight = 21.sp
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        MoveInBentoCard {
-            MoveInTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = "Nama panggilan"
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            MoveInTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = "Email",
-                keyboardType = KeyboardType.Email
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            MoveInTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = "Password minimal 4 karakter",
-                isPassword = true
-            )
-
-            if (error != null) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = error.orEmpty(),
-                    color = Color(0xFFFB7185),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = "Buat akun",
+                    style = MoveInTheme.typography.displayLarge.copy(
+                        fontSize = 32.sp,
+                        color = MoveInTheme.colors.textPrimary
+                    )
                 )
-            }
 
-            Spacer(modifier = Modifier.height(22.dp))
+                Text(
+                    text = "Mulai langkah kecil pemulihanmu hari ini.",
+                    style = MoveInTheme.typography.bodyMedium.copy(
+                        color = MoveInTheme.colors.textSecondary
+                    )
+                )
 
-            MoveInPrimaryButton(
-                text = "Register dan Mulai",
-                accent = Color(0xFF22D3EE),
-                onClick = {
-                    error = when {
-                        name.isBlank() -> "Nama belum diisi."
-                        email.isBlank() -> "Email belum diisi."
-                        password.length < 4 -> "Password minimal 4 karakter."
-                        else -> null
+                Spacer(modifier = Modifier.height(40.dp))
+
+                MoveInCard(
+                    contentPadding = 24.dp
+                ) {
+                    MoveInTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = "Nama panggilan"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    MoveInTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = "Email",
+                        keyboardType = KeyboardType.Email
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    MoveInTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = "Password (min 4 karakter)",
+                        isPassword = true
+                    )
+
+                    if (error != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = error.orEmpty(),
+                            style = MoveInTheme.typography.labelSmall.copy(color = MoveInTheme.colors.errorRed)
+                        )
                     }
 
-                    if (error == null) {
-                        onRegisterSuccess(name)
-                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    MoveInPrimaryButton(
+                        text = "Register dan Mulai",
+                        onClick = {
+                            error = when {
+                                name.isBlank() -> "Nama belum diisi."
+                                email.isBlank() -> "Email belum diisi."
+                                password.length < 4 -> "Password minimal 4 karakter."
+                                else -> null
+                            }
+
+                            if (error == null) {
+                                onRegisterSuccess(name)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
-            )
+            }
         }
     }
 }

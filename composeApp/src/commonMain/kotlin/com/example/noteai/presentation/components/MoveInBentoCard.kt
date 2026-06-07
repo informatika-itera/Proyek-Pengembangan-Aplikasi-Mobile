@@ -2,79 +2,42 @@ package com.example.noteai.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.noteai.presentation.MentalTheme
 
 @Composable
-fun MoveInScreenFrame(
-    accent: Color,
-    background: Color,
+fun BentoCard(
+    theme: MentalTheme,
+    isLight: Boolean,
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    androidx.compose.foundation.layout.Box(
+    val backgroundColor = if (isLight) theme.cardLight else theme.cardDark
+    val borderColor = if (isLight) theme.borderLight else theme.borderDark
+
+    Box(
         modifier = modifier
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        background,
-                        Color(0xFF050505),
-                        Color(0xFF09090B)
-                    )
-                )
-            )
-    ) {
-        androidx.compose.foundation.layout.Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            accent.copy(alpha = 0.30f),
-                            Color.Transparent
-                        ),
-                        radius = 900f
-                    )
-                )
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 34.dp),
-            content = content
-        )
-    }
-}
-
-@Composable
-fun MoveInBentoCard(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.08f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = Color.White.copy(alpha = 0.10f)
-        )
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(32.dp), spotColor = Color.Black.copy(alpha = 0.08f))
+            .clip(RoundedCornerShape(32.dp))
+            .background(backgroundColor)
+            .border(BorderStroke(1.dp, borderColor), RoundedCornerShape(32.dp))
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
     ) {
         Column(
-            modifier = Modifier.padding(22.dp),
+            modifier = Modifier.padding(20.dp),
             content = content
         )
     }

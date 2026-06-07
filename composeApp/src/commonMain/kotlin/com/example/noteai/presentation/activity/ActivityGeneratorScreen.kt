@@ -1,41 +1,22 @@
 package com.example.noteai.presentation.activity
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.noteai.presentation.components.InfoPill
-import com.example.noteai.presentation.components.MoveInPrimaryButton
-import com.example.noteai.presentation.components.MoveInScreenFrame
-import com.example.noteai.presentation.components.MoveInSecondaryButton
-import com.example.noteai.presentation.components.moveInMoods
+import com.example.noteai.presentation.components.*
+import com.example.noteai.presentation.theme.MoveInTheme
+import com.example.noteai.presentation.theme.NoteAITheme
 
 private data class ActivityRecommendation(
     val title: String,
@@ -48,160 +29,28 @@ private data class ActivityRecommendation(
 
 private val activityMap = mapOf(
     "bored" to listOf(
-        ActivityRecommendation(
-            title = "Mini Walk 10 Menit",
-            category = "Kesehatan",
-            duration = "10 menit",
-            description = "Keluar sebentar, lihat langit, lalu jalan santai tanpa target. Cukup bikin badan bergerak.",
-            points = 10,
-            emoji = "🚶"
-        ),
-        ActivityRecommendation(
-            title = "Rapikan Satu Sudut",
-            category = "Produktif",
-            duration = "7 menit",
-            description = "Pilih satu sudut meja atau kamar. Jangan semua. Satu area kecil saja sudah cukup.",
-            points = 12,
-            emoji = "🧹"
-        ),
-        ActivityRecommendation(
-            title = "Cari Lagu Baru",
-            category = "Hiburan",
-            duration = "5 menit",
-            description = "Putar satu lagu random dari genre yang jarang kamu dengar. Biarkan mood ikut berubah.",
-            points = 8,
-            emoji = "🎧"
-        )
+        ActivityRecommendation("Mini Walk 10 Menit", "Kesehatan", "10 m", "Keluar sebentar, lihat langit, lalu jalan santai.", 10, "🚶"),
+        ActivityRecommendation("Rapikan Satu Sudut", "Produktif", "7 m", "Pilih satu sudut meja atau kamar saja.", 12, "🧹")
     ),
     "sad" to listOf(
-        ActivityRecommendation(
-            title = "Minum Air Hangat",
-            category = "Self-care",
-            duration = "5 menit",
-            description = "Ambil minuman hangat, duduk sebentar, dan jangan paksa diri untuk langsung baik-baik saja.",
-            points = 10,
-            emoji = "☕"
-        ),
-        ActivityRecommendation(
-            title = "Tulis 3 Kalimat Jujur",
-            category = "Journaling",
-            duration = "8 menit",
-            description = "Tulis apa yang kamu rasakan tanpa dirapikan. Tidak perlu bagus, yang penting keluar.",
-            points = 15,
-            emoji = "📝"
-        ),
-        ActivityRecommendation(
-            title = "Chat Satu Teman Aman",
-            category = "Sosial",
-            duration = "10 menit",
-            description = "Kirim pesan sederhana ke orang yang bikin kamu merasa aman. Tidak perlu cerita panjang dulu.",
-            points = 15,
-            emoji = "💬"
-        )
+        ActivityRecommendation("Minum Air Hangat", "Self-care", "5 m", "Ambil minuman hangat, duduk sebentar.", 10, "☕"),
+        ActivityRecommendation("Tulis 3 Kalimat Jujur", "Journaling", "8 m", "Tulis apa yang kamu rasakan tanpa dirapikan.", 15, "📝")
     ),
     "tired" to listOf(
-        ActivityRecommendation(
-            title = "Power Nap Singkat",
-            category = "Recovery",
-            duration = "15 menit",
-            description = "Pasang timer, rebahkan badan, dan izinkan diri berhenti sebentar tanpa rasa bersalah.",
-            points = 12,
-            emoji = "😴"
-        ),
-        ActivityRecommendation(
-            title = "Stretch Bahu dan Leher",
-            category = "Kesehatan",
-            duration = "5 menit",
-            description = "Putar bahu pelan, tarik napas, lalu lemaskan leher. Aktivitas kecil untuk reset badan.",
-            points = 10,
-            emoji = "🧘"
-        ),
-        ActivityRecommendation(
-            title = "Mode Low Power",
-            category = "Santai",
-            duration = "20 menit",
-            description = "Pilih satu aktivitas ringan: mandi, makan, atau rebahan sadar. Jangan multitasking dulu.",
-            points = 8,
-            emoji = "🔋"
-        )
+        ActivityRecommendation("Power Nap Singkat", "Recovery", "15 m", "Pasang timer, rebahkan badan sebentar.", 12, "😴"),
+        ActivityRecommendation("Stretch Bahu dan Leher", "Kesehatan", "5 m", "Putar bahu pelan, tarik napas, lemaskan leher.", 10, "🧘")
     ),
     "excited" to listOf(
-        ActivityRecommendation(
-            title = "Sprint Tugas 25 Menit",
-            category = "Produktif",
-            duration = "25 menit",
-            description = "Pilih satu tugas paling dekat deadline. Kerjakan 25 menit tanpa buka aplikasi lain.",
-            points = 25,
-            emoji = "🚀"
-        ),
-        ActivityRecommendation(
-            title = "Brain Dump Ide",
-            category = "Self-improvement",
-            duration = "10 menit",
-            description = "Tulis semua ide yang muncul. Jangan disaring dulu. Nanti baru pilih yang paling realistis.",
-            points = 18,
-            emoji = "💡"
-        ),
-        ActivityRecommendation(
-            title = "Workout Mini",
-            category = "Kesehatan",
-            duration = "12 menit",
-            description = "Lakukan gerakan ringan. Fokusnya bukan berat, tapi menjaga energi tetap positif.",
-            points = 18,
-            emoji = "🏃"
-        )
+        ActivityRecommendation("Sprint Tugas 25 Menit", "Produktif", "25 m", "Kerjakan satu tugas tanpa distraksi.", 25, "🚀"),
+        ActivityRecommendation("Workout Mini", "Kesehatan", "12 m", "Lakukan gerakan ringan untuk energi positif.", 18, "🏃")
     ),
     "gabut" to listOf(
-        ActivityRecommendation(
-            title = "Random Skill 15 Menit",
-            category = "Self-improvement",
-            duration = "15 menit",
-            description = "Cari satu tutorial singkat: desain, foto, coding, masak, atau bahasa baru. Coba sedikit saja.",
-            points = 15,
-            emoji = "🧠"
-        ),
-        ActivityRecommendation(
-            title = "Eksperimen Foto",
-            category = "Kreatif",
-            duration = "15 menit",
-            description = "Ambil 5 foto benda biasa di sekitarmu dengan angle yang lebih niat.",
-            points = 15,
-            emoji = "📷"
-        ),
-        ActivityRecommendation(
-            title = "Declutter Galeri",
-            category = "Produktif",
-            duration = "10 menit",
-            description = "Hapus screenshot atau foto blur yang tidak penting. Bikin ruang digital terasa lega.",
-            points = 10,
-            emoji = "🗂️"
-        )
+        ActivityRecommendation("Random Skill 15 Menit", "Self-improvement", "15 m", "Cari satu tutorial singkat apa saja.", 15, "🧠"),
+        ActivityRecommendation("Eksperimen Foto", "Kreatif", "15 m", "Ambil 5 foto benda biasa dengan angle unik.", 15, "📷")
     ),
     "stress" to listOf(
-        ActivityRecommendation(
-            title = "Breathing Reset",
-            category = "Recovery",
-            duration = "3 menit",
-            description = "Tarik napas 4 hitungan, tahan 2, buang 6. Ulangi sampai pikiran sedikit melambat.",
-            points = 12,
-            emoji = "🌬️"
-        ),
-        ActivityRecommendation(
-            title = "Pecah Masalah Jadi 1 Langkah",
-            category = "Produktif",
-            duration = "8 menit",
-            description = "Tulis masalahmu, lalu pilih satu langkah terkecil yang bisa dilakukan sekarang.",
-            points = 18,
-            emoji = "🧩"
-        ),
-        ActivityRecommendation(
-            title = "Jauhkan Layar Sebentar",
-            category = "Detox",
-            duration = "10 menit",
-            description = "Letakkan HP/laptop, berdiri, minum air, lalu kembali saat kepala lebih tenang.",
-            points = 14,
-            emoji = "📵"
-        )
+        ActivityRecommendation("Breathing Reset", "Recovery", "3 m", "Tarik napas 4 hitungan, tahan 2, buang 6.", 12, "🌬️"),
+        ActivityRecommendation("Jauhkan Layar Sebentar", "Detox", "10 m", "Letakkan HP/laptop, berdiri, minum air.", 14, "📵")
     )
 )
 
@@ -213,167 +62,96 @@ fun ActivityGeneratorScreen(
     onLogout: () -> Unit
 ) {
     val mood = moveInMoods.firstOrNull { it.id == moodId } ?: moveInMoods.first()
-    val activities = activityMap[mood.id].orEmpty().ifEmpty {
-        activityMap.values.flatten()
-    }
+    val activities = activityMap[mood.id].orEmpty().ifEmpty { activityMap.values.flatten() }
+    var selectedActivity by remember(mood.id) { mutableStateOf(activities.random()) }
 
-    var selectedActivity by remember(mood.id) {
-        mutableStateOf(activities.random())
-    }
-
-    MoveInScreenFrame(
-        accent = mood.accent,
-        background = mood.background,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            TextButton(onClick = onNavigateBack) {
-                Text(
-                    text = "← Mood",
-                    color = Color.White.copy(alpha = 0.75f)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            TextButton(onClick = onLogout) {
-                Text(
-                    text = "Logout",
-                    color = Color.White.copy(alpha = 0.55f)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Surface(
-            color = mood.accent.copy(alpha = 0.16f),
-            shape = RoundedCornerShape(999.dp),
-            border = BorderStroke(1.dp, mood.accent.copy(alpha = 0.35f))
-        ) {
-            Text(
-                text = "${mood.emoji} ${mood.title} Space",
-                color = mood.accent,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Text(
-            text = "Rekomendasi buat kamu",
-            color = Color.White,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.ExtraBold,
-            lineHeight = 36.sp
-        )
-
-        Text(
-            text = "Untuk $userName, mulai dari aktivitas kecil dulu. Nggak harus sempurna.",
-            color = Color.White.copy(alpha = 0.64f),
-            fontSize = 14.sp,
-            lineHeight = 21.sp
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        Card(
-            shape = RoundedCornerShape(34.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White.copy(alpha = 0.10f)
-            ),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            androidx.compose.foundation.layout.Column(
-                modifier = Modifier.padding(24.dp)
+    NoteAITheme(darkTheme = true) {
+        MoveInScaffold {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(78.dp)
-                        .clip(CircleShape)
-                        .background(mood.accent.copy(alpha = 0.18f))
-                        .border(
-                            width = 1.dp,
-                            color = mood.accent.copy(alpha = 0.35f),
-                            shape = CircleShape
-                        )
-                ) {
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MoveInTheme.colors.textPrimary)
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        TextButton(onClick = onLogout) {
+                            Text("Logout", color = MoveInTheme.colors.errorRed)
+                        }
+                    }
+                }
+
+                item {
+                    MoveInPill(
+                        text = "${mood.emoji} ${mood.title} Space",
+                        selected = true,
+                        color = mood.accent.copy(alpha = 0.2f)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = selectedActivity.emoji,
-                        fontSize = 36.sp
+                        text = "Rekomendasi buat kamu",
+                        style = MoveInTheme.typography.displayLarge.copy(color = MoveInTheme.colors.textPrimary)
+                    )
+                    Text(
+                        text = "Untuk $userName, mulai dari aktivitas kecil dulu. Nggak harus sempurna.",
+                        style = MoveInTheme.typography.bodyLarge.copy(color = MoveInTheme.colors.textSecondary)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(22.dp))
+                item {
+                    MoveInCard(
+                        borderColor = mood.accent.copy(alpha = 0.3f),
+                        contentPadding = 24.dp
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(mood.accent.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(selectedActivity.emoji, fontSize = 32.sp)
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Text(
+                            selectedActivity.category.uppercase(),
+                            style = MoveInTheme.typography.labelSmall.copy(color = mood.accent, letterSpacing = 1.sp)
+                        )
+                        Text(
+                            selectedActivity.title,
+                            style = MoveInTheme.typography.displayMedium.copy(color = MoveInTheme.colors.textPrimary)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            selectedActivity.description,
+                            style = MoveInTheme.typography.bodyMedium.copy(color = MoveInTheme.colors.textSecondary)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            MoveInPill(text = selectedActivity.duration, selected = false)
+                            MoveInPill(text = "+${selectedActivity.points} Momentum", selected = false)
+                        }
+                    }
+                }
 
-                Text(
-                    text = selectedActivity.category.uppercase(),
-                    color = mood.accent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 1.2.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = selectedActivity.title,
-                    color = Color.White,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    lineHeight = 31.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = selectedActivity.description,
-                    color = Color.White.copy(alpha = 0.72f),
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp
-                )
-
-                Spacer(modifier = Modifier.height(22.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    InfoPill(
-                        text = selectedActivity.duration,
-                        accent = mood.accent
-                    )
-
-                    InfoPill(
-                        text = "+${selectedActivity.points} Momentum",
-                        accent = mood.accent
-                    )
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        MoveInPrimaryButton(
+                            text = "Acak Lagi",
+                            onClick = { selectedActivity = activities.random() },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        TextButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Pilih Mood Lain", color = MoveInTheme.colors.textSecondary)
+                        }
+                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        MoveInPrimaryButton(
-            text = "Acak Lagi",
-            accent = mood.accent,
-            onClick = {
-                val nextActivities = activities.filter { it != selectedActivity }
-                selectedActivity = nextActivities.ifEmpty { activities }.random()
-            }
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        MoveInSecondaryButton(
-            text = "Pilih Mood Lain",
-            onClick = onNavigateBack
-        )
     }
 }

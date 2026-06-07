@@ -2,17 +2,9 @@ package com.example.noteai.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
@@ -25,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.noteai.presentation.theme.MoveInTheme
 
 data class MoveInMood(
     val id: String,
@@ -94,52 +87,48 @@ fun MoodCard(
 ) {
     Card(
         modifier = modifier
-            .height(166.dp)
+            .height(180.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(30.dp),
+        shape = MoveInTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.08f)
+            containerColor = MoveInTheme.colors.cardPrimary
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = mood.accent.copy(alpha = 0.20f)
-        )
+            color = mood.accent.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(18.dp)
+                .padding(20.dp)
         ) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
-                    .background(mood.accent.copy(alpha = 0.16f))
+                    .background(mood.accent.copy(alpha = 0.15f))
             ) {
                 Text(
                     text = mood.emoji,
-                    fontSize = 24.sp
+                    fontSize = 26.sp
                 )
             }
 
             Column {
                 Text(
                     text = mood.title,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    style = MoveInTheme.typography.titleLarge.copy(color = MoveInTheme.colors.textPrimary)
                 )
 
-                androidx.compose.foundation.layout.Spacer(
-                    modifier = Modifier.height(6.dp)
-                )
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = mood.subtitle,
-                    color = Color.White.copy(alpha = 0.58f),
-                    fontSize = 11.sp,
+                    style = MoveInTheme.typography.labelSmall.copy(color = MoveInTheme.colors.textMuted),
                     lineHeight = 15.sp
                 )
             }
@@ -153,19 +142,18 @@ fun InfoPill(
     accent: Color
 ) {
     Surface(
-        color = accent.copy(alpha = 0.13f),
-        shape = RoundedCornerShape(999.dp),
+        color = accent.copy(alpha = 0.15f),
+        shape = CircleShape,
         border = BorderStroke(
             width = 1.dp,
-            color = accent.copy(alpha = 0.25f)
+            color = accent.copy(alpha = 0.3f)
         )
     ) {
         Text(
             text = text,
             color = accent,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            style = MoveInTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
         )
     }
 }

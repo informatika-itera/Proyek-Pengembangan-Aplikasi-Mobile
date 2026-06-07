@@ -1,4 +1,4 @@
-rootProject.name = "NoteAI"
+rootProject.name = "MoveIn"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

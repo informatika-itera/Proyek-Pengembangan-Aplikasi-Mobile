@@ -155,35 +155,49 @@ composeApp/
 
 # Sprint Planning
 
-## print 1 — Planning & Setup
-
-* Project idea & requirements
-* Setup GitHub repository
-* Setup KMP project
-* Setup Clean Architecture
-* Setup CI/CD
-* Create README documentation
+## Sprint 1 — Planning & Setup
+### Completion Checklist
+| Task | Status | Description |
+| :--- | :---: | :--- |
+| Project idea & requirements | ✅ Done | Ide utama aplikasi MoveIn telah ditentukan, yaitu aplikasi rekomendasi aktivitas berdasarkan mood pengguna. |
+| Setup GitHub repository | ✅ Done | Repository GitHub telah dibuat sebagai tempat kolaborasi dan version control project. |
+| Setup KMP project | ✅ Done | Project telah menggunakan Kotlin Multiplatform dan Compose Multiplatform sebagai basis pengembangan aplikasi. |
+| Setup Clean Architecture | ✅ Done | Struktur project telah dirancang menggunakan pendekatan Clean Architecture dengan pemisahan layer data, domain, presentation, navigation, dan dependency injection. |
+| Setup CI/CD | ✅ Done | GitHub Actions telah dikonfigurasi untuk menjalankan proses build otomatis setiap ada push atau pull request. |
+| Create README documentation | ✅ Done | Dokumentasi README telah dibuat berisi deskripsi project, fitur, teknologi, arsitektur, sprint planning, dan cara menjalankan project. |
 
 ## Sprint 2 — Core Features
+### Completion Checklist
+| Task | Status | Description |
+| :--- | :---: | :--- |
+| Implement login & register | ✅ Done | Halaman login dan register telah dibuat, dilengkapi validasi input sederhana, serta terhubung ke navigation flow aplikasi. |
+| Mood selection page | ✅ Done | Pengguna dapat memilih mood seperti Bosan, Sedih, Capek, Semangat, Gabut, dan Stress. |
+| Random activity generator | ✅ Done | Aplikasi dapat memberikan rekomendasi aktivitas secara acak berdasarkan mood yang dipilih pengguna. |
+| Navigation setup | ✅ Done | Navigation telah menghubungkan halaman Login, Register, Main, Home, Journey, Detox, Growth, dan Profile. |
+| Local data layer prototype | ✅ Done | Project telah memiliki struktur repository dan penyimpanan lokal sementara berbasis state/list untuk mendukung fitur activity history. |
 
-* Implement login & register
-* Mood selection page
-* Random activity generator
-* Navigation setup
 
 ## Sprint 3 — Advanced Features
-
-* Favorite activity
-* Activity history
-* Daily challenge
-* Quotes feature
+### 3 Completion Checklist
+| Task | Status | Description |
+| :--- | :---: | :--- |
+| Favorite activity | ✅ Done | Pengguna dapat menyimpan aktivitas ke daftar favorit dan menghapusnya kembali dari daftar favorit. |
+| Activity history | ✅ Done | Aktivitas penting seperti favorite, daily challenge, breathing, dan generated activity dicatat ke Journey Log. |
+| Daily challenge | ✅ Done | Aplikasi menyediakan daily challenge dengan reward momentum dan status penyelesaian harian. |
+| Quotes feature | ✅ Done | Aplikasi menampilkan quotes motivasi dan menyediakan tombol untuk mengganti quote. |
+| Ktor Client / API integration | ✅ Done | Project telah memiliki konfigurasi Ktor Client untuk request API dengan JSON serialization, logging, dan timeout. |
+| Gemini AI integration | ✅ Done | Project telah memiliki Gemini API service untuk menghasilkan rekomendasi aktivitas berdasarkan mood pengguna. |
 
 ## Sprint 4 — Polish & Testing
-
-* UI improvement
-* Responsive design
-* Unit testing
-* Bug fixing
+### Completion Checklist
+| Task | Status | Description |
+| :--- | :---: | :--- |
+| UI improvement | ✅ Done | Tampilan aplikasi dirapikan menggunakan card, spacing, rounded corner, typography hierarchy, dan visual status yang lebih konsisten. |
+| Responsive design | ✅ Done | Layout dibuat lebih adaptif menggunakan responsive grid sederhana agar tampilan tetap rapi pada layar compact maupun wide. |
+| Unit testing | ✅ Done | Unit test ditambahkan untuk menguji logic growth phase berdasarkan nilai momentum pengguna. |
+| Bug fixing | ✅ Done | Perbaikan dilakukan pada flow login/register, navigation, sprint feature section, dan integrasi state agar aplikasi lebih stabil. |
+| Error state handling | ✅ Done | Komponen reusable untuk empty state dan error state telah ditambahkan. |
+| CI test integration | ✅ Done | Workflow GitHub Actions diperbarui agar menjalankan build dan unit test secara otomatis. |
 
 ## Sprint 5 — Final Preparation
 
@@ -222,10 +236,10 @@ git clone https://github.com/Kaizenix/123140169-123140186-MoveIn.git
 ---
 
 # Status Project
-
-Currently in Development — Sprint 1 Planning & Setup
-
----
+✅ **Sprint 1 Completed — Planning & Setup**  
+✅ **Sprint 2 Completed — Core Features**  
+✅ **Sprint 3 Completed — Advanced Features**
+✅ **Sprint 4 Completed — Polish & Testing**
 
 # License
 

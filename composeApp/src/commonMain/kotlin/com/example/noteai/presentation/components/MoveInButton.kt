@@ -14,16 +14,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+import com.example.noteai.presentation.theme.MoveInTheme
+
 @Composable
 fun MoveInPrimaryButton(
     text: String,
-    accent: Color,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
@@ -31,19 +32,19 @@ fun MoveInPrimaryButton(
         onClick = onClick,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = accent,
-            contentColor = Color(0xFF050505),
-            disabledContainerColor = Color.White.copy(alpha = 0.10f),
-            disabledContentColor = Color.White.copy(alpha = 0.35f)
+            containerColor = MoveInTheme.colors.primary,
+            contentColor = Color.White,
+            disabledContainerColor = MoveInTheme.colors.surfaceSecondary.copy(alpha = 0.5f),
+            disabledContentColor = MoveInTheme.colors.textMuted
         ),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
     ) {
         Text(
             text = text,
-            fontWeight = FontWeight.ExtraBold
+            style = MoveInTheme.typography.labelLarge
         )
     }
 }
@@ -51,20 +52,20 @@ fun MoveInPrimaryButton(
 @Composable
 fun MoveInSecondaryButton(
     text: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     OutlinedButton(
         onClick = onClick,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+        border = BorderStroke(1.dp, MoveInTheme.colors.borderSubtle),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(54.dp)
     ) {
         Text(
             text = text,
-            color = Color.White.copy(alpha = 0.78f),
-            fontWeight = FontWeight.Bold
+            style = MoveInTheme.typography.labelLarge.copy(color = MoveInTheme.colors.textSecondary)
         )
     }
 }
@@ -75,13 +76,14 @@ fun MoveInTextField(
     onValueChange: (String) -> Unit,
     label: String,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = {
-            Text(label)
+            Text(label, style = MoveInTheme.typography.bodyMedium)
         },
         singleLine = true,
         visualTransformation = if (isPassword) {
@@ -93,15 +95,17 @@ fun MoveInTextField(
             keyboardType = keyboardType
         ),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
-            focusedLabelColor = Color(0xFF22D3EE),
-            unfocusedLabelColor = Color.White.copy(alpha = 0.50f),
-            focusedBorderColor = Color(0xFF22D3EE),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.16f),
-            cursorColor = Color(0xFF22D3EE)
+            focusedTextColor = MoveInTheme.colors.textPrimary,
+            unfocusedTextColor = MoveInTheme.colors.textPrimary,
+            focusedLabelColor = MoveInTheme.colors.primary,
+            unfocusedLabelColor = MoveInTheme.colors.textMuted,
+            focusedBorderColor = MoveInTheme.colors.primary,
+            unfocusedBorderColor = MoveInTheme.colors.borderSubtle,
+            cursorColor = MoveInTheme.colors.primary,
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent
         ),
         shape = RoundedCornerShape(18.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     )
 }

@@ -14,6 +14,9 @@ sealed interface Route {
     data object MoodSelection : Route
 
     @Serializable
+    data object Main : Route
+
+    @Serializable
     data class ActivityGenerator(val moodId: String) : Route
 
     // Legacy route lama disimpan agar file lama tidak langsung error saat migrasi.
@@ -36,6 +39,7 @@ sealed interface Route {
 interface NavigationActions {
     fun navigateToLogin()
     fun navigateToRegister()
+    fun navigateToMain()
     fun navigateToMoodSelection(clearBackStack: Boolean = false)
     fun navigateToActivityGenerator(moodId: String)
 

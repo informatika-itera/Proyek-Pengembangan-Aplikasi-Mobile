@@ -3,138 +3,97 @@ package com.example.noteai.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.example.noteai.presentation.activity.ActivityGeneratorScreen
+import com.example.noteai.presentation.AppState
+import com.example.noteai.presentation.JourneyLog
 import com.example.noteai.presentation.auth.LoginScreen
 import com.example.noteai.presentation.auth.RegisterScreen
-import com.example.noteai.presentation.mood.MoodSelectionScreen
+import com.example.noteai.presentation.screens.MainScreen
+
+sealed class Screen(val route: String) {
+    object Login : Screen("login")
+    object Register : Screen("register")
+    object Main : Screen("main")
+}
 
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
-    modifier: Modifier = Modifier
+    isLightMode: Boolean,
+    onThemeToggle: (Boolean) -> Unit,
+    appState: AppState,
+    onAppStateChange: (AppState) -> Unit,
+    momentum: Int,
+    onMomentumChange: (Int) -> Unit,
+    logs: List<JourneyLog>,
+    onLogsChange: (List<JourneyLog>) -> Unit
 ) {
-    var currentUser by remember { mutableStateOf("Mahasiswa") }
-    val navigationActions = createNavigationActions(navController)
+    var currentUserName by rememberSaveable { mutableStateOf("Mahasiswa") }
 
     NavHost(
         navController = navController,
-        startDestination = Route.Login,
-        modifier = modifier
+        startDestination = Screen.Login.route
     ) {
-        composable<Route.Login> {
+        composable(Screen.Login.route) {
             LoginScreen(
                 onNavigateToRegister = {
-                    navigationActions.navigateToRegister()
+                    navController.navigate(Screen.Register.route)
                 },
                 onLoginSuccess = { userName ->
-                    currentUser = userName.ifBlank { "Mahasiswa" }
-                    navigationActions.navigateToMoodSelection(clearBackStack = true)
-                }
-            )
-        }
+                    currentUserName = userName.ifBlank { "Mahasiswa" }
 
-        composable<Route.Register> {
-            RegisterScreen(
-                onNavigateBack = {
-                    navigationActions.navigateBack()
-                },
-                onRegisterSuccess = { userName ->
-                    currentUser = userName.ifBlank { "Mahasiswa" }
-                    navigationActions.navigateToMoodSelection(clearBackStack = true)
-                }
-            )
-        }
-
-        composable<Route.MoodSelection> {
-            MoodSelectionScreen(
-                userName = currentUser,
-                onMoodSelected = { moodId ->
-                    navigationActions.navigateToActivityGenerator(moodId)
-                },
-                onLogout = {
-                    currentUser = "Mahasiswa"
-                    navigationActions.navigateToLogin()
-                }
-            )
-        }
-
-        composable<Route.ActivityGenerator> { backStackEntry ->
-            val route: Route.ActivityGenerator = backStackEntry.toRoute()
-
-            ActivityGeneratorScreen(
-                moodId = route.moodId,
-                userName = currentUser,
-                onNavigateBack = {
-                    navigationActions.navigateBack()
-                },
-                onLogout = {
-                    currentUser = "Mahasiswa"
-                    navigationActions.navigateToLogin()
-                }
-            )
-        }
-    }
-}
-
-private fun createNavigationActions(navController: NavHostController): NavigationActions {
-    return object : NavigationActions {
-
-        override fun navigateToLogin() {
-            navController.navigate(Route.Login) {
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
-        }
-
-        override fun navigateToRegister() {
-            navController.navigate(Route.Register)
-        }
-
-        override fun navigateToMoodSelection(clearBackStack: Boolean) {
-            navController.navigate(Route.MoodSelection) {
-                if (clearBackStack) {
-                    popUpTo(navController.graph.startDestinationId) {
-                        inclusive = true
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
                     }
                 }
-                launchSingleTop = true
-            }
+            )
         }
 
-        override fun navigateToActivityGenerator(moodId: String) {
-            navController.navigate(Route.ActivityGenerator(moodId))
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onRegisterSuccess = { userName ->
+                    currentUserName = userName.ifBlank { "Mahasiswa" }
+
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
 
-        override fun navigateToHome() {
-            navController.navigate(Route.MoodSelection) {
-                launchSingleTop = true
-            }
-        }
+        composable(Screen.Main.route) {
+            MainScreen(
+                userName = currentUserName,
+                isLightMode = isLightMode,
+                onThemeToggle = onThemeToggle,
+                mentalState = appState,
+                onMentalStateChange = onAppStateChange,
+                momentum = momentum,
+                onMomentumChange = onMomentumChange,
+                logs = logs,
+                onLogsChange = onLogsChange,
+                onLogout = {
+                    currentUserName = "Mahasiswa"
 
-        override fun navigateToAddNote(noteId: Long?) {
-            navController.navigate(Route.MoodSelection)
-        }
-
-        override fun navigateToNoteDetail(noteId: Long) {
-            navController.navigate(Route.MoodSelection)
-        }
-
-        override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
-            navController.navigate(Route.MoodSelection)
-        }
-
-        override fun navigateBack() {
-            navController.popBackStack()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Main.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
     }
 }

@@ -6,6 +6,7 @@ import com.studyhub.data.local.AiUsageLimit
 import com.studyhub.domain.model.AiUsageStats
 import com.studyhub.domain.model.PriorityResult
 import com.studyhub.domain.model.Task
+import com.studyhub.domain.repository.AiError
 import com.studyhub.domain.usecase.ai.GetAiUsageStatsUseCase
 import com.studyhub.domain.usecase.ai.GetSmartPriorityUseCase
 import com.studyhub.domain.usecase.task.GetActiveTasksUseCase
@@ -72,8 +73,14 @@ class SmartPriorityViewModel(
                 )
             } catch (e: Exception) {
                 val fallback = getActiveTasksUseCase().first()
+                val message = when (e) {
+                    is AiError.NoInternet -> "Tidak ada koneksi internet"
+                    is AiError.QuotaExceeded -> "Batas penggunaan hari ini tercapai"
+                    is AiError.ApiError -> "Layanan AI sedang tidak tersedia"
+                    else -> e.message ?: "Terjadi kesalahan"
+                }
                 _uiState.value = SmartPriorityUiState.Error(
-                    message = e.message ?: "Terjadi kesalahan",
+                    message = message,
                     fallbackTasks = fallback
                 )
             }

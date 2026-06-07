@@ -1,0 +1,19 @@
+-- Migration: Add reminder and notification history tables
+
+CREATE TABLE IF NOT EXISTS ReminderEntity (
+    taskId TEXT NOT NULL PRIMARY KEY,
+    scheduledAt INTEGER NOT NULL,
+    aiReason TEXT NOT NULL,
+    isActive INTEGER NOT NULL DEFAULT 1,
+    createdAt INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS NotifHistoryEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    taskId TEXT NOT NULL,
+    taskTitle TEXT NOT NULL,
+    taskSubject TEXT NOT NULL,
+    aiReason TEXT NOT NULL,
+    sentAt INTEGER NOT NULL,
+    isRead INTEGER NOT NULL DEFAULT 0
+);

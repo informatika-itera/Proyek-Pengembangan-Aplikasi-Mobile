@@ -27,13 +27,13 @@ class FilterAndSortTasksUseCase {
                 task.description.contains(searchQuery, ignoreCase = true))
         }
         .sortedWith(
-            compareBy {
+            compareBy<Task> {
                 when (sortBy) {
-                    SortBy.DUE_DATE -> it.dueDate.toString()
-                    SortBy.PRIORITY -> it.priority.ordinal.toString()
+                    SortBy.DUE_DATE -> it.dueDate
+                    SortBy.PRIORITY -> it.priority.ordinal
                     SortBy.SUBJECT -> it.subject
                     SortBy.TITLE -> it.title
                 }
-            }
+            }.thenBy { it.dueDate }
         )
 }

@@ -6,6 +6,7 @@ import com.studyhub.data.local.AiCacheTTL
 import com.studyhub.data.local.AiUsageLimit
 import com.studyhub.data.remote.GroqApiClient
 import com.studyhub.domain.model.*
+import com.studyhub.domain.repository.AiError
 import com.studyhub.domain.repository.AiRepository
 import kotlinx.serialization.json.Json
 
@@ -34,7 +35,7 @@ class AiRepositoryImpl(
 
         // Layer 2: Cek quota harian
         if (!cacheDataSource.canCallPriority()) {
-            return fallbackPrioritySort(tasks)
+            throw AiError.QuotaExceeded()
         }
 
         // Layer 3: Panggil AI dengan prompt terkompresi
@@ -55,7 +56,10 @@ class AiRepositoryImpl(
 
             parsePriorityResponse(response, tasks)
         } catch (e: Exception) {
-            fallbackPrioritySort(tasks)
+            if (e is AiError) throw e
+            // In KMP we can't easily distinguish all network errors in commonMain without extra dependencies
+            // but we can check for common Ktor exceptions if imported
+            throw AiError.ApiError(-1, e.message)
         }
     }
 

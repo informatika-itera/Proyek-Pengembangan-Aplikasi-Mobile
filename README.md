@@ -8,14 +8,13 @@
 
 | Nama | NIM |
 |------|-----|
-| Maxavier Girvanus Manurung | 123140191 |
-| Muhammad Rafiq Ridho | 123140197 |
+| Maxavier Girvanus Manurung | 123140191 | Muhammad Rafiq Ridho | 123140197 |
 
 ---
 
 ## 📖 Tentang StudyHub
 
-**StudyHub** adalah aplikasi manajemen tugas lintas platform (Android & iOS) yang dirancang khusus untuk meningkatkan produktivitas mahasiswa. StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta direncanakan untuk memanfaatkan potensi AI guna membantu mahasiswa mengelola waktu dan prioritas belajar mereka secara cerdas.
+**StudyHub** adalah aplikasi manajemen tugas lintas platform (Android & iOS) yang dirancang khusus untuk meningkatkan produktivitas mahasiswa. StudyHub mengadopsi arsitektur **Clean Architecture + MVVM** yang memisahkan logika bisnis, data, dan tampilan secara jelas, serta memanfaatkan potensi AI guna membantu mahasiswa mengelola waktu dan prioritas belajar mereka secara cerdas.
 
 ---
 
@@ -28,34 +27,64 @@ Aplikasi ini dibangun menggunakan teknologi modern dalam ekosistem Kotlin Multip
 - **Database Local**: [SQLDelight](https://cashapp.github.io/sqldelight/)
 - **Local Storage**: [Jetpack DataStore](https://developer.android.com/jetpack/androidx/releases/datastore)
 - **Networking**: [Ktor Client](https://ktor.io/)
-- **Image Loading**: [Coil3](https://coil-kt.github.io/coil/)
+- **AI Engine**: [Groq Cloud API](https://groq.com/) (Llama-3 model)
+- **Testing**: Kotlin Test, Coroutines Test, Turbine, Kover
+- **Analysis**: Detekt
 
 ---
 
-## 🚀 Update Terbaru (Recent Update)
+## 🚀 Status Pengembangan
 
-Berikut adalah fondasi teknis yang telah diimplementasikan dalam pengembangan saat ini:
-
-- **Implementasi Clean Architecture**: Pemisahan layer Data, Domain, dan Presentation untuk kode yang lebih terstruktur, skalabel, dan mudah diuji.
-- **Local Persistence & Settings**: Penggunaan **SQLDelight** untuk penyimpanan database tugas offline dan **Jetpack DataStore** untuk manajemen preferensi tema.
-- **Dependency Injection**: Konfigurasi modul Koin (`AppModule`) untuk manajemen dependensi yang efisien di seluruh platform.
-
-### Sprint 3 — Advanced Features (Current Progress)
-- **AI Token Management Infrastructure**: Sistem manajemen token AI dengan kompresi data, caching (SQLDelight), dan pembatasan kuota harian untuk efisiensi biaya.
-- **Smart Priority & Reminder Logic**: Implementasi Repository dan Use Case untuk pengurutan tugas cerdas dan pengingat adaptif berbasis pola pengerjaan pengguna.
-- **Enhanced Task Visualization**: Indikator visual otomatis untuk tugas yang terlambat (*overdue*) dengan styling khusus (merah, strike-through) untuk meningkatkan kesadaran deadline.
-- **CI/CD Optimization**: Konfigurasi otomatisasi build GitHub Actions dan analisis kode statis menggunakan **Detekt**.
-- **Sprint 3 Navigation & UI**: Penambahan rute navigasi untuk fitur Smart Priority, Progress, dan Pomodoro, serta integrasi shortcut AI di beranda.
-- **Database Migration System**: Implementasi skema migrasi SQLDelight untuk mendukung pembaruan struktur database secara aman pada perangkat pengguna.
-- **Advanced Task Management**: Perbaikan sistem *state reset* pada form tambah/edit tugas dan sentralisasi aksi tambah tugas untuk UX yang lebih konsisten.
+| Sprint | Status | Keterangan |
+|--------|--------|------------|
+| Sprint 1 | ✅ Selesai | Foundation, Clean Architecture, DI setup |
+| Sprint 2 | ✅ Selesai | CRUD Tugas, Navigation, Calendar View |
+| Sprint 3 | ✅ Selesai | Groq AI Integration, Notifications, Offline Sync |
+| Sprint 4 | ✅ Selesai | Polish & Release Ready, Comprehensive Tests, Progress Dash |
 
 ---
 
-## ✨ Fitur Saat Ini
+## ✨ Fitur Utama
 
-- **Manajemen Tugas**: CRUD (Create, Read, Update, Delete) tugas lengkap dengan kategori, deskripsi, dan tingkat kesulitan.
-- **Visualisasi Kalender**: Tampilan kalender bulanan terintegrasi untuk melacak deadline tugas secara visual.
-- **Offline Support**: Akses data tugas yang tersimpan secara lokal tanpa koneksi internet.
+### 🎯 Smart Priority AI
+AI menganalisis seluruh daftar tugas Anda berdasarkan urgensi, tingkat kesulitan, dan deadline untuk memberikan rekomendasi urutan pengerjaan yang optimal.
+
+### ⏰ Smart Reminder AI
+Sistem pengingat adaptif yang mempelajari kebiasaan pengerjaan tugas Anda. AI akan menyarankan waktu pengingat yang tepat agar Anda tidak menunda pekerjaan.
+
+### ⏱️ Pomodoro Timer
+Timer produktivitas terintegrasi (25/5/15 menit) dengan notifikasi status dan persistensi background. Terintegrasi langsung dengan tugas yang sedang dikerjakan.
+
+### 📈 Progress Dashboard
+Visualisasi statistik belajar mulai dari completion rate mingguan, streak pengerjaan tugas berturut-turut, hingga breakdown progress per mata kuliah.
+
+### 📅 Advanced Calendar
+Tampilan kalender interaktif dengan dot indicators untuk hari yang memiliki deadline, memudahkan perencanaan akademik jangka panjang.
+
+### 📴 Robust Offline Support
+Bekerja sepenuhnya offline dengan sinkronisasi otomatis saat internet kembali tersedia menggunakan sistem antrean sinkronisasi (*Sync Queue*).
 
 ---
 
+## 🏗️ Architecture Decision Records
+
+### Mengapa SQLDelight?
+SQLDelight menyediakan type-safe SQL queries yang dikompilasi menjadi kode Kotlin. Ini memungkinkan berbagi skema database dan logika query antara Android dan iOS tanpa overhead library runtime yang berat seperti Room.
+
+### Mengapa Groq API?
+Groq Cloud menawarkan latensi inferensi yang sangat rendah (LPU) yang ideal untuk aplikasi mobile yang membutuhkan respon AI instan. Selain itu, Groq memiliki model Llama-3 yang sangat kompeten untuk task analisis teks terstruktur.
+
+### Local-First Design
+Aplikasi dirancang dengan prinsip local-first. Database lokal adalah sumber kebenaran tunggal (*single source of truth*), memastikan performa tinggi dan ketersediaan fitur inti tanpa tergantung pada kestabilan server atau internet.
+
+---
+
+## 🛠️ Menjalankan Project
+
+1. Clone repository ini.
+2. Tambahkan `GROQ_API_KEY` di file `local.properties`.
+3. Jalankan perintah `./gradlew :composeApp:assembleDebug` untuk build Android.
+4. Untuk menjalankan unit test: `./gradlew :composeApp:testDebugUnitTest`.
+5. Untuk melihat laporan coverage: `./gradlew :composeApp:koverHtmlReport`.
+
+---

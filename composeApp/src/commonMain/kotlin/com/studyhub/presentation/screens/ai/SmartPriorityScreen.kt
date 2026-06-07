@@ -212,6 +212,7 @@ fun SmartPriorityScreen(navController: NavController) {
                                         task = task,
                                         onEdit = {},
                                         onDelete = {},
+                                        onStatusChange = {},
                                         onClick = {
                                             navController.navigate(
                                                 Screen.TaskDetail

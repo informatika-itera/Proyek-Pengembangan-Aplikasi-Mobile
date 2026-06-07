@@ -1,0 +1,31 @@
+CREATE TABLE PomodoroSessionEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    taskId TEXT,
+    taskTitle TEXT,
+    durationMinutes INTEGER NOT NULL,
+    phase TEXT NOT NULL,
+    completedAt INTEGER NOT NULL,
+    wasCompleted INTEGER NOT NULL DEFAULT 1
+);
+
+insertSession:
+INSERT INTO PomodoroSessionEntity
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectTodaySessions:
+SELECT * FROM PomodoroSessionEntity
+WHERE completedAt >= ?
+ORDER BY completedAt DESC;
+
+selectTodayFocusCount:
+SELECT COUNT(*) FROM PomodoroSessionEntity
+WHERE phase = 'FOCUS'
+AND wasCompleted = 1
+AND completedAt >= ?;
+
+selectTotalFocusMinutesToday:
+SELECT SUM(durationMinutes) AS total
+FROM PomodoroSessionEntity
+WHERE phase = 'FOCUS'
+AND wasCompleted = 1
+AND completedAt >= ?;

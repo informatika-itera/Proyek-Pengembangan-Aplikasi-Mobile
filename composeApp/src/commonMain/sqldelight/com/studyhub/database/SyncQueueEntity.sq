@@ -1,0 +1,28 @@
+CREATE TABLE SyncQueueEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    operation TEXT NOT NULL,
+    -- "CREATE" | "UPDATE" | "DELETE" | "STATUS_UPDATE"
+    taskId TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    -- JSON serialized task atau field yang berubah
+    createdAt INTEGER NOT NULL,
+    retryCount INTEGER NOT NULL DEFAULT 0
+);
+
+selectAll:
+SELECT * FROM SyncQueueEntity
+ORDER BY createdAt ASC;
+
+insert:
+INSERT INTO SyncQueueEntity VALUES (?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM SyncQueueEntity WHERE id = ?;
+
+incrementRetry:
+UPDATE SyncQueueEntity
+SET retryCount = retryCount + 1
+WHERE id = ?;
+
+deleteOldFailed:
+DELETE FROM SyncQueueEntity WHERE retryCount >= 3;

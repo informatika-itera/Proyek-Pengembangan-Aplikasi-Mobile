@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.*
 import com.studyhub.domain.model.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
@@ -18,13 +19,18 @@ object PreferencesKeys {
     val POMODORO_FOCUS = intPreferencesKey("pomodoro_focus")
     val POMODORO_SHORT_BREAK = intPreferencesKey("pomodoro_short_break")
     val POMODORO_LONG_BREAK = intPreferencesKey("pomodoro_long_break")
+    val POMODORO_SESSIONS_BEFORE_LONG = intPreferencesKey("pomodoro_sessions_before_long")
+    
+    val NOTIF_AUTO_DELETE_ENABLED = booleanPreferencesKey("notif_auto_delete_enabled")
+    val NOTIF_MAX_HISTORY_COUNT = intPreferencesKey("notif_max_history_count")
+    val LAST_NOTIF_CLEANUP = longPreferencesKey("last_notif_cleanup")
 }
 
-class PreferencesDataSource(
+open class PreferencesDataSource(
     private val dataStore: DataStore<Preferences>
 ) {
     // ── Dark Mode ──
-    val isDarkMode: Flow<Boolean> = dataStore.data
+    open val isDarkMode: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -33,14 +39,14 @@ class PreferencesDataSource(
             prefs[PreferencesKeys.IS_DARK_MODE] ?: false
         }
 
-    suspend fun setDarkMode(enabled: Boolean) {
+    open suspend fun setDarkMode(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[PreferencesKeys.IS_DARK_MODE] = enabled
         }
     }
 
     // ── User Name ──
-    val userName: Flow<String> = dataStore.data
+    open val userName: Flow<String> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -49,46 +55,37 @@ class PreferencesDataSource(
             prefs[PreferencesKeys.USER_NAME] ?: "Pelajar"
         }
 
-    suspend fun setUserName(name: String) {
+    open suspend fun setUserName(name: String) {
         dataStore.edit { prefs ->
             prefs[PreferencesKeys.USER_NAME] = name
         }
     }
 
-    // ── Notification ──
-    val notificationEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
+    // ── Notifications ──
+    open val notificationEnabled: Flow<Boolean> = dataStore.data
         .map { prefs ->
             prefs[PreferencesKeys.NOTIFICATION_ENABLED] ?: true
         }
 
-    suspend fun setNotificationEnabled(enabled: Boolean) {
+    open suspend fun setNotificationEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[PreferencesKeys.NOTIFICATION_ENABLED] = enabled
         }
     }
 
-    // ── AI Reminder ──
-    val isAiReminderEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
+    open val isAiReminderEnabled: Flow<Boolean> = dataStore.data
         .map { prefs ->
             prefs[PreferencesKeys.IS_AI_REMINDER] ?: true
         }
 
-    suspend fun setAiReminderEnabled(enabled: Boolean) {
+    open suspend fun setAiReminderEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[PreferencesKeys.IS_AI_REMINDER] = enabled
         }
     }
 
     // ── Pomodoro ──
-    val pomodoroFocus: Flow<Int> = dataStore.data
+    open val pomodoroFocusDuration: Flow<Int> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -97,7 +94,7 @@ class PreferencesDataSource(
             prefs[PreferencesKeys.POMODORO_FOCUS] ?: 25
         }
 
-    val pomodoroShortBreak: Flow<Int> = dataStore.data
+    open val pomodoroShortBreak: Flow<Int> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -106,7 +103,7 @@ class PreferencesDataSource(
             prefs[PreferencesKeys.POMODORO_SHORT_BREAK] ?: 5
         }
 
-    val pomodoroLongBreak: Flow<Int> = dataStore.data
+    open val pomodoroLongBreak: Flow<Int> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -115,7 +112,7 @@ class PreferencesDataSource(
             prefs[PreferencesKeys.POMODORO_LONG_BREAK] ?: 15
         }
 
-    suspend fun setPomodoroSettings(
+    open suspend fun setPomodoroSettings(
         focus: Int, shortBreak: Int, longBreak: Int
     ) {
         dataStore.edit { prefs ->
@@ -126,7 +123,7 @@ class PreferencesDataSource(
     }
 
     // ── Get all as UserPreferences snapshot ──
-    val userPreferences: Flow<UserPreferences> = dataStore.data
+    open val userPreferences: Flow<UserPreferences> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -139,7 +136,20 @@ class PreferencesDataSource(
                 isAiReminderEnabled = prefs[PreferencesKeys.IS_AI_REMINDER] ?: true,
                 pomodoroFocusDuration = prefs[PreferencesKeys.POMODORO_FOCUS] ?: 25,
                 pomodoroShortBreak = prefs[PreferencesKeys.POMODORO_SHORT_BREAK] ?: 5,
-                pomodoroLongBreak = prefs[PreferencesKeys.POMODORO_LONG_BREAK] ?: 15
+                pomodoroLongBreak = prefs[PreferencesKeys.POMODORO_LONG_BREAK] ?: 15,
+                pomodoroSessionsBeforeLong = prefs[PreferencesKeys.POMODORO_SESSIONS_BEFORE_LONG] ?: 4
             )
         }
+
+    // ── Notification History ──
+    open val notifAutoDeleteEnabled: Flow<Boolean> = dataStore.data.map { it[PreferencesKeys.NOTIF_AUTO_DELETE_ENABLED] ?: true }
+    open val notifMaxHistoryCount: Flow<Int> = dataStore.data.map { it[PreferencesKeys.NOTIF_MAX_HISTORY_COUNT] ?: 100 }
+    
+    open suspend fun getLastNotifCleanup(): Long {
+        return dataStore.data.first()[PreferencesKeys.LAST_NOTIF_CLEANUP] ?: 0L
+    }
+
+    open suspend fun setLastNotifCleanup(timestamp: Long) {
+        dataStore.edit { it[PreferencesKeys.LAST_NOTIF_CLEANUP] = timestamp }
+    }
 }

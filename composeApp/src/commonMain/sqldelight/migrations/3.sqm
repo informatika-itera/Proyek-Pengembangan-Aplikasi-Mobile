@@ -1,0 +1,11 @@
+-- Migration from version 2 to 3
+-- Add SyncQueue table for offline mode
+
+CREATE TABLE IF NOT EXISTS SyncQueueEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    operation TEXT NOT NULL,
+    taskId TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    retryCount INTEGER NOT NULL DEFAULT 0
+);

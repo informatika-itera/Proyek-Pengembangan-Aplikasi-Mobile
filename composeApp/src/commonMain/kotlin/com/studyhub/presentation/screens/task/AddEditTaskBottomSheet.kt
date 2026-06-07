@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,12 +17,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studyhub.core.util.capitalizeFirst
+import com.studyhub.core.util.toLocalMillisFromUtc
 import com.studyhub.domain.model.Priority
 import com.studyhub.domain.model.TaskStatus
-import com.studyhub.core.util.toLocalMillisFromUtc
 import com.studyhub.presentation.theme.*
 import kotlinx.datetime.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -36,7 +42,9 @@ fun AddEditTaskBottomSheet(
 ) {
     val viewModel: AddEditTaskViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isSaving by viewModel.isLoading.collectAsStateWithLifecycle()
+    
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -44,384 +52,419 @@ fun AddEditTaskBottomSheet(
     var priority by remember { mutableStateOf(Priority.MEDIUM) }
     var status by remember { mutableStateOf(TaskStatus.TODO) }
     var dueDate by remember { mutableStateOf(initialDate ?: Clock.System.now().toEpochMilliseconds()) }
-    var estimatedMinutes by remember { mutableStateOf(60) }
-    var isInitialized by remember { mutableStateOf(false) }
+    var estimatedMinutes by remember { mutableIntStateOf(25) }
     
+    var titleError by remember { mutableStateOf<String?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showAddSubjectDialog by remember { mutableStateOf(false) }
     var newSubjectName by remember { mutableStateOf("") }
 
+    val isDeadlinePast = dueDate > 0 && dueDate < Clock.System.now().toEpochMilliseconds()
+
     LaunchedEffect(taskId) {
-        isInitialized = false
-        viewModel.resetState() 
-        viewModel.loadSubjects()
-        if (taskId != null) {
-            viewModel.loadTask(taskId)
-        } else {
-            // Reset local state for new task
-            title = ""
-            description = ""
-            selectedSubject = "Mathematics"
-            priority = Priority.MEDIUM
-            status = TaskStatus.TODO
-            dueDate = initialDate ?: Clock.System.now().toEpochMilliseconds()
-            estimatedMinutes = 60
-            isInitialized = true
-        }
+        viewModel.loadTask(taskId)
     }
 
-    LaunchedEffect(uiState.existingTask) {
-        if (!isInitialized && uiState.existingTask != null) {
-            uiState.existingTask?.let { task ->
-                title = task.title
-                description = task.description
-                selectedSubject = task.subject
-                priority = task.priority
-                status = task.status
-                dueDate = task.dueDate
-                estimatedMinutes = task.estimatedMinutes
-                isInitialized = true
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is AddEditTaskUiEvent.SaveSuccess -> onSuccess()
+                is AddEditTaskUiEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
             }
         }
     }
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onSuccess()
+    LaunchedEffect(uiState) {
+        (uiState as? AddEditTaskUiState.Success)?.existingTask?.let { task ->
+            title = task.title
+            description = task.description
+            selectedSubject = task.subject
+            priority = task.priority
+            status = task.status
+            dueDate = task.dueDate
+            estimatedMinutes = task.estimatedMinutes
         }
     }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+        dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 32.dp)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = if (taskId == null) "New Task" else "Edit Task",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Add a new study task",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            when (val state = uiState) {
+                is AddEditTaskUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxWidth().height(400.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
-                IconButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                is AddEditTaskUiState.Error -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(state.message, color = MaterialTheme.colorScheme.error)
+                        Button(onClick = { viewModel.loadTask(taskId) }) { Text("Coba Lagi") }
+                    }
                 }
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            // Task Title
-            Text(
-                "Task Title *", 
-                style = MaterialTheme.typography.titleSmall, 
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                placeholder = { Text("e.g. Complete Math Assignment...", color = MaterialTheme.colorScheme.outline) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
-                )
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            // Subject
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "Subject", 
-                    style = MaterialTheme.typography.titleSmall, 
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.weight(1f))
-                IconButton(onClick = { showAddSubjectDialog = true }, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary)
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val allSubjects = listOf("Mathematics", "Physics", "English", "History", "Chemistry") + 
-                                  uiState.subjects.map { it.name }.filter { it !in listOf("Mathematics", "Physics", "English", "History", "Chemistry") }
-                
-                allSubjects.forEach { sub ->
-                    val isSelected = selectedSubject == sub
-                    SuggestionChip(
-                        onClick = { selectedSubject = sub },
-                        label = { Text(sub, fontSize = 12.sp) },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                            labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        border = SuggestionChipDefaults.suggestionChipBorder(
-                            enabled = true,
-                            borderColor = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                // Due Date
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Due Date *", 
-                        style = MaterialTheme.typography.titleSmall, 
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = Instant.fromEpochMilliseconds(dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),
-                        onValueChange = {},
-                        readOnly = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary
-                        ),
-                        trailingIcon = {
-                            IconButton(onClick = { showDatePicker = true }) {
-                                Icon(Icons.Default.CalendarToday, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-                            }
-                        }
-                    )
-                }
-
-                // Est Time
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Est. Time (min)", 
-                        style = MaterialTheme.typography.titleSmall, 
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                is AddEditTaskUiState.Success -> {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 24.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(bottom = 32.dp)
                     ) {
-                        IconButton(onClick = { if (estimatedMinutes > 5) estimatedMinutes -= 5 }) {
-                            Icon(Icons.Default.Remove, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        // Header
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = if (taskId == null) "New Task" else "Edit Task",
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Add a new study task",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            IconButton(
+                                onClick = onDismiss,
+                                modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Icon(Icons.Default.Close, "Tutup", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
+
+                        Spacer(Modifier.height(24.dp))
+
+                        // Task Title
                         Text(
-                            text = estimatedMinutes.toString(),
-                            modifier = Modifier.weight(1f),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            "Task Title *", 
+                            style = MaterialTheme.typography.titleSmall, 
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        IconButton(onClick = { estimatedMinutes += 5 }) {
-                            Icon(Icons.Default.Add, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Priority
-            Text(
-                "Priority", 
-                style = MaterialTheme.typography.titleSmall, 
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Priority.entries.forEach { p ->
-                    val isSelected = priority == p
-                    val pColor = when (p) {
-                        Priority.LOW -> PriorityLow
-                        Priority.MEDIUM -> PriorityMedium
-                        Priority.HIGH -> PriorityHigh
-                    }
-                    
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { priority = p },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) pColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp, 
-                            if (isSelected) pColor else MaterialTheme.colorScheme.outlineVariant
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(Modifier.size(8.dp).clip(CircleShape).background(pColor))
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                p.name.lowercase().replaceFirstChar { it.uppercase() }, 
-                                fontSize = 12.sp, 
-                                color = if (isSelected) pColor else MaterialTheme.colorScheme.onSurfaceVariant
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { 
+                                if (it.length <= 100) title = it
+                                titleError = null
+                            },
+                            placeholder = { Text("e.g. Complete Math Assignment...", color = MaterialTheme.colorScheme.outline) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            isError = titleError != null,
+                            supportingText = {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text(titleError ?: "")
+                                    Text("${title.length}/100", color = if (title.length > 80) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                imeAction = ImeAction.Next
+                            ),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary
                             )
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Status
-            Text(
-                "Status", 
-                style = MaterialTheme.typography.titleSmall, 
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TaskStatus.entries.forEach { s ->
-                    val isSelected = status == s
-                    InputChip(
-                        selected = isSelected,
-                        onClick = { status = s },
-                        label = { Text(s.value.replace("_", " ").replaceFirstChar { it.uppercase() }, fontSize = 11.sp) },
-                        modifier = Modifier.weight(1f),
-                        colors = InputChipDefaults.inputChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        border = InputChipDefaults.inputChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant,
-                            selectedBorderColor = MaterialTheme.colorScheme.primary
-                        ),
-                        leadingIcon = {
-                           val icon = when(s) {
-                               TaskStatus.TODO -> Icons.Default.Description
-                               TaskStatus.IN_PROGRESS -> Icons.Default.HourglassEmpty
-                               TaskStatus.DONE -> Icons.Default.Check
-                           }
-                           Icon(icon, null, Modifier.size(14.dp), tint = if(isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Description
-            Text(
-                "Description", 
-                style = MaterialTheme.typography.titleSmall, 
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                placeholder = { Text("Add details about this task...", color = MaterialTheme.colorScheme.outline) },
-                modifier = Modifier.fillMaxWidth().height(100.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
-                )
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            // Actions
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(0.4f).height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant, 
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text("Cancel")
-                }
-                Button(
-                    onClick = {
-                        viewModel.saveTask(
-                            taskId = taskId,
-                            title = title,
-                            description = description,
-                            subject = selectedSubject,
-                            priority = priority,
-                            status = status,
-                            dueDate = dueDate,
-                            estimatedMinutes = estimatedMinutes
                         )
-                    },
-                    modifier = Modifier.weight(0.6f).height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    enabled = title.isNotBlank() && !uiState.isLoading
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                    } else {
-                        Icon(Icons.Default.Save, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(if (taskId == null) "Add Task" else "Save Changes")
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // Subject
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Subject", 
+                                style = MaterialTheme.typography.titleSmall, 
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(Modifier.weight(1f))
+                            IconButton(onClick = { showAddSubjectDialog = true }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Add, "Tambah mata kuliah baru", tint = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val defaultSubjects = listOf("Mathematics", "Physics", "English", "History", "Chemistry")
+                            val userSubjects = state.subjects.map { it.name }.filter { it !in defaultSubjects }
+                            val allSubjects = defaultSubjects + userSubjects
+                            
+                            allSubjects.forEach { sub ->
+                                val isSelected = selectedSubject == sub
+                                SuggestionChip(
+                                    onClick = { selectedSubject = sub },
+                                    label = { Text(sub, fontSize = 12.sp) },
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = SuggestionChipDefaults.suggestionChipColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                        labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = SuggestionChipDefaults.suggestionChipBorder(
+                                        enabled = true,
+                                        borderColor = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant
+                                    )
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            // Due Date
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Due Date *", 
+                                    style = MaterialTheme.typography.titleSmall, 
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = Instant.fromEpochMilliseconds(dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    trailingIcon = {
+                                        IconButton(onClick = { showDatePicker = true }) {
+                                            Icon(Icons.Default.CalendarToday, "Pilih tanggal", Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                        }
+                                    },
+                                    supportingText = {
+                                        if (isDeadlinePast) {
+                                            Text("⚠ Deadline sudah lewat", color = MaterialTheme.colorScheme.error)
+                                        }
+                                    }
+                                )
+                            }
+
+                            // Est Time
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Est. Time (min)", 
+                                    style = MaterialTheme.typography.titleSmall, 
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(56.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                ) {
+                                    IconButton(onClick = { if (estimatedMinutes > 5) estimatedMinutes -= 5 }) {
+                                        Icon(Icons.Default.Remove, "Kurangi estimasi", Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                    Text(
+                                        text = estimatedMinutes.toString(),
+                                        modifier = Modifier.weight(1f),
+                                        textAlign = TextAlign.Center,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    IconButton(onClick = { estimatedMinutes += 5 }) {
+                                        Icon(Icons.Default.Add, "Tambah estimasi", Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // Priority
+                        Text(
+                            "Priority", 
+                            style = MaterialTheme.typography.titleSmall, 
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Priority.entries.forEach { p ->
+                                val isSelected = priority == p
+                                val pColor = when (p) {
+                                    Priority.LOW -> PriorityLow
+                                    Priority.MEDIUM -> PriorityMedium
+                                    Priority.HIGH -> PriorityHigh
+                                }
+                                
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { priority = p },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (isSelected) pColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp, 
+                                        if (isSelected) pColor else MaterialTheme.colorScheme.outlineVariant
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(Modifier.size(8.dp).clip(CircleShape).background(pColor))
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            p.name.lowercase().capitalizeFirst(), 
+                                            fontSize = 12.sp, 
+                                            color = if (isSelected) pColor else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // Status
+                        Text(
+                            "Status", 
+                            style = MaterialTheme.typography.titleSmall, 
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TaskStatus.entries.forEach { s ->
+                                val isSelected = status == s
+                                InputChip(
+                                    selected = isSelected,
+                                    onClick = { status = s },
+                                    label = { Text(s.value.replace("_", " ").capitalizeFirst(), fontSize = 11.sp) },
+                                    modifier = Modifier.weight(1f),
+                                    colors = InputChipDefaults.inputChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = InputChipDefaults.inputChipBorder(
+                                        enabled = true,
+                                        selected = isSelected,
+                                        borderColor = MaterialTheme.colorScheme.outlineVariant,
+                                        selectedBorderColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    leadingIcon = {
+                                       val icon = when(s) {
+                                           TaskStatus.TODO -> Icons.Default.Description
+                                           TaskStatus.IN_PROGRESS -> Icons.Default.HourglassEmpty
+                                           TaskStatus.DONE -> Icons.Default.Check
+                                       }
+                                       Icon(icon, null, Modifier.size(14.dp), tint = if(isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // Description
+                        Text(
+                            "Description", 
+                            style = MaterialTheme.typography.titleSmall, 
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            placeholder = { Text("Add details about this task...", color = MaterialTheme.colorScheme.outline) },
+                            modifier = Modifier.fillMaxWidth().height(100.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                imeAction = ImeAction.Default
+                            ),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+
+                        Spacer(Modifier.height(24.dp))
+
+                        // Actions
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                onClick = onDismiss,
+                                modifier = Modifier.weight(0.4f).height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant, 
+                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text("Cancel")
+                            }
+                            Button(
+                                onClick = {
+                                    if (title.isBlank()) {
+                                        titleError = "Judul tidak boleh kosong"
+                                    } else {
+                                        viewModel.saveTask(
+                                            taskId = taskId,
+                                            title = title,
+                                            description = description,
+                                            subject = selectedSubject,
+                                            priority = priority,
+                                            status = status,
+                                            dueDate = dueDate,
+                                            estimatedMinutes = estimatedMinutes
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.weight(0.6f).height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
+                                shape = RoundedCornerShape(16.dp),
+                                enabled = title.isNotBlank() && !isSaving
+                            ) {
+                                if (isSaving) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                                } else {
+                                    Icon(Icons.Default.Save, null, Modifier.size(18.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(if (taskId == null) "Add Task" else "Save Changes")
+                                }
+                            }
+                        }
                     }
                 }
             }
+            SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
 
@@ -459,6 +502,10 @@ fun AddEditTaskBottomSheet(
                     label = { Text("Subject Name") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done
+                    ),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface

@@ -7,7 +7,9 @@ import com.studyhub.presentation.navigation.AppNavHost
 import com.studyhub.presentation.theme.StudyHubTheme
 import com.studyhub.presentation.theme.ThemeViewModel
 import com.studyhub.core.util.SystemAppearance
+import com.studyhub.data.sync.SyncManager
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -15,6 +17,12 @@ fun App() {
     KoinContext {
         val themeViewModel: ThemeViewModel = koinViewModel()
         val isDarkMode by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
+        
+        val syncManager: SyncManager = koinInject()
+        
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            syncManager.startAutoSync()
+        }
 
         SystemAppearance(isDarkMode = isDarkMode)
         

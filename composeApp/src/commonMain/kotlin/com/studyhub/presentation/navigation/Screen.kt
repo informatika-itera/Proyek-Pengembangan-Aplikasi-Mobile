@@ -17,6 +17,7 @@ sealed class Screen(val route: String) {
         fun createRoute(taskId: String) = "edit_task/$taskId"
     }
     object SmartPriority : Screen("smart_priority")
+    object NotifHistory : Screen("notif_history")
     object Progress : Screen("progress")
     object Pomodoro : Screen("pomodoro?taskId={taskId}") {
         fun createRoute(taskId: String? = null) =

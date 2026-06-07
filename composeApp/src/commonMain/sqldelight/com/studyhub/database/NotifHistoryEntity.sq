@@ -1,0 +1,48 @@
+CREATE TABLE NotifHistoryEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    taskId TEXT NOT NULL,
+    taskTitle TEXT NOT NULL,
+    taskSubject TEXT NOT NULL,
+    aiReason TEXT NOT NULL,
+    sentAt INTEGER NOT NULL,
+    isRead INTEGER NOT NULL DEFAULT 0
+);
+
+selectAll:
+SELECT * FROM NotifHistoryEntity
+ORDER BY sentAt DESC;
+
+selectUnreadCount:
+SELECT COUNT(*) FROM NotifHistoryEntity
+WHERE isRead = 0;
+
+insert:
+INSERT INTO NotifHistoryEntity
+VALUES (?, ?, ?, ?, ?, ?, 0);
+
+markAllRead:
+UPDATE NotifHistoryEntity SET isRead = 1;
+
+markRead:
+UPDATE NotifHistoryEntity
+SET isRead = 1 WHERE id = ?;
+
+deleteById:
+DELETE FROM NotifHistoryEntity WHERE id = ?;
+
+deleteAll:
+DELETE FROM NotifHistoryEntity;
+
+countAll:
+SELECT COUNT(*) FROM NotifHistoryEntity;
+
+deleteOlderThan:
+DELETE FROM NotifHistoryEntity WHERE sentAt < ?;
+
+deleteExcessItems:
+DELETE FROM NotifHistoryEntity
+WHERE id IN (
+    SELECT id FROM NotifHistoryEntity
+    ORDER BY sentAt ASC
+    LIMIT (MAX(0, (SELECT COUNT(*) FROM NotifHistoryEntity) - ?))
+);

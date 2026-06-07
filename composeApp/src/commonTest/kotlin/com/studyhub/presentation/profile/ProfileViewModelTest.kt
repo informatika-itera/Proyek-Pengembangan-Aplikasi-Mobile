@@ -1,99 +1,87 @@
 package com.studyhub.presentation.profile
 
 import com.studyhub.domain.fake.FakePreferencesRepository
+import com.studyhub.domain.fake.FakeReminderRepository
 import com.studyhub.domain.fake.FakeTaskRepository
-import com.studyhub.domain.model.Priority
-import com.studyhub.domain.model.Task
+import com.studyhub.domain.fake.TaskBuilder
 import com.studyhub.domain.model.TaskStatus
 import com.studyhub.domain.usecase.preferences.GetUserPreferencesUseCase
 import com.studyhub.domain.usecase.preferences.SetDarkModeUseCase
-import com.studyhub.domain.usecase.task.GetActiveTasksUseCase
+import com.studyhub.domain.usecase.task.GetAllTasksUseCase
+import com.studyhub.presentation.screens.profile.ProfileUiState
 import com.studyhub.presentation.screens.profile.ProfileViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
-    private lateinit var fakePrefsRepo: FakePreferencesRepository
     private lateinit var fakeTaskRepo: FakeTaskRepository
+    private lateinit var fakePrefsRepo: FakePreferencesRepository
+    private lateinit var fakeReminderRepo: FakeReminderRepository
     private lateinit var viewModel: ProfileViewModel
+    private val testDispatcher = UnconfinedTestDispatcher()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @BeforeTest
     fun setup() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-        fakePrefsRepo = FakePreferencesRepository()
+        Dispatchers.setMain(testDispatcher)
         fakeTaskRepo = FakeTaskRepository()
+        fakePrefsRepo = FakePreferencesRepository()
+        fakeReminderRepo = FakeReminderRepository()
+        
         viewModel = ProfileViewModel(
             GetUserPreferencesUseCase(fakePrefsRepo),
             SetDarkModeUseCase(fakePrefsRepo),
-            GetActiveTasksUseCase(fakeTaskRepo)
+            GetAllTasksUseCase(fakeTaskRepo),
+            fakePrefsRepo,
+            fakeReminderRepo
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
     }
 
     @Test
-    fun `given initial state when created then isDarkMode is false`() = runTest {
-        advanceUntilIdle()
-        assertFalse(viewModel.uiState.value.isDarkMode)
+    fun `given tasks when created then state is Success with counts`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect() }
+        
+        fakeTaskRepo.addTasks(listOf(
+            TaskBuilder.build(id = "1", status = TaskStatus.DONE),
+            TaskBuilder.build(id = "2", status = TaskStatus.TODO)
+        ))
+        
+        val state = viewModel.uiState.value as? ProfileUiState.Success
+        assertNotNull(state)
+        assertEquals(2, state.totalTasks)
+        assertEquals(1, state.doneTasks)
+        assertEquals(50, state.completionRate)
+        
+        collectJob.cancel()
     }
 
     @Test
-    fun `given dark mode false when toggleDarkMode then setDarkMode called with true`() = runTest {
-        fakePrefsRepo.isDarkModeValue = false
+    fun `given no tasks when created then completionRate is 0`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect() }
+        
+        val state = viewModel.uiState.value as? ProfileUiState.Success
+        assertNotNull(state)
+        assertEquals(0, state.completionRate)
+        
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `when toggleDarkMode then prefs updated`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect() }
+        
         viewModel.toggleDarkMode()
-        advanceUntilIdle()
-        assertTrue(fakePrefsRepo.setDarkModeCalledWith == true)
-    }
-
-    @Test
-    fun `given dark mode true when toggleDarkMode then setDarkMode called with false`() = runTest {
-        fakePrefsRepo.setDarkMode(true)
-        advanceUntilIdle()
-        viewModel.toggleDarkMode()
-        advanceUntilIdle()
-        assertTrue(fakePrefsRepo.setDarkModeCalledWith == false)
-    }
-
-    @Test
-    fun `given preferences updated when observePreferences then state reflects changes`() = runTest {
-        fakePrefsRepo.isDarkModeValue = true
-        advanceUntilIdle()
-        assertNotNull(viewModel.uiState.value)
-    }
-
-    @Test
-    fun `given tasks loaded when loadStats then overdueCount correct`() = runTest {
-        fakeTaskRepo.tasks.add(
-            Task(
-                id = "t1",
-                title = "Task 1",
-                description = "",
-                subject = "Math",
-                priority = Priority.MEDIUM,
-                status = TaskStatus.TODO,
-                dueDate = 1000L,
-                dueTime = null,
-                tags = emptyList(),
-                estimatedMinutes = 30,
-                isDeleted = false,
-                completedAt = null,
-                createdAt = 0L,
-                updatedAt = 0L
-            )
-        )
-        advanceUntilIdle()
-        assertTrue(viewModel.uiState.value.overdueCount >= 0)
+        assertTrue(fakePrefsRepo.isDarkModeValue)
+        
+        collectJob.cancel()
     }
 }

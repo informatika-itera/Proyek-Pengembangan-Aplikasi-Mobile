@@ -14,7 +14,9 @@ lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
 androidx-compose-bom = "2024.10.01"
+androidx-localbroadcastmanager = "1.1.0"
 detekt = "1.23.7"
+kover = "0.8.3"
 
 # Testing
 turbine = "1.2.0"
@@ -68,6 +70,7 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = 
 # Coil (Image Loading)
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+localbroadcastmanager = { group = "androidx.localbroadcastmanager", name = "localbroadcastmanager", version.ref = "androidx-localbroadcastmanager" }
 
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
@@ -82,3 +85,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

@@ -13,6 +13,8 @@ import kotlinx.datetime.toLocalDateTime
 
 fun currentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()
 
+expect fun uuid(): String
+
 fun LocalDate.atStartOfDayMillis(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
     return this.atStartOfDayIn(timeZone).toEpochMilliseconds()
 }

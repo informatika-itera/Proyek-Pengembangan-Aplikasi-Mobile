@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,54 +21,27 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
+import com.studyhub.core.manager.PomodoroManager
+import com.studyhub.domain.model.PomodoroPhase
+import org.koin.compose.koinInject
 import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusTimerBottomSheet(
-    initialWorkMinutes: Int = 25,
-    initialBreakMinutes: Int = 5,
     onDismiss: () -> Unit
 ) {
+    val pomodoroManager: PomodoroManager = koinInject()
+    val state by pomodoroManager.state.collectAsState()
+    
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
-    var mode by remember { mutableStateOf("work") }
-    var seconds by remember { mutableStateOf(initialWorkMinutes * 60) }
-    var isRunning by remember { mutableStateOf(false) }
-    var sessions by remember { mutableStateOf(0) }
+    val progress = if (state.totalSeconds > 0) 1f - (state.timeRemainingSeconds.toFloat() / state.totalSeconds.toFloat()) else 0f
     
-    // Duration settings (to calculate progress correctly even after manual adjustment)
-    var currentWorkDurationMins by remember { mutableStateOf(initialWorkMinutes) }
-    var currentBreakDurationMins by remember { mutableStateOf(initialBreakMinutes) }
-
-    val totalSeconds = if (mode == "work") currentWorkDurationMins * 60 else currentBreakDurationMins * 60
-    val progress = if (totalSeconds > 0) 1f - (seconds.toFloat() / totalSeconds.toFloat()) else 0f
-    
-    val activeColor = if (mode == "work") Color(0xFF9C7C50) else Color(0xFF10B981)
-
-    LaunchedEffect(isRunning, seconds) {
-        if (isRunning && seconds > 0) {
-            delay(1000)
-            seconds -= 1
-        } else if (seconds == 0 && isRunning) {
-            isRunning = false
-            if (mode == "work") {
-                sessions += 1
-                mode = "break"
-                seconds = currentBreakDurationMins * 60
-            } else {
-                mode = "work"
-                seconds = currentWorkDurationMins * 60
-            }
-        }
-    }
+    val activeColor = if (state.phase == PomodoroPhase.FOCUS) Color(0xFF9C7C50) else Color(0xFF10B981)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -97,7 +69,7 @@ fun FocusTimerBottomSheet(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        "Session ${sessions + 1} • $sessions completed",
+                        "Session ${state.currentSession} • ${state.completedSessionsToday} completed",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )
@@ -106,7 +78,7 @@ fun FocusTimerBottomSheet(
                     onClick = onDismiss,
                     modifier = Modifier.background(Color(0xFFF3F4F6), CircleShape)
                 ) {
-                    Icon(Icons.Default.Close, null, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Close, "Tutup", modifier = Modifier.size(20.dp))
                 }
             }
 
@@ -123,94 +95,45 @@ fun FocusTimerBottomSheet(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     ModeTab(
-                        selected = mode == "work",
+                        selected = state.phase == PomodoroPhase.FOCUS,
                         label = "Focus",
                         icon = Icons.Outlined.Timer,
                         activeColor = Color(0xFF9C7C50),
                         modifier = Modifier.weight(1f),
                         onClick = {
-                            mode = "work"
-                            isRunning = false
-                            seconds = currentWorkDurationMins * 60
+                            // Manual phase switch if not running
                         }
                     )
                     ModeTab(
-                        selected = mode == "break",
+                        selected = state.phase != PomodoroPhase.FOCUS,
                         label = "Break",
                         icon = Icons.Outlined.Coffee,
                         activeColor = Color(0xFF10B981),
                         modifier = Modifier.weight(1f),
                         onClick = {
-                            mode = "break"
-                            isRunning = false
-                            seconds = currentBreakDurationMins * 60
+                            // Manual phase switch if not running
                         }
                     )
                 }
             }
 
-            // Progress Ring & Analog Timer Picker
+            // Progress Ring
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(260.dp)
-                    .pointerInput(isRunning) {
-                        if (!isRunning) {
-                            detectDragGestures { change, _ ->
-                                val center = Offset(size.width / 2f, size.height / 2f)
-                                val touchPos = change.position
-                                
-                                val angleRad = atan2(touchPos.y - center.y, touchPos.x - center.x)
-                                var angleDeg = (angleRad * 180f / PI).toFloat() + 90f
-                                if (angleDeg < 0) angleDeg += 360f
-                                
-                                val selectedMinutes = (angleDeg / 360f * 60f).roundToInt().coerceIn(1, 60)
-                                
-                                if (mode == "work") {
-                                    currentWorkDurationMins = selectedMinutes
-                                } else {
-                                    currentBreakDurationMins = selectedMinutes
-                                }
-                                seconds = selectedMinutes * 60
-                                change.consume()
-                            }
-                        }
-                    }
+                modifier = Modifier.size(260.dp)
             ) {
                 Canvas(modifier = Modifier.size(220.dp)) {
-                    // Background track
                     drawCircle(
                         color = activeColor.copy(alpha = 0.1f),
                         style = Stroke(width = 16.dp.toPx())
                     )
-                    // Progress arc
                     drawArc(
                         color = activeColor,
                         startAngle = -90f,
-                        sweepAngle = 360f * (if (isRunning) progress else 1f), // Show full ring when picking time
+                        sweepAngle = 360f * (if (state.isRunning) progress else 1f),
                         useCenter = false,
                         style = Stroke(width = 16.dp.toPx(), cap = StrokeCap.Round)
                     )
-                    
-                    // Analog Handle (only when paused)
-                    if (!isRunning) {
-                        val handleAngle = ( (seconds / 60f) / 60f * 360f ) - 90f
-                        val radius = 110.dp.toPx()
-                        val handleX = center.x + radius * kotlin.math.cos(handleAngle * PI / 180f).toFloat()
-                        val handleY = center.y + radius * kotlin.math.sin(handleAngle * PI / 180f).toFloat()
-                        
-                        drawCircle(
-                            color = Color.White,
-                            radius = 12.dp.toPx(),
-                            center = Offset(handleX, handleY)
-                        )
-                        drawCircle(
-                            color = activeColor,
-                            radius = 8.dp.toPx(),
-                            center = Offset(handleX, handleY),
-                            style = Stroke(width = 3.dp.toPx())
-                        )
-                    }
                 }
 
                 Column(
@@ -223,7 +146,7 @@ fun FocusTimerBottomSheet(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            if (mode == "work") Icons.Outlined.Timer else Icons.Outlined.Coffee,
+                            if (state.phase == PomodoroPhase.FOCUS) Icons.Outlined.Timer else Icons.Outlined.Coffee,
                             null,
                             tint = Color.White
                         )
@@ -232,25 +155,16 @@ fun FocusTimerBottomSheet(
                     Spacer(Modifier.height(8.dp))
                     
                     Text(
-                        formatTime(seconds),
+                        formatTime(state.timeRemainingSeconds),
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        if (mode == "work") "Stay focused!" else "Take a breather",
+                        if (state.phase == PomodoroPhase.FOCUS) "Stay focused!" else "Take a breather",
                         style = MaterialTheme.typography.bodyMedium,
                         color = activeColor,
                         fontWeight = FontWeight.Medium
                     )
-                    
-                    if (!isRunning) {
-                        Text(
-                            "Rotate to adjust",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
                 }
             }
 
@@ -263,14 +177,13 @@ fun FocusTimerBottomSheet(
                 // Reset
                 IconButton(
                     onClick = {
-                        isRunning = false
-                        seconds = if (mode == "work") currentWorkDurationMins * 60 else currentBreakDurationMins * 60
+                        pomodoroManager.resetTimer()
                     },
                     modifier = Modifier
                         .size(56.dp)
                         .background(Color(0xFFF3F4F6), CircleShape)
                 ) {
-                    Icon(Icons.Default.Refresh, null, tint = Color.Gray)
+                    Icon(Icons.Default.Refresh, "Reset", tint = Color.Gray)
                 }
 
                 Spacer(Modifier.width(24.dp))
@@ -281,12 +194,14 @@ fun FocusTimerBottomSheet(
                         .size(84.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .background(activeColor)
-                        .clickable { isRunning = !isRunning },
+                        .clickable { 
+                            if (state.isRunning) pomodoroManager.pauseTimer() else pomodoroManager.startTimer()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        null,
+                        if (state.isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        if (state.isRunning) "Pause" else "Mulai",
                         tint = Color.White,
                         modifier = Modifier.size(42.dp)
                     )
@@ -297,21 +212,13 @@ fun FocusTimerBottomSheet(
                 // Skip
                 IconButton(
                     onClick = {
-                        isRunning = false
-                        if (mode == "work") {
-                            sessions += 1
-                            mode = "break"
-                            seconds = currentBreakDurationMins * 60
-                        } else {
-                            mode = "work"
-                            seconds = currentWorkDurationMins * 60
-                        }
+                        pomodoroManager.skipPhase()
                     },
                     modifier = Modifier
                         .size(56.dp)
                         .background(Color(0xFFF3F4F6), CircleShape)
                 ) {
-                    Icon(Icons.Default.SkipNext, null, tint = Color.Gray)
+                    Icon(Icons.Default.SkipNext, "Lewati", tint = Color.Gray)
                 }
             }
 
@@ -324,7 +231,7 @@ fun FocusTimerBottomSheet(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     repeat(4) { i ->
-                        val active = i < (sessions % 4)
+                        val active = i < (state.completedSessionsToday % 4)
                         val width by animateDpAsState(if (active) 22.dp else 8.dp)
                         val color by animateColorAsState(if (active) activeColor else Color.LightGray)
                         
@@ -338,7 +245,7 @@ fun FocusTimerBottomSheet(
                     }
                 }
                 Text(
-                    "${sessions % 4}/4 sessions before long break",
+                    "${state.completedSessionsToday % 4}/4 sessions before long break",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )

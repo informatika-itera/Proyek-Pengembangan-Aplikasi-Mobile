@@ -1,5 +1,9 @@
 package com.studyhub.domain.model
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+
+@Stable
 data class Task(
     val id: String,
     val title: String,
@@ -15,10 +19,14 @@ data class Task(
     val completedAt: Long?,
     val createdAt: Long,
     val updatedAt: Long
-)
+) {
+    val displaySubject: String get() = subject.ifBlank { "Lainnya" }
+}
 
+@Immutable
 enum class Priority { HIGH, MEDIUM, LOW }
 
+@Immutable
 enum class TaskStatus(val value: String) {
     TODO("todo"),
     IN_PROGRESS("in_progress"),
@@ -30,4 +38,5 @@ enum class TaskStatus(val value: String) {
     }
 }
 
+@Immutable
 enum class SortBy { DUE_DATE, PRIORITY, SUBJECT, TITLE }

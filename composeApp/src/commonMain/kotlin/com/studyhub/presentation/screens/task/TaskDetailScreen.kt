@@ -21,6 +21,7 @@ import com.studyhub.core.util.capitalizeFirst
 import com.studyhub.domain.model.Priority
 import com.studyhub.domain.model.Task
 import com.studyhub.domain.model.TaskStatus
+import com.studyhub.core.util.formatTimeOnly
 import com.studyhub.presentation.screens.ai.SmartReminderUiState
 import com.studyhub.presentation.screens.ai.SmartReminderViewModel
 import com.studyhub.presentation.theme.*
@@ -150,7 +151,9 @@ fun TaskDetailScreen(
                             Text(
                                 text = task.title,
                                 style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 3,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
 
@@ -205,10 +208,10 @@ fun TaskDetailScreen(
                                     }
                                 }
                                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text("Estimated Time", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                                    Text("Deadline Time", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Icon(Icons.Default.Timer, null, modifier = Modifier.size(16.dp))
-                                        Text("${task.estimatedMinutes} min", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                        Icon(Icons.Default.Schedule, null, modifier = Modifier.size(16.dp))
+                                        Text(Instant.fromEpochMilliseconds(task.dueDate).formatTimeOnly(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }

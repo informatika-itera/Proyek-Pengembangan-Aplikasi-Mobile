@@ -7,5 +7,9 @@ import com.studyhub.database.StudyHubDatabase
 
 actual class DatabaseDriverFactory(private val context: Context) {
     actual fun createDriver(): SqlDriver =
-        AndroidSqliteDriver(StudyHubDatabase.Schema, context, "studyhub.db")
+        AndroidSqliteDriver(
+            schema = StudyHubDatabase.Schema,
+            context = context,
+            name = "studyhub.db"
+        )
 }

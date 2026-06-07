@@ -2,8 +2,10 @@ package com.example.noteai.data.repository
 
 import app.cash.turbine.test
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
 import com.example.noteai.domain.model.NoteColor
+import com.example.noteai.domain.model.VulnSeverity
+import com.example.noteai.domain.model.VulnStatus
+import com.example.noteai.domain.model.VulnType
 import com.example.noteai.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,12 +21,6 @@ import kotlin.test.assertTrue
 
 /**
  * Unit Tests untuk NoteRepository
- * 
- * Testing Guidelines:
- * 1. Gunakan FakeRepository untuk isolasi
- * 2. Test satu behavior per test
- * 3. Gunakan Turbine untuk test Flow
- * 4. Follow AAA pattern (Arrange, Act, Assert)
  */
 class NoteRepositoryTest {
     
@@ -39,25 +35,16 @@ class NoteRepositoryTest {
     
     @Test
     fun `insertNote should return new note id`() = runTest {
-        // Arrange
         val note = createTestNote(title = "Test Note")
-        
-        // Act
         val id = repository.insertNote(note)
-        
-        // Assert
         assertTrue(id > 0)
     }
     
     @Test
     fun `insertNote should add note to list`() = runTest {
-        // Arrange
         val note = createTestNote(title = "New Note")
-        
-        // Act
         repository.insertNote(note)
         
-        // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
@@ -70,11 +57,9 @@ class NoteRepositoryTest {
     
     @Test
     fun `getAllNotes should return all notes`() = runTest {
-        // Arrange
         repository.insertNote(createTestNote(title = "Note 1"))
         repository.insertNote(createTestNote(title = "Note 2"))
         
-        // Act & Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertEquals(2, notes.size)
@@ -84,10 +69,8 @@ class NoteRepositoryTest {
     
     @Test
     fun `getNoteById should return correct note`() = runTest {
-        // Arrange
         val id = repository.insertNote(createTestNote(title = "Find Me"))
         
-        // Act & Assert
         repository.getNoteById(id).test {
             val note = awaitItem()
             assertNotNull(note)
@@ -98,10 +81,50 @@ class NoteRepositoryTest {
     
     @Test
     fun `getNoteById should return null for non-existent id`() = runTest {
-        // Act & Assert
         repository.getNoteById(999).test {
             val note = awaitItem()
             assertEquals(null, note)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    
+    // ==================== FILTER TESTS ====================
+    
+    @Test
+    fun `getNotesBySeverity should filter notes by severity`() = runTest {
+        repository.insertNote(createTestNote(title = "Critical Issue", severity = VulnSeverity.CRITICAL))
+        repository.insertNote(createTestNote(title = "Low Issue", severity = VulnSeverity.LOW))
+        
+        repository.getNotesBySeverity(VulnSeverity.CRITICAL).test {
+            val notes = awaitItem()
+            assertEquals(1, notes.size)
+            assertEquals("Critical Issue", notes.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    
+    @Test
+    fun `getNotesByStatus should filter notes by status`() = runTest {
+        repository.insertNote(createTestNote(title = "New Vuln", status = VulnStatus.NEW))
+        repository.insertNote(createTestNote(title = "Paid Vuln", status = VulnStatus.PAID))
+        
+        repository.getNotesByStatus(VulnStatus.PAID).test {
+            val notes = awaitItem()
+            assertEquals(1, notes.size)
+            assertEquals("Paid Vuln", notes.first().title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    
+    @Test
+    fun `getNotesByVulnType should filter notes by type`() = runTest {
+        repository.insertNote(createTestNote(title = "SQLI Vuln", vulnType = VulnType.SQLI))
+        repository.insertNote(createTestNote(title = "XSS Vuln", vulnType = VulnType.XSS))
+        
+        repository.getNotesByVulnType(VulnType.SQLI).test {
+            val notes = awaitItem()
+            assertEquals(1, notes.size)
+            assertEquals("SQLI Vuln", notes.first().title)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -110,11 +133,9 @@ class NoteRepositoryTest {
     
     @Test
     fun `searchNotes should find notes by title`() = runTest {
-        // Arrange
         repository.insertNote(createTestNote(title = "Kotlin Tutorial"))
         repository.insertNote(createTestNote(title = "Java Guide"))
         
-        // Act & Assert
         repository.searchNotes("Kotlin").test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
@@ -125,11 +146,9 @@ class NoteRepositoryTest {
     
     @Test
     fun `searchNotes should find notes by content`() = runTest {
-        // Arrange
         repository.insertNote(createTestNote(title = "Recipe", content = "Add tomatoes"))
         repository.insertNote(createTestNote(title = "Shopping", content = "Buy milk"))
         
-        // Act & Assert
         repository.searchNotes("tomatoes").test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
@@ -142,16 +161,28 @@ class NoteRepositoryTest {
     
     @Test
     fun `deleteNote should remove note from list`() = runTest {
-        // Arrange
         val id = repository.insertNote(createTestNote(title = "To Delete"))
-        
-        // Act
         repository.deleteNote(id)
         
-        // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertTrue(notes.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    
+    @Test
+    fun `deleteNotes should remove multiple notes from list`() = runTest {
+        val id1 = repository.insertNote(createTestNote(title = "Delete 1"))
+        val id2 = repository.insertNote(createTestNote(title = "Delete 2"))
+        val id3 = repository.insertNote(createTestNote(title = "Keep"))
+        
+        repository.deleteNotes(listOf(id1, id2))
+        
+        repository.getAllNotes().test {
+            val notes = awaitItem()
+            assertEquals(1, notes.size)
+            assertEquals("Keep", notes.first().title)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -160,17 +191,25 @@ class NoteRepositoryTest {
     
     @Test
     fun `updateNote should modify existing note`() = runTest {
-        // Arrange
         val id = repository.insertNote(createTestNote(title = "Original"))
-        
-        // Act
         val updatedNote = createTestNote(id = id, title = "Updated")
         repository.updateNote(updatedNote)
         
-        // Assert
         repository.getNoteById(id).test {
             val note = awaitItem()
             assertEquals("Updated", note?.title)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    
+    @Test
+    fun `togglePinNote should invert pinned state`() = runTest {
+        val id = repository.insertNote(createTestNote(title = "Note", isPinned = false))
+        repository.togglePinNote(id)
+        
+        repository.getNoteById(id).test {
+            val note = awaitItem()
+            assertEquals(true, note?.isPinned)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -181,15 +220,20 @@ class NoteRepositoryTest {
         id: Long = 0,
         title: String = "Test",
         content: String = "Content",
-        category: NoteCategory = NoteCategory.GENERAL
+        severity: VulnSeverity = VulnSeverity.NONE,
+        status: VulnStatus = VulnStatus.NEW,
+        vulnType: VulnType = VulnType.OTHER,
+        isPinned: Boolean = false
     ): Note {
         return Note(
             id = id,
             title = title,
             content = content,
-            category = category,
+            severity = severity,
+            status = status,
+            vulnType = vulnType,
             color = NoteColor.DEFAULT,
-            isPinned = false,
+            isPinned = isPinned,
             createdAt = Clock.System.now(),
             updatedAt = Clock.System.now()
         )
@@ -198,9 +242,6 @@ class NoteRepositoryTest {
 
 /**
  * Fake Repository untuk Testing
- * 
- * In-memory implementation yang tidak bergantung pada database.
- * Digunakan untuk unit testing tanpa side effects.
  */
 class FakeNoteRepository : NoteRepository {
     
@@ -213,15 +254,24 @@ class FakeNoteRepository : NoteRepository {
         return notes.map { list -> list.filter { it.isPinned } }
     }
     
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
-        return notes.map { list -> list.filter { it.category == category } }
+    override fun getNotesBySeverity(severity: VulnSeverity): Flow<List<Note>> {
+        return notes.map { list -> list.filter { it.severity == severity } }
+    }
+    
+    override fun getNotesByStatus(status: VulnStatus): Flow<List<Note>> {
+        return notes.map { list -> list.filter { it.status == status } }
+    }
+    
+    override fun getNotesByVulnType(vulnType: VulnType): Flow<List<Note>> {
+        return notes.map { list -> list.filter { it.vulnType == vulnType } }
     }
     
     override fun searchNotes(query: String): Flow<List<Note>> {
         return notes.map { list ->
             list.filter {
                 it.title.contains(query, ignoreCase = true) ||
-                it.content.contains(query, ignoreCase = true)
+                it.content.contains(query, ignoreCase = true) ||
+                it.targetUrl.contains(query, ignoreCase = true)
             }
         }
     }

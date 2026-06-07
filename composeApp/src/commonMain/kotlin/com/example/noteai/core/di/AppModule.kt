@@ -23,6 +23,7 @@ import com.example.noteai.presentation.screens.addnote.AddNoteViewModel
 import com.example.noteai.presentation.screens.ai.AIAssistantViewModel
 import com.example.noteai.presentation.screens.detail.NoteDetailViewModel
 import com.example.noteai.presentation.screens.home.HomeViewModel
+import com.example.noteai.presentation.screens.settings.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -81,6 +82,7 @@ val viewModelModule = module {
     viewModelOf(::AddNoteViewModel)
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::SettingsViewModel)
 }
 
 // ==================== SHARED MODULES ====================

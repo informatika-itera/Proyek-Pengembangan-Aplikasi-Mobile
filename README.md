@@ -1,4 +1,4 @@
-﻿# VulnLog
+# VulnLog
 
 **Vulnerability Tracker & Bug Bounty Journal**
 
@@ -64,11 +64,11 @@ composeApp/src/commonMain/kotlin/com/example/noteai/
 
 | Sprint | Fokus | Status |
 |--------|-------|--------|
-| Sprint 1 | Project setup, tema cybersecurity, README | In Progress |
-| Sprint 2 | CRUD vulnerability, severity system | Planned |
-| Sprint 3 | Search, filter, status tracking | Planned |
-| Sprint 4 | AI integration, UI polish | Planned |
-| Sprint 5 | Testing, bug fix, demo | Planned |
+| Sprint 1 | Project setup, tema cybersecurity, README | ✓ Selesai |
+| Sprint 2 | CRUD vulnerability, severity system | ✓ Selesai |
+| Sprint 3 | Search, filter, status tracking, Settings/Profile | ✓ Selesai |
+| Sprint 4 | Unit & UI testing, UI Polish, Bug Fixing | ✓ Selesai |
+| Sprint 5 | Final Preparation & Demo UAS | In Progress |
 
 ## Setup
 
@@ -89,6 +89,29 @@ cp local.properties.example local.properties
 ```
 
 Dapatkan API key di: [Google AI Studio](https://aistudio.google.com)
+
+## 🧪 Pengujian & Testing (Sprint 4)
+
+Proyek ini dilengkapi dengan pengujian otomatis menggunakan pustaka pengujian standar Kotlin Multiplatform (`kotlin.test`), Turbine untuk pengujian Flow/StateFlow, dan coroutines test dispatcher.
+
+### 1. Menjalankan Unit Tests
+Untuk menjalankan pengujian unit secara keseluruhan via gradle:
+```bash
+./gradlew test
+```
+Atau Anda dapat mengeklik kanan folder `commonTest` di Android Studio dan memilih **Run 'All Tests'**.
+
+### 2. Struktur Pengujian yang Tersedia
+- **NoteRepositoryTest.kt** (13 Skenario Uji):
+  - Operasi CRUD dasar (Insert, Update, Delete) database lokal.
+  - Skenario pengujian filter dinamis (berdasarkan status, tipe kerentanan, dan tingkat severity).
+  - Pengujian fitur pin/unpin dan hapus massal log.
+- **HomeViewModelTest.kt** (7 Skenario Uji):
+  - Pengujian perubahan *UI State* (Loading, Success, Empty, Error).
+  - Validasi query input pencarian dan fungsionalitas debounce 300ms.
+  - Pengujian filter terintegrasi berbasis Severity tingkat tinggi.
+
+---
 
 ## Tim Pengembang
 

@@ -3,8 +3,8 @@ package com.example.noteai.presentation
 import app.cash.turbine.test
 import com.example.noteai.data.repository.FakeNoteRepository
 import com.example.noteai.domain.model.Note
-import com.example.noteai.domain.model.NoteCategory
 import com.example.noteai.domain.model.NoteColor
+import com.example.noteai.domain.model.VulnSeverity
 import com.example.noteai.domain.repository.NoteRepository
 import com.example.noteai.domain.usecase.DeleteNoteUseCase
 import com.example.noteai.domain.usecase.GetAllNotesUseCase
@@ -28,12 +28,6 @@ import kotlin.test.assertTrue
 
 /**
  * Unit Tests untuk HomeViewModel
- * 
- * Testing Guidelines:
- * 1. Setup test dispatcher untuk control coroutines
- * 2. Gunakan Turbine untuk test StateFlow
- * 3. Test UI state transformations
- * 4. Test user actions
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -168,13 +162,13 @@ class HomeViewModelTest {
         }
     }
     
-    // ==================== CATEGORY FILTER TESTS ====================
+    // ==================== SEVERITY FILTER TESTS ====================
     
     @Test
-    fun `category filter should filter notes`() = runTest {
+    fun `severity filter should filter notes`() = runTest {
         // Arrange
-        repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
-        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
+        repository.insertNote(createTestNote("Critical Note", severity = VulnSeverity.CRITICAL))
+        repository.insertNote(createTestNote("Low Note", severity = VulnSeverity.LOW))
         
         val vm = HomeViewModel(
             getAllNotesUseCase = getAllNotesUseCase,
@@ -189,14 +183,14 @@ class HomeViewModelTest {
             skipItems(1) // Initial success
             
             // Act
-            vm.onCategorySelected(NoteCategory.WORK)
+            vm.onSeveritySelected(VulnSeverity.CRITICAL)
             advanceUntilIdle()
             
             // Assert
             val state = expectMostRecentItem()
             assertTrue(state is HomeUiState.Success)
             assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals(NoteCategory.WORK, state.notes.first().category)
+            assertEquals(VulnSeverity.CRITICAL, state.notes.first().severity)
             
             cancelAndIgnoreRemainingEvents()
         }
@@ -242,13 +236,13 @@ class HomeViewModelTest {
     
     private fun createTestNote(
         title: String,
-        category: NoteCategory = NoteCategory.GENERAL
+        severity: VulnSeverity = VulnSeverity.NONE
     ): Note {
         return Note(
             id = 0,
             title = title,
             content = "Test content",
-            category = category,
+            severity = severity,
             color = NoteColor.DEFAULT,
             isPinned = false,
             createdAt = Clock.System.now(),

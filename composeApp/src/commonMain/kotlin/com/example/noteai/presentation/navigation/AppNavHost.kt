@@ -11,6 +11,7 @@ import com.example.noteai.presentation.screens.addnote.AddNoteScreen
 import com.example.noteai.presentation.screens.ai.AIAssistantScreen
 import com.example.noteai.presentation.screens.detail.NoteDetailScreen
 import com.example.noteai.presentation.screens.home.HomeScreen
+import com.example.noteai.presentation.screens.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -18,7 +19,7 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
-    
+
     NavHost(
         navController = navController,
         startDestination = Route.Home,
@@ -28,10 +29,11 @@ fun AppNavHost(
             HomeScreen(
                 onNavigateToAddNote = { navigationActions.navigateToAddNote() },
                 onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
-                onNavigateToAI = { navigationActions.navigateToAIAssistant() }
+                onNavigateToAI = { navigationActions.navigateToAIAssistant() },
+                onNavigateToSettings = { navigationActions.navigateToSettings() }
             )
         }
-        
+
         composable<Route.AddNote> { backStackEntry ->
             val route: Route.AddNote = backStackEntry.toRoute()
             AddNoteScreen(
@@ -45,7 +47,7 @@ fun AppNavHost(
                 }
             )
         }
-        
+
         composable<Route.NoteDetail> { backStackEntry ->
             val route: Route.NoteDetail = backStackEntry.toRoute()
             NoteDetailScreen(
@@ -55,7 +57,7 @@ fun AppNavHost(
                 onShare = { _ -> }
             )
         }
-        
+
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
@@ -63,6 +65,12 @@ fun AppNavHost(
                 initialText = route.initialText,
                 onNavigateBack = { navigationActions.navigateBack() },
                 onApplyResult = null
+            )
+        }
+
+        composable<Route.Settings> {
+            SettingsScreen(
+                onNavigateBack = { navigationActions.navigateBack() }
             )
         }
     }
@@ -75,17 +83,21 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
                 popUpTo(Route.Home) { inclusive = true }
             }
         }
-        
+
         override fun navigateToAddNote(noteId: Long?) {
             navController.navigate(Route.AddNote(noteId))
         }
-        
+
         override fun navigateToNoteDetail(noteId: Long) {
             navController.navigate(Route.NoteDetail(noteId))
         }
-        
+
         override fun navigateToAIAssistant(noteId: Long?, initialText: String?) {
             navController.navigate(Route.AIAssistant(noteId, initialText))
+        }
+
+        override fun navigateToSettings() {
+            navController.navigate(Route.Settings)
         }
 
         override fun navigateBack() {

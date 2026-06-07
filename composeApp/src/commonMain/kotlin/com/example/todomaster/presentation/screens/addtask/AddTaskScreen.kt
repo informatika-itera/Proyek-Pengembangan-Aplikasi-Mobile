@@ -10,7 +10,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Info
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +40,11 @@ fun AddTaskScreen(
     onNavigateBack: () -> Unit,
     viewModel: AddTaskViewModel = koinInject()
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = viewModel.dueDate
+    )
+
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             if (event is AddTaskViewModel.UiEvent.SaveSuccess) onNavigateBack()
@@ -73,39 +88,49 @@ fun AddTaskScreen(
 
             if (viewModel.generatedSubTasks.isEmpty()) {
 
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Tugas ini terdeteksi kompleks", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "AI dapat memecah menjadi sub-tasks dan mengklasifikasikan ke kuadran.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = { viewModel.breakdownTaskWithAI() },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !viewModel.isLoadingAi && viewModel.title.isNotBlank()
-                        ) {
-                            if (viewModel.isLoadingAi) {
-                                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                AnimatedVisibility(visible = viewModel.title.isNotBlank()) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Sedang memproses...")
-                            } else {
-                                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Breakdown dengan AI")
+                                Text(
+                                    text = if (viewModel.isLoadingAi) "AI Sedang Menganalisis..." else "Bantuan AI Task Breakdown",
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (viewModel.isLoadingAi) {
+                                    "Mengevaluasi tingkat kerumitan tugas '${viewModel.title}'. Mohon tunggu sebentar..."
+                                } else {
+                                    "Jika tugas ini terlalu kompleks, AI dapat mengevaluasi dan memecahnya menjadi beberapa sub-tasks."
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = { viewModel.breakdownTaskWithAI() },
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !viewModel.isLoadingAi
+                            ) {
+                                if (viewModel.isLoadingAi) {
+                                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Sedang mengevaluasi...")
+                                } else {
+                                    Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Evaluasi dengan AI")
+                                }
                             }
                         }
                     }
@@ -120,13 +145,167 @@ fun AddTaskScreen(
                 )
 
                 Text("Pilih Prioritas Matriks Eisenhower:", style = MaterialTheme.typography.labelLarge)
-                Quadrant.entries.forEach { q ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = (viewModel.priority == q),
-                            onClick = { viewModel.priority = q }
-                        )
-                        Text(text = q.name.replace("_", " "))
+
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    val quadrants = Quadrant.entries
+                    for (i in quadrants.indices step 2) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            for (j in i until minOf(i + 2, quadrants.size)) {
+                                val q = quadrants[j]
+                                val isSelected = viewModel.priority == q
+
+                                val qColor = when (q) {
+                                    Quadrant.DO_FIRST -> com.example.todomaster.presentation.theme.ColorDoFirst
+                                    Quadrant.SCHEDULE -> com.example.todomaster.presentation.theme.ColorSchedule
+                                    Quadrant.DELEGATE -> com.example.todomaster.presentation.theme.ColorDelegate
+                                    Quadrant.DONT_DO -> com.example.todomaster.presentation.theme.ColorDontDo
+                                }
+
+                                val icon = when (q.name) {
+                                    "DO_FIRST" -> androidx.compose.material.icons.Icons.Default.FlashOn
+                                    "SCHEDULE" -> androidx.compose.material.icons.Icons.Default.DateRange
+                                    "DELEGATE" -> androidx.compose.material.icons.Icons.Default.Person
+                                    else -> androidx.compose.material.icons.Icons.Default.Cancel
+                                }
+
+                                val description = when (q.name) {
+                                    "DO_FIRST" -> "Penting & mendesak"
+                                    "SCHEDULE" -> "Penting, tak mendesak"
+                                    "DELEGATE" -> "Mendesak, tak penting"
+                                    else -> "Tak penting & tak mendesak"
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(
+                                            if (isSelected) qColor.copy(alpha = 0.1f)
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isSelected) qColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                        .clickable { viewModel.priority = q }
+                                        .padding(12.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = if (isSelected) qColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+
+                                            Text(
+                                                text = q.name.replace("_", " "),
+                                                color = if (isSelected) qColor else MaterialTheme.colorScheme.onSurface,
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+
+                                            Spacer(modifier = Modifier.weight(1f))
+
+                                            if (isSelected) {
+                                                Icon(
+                                                    imageVector = androidx.compose.material.icons.Icons.Default.Check,
+                                                    contentDescription = "Terpilih",
+                                                    tint = qColor,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(4.dp))
+
+                                        Text(
+                                            text = description,
+                                            color = if (isSelected) qColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontSize = 11.sp,
+                                            lineHeight = 14.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Text("Deadline (opsional):", style = MaterialTheme.typography.labelLarge)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
+                            .clickable { showDatePicker = true }
+                            .padding(16.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.DateRange,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (viewModel.dueDate != null) formatDueDateUI(viewModel.dueDate!!) else "Pilih tenggat waktu...",
+                                color = if (viewModel.dueDate != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+
+                    if (viewModel.dueDate != null) {
+                        IconButton(
+                            onClick = { viewModel.dueDate = null },
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Close,
+                                contentDescription = "Hapus Deadline",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                if (showDatePicker) {
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    viewModel.dueDate = datePickerState.selectedDateMillis
+                                    showDatePicker = false
+                                }
+                            ) { Text("Pilih") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+                        }
+                    ) {
+                        DatePicker(state = datePickerState)
                     }
                 }
 
@@ -224,4 +403,10 @@ fun AddTaskScreen(
             }
         }
     }
+}
+
+fun formatDueDateUI(millis: Long): String {
+    val dateTime = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault())
+    val months = listOf("Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
+    return "${dateTime.dayOfMonth} ${months[dateTime.monthNumber - 1]} ${dateTime.year}"
 }

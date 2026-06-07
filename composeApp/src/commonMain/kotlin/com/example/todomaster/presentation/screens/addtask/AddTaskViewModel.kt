@@ -34,7 +34,7 @@ class AddTaskViewModel(
     var priority by mutableStateOf(Quadrant.SCHEDULE)
     var error by mutableStateOf<String?>(null)
 
-    // VARIABEL AI YANG ERROR TADI ADA DI SINI
+    var dueDate by mutableStateOf<Long?>(null)
     var isLoadingAi by mutableStateOf(false)
     var generatedSubTasks by mutableStateOf<List<SelectableSubTask>>(emptyList())
     var showAiDialog by mutableStateOf(false)
@@ -51,6 +51,7 @@ class AddTaskViewModel(
                 title = it.title
                 description = it.description ?: ""
                 priority = it.priority
+                dueDate = it.dueDate
             }
         }
     }
@@ -65,60 +66,25 @@ class AddTaskViewModel(
             isLoadingAi = true
             error = null
 
-            kotlinx.coroutines.delay(1500)
-
-            val mockResponses = listOf(
-                SubTaskResponse(
-                    title = "Merancangkan arsitektur data dan wireframe UI utama",
-                    estimatedMinutes = 90,
-                    recommended_quadrant = "DO_FIRST"
-                ),
-                SubTaskResponse(
-                    title = "Membuat skema tabel database lokal (TaskEntity)",
-                    estimatedMinutes = 45,
-                    recommended_quadrant = "SCHEDULE"
-                ),
-                SubTaskResponse(
-                    title = "Mengimplementasikan fungsi CRUD di TaskRepository",
-                    estimatedMinutes = 120,
-                    recommended_quadrant = "DO_FIRST"
-                ),
-                SubTaskResponse(
-                    title = "Mencari aset ikon pendukung dan ilustrasi gratis",
-                    estimatedMinutes = 30,
-                    recommended_quadrant = "DELEGATE"
-                )
-            )
-
-            generatedSubTasks = mockResponses.map { SelectableSubTask(it) }
-            isLoadingAi = false
-
             geminiService.generateContent(
                 prompt = "Tolong uraikan tugas kuliah berikut: $title",
                 systemPrompt = SystemPrompts.TASK_BREAKDOWN_ASSISTANT
             ).onSuccess { jsonResult ->
                 try {
-                    var cleanJson = jsonResult
-                        .replace("```json", "")
-                        .replace("```", "")
-                        .trim()
-
-                    val startIndex = cleanJson.indexOf('[')
-                    val endIndex = cleanJson.lastIndexOf(']')
-
-                    if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
-                        cleanJson = cleanJson.substring(startIndex, endIndex + 1)
-                    }
-
-                    cleanJson = cleanJson.replace(",\\s*(?=\\s*[}\\]])".toRegex(), "")
-
                     val jsonParser = Json {
                         ignoreUnknownKeys = true
                         isLenient = true
                     }
 
-                    val parsedList = jsonParser.decodeFromString<List<SubTaskResponse>>(cleanJson)
-                    generatedSubTasks = parsedList.map { SelectableSubTask(it) }
+                    val parsedList = jsonParser.decodeFromString<List<SubTaskResponse>>(jsonResult)
+
+                    if (parsedList.isEmpty()) {
+                        error = "Tugas ini tergolong sederhana. Kamu pasti bisa mengeksekusinya langsung tanpa bantuan AI!"
+                        generatedSubTasks = emptyList()
+                    } else {
+                        generatedSubTasks = parsedList.map { SelectableSubTask(it) }
+                    }
+
                 } catch (e: Exception) {
                     println("RESPONS MURNI GEMINI: $jsonResult")
                     error = "Gagal parsing: ${e.message}"
@@ -164,7 +130,7 @@ class AddTaskViewModel(
                 title = title,
                 description = description,
                 priority = priority,
-                dueDate = 0,
+                dueDate = dueDate,
                 isCompleted = false,
                 isPinned = false,
                 subTasks = emptyList(),

@@ -63,6 +63,25 @@ class TaskDetailViewModel(
         }
     }
 
+    fun toggleTaskCompletion() {
+        val currentState = _uiState.value
+        if (currentState is TaskDetailUiState.Success) {
+
+            val updatedTask = currentState.task.copy(isCompleted = !currentState.task.isCompleted)
+
+            _uiState.value = TaskDetailUiState.Success(updatedTask)
+
+            viewModelScope.launch {
+                try {
+                    repository.updateTask(updatedTask)
+                } catch (e: Exception) {
+                    _uiState.value = currentState
+                    _events.emit(TaskDetailEvent.Error("Gagal memperbarui status tugas"))
+                }
+            }
+        }
+    }
+
     fun getShareContent(): String? {
         val currentState = _uiState.value
         return if (currentState is TaskDetailUiState.Success) {

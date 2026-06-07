@@ -1,5 +1,6 @@
 package com.example.todomaster.data.remote.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // ==================== REQUEST ====================
@@ -27,7 +28,10 @@ data class GenerationConfig(
     val temperature: Double = 0.7,
     val maxOutputTokens: Int = 1000,
     val topP: Double = 0.95,
-    val topK: Int = 40
+    val topK: Int = 40,
+
+    @SerialName("response_mime_type")
+    val responseMimeType: String? = null
 )
 
 @Serializable

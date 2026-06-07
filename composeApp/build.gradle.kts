@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlinx.kover") version "0.8.3"
 }
 
 // Load local.properties for API keys
@@ -89,6 +90,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            implementation("io.insert-koin:koin-test:4.0.0")
         }
         
         androidMain.dependencies {
@@ -96,6 +98,14 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+            implementation("androidx.work:work-runtime-ktx:2.9.0")
+        }
+
+        androidUnitTest.dependencies {
+            implementation("org.robolectric:robolectric:4.12.2")
+            implementation("androidx.test.ext:junit:1.1.5")
+            implementation("androidx.compose.ui:ui-test-junit4:1.7.0")
+            implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
         }
         
         iosMain.dependencies {
@@ -108,6 +118,12 @@ kotlin {
 android {
     namespace = "com.example.todomaster"
     compileSdk = 35
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
     
     defaultConfig {
         applicationId = "com.example.todomaster"
@@ -156,4 +172,12 @@ sqldelight {
             packageName.set("com.example.todomaster.data.local")
         }
     }
+}
+
+dependencies {
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.0")
+    releaseImplementation("androidx.compose.ui:ui-test-manifest:1.7.0")
+    "androidTestImplementation"("androidx.test.ext:junit:1.1.5")
+    "androidTestImplementation"("androidx.compose.ui:ui-test-junit4:1.7.0")
+    "debugImplementation"("androidx.compose.ui:ui-test-manifest:1.7.0")
 }

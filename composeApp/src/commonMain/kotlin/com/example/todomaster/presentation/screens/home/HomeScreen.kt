@@ -34,6 +34,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,26 +143,69 @@ fun HomeScreen(
                         LinearProgressIndicator(
                             progress = { quotaProgress },
                             modifier = Modifier.fillMaxWidth().height(6.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            strokeCap = StrokeCap.Round
+                            color = ColorDoFirst,
+                            trackColor = ColorDoFirst.copy(alpha = 0.2f),
+                            strokeCap = StrokeCap.Round,
+                            gapSize = 0.dp,
+                            drawStopIndicator = {}
                         )
                     }
 
                     item {
+                        val allTasks = uiState.doFirstTasks + uiState.scheduleTasks + uiState.delegateTasks + uiState.dontDoTasks
+                        val tasksDueToday = allTasks.filter { !it.isCompleted && isDueToday(it.dueDate) }
+
+                        if (tasksDueToday.isNotEmpty()) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = "Peringatan Deadline",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "${tasksDueToday.size} tugas jatuh tempo hari ini",
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                        Text(
+                                            text = tasksDueToday.joinToString(", ") { it.title },
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                                            maxLines = 1,
+                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 QuadrantCard(
                                     modifier = Modifier.weight(1f),
                                     title = "Do first",
-                                    count = uiState.doFirstTasks.size,
+                                    activeCount = uiState.doFirstTasks.count { !it.isCompleted },
+                                    totalCount = uiState.doFirstTasks.size,
+                                    dueTodayCount = uiState.doFirstTasks.count { !it.isCompleted && isDueToday(it.dueDate) },
                                     color = ColorDoFirst,
                                     onClick = { onNavigateToQuadrantDetail(1L) }
                                 )
                                 QuadrantCard(
                                     modifier = Modifier.weight(1f),
                                     title = "Schedule",
-                                    count = uiState.scheduleTasks.size,
+                                    activeCount = uiState.scheduleTasks.count { !it.isCompleted },
+                                    totalCount = uiState.scheduleTasks.size,
+                                    dueTodayCount = uiState.scheduleTasks.count { !it.isCompleted && isDueToday(it.dueDate) },
                                     color = ColorSchedule,
                                     onClick = { onNavigateToQuadrantDetail(2L) }
                                 )
@@ -169,14 +214,18 @@ fun HomeScreen(
                                 QuadrantCard(
                                     modifier = Modifier.weight(1f),
                                     title = "Delegate",
-                                    count = uiState.delegateTasks.size,
+                                    activeCount = uiState.delegateTasks.count { !it.isCompleted },
+                                    totalCount = uiState.delegateTasks.size,
+                                    dueTodayCount = uiState.delegateTasks.count { !it.isCompleted && isDueToday(it.dueDate) },
                                     color = ColorDelegate,
                                     onClick = { onNavigateToQuadrantDetail(3L) }
                                 )
                                 QuadrantCard(
                                     modifier = Modifier.weight(1f),
                                     title = "Don't do",
-                                    count = uiState.dontDoTasks.size,
+                                    activeCount = uiState.dontDoTasks.count { !it.isCompleted },
+                                    totalCount = uiState.dontDoTasks.size,
+                                    dueTodayCount = uiState.dontDoTasks.count { !it.isCompleted && isDueToday(it.dueDate) },
                                     color = ColorDontDo,
                                     onClick = { onNavigateToQuadrantDetail(4L) }
                                 )
@@ -294,7 +343,7 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // ==================== TOMBOL SAKLAR DARK THEME MANUAL M3 ====================
+
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -321,7 +370,6 @@ fun HomeScreen(
                                 )
                             }
 
-                            // Menghubungkan saklar geser ke objek ThemeConfig di App.kt
                             Switch(
                                 checked = com.example.todomaster.ThemeConfig.isDarkTheme,
                                 onCheckedChange = { isChecked ->
@@ -353,7 +401,9 @@ fun HomeScreen(
 @Composable
 fun QuadrantCard(
     title: String,
-    count: Int,
+    activeCount: Int,
+    totalCount: Int,
+    dueTodayCount: Int,
     color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -363,8 +413,8 @@ fun QuadrantCard(
             .height(110.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -377,29 +427,58 @@ fun QuadrantCard(
                 style = MaterialTheme.typography.labelLarge
             )
 
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = count.toString(),
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    lineHeight = 32.sp
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "tugas",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = activeCount.toString(),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        lineHeight = 32.sp,
+                        color = color
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "tugas",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = color.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
+
+                if (dueTodayCount > 0) {
+                    Text(
+                        text = "$dueTodayCount due hari ini",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
+                    Text(
+                        text = "tidak ada deadline",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = color.copy(alpha = 0.6f)
+                    )
+                }
             }
 
+            val progress = if (totalCount > 0) ((totalCount - activeCount).toFloat() / totalCount.toFloat()) else 0f
+
             LinearProgressIndicator(
-                progress = { if (count > 0) 0.6f else 0f },
+                progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(4.dp),
                 color = color,
                 trackColor = color.copy(alpha = 0.2f),
-                strokeCap = StrokeCap.Round
+                strokeCap = StrokeCap.Round,
+                gapSize = 0.dp,
+                drawStopIndicator = {}
             )
         }
     }
+}
+
+fun isDueToday(dueDateMillis: Long?): Boolean {
+    if (dueDateMillis == null) return false
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val dueDate = Instant.fromEpochMilliseconds(dueDateMillis).toLocalDateTime(TimeZone.currentSystemDefault()).date
+    return today == dueDate
 }

@@ -11,6 +11,6 @@ data class SubTaskResponse(
     @SerialName("estimated_minutes")
     val estimatedMinutes: Int,
 
-    @SerialName("recommended_kuadran")
+    @SerialName("recommended_quadrant")
     val recommended_quadrant: String
 )

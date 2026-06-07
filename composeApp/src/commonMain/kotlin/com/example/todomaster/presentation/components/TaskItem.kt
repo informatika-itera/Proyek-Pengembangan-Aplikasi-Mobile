@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +26,7 @@ import com.example.todomaster.presentation.theme.ColorDelegate
 import com.example.todomaster.presentation.theme.ColorDoFirst
 import com.example.todomaster.presentation.theme.ColorDontDo
 import com.example.todomaster.presentation.theme.ColorSchedule
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun TaskItem(
@@ -52,6 +55,12 @@ fun TaskItem(
         Quadrant.DONT_DO -> ColorDontDo
     }
 
+    val isDueToday = task.dueDate?.let {
+        val today = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+        val due = kotlinx.datetime.Instant.fromEpochMilliseconds(it).toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+        today == due
+    } ?: false
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -65,19 +74,22 @@ fun TaskItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
                 .alpha(contentAlpha),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(quadrantColor)
-            )
+            IconButton(
+                onClick = { onToggleComplete(!task.isCompleted) },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = if (task.isCompleted) androidx.compose.material.icons.Icons.Default.CheckCircle else androidx.compose.material.icons.Icons.Default.RadioButtonUnchecked,
+                    contentDescription = "Toggle Status",
+                    tint = if (task.isCompleted) quadrantColor else MaterialTheme.colorScheme.outline
+                )
+            }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -88,14 +100,35 @@ fun TaskItem(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                if (isDueToday && !task.isCompleted) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Due hari ini",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                    )
+                }
             }
-            Checkbox(
-                checked = task.isCompleted,
-                onCheckedChange = { onToggleComplete(it) },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(100.dp))
+                    .background(quadrantColor.copy(alpha = 0.15f))
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                val formattedName = task.priority.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }
+                Text(
+                    text = formattedName,
+                    color = quadrantColor,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
-            )
+            }
         }
     }
 }

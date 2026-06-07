@@ -113,9 +113,9 @@ fun QuadrantDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val totalTasks = uiState.tasks.size
+                val activeTasksCount = uiState.tasks.count { !it.isCompleted }
                 Text(
-                    text = "$totalTasks tugas",
+                    text = "$activeTasksCount tugas tersisa",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

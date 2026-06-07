@@ -94,7 +94,7 @@ fun TodoMasterTheme(
 }
 
 // ==================== EISENHOWER MATRIX COLORS ====================
-val ColorDoFirst = Color(0xFFFF6B6B)
-val ColorSchedule = PrimaryBlue
-val ColorDelegate = Color(0xFFF3A683)
-val ColorDontDo = Color(0xFFA5B1C2)
+val ColorDoFirst = Color(0xFF195FA7)
+val ColorSchedule = Color(0xFF1E7B5B)
+val ColorDelegate = Color(0xFF9C5B12)
+val ColorDontDo = Color(0xFF6D6A65)

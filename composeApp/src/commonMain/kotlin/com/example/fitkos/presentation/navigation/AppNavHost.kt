@@ -452,7 +452,6 @@ private fun String?.shouldShowBottomBar(): Boolean {
     return this.isRoute("Dashboard") ||
             this.isRoute("Home") ||
             this.isRoute("WaterTracker") ||
-            this.isRoute("AIAssistant") ||
             this.isRoute("Exercise") ||
             this.isRoute("Settings")
 }

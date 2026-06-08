@@ -37,13 +37,17 @@ FitKos juga dilengkapi dengan AI Assistant berbasis Gemini API yang dapat member
 - [x] Dark mode melalui pengaturan aplikasi
 - [x] UI/UX polish pada Dashboard, Meal Log, Add/Edit, Detail, AI, Water Tracker, dan Exercise Screen
 
+### Sudah Diimplementasikan pada Sprint 4
+- [x] 10+ unit tests untuk Repository, UseCase, dan ViewModel
+- [x] 3+ UI tests untuk critical user flows (Navigation, Add Note, Water Tracker)
+- [x] 50%+ code coverage pada core logic (Logic-only coverage)
+- [x] Kover integration untuk reporting coverage
+- [x] Testing infrastructure dengan Fakes dan Mock DataStore
+- [x] README updated dengan instruksi testing
+
 ### Direncanakan untuk Sprint Berikutnya
 - [ ] All known bugs fixed: tidak ada crash dan semua fitur utama berjalan
 - [ ] UI polished: desain konsisten, spacing rapi, dan state aplikasi jelas
-- [ ] 10+ unit tests untuk Repository dan ViewModel
-- [ ] 3+ UI tests untuk critical user flows
-- [ ] 50%+ code coverage
-- [ ] README updated dengan instruksi menjalankan test
 
 ## 🏗️ Arsitektur & Teknologi Stack
 FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, mudah dikembangkan, dan mudah diuji.
@@ -151,6 +155,36 @@ git clone https://github.com/raapstronaut/FitKos.git
 Tambahkan `GEMINI_API_KEY=your_key` di file `local.properties`.
 
 3. Buka di Android Studio Ladybug+ dan jalankan task: `:composeApp:installDebug`
+
+## 🧪 Testing
+
+FitKos menggunakan unit testing untuk memastikan keandalan logika bisnis pada ViewModel, UseCase, dan Repository.
+
+### Menjalankan Unit Test
+Untuk menjalankan seluruh unit test di modul `composeApp`:
+```bash
+./gradlew :composeApp:testDebugUnitTest
+```
+
+### Menjalankan UI Test
+Untuk menjalankan instrumented UI test (membutuhkan emulator/device):
+```bash
+./gradlew :composeApp:connectedDebugAndroidTest
+```
+
+### Laporan Coverage (Kover)
+Aplikasi ini menggunakan **Kover** untuk mengukur coverage. Fokus testing adalah pada core logic, sehingga kelas UI, DI, dan generated code dikecualikan dari perhitungan.
+
+Untuk membuat laporan HTML coverage:
+```bash
+./gradlew :composeApp:koverHtmlReport
+```
+Laporan dapat ditemukan di: `composeApp/build/reports/kover/html/index.html`
+
+### Infrastruktur Testing
+- **Fakes**: Digunakan `FakeNoteRepository` dan `FakeWaterRepository` untuk mensimulasikan database.
+- **DataStore**: Menggunakan `createTestDataStore` (Okio-based) untuk testing preferensi pengguna di `commonTest`.
+- **Turbine**: Digunakan untuk testing Kotlin Flows/StateFlow pada ViewModel.
 
 ## 📄 Lisensi
 

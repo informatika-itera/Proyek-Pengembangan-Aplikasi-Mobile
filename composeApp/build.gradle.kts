@@ -169,6 +169,26 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.8")
 }
 
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "com.example.fitkos.presentation.screens.*ScreenKt*",
+                    "com.example.fitkos.presentation.components.*",
+                    "com.example.fitkos.presentation.theme.*",
+                    "com.example.fitkos.presentation.navigation.*",
+                    "com.example.fitkos.di.*",
+                    "com.example.fitkos.data.local.*NoteDatabase*",
+                    "com.example.fitkos.MainActivity",
+                    "*.BuildConfig"
+                )
+                annotatedBy("androidx.compose.runtime.Composable")
+            }
+        }
+    }
+}
+
 sqldelight {
     databases {
         create("NoteDatabase") {

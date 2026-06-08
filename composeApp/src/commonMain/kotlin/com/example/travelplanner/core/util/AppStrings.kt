@@ -81,6 +81,10 @@ data class AppStrings(
     val vibeRelaxSub: String,
     val vibeAdventure: String,
     val vibeAdventureSub: String,
+    val vibeFormal: String,
+    val vibeFormalSub: String,
+    val vibeRomantic: String,
+    val vibeRomanticSub: String,
 
     // ── Budget Presets ────────────────────────────────────────────────
     val budgetSavings: String,
@@ -156,15 +160,48 @@ data class AppStrings(
     val darkMode: String,
     val language: String,
     val languageValue: String,
+    val isEnglish: Boolean,
     val sectionNotification: String,
     val travelReminder: String,
     val appVersion: String,
     val switchToLanguage: String,
 
+    // ── Transit ───────────────────────────────────────────────────────
+    val flightRecommendation: String,
+    val trainBusRecommendation: String,
+    val departPrefix: String,
+    val searchTicket: String,
+    val compareAndBook: String,
+    val compareFlightTitle: (String, String) -> String,
+    val compareTrainTitle: (String, String) -> String,
+    val biggestPlatformID: String,
+    val lotsOfPromos: String,
+    val goodForInternational: String,
+    val instantKAITicket: String,
+    val completeTransport: String,
+    val bestBusTravel: String,
+    val lodgingRecommendation: String,
+    val compareLodgingTitle: (String) -> String,
+    val checkInPrefix: String,
+    val checkOutPrefix: String,
+    val searchHotel: String,
+    val compareAndBookHotel: String,
+    val bookingPartnerHotel: String,
+
     // ── Expense empty state ───────────────────────────────────────────
     val noActiveTripTitle: String,
     val noActiveTripBody: String,
-    val goToTrips: String
+    val goToTrips: String,
+
+    // ── Errors ────────────────────────────────────────────────────────
+    val noInternetConnection: String,
+    val someFeaturesUnavailable: String,
+    val aiFormatError: String,
+    val networkError: (String) -> String,
+    val destinationEmptyError: String,
+    val vibeEmptyError: String,
+    val aiGeneralError: (String) -> String,
+    val internetRestored: String
 )
 
 // ══════════════════════════════════════════════════════════════════════
@@ -223,6 +260,8 @@ val StringsID = AppStrings(
     vibeHistory = "Sejarah", vibeHistorySub = "Budaya & peninggalan",
     vibeRelax = "Santai", vibeRelaxSub = "Slow travel & rehat",
     vibeAdventure = "Petualangan", vibeAdventureSub = "Adrenalin & outdoor",
+    vibeFormal = "Bisnis", vibeFormalSub = "Dinas & seminar",
+    vibeRomantic = "Romantis", vibeRomanticSub = "Bulan madu & kencan",
 
     budgetSavings = "Hemat", budgetMedium = "Sedang",
     budgetComfort = "Nyaman", budgetLuxury = "Mewah",
@@ -267,13 +306,44 @@ val StringsID = AppStrings(
 
     settingsTitle = "Pengaturan", sectionDisplay = "TAMPILAN",
     darkMode = "Mode Gelap", language = "Bahasa", languageValue = "Indonesia (ID)",
+    isEnglish = false,
     sectionNotification = "NOTIFIKASI", travelReminder = "Pengingat Perjalanan",
     appVersion = "AI Travel Planner v1.0.0\nPowered by Google Gemini 1.5 Flash",
     switchToLanguage = "Switch to English",
 
+    flightRecommendation = "Rekomendasi Penerbangan",
+    trainBusRecommendation = "Rekomendasi Tiket Kereta/Bus",
+    departPrefix = "Berangkat",
+    searchTicket = "Cari Tiket",
+    compareAndBook = "Bandingkan & Pesan Tiket",
+    compareFlightTitle = { dep, dest -> "Pilih platform untuk mencari tiket pesawat dari $dep ke $dest" },
+    compareTrainTitle = { dep, dest -> "Pilih platform untuk mencari tiket kereta/bus dari $dep ke $dest" },
+    biggestPlatformID = "Platform Terbesar di Indonesia",
+    lotsOfPromos = "Banyak Promo Menarik",
+    goodForInternational = "Bagus untuk Rute Internasional",
+    instantKAITicket = "Pesan Tiket KAI Instan",
+    completeTransport = "Lengkap KAI, Whoosh, & Bus",
+    bestBusTravel = "Pesan Tiket Bus & Travel Terbaik",
+    lodgingRecommendation = "Rekomendasi Penginapan",
+    compareLodgingTitle = { dest -> "Pilih platform untuk mencari penginapan di $dest" },
+    checkInPrefix = "Check-in",
+    checkOutPrefix = "Check-out",
+    searchHotel = "Cari Hotel",
+    compareAndBookHotel = "Bandingkan & Pesan Penginapan",
+    bookingPartnerHotel = "Platform pemesanan hotel terpopuler",
+
     noActiveTripTitle = "Belum Ada Perjalanan Aktif",
     noActiveTripBody = "Buat rencana liburan dari menu Rencanakan, lalu catat pengeluaran dari halaman detail perjalanan.",
-    goToTrips = "Lihat Perjalanan Saya"
+    goToTrips = "Lihat Perjalanan Saya",
+
+    noInternetConnection = "Tidak ada koneksi internet",
+    someFeaturesUnavailable = "Beberapa fitur mungkin tidak tersedia",
+    aiFormatError = "Respons format AI tidak cocok atau terputus. Silakan coba kembali.",
+    networkError = { msg -> "Terjadi kegagalan jaringan: $msg" },
+    destinationEmptyError = "Destinasi tidak boleh kosong, Sir.",
+    vibeEmptyError = "Harap tentukan vibe perjalanan Anda terlebih dahulu.",
+    aiGeneralError = { msg -> "Gagal menyusun itinerary: $msg" },
+    internetRestored = "Koneksi internet pulih ✓"
 )
 
 // ══════════════════════════════════════════════════════════════════════
@@ -332,6 +402,8 @@ val StringsEN = AppStrings(
     vibeHistory = "History", vibeHistorySub = "Culture & heritage",
     vibeRelax = "Relaxed", vibeRelaxSub = "Slow travel & leisure",
     vibeAdventure = "Adventure", vibeAdventureSub = "Adrenaline & outdoor",
+    vibeFormal = "Business", vibeFormalSub = "Work & seminars",
+    vibeRomantic = "Romantic", vibeRomanticSub = "Honeymoon & dates",
 
     budgetSavings = "Budget", budgetMedium = "Moderate",
     budgetComfort = "Comfort", budgetLuxury = "Luxury",
@@ -376,13 +448,44 @@ val StringsEN = AppStrings(
 
     settingsTitle = "Settings", sectionDisplay = "DISPLAY",
     darkMode = "Dark Mode", language = "Language", languageValue = "English (EN)",
+    isEnglish = true,
     sectionNotification = "NOTIFICATIONS", travelReminder = "Travel Reminder",
     appVersion = "AI Travel Planner v1.0.0\nPowered by Google Gemini 1.5 Flash",
     switchToLanguage = "Ganti ke Indonesia",
 
+    flightRecommendation = "Flight Recommendation",
+    trainBusRecommendation = "Train/Bus Recommendation",
+    departPrefix = "Depart",
+    searchTicket = "Find Tickets",
+    compareAndBook = "Compare & Book Tickets",
+    compareFlightTitle = { dep, dest -> "Select a platform to search for flights from $dep to $dest" },
+    compareTrainTitle = { dep, dest -> "Select a platform to search for train/bus tickets from $dep to $dest" },
+    biggestPlatformID = "Largest Platform in Indonesia",
+    lotsOfPromos = "Many Great Promos",
+    goodForInternational = "Great for International Routes",
+    instantKAITicket = "Instant KAI Ticket Booking",
+    completeTransport = "Complete KAI, Whoosh, & Bus",
+    bestBusTravel = "Best Bus & Travel Tickets",
+    lodgingRecommendation = "Lodging Recommendation",
+    compareLodgingTitle = { dest -> "Select a platform to search for lodging in $dest" },
+    checkInPrefix = "Check-in",
+    checkOutPrefix = "Check-out",
+    searchHotel = "Find Hotels",
+    compareAndBookHotel = "Compare & Book Lodging",
+    bookingPartnerHotel = "Most popular hotel booking platform",
+
     noActiveTripTitle = "No Active Trip",
     noActiveTripBody = "Plan a trip first using the Plan button, then track expenses from the trip detail page.",
-    goToTrips = "Go to My Trips"
+    goToTrips = "Go to My Trips",
+
+    noInternetConnection = "No internet connection",
+    someFeaturesUnavailable = "Some features may be unavailable",
+    aiFormatError = "AI format response mismatch or interrupted. Please try again.",
+    networkError = { msg -> "Network failure occurred: $msg" },
+    destinationEmptyError = "Destination cannot be empty, Sir.",
+    vibeEmptyError = "Please specify your travel vibe first.",
+    aiGeneralError = { msg -> "Failed to generate itinerary: $msg" },
+    internetRestored = "Internet connection restored ✓"
 )
 
 val LocalStrings = compositionLocalOf<AppStrings> { StringsID }

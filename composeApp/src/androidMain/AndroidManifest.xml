@@ -7,10 +7,14 @@
     <!-- Network state permission for offline detection banner -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Permission for Notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".TravelPlannerApplication"
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="TravelPlanner"
         android:supportsRtl="true"
         android:theme="@style/Theme.TravelPlanner">

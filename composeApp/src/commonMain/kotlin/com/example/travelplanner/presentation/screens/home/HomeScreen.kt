@@ -3,12 +3,10 @@ package com.example.travelplanner.presentation.screens.home
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,36 +26,37 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.example.travelplanner.core.service.CityImageService
 import com.example.travelplanner.core.util.LocalStrings
 import com.example.travelplanner.presentation.screens.planner.PantaiAnimatedScene
-import org.koin.compose.viewmodel.koinViewModel
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.viewmodel.koinViewModel
 
-// ── Vibe localizer (used across screens) ─────────────────────────────
+@Composable
 fun String.localizeVibe(): String {
-    val s = com.example.travelplanner.core.util.LocalStrings
-    // Map stored Indonesian vibe keys → current language label
-    return this
+    val s = LocalStrings.current
+    return when (this.lowercase()) {
+        "alam", "nature" -> s.vibeNature
+        "pantai", "beach" -> s.vibeBeach
+        "kuliner", "culinary" -> s.vibeCulinary
+        "sejarah", "history" -> s.vibeHistory
+        "santai", "relaxed", "relax" -> s.vibeRelax
+        "petualangan", "adventure" -> s.vibeAdventure
+        "formal", "bisnis", "business" -> s.vibeFormal
+        "romantis", "romantic", "love" -> s.vibeRomantic
+        else -> this
+    }
 }
 
-// ── Gradient fallback (deterministic, no network) ────────────────────
-fun getDestinationGradient(destination: String): Pair<Color, Color> {
-    return when (destination.hashCode() % 5) {
+fun getDestinationGradient(destination: String): Pair<Color, Color> =
+    when (destination.hashCode() % 5) {
         0    -> Pair(Color(0xFF0096C7), Color(0xFF48CAE4))
         1    -> Pair(Color(0xFFE07A5F), Color(0xFFF2CC8F))
         2    -> Pair(Color(0xFF2D6A4F), Color(0xFF52B788))
         3    -> Pair(Color(0xFF6A0572), Color(0xFFAB47BC))
         else -> Pair(Color(0xFF1B3A5C), Color(0xFF3D7A6F))
     }
-}
-
-
-// ══════════════════════════════════════════════════════════════════════
-//  DATA MODEL
-// ══════════════════════════════════════════════════════════════════════
 
 data class DummyTrip(
     val id: String,
@@ -88,151 +86,117 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) { viewModel.loadRecentTrips() }
 
+    // ── Tidak ada floatingActionButton ────────────────────────────────
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        floatingActionButton = {
-            val infiniteTransition = rememberInfiniteTransition(label = "FABPulse")
-            val scale by infiniteTransition.animateFloat(
-                initialValue = 0.98f,
-                targetValue = 1.04f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1400, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "fabScale"
-            )
-            val borderGlow by infiniteTransition.animateFloat(
-                initialValue = 0.4f,
-                targetValue = 0.9f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1400, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "borderGlow"
-            )
-
-            Surface(
-                onClick = onNavigateToGenerateTrip,
-                modifier = Modifier
-                    .scale(scale)
-                    .shadow(
-                        elevation = 12.dp,
-                        shape = RoundedCornerShape(28.dp),
-                        spotColor = MaterialTheme.colorScheme.secondary.copy(alpha = borderGlow)
-                    )
-                    .border(
-                        width = 1.5.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.secondary.copy(alpha = borderGlow),
-                                MaterialTheme.colorScheme.primary.copy(alpha = borderGlow)
-                            )
-                        ),
-                        shape = RoundedCornerShape(28.dp)
-                    ),
-                shape = RoundedCornerShape(28.dp),
-                color = Color.Transparent
-            ) {
-                Row(
-                    modifier = Modifier
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
-                                )
-                            )
-                        )
-                        .padding(horizontal = 24.dp, vertical = 15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = s.planButton.uppercase(),
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp,
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-        }
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(bottom = 110.dp)
         ) {
+
+            // ── 1. HERO ───────────────────────────────────────────────
             item { HeroSection() }
 
+            // ── 2. TOMBOL RENCANAKAN — tepat di bawah hero ────────────
             item {
                 Button(
                     onClick = onNavigateToGenerateTrip,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 24.dp),
+                        .padding(top = 24.dp)
+                        .height(56.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
+                        contentColor   = Color.White
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = if (s.seeAll == "See All") "Create New Travel Plan" else "Buat Rencana Liburan",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
+                    Icon(
+                        imageVector   = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint          = MaterialTheme.colorScheme.secondary,
+                        modifier      = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text       = if (s.isEnglish) "Create New Travel Plan"
+                                     else "Buat Rencana Liburan",
+                        fontWeight = FontWeight.Bold,
+                        style      = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
 
+            // ── 3. SECTION HEADER ─────────────────────────────────────
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 20.dp, bottom = 12.dp),
-                    verticalAlignment   = Alignment.Bottom,
+                        .padding(top = 24.dp, bottom = 16.dp),
+                    verticalAlignment     = Alignment.Bottom,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(s.recentTripsTitle, style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+                        Text(s.recentTripsTitle,
+                            style      = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color      = MaterialTheme.colorScheme.onBackground)
                         Text(s.recentTripsSubtitle(uiState.recentTrips.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     if (uiState.recentTrips.isNotEmpty()) {
                         TextButton(onClick = onNavigateToMyTrips) {
-                            Text(s.seeAll, style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
+                            Text(s.seeAll,
+                                style      = MaterialTheme.typography.labelMedium,
+                                color      = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
 
+            // ── 4. TRIP CARDS ─────────────────────────────────────────
             if (uiState.isLoading) {
                 item {
-                    Box(Modifier.fillMaxWidth().padding(vertical = 40.dp), Alignment.Center) {
+                    Box(Modifier.fillMaxWidth().padding(vertical = 48.dp), Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            } else if (uiState.errorMessage != null) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ErrorOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = uiState.errorMessage ?: s.failedLoad,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Button(
+                            onClick = { viewModel.loadRecentTrips() },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (s.isEnglish) "Retry" else "Coba Lagi")
+                        }
                     }
                 }
             } else if (uiState.recentTrips.isEmpty()) {
@@ -242,9 +206,7 @@ fun HomeScreen(
                     val (gradStart, gradEnd) = remember(trip.destination) {
                         getDestinationGradient(trip.destination)
                     }
-                    // ── Gambar kota diambil dari ViewModel state (sudah terisi instan dari cache/loremflickr)
                     val photoUrl = uiState.cityImages[trip.destination] ?: ""
-
                     val visualTrip = remember(trip, photoUrl) {
                         DummyTrip(
                             id            = trip.id,
@@ -258,13 +220,14 @@ fun HomeScreen(
                         )
                     }
                     TripCard(
-                        trip    = visualTrip,
-                        onClick = { onNavigateToTripDetail(trip.id) },
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)
+                        trip     = visualTrip,
+                        onClick  = { onNavigateToTripDetail(trip.id) },
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                     )
                 }
             }
 
+            // ── 5. INSIGHT BANNER ─────────────────────────────────────
             item {
                 InsightBanner(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp))
             }
@@ -272,115 +235,139 @@ fun HomeScreen(
     }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  HERO SECTION — bersih, elegan, vibes liburan & santai
+//  Tidak ada pill berkedip. Teks langsung di atas animasi pantai.
+// ══════════════════════════════════════════════════════════════════════
+
 @Composable
 fun HeroSection() {
     val s = LocalStrings.current
-    
+    val isEn = s.isEnglish
+
     val currentHour = remember {
-        try {
-            Clock.System.now()
-                .toLocalDateTime(TimeZone.currentSystemDefault())
-                .hour
-        } catch (e: Exception) {
-            12
-        }
+        try { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour }
+        catch (_: Exception) { 12 }
+    }
+    val greeting = when (currentHour) {
+        in 5..11  -> if (isEn) "Good Morning," else "Selamat Pagi,"
+        in 12..14 -> if (isEn) "Good Afternoon," else "Selamat Siang,"
+        in 15..17 -> if (isEn) "Good Afternoon," else "Selamat Sore,"
+        else       -> if (isEn) "Good Evening," else "Selamat Malam,"
     }
 
-    val isEn = s.seeAll == "See All"
-
-    val greeting = when {
-        currentHour in 5..11 -> if (isEn) "Good Morning," else "Selamat Pagi,"
-        currentHour in 12..14 -> if (isEn) "Good Afternoon," else "Selamat Siang,"
-        currentHour in 15..17 -> if (isEn) "Good Afternoon," else "Selamat Sore,"
-        else -> if (isEn) "Good Evening," else "Selamat Malam,"
-    }
-
-    Box(modifier = Modifier.fillMaxWidth().height(270.dp)) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(272.dp)
+    ) {
+        // Animasi pantai — full bleed, terlihat penuh
         PantaiAnimatedScene(modifier = Modifier.fillMaxSize())
-        Box(modifier = Modifier.fillMaxSize().background(
-            Brush.verticalGradient(listOf(
-                Color(0xFF1B3A5C).copy(alpha = 0.40f),
-                Color(0xFF1B3A5C).copy(alpha = 0.20f),
-                Color(0xFF1B3A5C).copy(alpha = 0.70f)
-            ))
-        ))
+
+        // Gradient: transparan di atas → gelap natural di bawah
+        // Tidak ada box atau container apapun yang menutup animasi
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.00f to Color.Transparent,
+                            0.40f to Color.Transparent,
+                            0.72f to Color(0xFF091523).copy(alpha = 0.55f),
+                            1.00f to Color(0xFF091523).copy(alpha = 0.90f)
+                        )
+                    )
+                )
+        )
+
+        // Teks — duduk di atas gradient tanpa container
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .statusBarsPadding()
-                .padding(horizontal = 24.dp, vertical = 20.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 26.dp)
+                .padding(bottom = 26.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.Black.copy(alpha = 0.35f))
-                    .border(
-                        width = 1.dp,
-                        brush = Brush.verticalGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0.25f),
-                                Color.White.copy(alpha = 0.05f)
-                            )
-                        ),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(18.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "$greeting\nTraveler.",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
-                        lineHeight = 32.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = s.heroSubtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+            // Label tipis tanpa background
+            Text(
+                text       = "AI TRAVEL PLANNER",
+                style      = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                color      = MaterialTheme.colorScheme.secondary.copy(alpha = 0.90f),
+                letterSpacing = 2.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Salam + nama
+            Text(
+                text       = greeting,
+                style      = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Normal,
+                color      = Color.White.copy(alpha = 0.82f),
+                letterSpacing = 0.sp
+            )
+            Text(
+                text       = "Traveler.",
+                style      = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                color      = Color.White,
+                letterSpacing = (-1).sp,
+                lineHeight = 40.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Subtitle — satu baris tipis, santai
+            Text(
+                text       = s.heroSubtitle,
+                style      = MaterialTheme.typography.bodyMedium,
+                color      = Color.White.copy(alpha = 0.58f),
+                fontWeight = FontWeight.Normal
+            )
         }
     }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  TRIP CARD
+// ══════════════════════════════════════════════════════════════════════
+
 @Composable
 fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalPlatformContext.current
-    Box(modifier = modifier.fillMaxWidth().height(155.dp)
-        .shadow(6.dp, RoundedCornerShape(16.dp))
-        .clip(RoundedCornerShape(16.dp))
-        .clickable { onClick() }
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(155.dp)
+            .shadow(6.dp, RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
     ) {
-        // Gradient fallback
         Box(modifier = Modifier.fillMaxSize().background(
             Brush.horizontalGradient(listOf(trip.gradientStart, trip.gradientEnd))
         ))
-        // Foto kota — langsung dari Wikipedia via CityImageService, fallback loremflickr
         AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(trip.photoUrl)
-                .crossfade(true)
-                .build(),
+            model = ImageRequest.Builder(context).data(trip.photoUrl).crossfade(true).build(),
             contentDescription = trip.destination,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
         Box(Modifier.fillMaxSize().background(
-            Brush.horizontalGradient(listOf(
-                Color.Black.copy(alpha = 0.72f), Color.Black.copy(alpha = 0.15f)
-            ))
+            Brush.horizontalGradient(listOf(Color.Black.copy(alpha = 0.72f), Color.Black.copy(alpha = 0.15f)))
         ))
-        Column(modifier = Modifier.align(Alignment.CenterStart)
-            .padding(horizontal = 20.dp, vertical = 18.dp)) {
-            Surface(shape = RoundedCornerShape(4.dp),
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(horizontal = 20.dp, vertical = 18.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(4.dp),
                 color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.88f),
-                modifier = Modifier.padding(bottom = 8.dp)) {
-                Text(trip.vibe.uppercase(),
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text(trip.vibe.localizeVibe().uppercase(),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondary, letterSpacing = 1.sp)
@@ -404,11 +391,17 @@ fun TripCard(trip: DummyTrip, onClick: () -> Unit, modifier: Modifier = Modifier
     }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  EMPTY STATE
+// ══════════════════════════════════════════════════════════════════════
+
 @Composable
 fun EmptyState() {
     val s = LocalStrings.current
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp, horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp, horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Icon(Icons.Default.ExploreOff, contentDescription = null, modifier = Modifier.size(52.dp),
             tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
         Spacer(modifier = Modifier.height(16.dp))
@@ -421,14 +414,23 @@ fun EmptyState() {
     }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  INSIGHT BANNER
+// ══════════════════════════════════════════════════════════════════════
+
 @Composable
 fun InsightBanner(modifier: Modifier = Modifier) {
     val s = LocalStrings.current
-    Surface(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.primaryContainer) {
-        Row(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
             Icon(Icons.Default.Lightbulb, contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
             Column {

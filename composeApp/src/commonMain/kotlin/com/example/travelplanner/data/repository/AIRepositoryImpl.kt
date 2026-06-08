@@ -12,23 +12,33 @@ class AIRepositoryImpl(
 ) : AIRepository {
 
     private val apiKey = com.example.travelplanner.core.network.ApiConfig.geminiApiKey
-    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey"
+    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=$apiKey"
 
-    override suspend fun generateItinerary(destination: String, duration: String, vibe: String): String {
+    override suspend fun generateItinerary(destination: String, duration: String, vibe: String, language: String): String {
         val systemPrompt = """
             Kamu adalah asisten perencana perjalanan AI yang cerdas. Tugasmu adalah membuat itinerary perjalanan harian di $destination.
             Durasi: $duration
             Vibe Liburan: $vibe
             
-            Berikan output dalam bentuk format JSON raw yang rapi berisi array objek dengan properti berikut:
-            - 'time': Waktu aktivitas (contoh: '09.00', '12.00')
-            - 'activity': Deskripsi lengkap aktivitas perjalanan atau kuliner harian (contoh: 'Makan malam santai dengan kulineran lokal khas di Merdeka Walk Medan')
-            - 'icon': Emoji yang relevan dengan aktivitas tersebut (contoh: '🍽️', '🌳')
-            - 'priceRange': Prediksi kisaran harga/biaya masuk/makan per orang dalam Rupiah (contoh: 'Rp 20rb - 50rb', 'Rp 100rb - 150rb', atau 'Gratis')
-            - 'mapsUrl': Tautan pencarian Google Maps untuk nama tempat spesifik tersebut (contoh: 'https://www.google.com/maps/search/?api=1&query=Merdeka+Walk+Medan')
-            - 'placeName': Nama tempat spesifik yang dikunjungi yang terdapat di dalam deskripsi aktivitas (contoh: 'Merdeka Walk Medan'). Suku kata ini HARUS tertulis persis sama dengan kata yang ada di dalam 'activity' agar aplikasi bisa mendeteksi dan menjadikannya hyperlink.
+            PENTING: Hasilkan deskripsi dalam 2 bahasa sekaligus (Indonesia dan English).
             
-            Jangan berikan teks markdown seperti ```json atau teks pembuka lainnya! Hanya return string JSON murni berbentuk array objek.
+            Berikan output HARUS dalam bentuk JSON array murni yang berisi objek aktivitas.
+            TIDAK BOLEH dibungkus dalam objek apapun (seperti 'day' atau 'itinerary'). Langsung kembalikan array murni [ { ... }, { ... } ].
+            Format wajib (array murni):
+            [
+              {
+                "time": "Waktu aktivitas (contoh: '09.00', '12.00')",
+                "activity": "Deskripsi aktivitas dalam Bahasa Indonesia",
+                "activityEn": "English translation of the activity description",
+                "icon": "Emoji yang relevan",
+                "priceRange": "Prediksi kisaran harga per orang dalam Rupiah",
+                "mapsUrl": "Tautan pencarian Google Maps",
+                "placeName": "Nama tempat spesifik persis sama seperti di dalam activity",
+                "placeNameEn": "Nama tempat spesifik persis sama seperti di dalam activityEn"
+              }
+            ]
+            
+            Jangan berikan teks markdown seperti ```json atau teks pembuka lainnya! HANYA JSON array murni.
         """.trimIndent()
 
         return try {
@@ -54,6 +64,26 @@ class AIRepositoryImpl(
               }
             ]
             Jika tidak ada nominal atau item tidak valid, kembalikan array kosong []. Jangan berasumsi atau berhalusinasi.
+        """.trimIndent()
+
+        val response = makeGeminiApiCall(systemPrompt)
+        return parseGeminiResponse(response)
+    }
+
+    override suspend fun translateItinerary(jsonItinerary: String): String {
+        val systemPrompt = """
+            Kamu adalah penerjemah ahli. Saya akan memberikan sebuah JSON array berisi objek aktivitas perjalanan dalam Bahasa Indonesia.
+            Tugasmu adalah menambahkan terjemahan ke dalam Bahasa Inggris untuk setiap aktivitas, TANPA mengubah data lainnya.
+            
+            JSON Input:
+            $jsonItinerary
+            
+            Berikan output HARUS dalam bentuk JSON array murni. Jangan tambahkan markdown ```json.
+            Untuk setiap objek, tambahkan properti:
+            "activityEn": "terjemahan dari activity"
+            "placeNameEn": "terjemahan dari placeName"
+            
+            Pastikan properti "time", "icon", "priceRange", "mapsUrl" TIDAK BERUBAH.
         """.trimIndent()
 
         return try {
@@ -94,6 +124,14 @@ class AIRepositoryImpl(
 
     private fun parseGeminiResponse(responseBody: String): String {
         val jsonElement = Json.parseToJsonElement(responseBody)
+        
+        // Cek jika API merespons dengan objek error
+        val errorObject = jsonElement.jsonObject["error"]?.jsonObject
+        if (errorObject != null) {
+            val errorMsg = errorObject["message"]?.jsonPrimitive?.content ?: "Unknown API error"
+            throw Exception(errorMsg)
+        }
+
         // Ekstraksi rekursif ke dalam struktur internal JSON Gemini response object: candidates[0].content.parts[0].text
         val textResult = jsonElement.jsonObject["candidates"]
             ?.jsonArray?.get(0)

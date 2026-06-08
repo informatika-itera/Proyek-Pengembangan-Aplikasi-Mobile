@@ -2,6 +2,10 @@
 
 #  AI Travel Planner
 
+> [!TIP]
+> **[▶️ Tonton Video Demo Aplikasi di Sini](docs/demo_TP.mp4)**
+> *(Klik tautan di atas untuk memutar video demo aplikasi langsung di GitHub)*
+
 Aplikasi **AI Travel Planner** adalah asisten perencana perjalanan berbasis kecerdasan buatan (*Artificial Intelligence*) yang mengotomatisasi penyusunan *itinerary*, pencarian transportasi, rekomendasi akomodasi, dan kalkulasi biaya. Aplikasi ini dibangun secara tangguh menggunakan **Kotlin Multiplatform (KMP)** dengan kepatuhan penuh terhadap prinsip *Clean Architecture* dan pola MVVM untuk memastikan performa *native* di Android dan iOS dari satu basis kode.
 
 Proyek ini dikembangkan sebagai pemenuhan Tugas Mata Kuliah **Pengembangan Aplikasi Mobile** di Institut Teknologi Sumatera (ITERA).
@@ -87,3 +91,30 @@ composeApp/src/
 │
 ├── androidMain/kotlin/            # Implementasi Spesifik Android (expect/actual SqlDriver)
 └── iosMain/kotlin/                # Implementasi Spesifik iOS (expect/actual NativeSqliteDriver)
+
+---
+
+## Pengujian & Cakupan Kode (Testing & Code Coverage)
+
+Aplikasi ini dilengkapi dengan pengujian unit (*Unit Testing*) dan pengujian antarmuka (*UI Testing*) untuk menjamin kestabilan dan keandalan fitur-fiturnya. Pengukuran cakupan kode (*code coverage*) diukur menggunakan **Kotlinx Kover** dengan target minimal 50%+.
+
+### Menjalankan Unit Test
+Untuk menjalankan seluruh unit test pada modul `composeApp` (target JVM/Android):
+```powershell
+./gradlew testDebugUnitTest
+```
+
+### Menghasilkan Laporan Coverage Kover
+Untuk menjalankan pengujian sekaligus membuat laporan cakupan kode dalam format HTML:
+```powershell
+./gradlew koverHtmlReport
+```
+Laporan cakupan kode yang dihasilkan dapat dibuka melalui peramban web di path lokal berikut:
+- [Laporan HTML Kover](file:///d:/temp/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/build/reports/kover/html/index.html)
+
+### Menjalankan UI Test (Instrumented Tests)
+Pengujian antarmuka untuk komponen-komponen kritis dilakukan pada emulator atau perangkat Android yang terhubung:
+```powershell
+./gradlew connectedAndroidTest
+```
+

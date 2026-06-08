@@ -26,6 +26,8 @@ class GenerateTripViewModel(
     private val tripRepository: TripRepository
 ) : ViewModel() {
 
+    private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
+
     private val _uiState = MutableStateFlow<GenerateTripUiState>(GenerateTripUiState())
     val uiState: StateFlow<GenerateTripUiState> = _uiState.asStateFlow()
 
@@ -36,7 +38,13 @@ class GenerateTripViewModel(
         endDate: String,
         duration: String,
         vibe: String,
-        specialNotes: String
+        specialNotes: String,
+        language: String,
+        errDestEmpty: String,
+        errVibeEmpty: String,
+        errAiFormat: String,
+        errNetwork: (String) -> String,
+        errAiGeneral: (String) -> String
     ) {
         viewModelScope.launch {
             _uiState.value = GenerateTripUiState(isLoading = true)
@@ -45,19 +53,27 @@ class GenerateTripViewModel(
                 val aiResponse = generateItineraryUseCase.execute(
                     destination = destination,
                     duration = duration,
-                    vibe = vibe
+                    vibe = vibe,
+                    language = language,
+                    errDestEmpty = errDestEmpty,
+                    errVibeEmpty = errVibeEmpty
                 )
 
                 // Check for errors in response
                 if (aiResponse.contains("\"error\"")) {
-                    val errorMsg = try {
-                        Json.parseToJsonElement(aiResponse).jsonObject["error"]?.jsonPrimitive?.content
+                    val rawErrorMsg = try {
+                        jsonParser.parseToJsonElement(aiResponse).jsonObject["error"]?.jsonPrimitive?.content
                     } catch (e: Exception) {
-                        "Gagal menyusun itinerary liburan lewat AI."
+                        null
+                    }
+                    val finalMsg = if (rawErrorMsg == errDestEmpty || rawErrorMsg == errVibeEmpty) {
+                        rawErrorMsg
+                    } else {
+                        errAiGeneral(rawErrorMsg ?: "Unknown error")
                     }
                     _uiState.value = GenerateTripUiState(
                         isLoading = false,
-                        errorMessage = errorMsg ?: "Gagal menghasilkan itinerary"
+                        errorMessage = finalMsg
                     )
                     return@launch
                 }
@@ -65,7 +81,7 @@ class GenerateTripViewModel(
                 // Decode list of items dengan pembersihan JSON murni
                 val cleanedResponse = cleanJson(aiResponse)
                 val items = try {
-                    Json.decodeFromString<List<ItineraryItem>>(cleanedResponse)
+                    jsonParser.decodeFromString<List<ItineraryItem>>(cleanedResponse)
                 } catch (e: Exception) {
                     emptyList()
                 }
@@ -73,7 +89,7 @@ class GenerateTripViewModel(
                 if (items.isEmpty()) {
                     _uiState.value = GenerateTripUiState(
                         isLoading = false,
-                        errorMessage = "Respons format AI tidak cocok atau terputus. Silakan coba kembali."
+                        errorMessage = errAiFormat
                     )
                     return@launch
                 }
@@ -101,7 +117,7 @@ class GenerateTripViewModel(
             } catch (e: Exception) {
                 _uiState.value = GenerateTripUiState(
                     isLoading = false,
-                    errorMessage = "Terjadi kegagalan jaringan: ${e.message}"
+                    errorMessage = errNetwork(e.message ?: "Unknown")
                 )
             }
         }

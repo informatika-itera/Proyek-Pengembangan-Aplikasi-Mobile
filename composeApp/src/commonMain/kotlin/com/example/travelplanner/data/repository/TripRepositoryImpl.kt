@@ -17,6 +17,7 @@ class TripRepositoryImpl(
     private val database: TravelPlannerDatabase
 ) : TripRepository {
 
+    private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
     private val queries = database.travelDatabaseQueries
 
     override fun getAllTrips(): Flow<List<Trip>> {
@@ -29,11 +30,11 @@ class TripRepositoryImpl(
                         id = entity.id,
                         destination = entity.city,
                         startDate = entity.start_date,
-                        endDate = entity.start_date,
+                        endDate = extractEndDate(entity.start_date, entity.duration),
                         duration = entity.duration,
                         vibe = entity.vibes,
                         itineraryItems = try {
-                            Json.decodeFromString<List<ItineraryItem>>(entity.itinerary_json)
+                            jsonParser.decodeFromString<List<ItineraryItem>>(entity.itinerary_json)
                         } catch (e: Exception) {
                             emptyList()
                         }
@@ -52,11 +53,11 @@ class TripRepositoryImpl(
                         id = it.id,
                         destination = it.city,
                         startDate = it.start_date,
-                        endDate = it.start_date,
+                        endDate = extractEndDate(it.start_date, it.duration),
                         duration = it.duration,
                         vibe = it.vibes,
                         itineraryItems = try {
-                            Json.decodeFromString<List<ItineraryItem>>(it.itinerary_json)
+                            jsonParser.decodeFromString<List<ItineraryItem>>(it.itinerary_json)
                         } catch (e: Exception) {
                             emptyList()
                         }
@@ -66,7 +67,7 @@ class TripRepositoryImpl(
     }
 
     override suspend fun saveTrip(trip: Trip) {
-        val itineraryJson = Json.encodeToString(trip.itineraryItems)
+        val itineraryJson = jsonParser.encodeToString(trip.itineraryItems)
         queries.insertTrip(
             id = trip.id,
             user_id = null,
@@ -81,5 +82,16 @@ class TripRepositoryImpl(
 
     override suspend fun deleteTrip(id: String) {
         queries.deleteTrip(id)
+    }
+
+    private fun extractEndDate(startDate: String, duration: String): String {
+        val durationParts = duration.split("|")
+        val dateRange = durationParts.getOrNull(1) ?: return startDate
+        val dates = if (dateRange.contains(" – ")) {
+            dateRange.split(" – ")
+        } else {
+            dateRange.split("-")
+        }
+        return dates.getOrNull(1)?.trim() ?: startDate
     }
 }

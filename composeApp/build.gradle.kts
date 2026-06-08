@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kover)
 }
 
 // Load local.properties for API keys
@@ -89,6 +90,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            implementation(libs.mockk)
         }
         
         androidMain.dependencies {
@@ -96,6 +98,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.work.runtime.ktx)
         }
         
         iosMain.dependencies {
@@ -108,6 +111,12 @@ kotlin {
 android {
     namespace = "com.example.travelplanner"
     compileSdk = 35
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
     
     defaultConfig {
         applicationId = "com.example.travelplanner"
@@ -154,6 +163,50 @@ sqldelight {
     databases {
         create("TravelPlannerDatabase") {
             packageName.set("com.example.travelplanner.data.local")
+        }
+    }
+}
+
+dependencies {
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.ui.test.junit4)
+    debugImplementation(libs.ui.test.manifest)
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "*Screen*",
+                    "*ScreenKt*",
+                    "*Screen$*",
+                    "*Activity*",
+                    "*Theme*",
+                    "*ThemeKt*",
+                    "*Navigation*",
+                    "*NavigationKt*",
+                    "*Component*",
+                    "*ComponentKt*",
+                    "*Database*",
+                    "*Queries*",
+                    "*Res*",
+                    "*BuildConfig*"
+                )
+                packages(
+                    "com.example.travelplanner.core.di",
+                    "com.example.travelplanner.core.network",
+                    "com.example.travelplanner.core.service",
+                    "com.example.travelplanner.core.util",
+                    "com.example.travelplanner.data.local",
+                    "com.example.travelplanner.data.remote.dto",
+                    "com.example.travelplanner.domain.usecase",
+                    "com.example.travelplanner.presentation.components",
+                    "com.example.travelplanner.presentation.navigation",
+                    "com.example.travelplanner.presentation.screens.profile"
+                )
+            }
         }
     }
 }

@@ -27,9 +27,13 @@ import kotlinx.coroutines.flow.flowOf
 import org.koin.compose.KoinContext
 
 @Composable
-fun App(networkMonitor: NetworkMonitorInterface? = null) {
+fun App(
+    networkMonitor: NetworkMonitorInterface? = null,
+    initialIsEnglish: Boolean = false,
+    onLanguageChange: ((Boolean) -> Unit)? = null
+) {
     var isDarkMode by remember { mutableStateOf(false) }
-    var isEnglish  by remember { mutableStateOf(false) }
+    var isEnglish  by remember { mutableStateOf(initialIsEnglish) }
     val strings    = if (isEnglish) StringsEN else StringsID
 
     // Collect connectivity state — default to true (online) if no monitor
@@ -66,7 +70,10 @@ fun App(networkMonitor: NetworkMonitorInterface? = null) {
                                 isDarkMode       = isDarkMode,
                                 onToggleDarkMode = { isDarkMode = !isDarkMode },
                                 isEnglish        = isEnglish,
-                                onToggleLanguage = { isEnglish = !isEnglish },
+                                onToggleLanguage = {
+                                    isEnglish = !isEnglish
+                                    onLanguageChange?.invoke(isEnglish)
+                                },
                                 navController    = navController
                             )
                         }

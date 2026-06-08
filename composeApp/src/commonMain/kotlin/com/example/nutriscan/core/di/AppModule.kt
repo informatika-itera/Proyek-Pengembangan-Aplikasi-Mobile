@@ -28,15 +28,15 @@ import com.example.nutriscan.domain.usecase.GetUserProfileUseCase
 import com.example.nutriscan.domain.usecase.HasUserProfileUseCase
 import com.example.nutriscan.domain.usecase.SaveUserProfileUseCase
 import com.example.nutriscan.domain.usecase.UpdateUserProfileUseCase
+import com.example.nutriscan.presentation.screens.auth.LoginViewModel
+import com.example.nutriscan.presentation.screens.consultation.ChatViewModel
+import com.example.nutriscan.presentation.screens.consultation.ConsultationViewModel
+import com.example.nutriscan.presentation.screens.consultation.NutritionistDashboardViewModel
 import com.example.nutriscan.presentation.screens.history.HistoryViewModel
 import com.example.nutriscan.presentation.screens.home.HomeViewModel
 import com.example.nutriscan.presentation.screens.onboarding.OnboardingViewModel
 import com.example.nutriscan.presentation.screens.profile.ProfileViewModel
 import com.example.nutriscan.presentation.screens.result.ResultViewModel
-import com.example.nutriscan.presentation.screens.auth.LoginViewModel
-import com.example.nutriscan.presentation.screens.consultation.ChatViewModel
-import com.example.nutriscan.presentation.screens.consultation.ConsultationViewModel
-import com.example.nutriscan.presentation.screens.consultation.NutritionistDashboardViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -75,11 +75,12 @@ val preferencesModule = module {
 val repositoryModule = module {
     singleOf(::UserProfileRepositoryImpl) bind UserProfileRepository::class
     singleOf(::ScanHistoryRepositoryImpl) bind ScanHistoryRepository::class
-    singleOf(::AIRepositoryImpl)          bind AIRepository::class
-    singleOf(::SessionRepositoryImpl)     bind SessionRepository::class
+    singleOf(::AIRepositoryImpl)           bind AIRepository::class
+    singleOf(::ProductRepositoryImpl)      bind ProductRepository::class
+    singleOf(::ConsumptionRepositoryImpl)  bind ConsumptionRepository::class
     singleOf(::ConsultationRepositoryImpl) bind ConsultationRepository::class
-    singleOf(::ProductRepositoryImpl)     bind ProductRepository::class
-    singleOf(::ConsumptionRepositoryImpl) bind ConsumptionRepository::class
+    // SessionRepositoryImpl butuh UserProfileRepository — pastikan urutan benar
+    singleOf(::SessionRepositoryImpl)      bind SessionRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -96,26 +97,31 @@ val useCaseModule = module {
 // ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
+    // ViewModels tanpa parameter runtime — Koin auto-inject semua dependency
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::HomeViewModel)
-    viewModelOf(::ProfileViewModel)
     viewModelOf(::HistoryViewModel)
+    viewModelOf(::ProfileViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::ConsultationViewModel)
     viewModelOf(::NutritionistDashboardViewModel)
-    // ResultViewModel receives barcode as parameter — use parametersOf at call site
+
+    // ResultViewModel — menerima barcode sebagai runtime parameter
+    // Panggil dari screen: koinViewModel(parameters = { parametersOf(barcode) })
     viewModel { params ->
         ResultViewModel(
-            barcode                = params.get(),
-            userProfileRepository  = get(),
-            scanHistoryRepository  = get(),
-            productRepository      = get(),
+            barcode                 = params.get(),
+            userProfileRepository   = get(),
+            scanHistoryRepository   = get(),
+            productRepository       = get(),
             analyzeNutritionUseCase = get(),
-            aiRepository           = get(),
-            consumptionRepository  = get()
+            aiRepository            = get(),
+            consumptionRepository   = get()
         )
     }
-    // ChatViewModel receives conversationId as parameter
+
+    // ChatViewModel — menerima conversationId sebagai runtime parameter
+    // Panggil dari screen: koinViewModel(parameters = { parametersOf(conversationId) })
     viewModel { params ->
         ChatViewModel(
             conversationId         = params.get(),

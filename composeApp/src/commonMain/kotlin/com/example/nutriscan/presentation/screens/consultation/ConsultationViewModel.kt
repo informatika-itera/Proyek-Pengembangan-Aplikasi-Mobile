@@ -37,9 +37,9 @@ class ConsultationViewModel(
         userProfileRepository.getProfile(),
         error
     ) { session, conversations, profile, err ->
-        // Prefer the onboarding profile name for users (login name is optional).
         val userName = profile?.name?.takeIf { it.isNotBlank() }
             ?: session.userName.ifBlank { "Pengguna" }
+
         ConsultationUiState(
             coins = session.coins,
             userName = userName,
@@ -55,28 +55,44 @@ class ConsultationViewModel(
         initialValue = ConsultationUiState()
     )
 
-    /**
-     * Open (or start) a consultation. Re-opening an existing conversation is free;
-     * starting a new one deducts the nutritionist's [Nutritionist.pricePerChat].
-     */
-    fun startConsultation(nutritionist: Nutritionist, onOpen: (Long) -> Unit) {
+    fun startConsultation(
+        nutritionist: Nutritionist,
+        onOpen: (Long) -> Unit
+    ) {
         viewModelScope.launch {
             val state = uiState.value
-            val existing = state.conversations.find { it.nutritionistId == nutritionist.id }
+
+            val existing = state.conversations.find {
+                it.nutritionistId == nutritionist.id
+            }
+
             if (existing != null) {
                 onOpen(existing.id)
                 return@launch
             }
+
             val paid = sessionRepository.trySpend(nutritionist.pricePerChat)
+
             if (!paid) {
-                error.value = "Coin tidak cukup. Kamu butuh ${nutritionist.pricePerChat} coin — top up dulu ya!"
+                error.value =
+                    "Coin tidak cukup. Kamu butuh ${nutritionist.pricePerChat} coin — top up dulu ya!"
                 return@launch
             }
+
             val userName = state.userName.ifBlank { "Pengguna" }
-            val id = consultationRepository.startOrGetConversation(nutritionist, userName)
-            onOpen(id)
+
+            val conversation = consultationRepository.startOrGetConversation(
+                nutritionistId = nutritionist.id,
+                nutritionistName = nutritionist.name,
+                nutritionistSpecialty = nutritionist.specialty,
+                userName = userName
+            )
+
+            onOpen(conversation.id)
         }
     }
 
-    fun consumeError() { error.value = null }
+    fun consumeError() {
+        error.value = null
+    }
 }

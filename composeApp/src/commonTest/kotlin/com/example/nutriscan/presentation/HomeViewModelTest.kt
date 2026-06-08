@@ -1,15 +1,16 @@
 package com.example.nutriscan.presentation
 
 import app.cash.turbine.test
-import com.example.nutriscan.data.repository.FakeNoteRepository
-import com.example.nutriscan.domain.model.Note
-import com.example.nutriscan.domain.model.NoteCategory
-import com.example.nutriscan.domain.model.NoteColor
-import com.example.nutriscan.domain.repository.NoteRepository
-import com.example.nutriscan.domain.usecase.DeleteNoteUseCase
-import com.example.nutriscan.domain.usecase.GetAllNotesUseCase
-import com.example.nutriscan.domain.usecase.NoteSortBy
-import com.example.nutriscan.domain.usecase.SearchNotesUseCase
+import com.example.nutriscan.data.repository.FakeConsumptionRepository
+import com.example.nutriscan.data.repository.FakeScanHistoryRepository
+import com.example.nutriscan.data.repository.FakeSessionRepository
+import com.example.nutriscan.data.repository.FakeUserProfileRepository
+import com.example.nutriscan.domain.model.Nutriments
+import com.example.nutriscan.domain.model.NutritionAnalysis
+import com.example.nutriscan.domain.model.NutritionStatus
+import com.example.nutriscan.domain.model.Product
+import com.example.nutriscan.domain.model.ScanResult
+import com.example.nutriscan.domain.model.UserProfile
 import com.example.nutriscan.presentation.screens.home.HomeUiState
 import com.example.nutriscan.presentation.screens.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,240 +20,111 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.datetime.Clock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertIs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Unit Tests untuk HomeViewModel
- * 
- * Testing Guidelines:
- * 1. Setup test dispatcher untuk control coroutines
- * 2. Gunakan Turbine untuk test StateFlow
- * 3. Test UI state transformations
- * 4. Test user actions
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    
+
     private val testDispatcher = StandardTestDispatcher()
-    
-    private lateinit var repository: FakeNoteRepository
-    private lateinit var getAllNotesUseCase: GetAllNotesUseCase
-    private lateinit var searchNotesUseCase: SearchNotesUseCase
-    private lateinit var deleteNoteUseCase: DeleteNoteUseCase
+
+    private lateinit var scanHistoryRepository: FakeScanHistoryRepository
+    private lateinit var userProfileRepository: FakeUserProfileRepository
+    private lateinit var consumptionRepository: FakeConsumptionRepository
+    private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var viewModel: HomeViewModel
-    
+
+    private fun makeScan(name: String, barcode: String = "000") = ScanResult(
+        product  = Product(barcode = barcode, name = name, nutriments = Nutriments()),
+        analysis = NutritionAnalysis(overallStatus = NutritionStatus.SAFE)
+    )
+
+    private fun makeProfile() = UserProfile(
+        name = "Test User", age = 25, weight = 65f, height = 170f
+    )
+
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        
-        repository = FakeNoteRepository()
-        getAllNotesUseCase = GetAllNotesUseCase(repository)
-        searchNotesUseCase = SearchNotesUseCase(repository)
-        deleteNoteUseCase = DeleteNoteUseCase(repository)
-        
+        scanHistoryRepository = FakeScanHistoryRepository()
+        userProfileRepository = FakeUserProfileRepository()
+        consumptionRepository = FakeConsumptionRepository()
+        sessionRepository     = FakeSessionRepository()
         viewModel = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
+            scanHistoryRepository = scanHistoryRepository,
+            userProfileRepository = userProfileRepository,
+            sessionRepository     = sessionRepository,
+            consumptionRepository = consumptionRepository
         )
     }
-    
+
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
     }
-    
-    // ==================== UI STATE TESTS ====================
-    
+
     @Test
-    fun `initial state should be Loading then Empty`() = runTest {
+    fun `state awal harus Loading`() {
+        assertIs<HomeUiState.Loading>(viewModel.uiState.value)
+    }
+
+    @Test
+    fun `state berubah ke Ready setelah profile ada`() = runTest {
+        userProfileRepository.saveProfile(makeProfile())
+
         viewModel.uiState.test {
-            // Initial loading state
-            val loading = awaitItem()
-            assertTrue(loading is HomeUiState.Loading)
-            
-            // After loading, should be empty (no notes)
+            skipItems(1) // Loading
             advanceUntilIdle()
-            val empty = awaitItem()
-            assertTrue(empty is HomeUiState.Empty)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    @Test
-    fun `state should be Success when notes exist`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Note 1"))
-        repository.insertNote(createTestNote("Note 2"))
-        
-        // Create new viewmodel after inserting notes
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        // Act & Assert
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
-            
             val state = awaitItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(2, (state as HomeUiState.Success).notes.size)
-            
+            assertIs<HomeUiState.Ready>(state)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== SEARCH TESTS ====================
-    
+
     @Test
-    fun `search should filter notes by query`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Kotlin Guide"))
-        repository.insertNote(createTestNote("Java Tutorial"))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
-            skipItems(1) // Skip loading
-            advanceUntilIdle()
-            skipItems(1) // Skip initial success
-            
-            // Act
-            vm.onSearchQueryChange("Kotlin")
-            advanceUntilIdle()
-            
-            // Assert - wait for debounce
-            testScheduler.advanceTimeBy(400)
-            advanceUntilIdle()
-            
-            val state = expectMostRecentItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals("Kotlin Guide", state.notes.first().title)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    @Test
-    fun `clearSearch should reset query`() = runTest {
-        // Act
-        viewModel.onSearchQueryChange("test query")
-        viewModel.clearSearch()
-        
-        // Assert
+    fun `totalScans nol saat history kosong`() = runTest {
+        userProfileRepository.saveProfile(makeProfile())
+
         viewModel.uiState.test {
+            skipItems(1)
+            advanceUntilIdle()
+            val state = awaitItem() as? HomeUiState.Ready
+            assertEquals(0, state?.dashboard?.totalScans ?: -1)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `totalScans bertambah setelah saveScan`() = runTest {
+        userProfileRepository.saveProfile(makeProfile())
+        scanHistoryRepository.saveScan(makeScan("Aqua", "111"))
+        scanHistoryRepository.saveScan(makeScan("Indomie", "222"))
+
+        viewModel.uiState.test {
+            skipItems(1)
+            advanceUntilIdle()
+            val state = awaitItem() as? HomeUiState.Ready
+            assertTrue((state?.dashboard?.totalScans ?: 0) > 0)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `dashboard userName sesuai profile`() = runTest {
+        userProfileRepository.saveProfile(makeProfile())
+
+        viewModel.uiState.test {
+            skipItems(1)
+            advanceUntilIdle()
             val state = awaitItem()
-            when (state) {
-                is HomeUiState.Success -> assertEquals("", state.query)
-                is HomeUiState.Empty -> assertEquals("", state.query)
-                else -> {} // OK
+            if (state is HomeUiState.Ready) {
+                assertEquals("Test User", state.dashboard.userName)
             }
             cancelAndIgnoreRemainingEvents()
         }
-    }
-    
-    // ==================== CATEGORY FILTER TESTS ====================
-    
-    @Test
-    fun `category filter should filter notes`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote("Work Note", category = NoteCategory.WORK))
-        repository.insertNote(createTestNote("Personal Note", category = NoteCategory.PERSONAL))
-        
-        val vm = HomeViewModel(
-            getAllNotesUseCase = getAllNotesUseCase,
-            searchNotesUseCase = searchNotesUseCase,
-            deleteNoteUseCase = deleteNoteUseCase,
-            repository = repository
-        )
-        
-        vm.uiState.test {
-            skipItems(1) // Loading
-            advanceUntilIdle()
-            skipItems(1) // Initial success
-            
-            // Act
-            vm.onCategorySelected(NoteCategory.WORK)
-            advanceUntilIdle()
-            
-            // Assert
-            val state = expectMostRecentItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals(NoteCategory.WORK, state.notes.first().category)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== ACTION TESTS ====================
-    
-    @Test
-    fun `togglePin should toggle note pin status`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Pin Me"))
-        
-        // Act
-        viewModel.togglePin(noteId)
-        advanceUntilIdle()
-        
-        // Assert
-        repository.getNoteById(noteId).test {
-            val note = awaitItem()
-            assertTrue(note?.isPinned == true)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    @Test
-    fun `deleteNote should remove note`() = runTest {
-        // Arrange
-        val noteId = repository.insertNote(createTestNote("Delete Me"))
-        
-        // Act
-        viewModel.deleteNote(noteId)
-        advanceUntilIdle()
-        
-        // Assert
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertTrue(notes.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== HELPER FUNCTIONS ====================
-    
-    private fun createTestNote(
-        title: String,
-        category: NoteCategory = NoteCategory.GENERAL
-    ): Note {
-        return Note(
-            id = 0,
-            title = title,
-            content = "Test content",
-            category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = false,
-            createdAt = Clock.System.now(),
-            updatedAt = Clock.System.now()
-        )
     }
 }

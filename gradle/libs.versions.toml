@@ -8,16 +8,18 @@ kotlinx-datetime = "0.6.1"
 ktor = "3.0.1"
 koin = "4.0.0"
 sqldelight = "2.0.2"
+kover = "0.8.3"
 datastore = "1.1.1"
 okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+mockk = "1.13.10"
 
-# Barcode Scanner (Android - ML Kit)
+# Barcode Scanner
 mlkit-barcode = "17.3.0"
 
-# CameraX (Android - untuk preview kamera di scanner)
+# CameraX
 camerax = "1.4.1"
 
 # Testing
@@ -49,11 +51,12 @@ sqldelight-runtime = { group = "app.cash.sqldelight", name = "runtime", version.
 sqldelight-coroutines = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
 sqldelight-android-driver = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqldelight" }
 sqldelight-native-driver = { group = "app.cash.sqldelight", name = "native-driver", version.ref = "sqldelight" }
+sqldelight-sqlite-driver = { group = "app.cash.sqldelight", name = "sqlite-driver", version.ref = "sqldelight" }
 
 # DataStore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 
-# Okio (dipakai bersama DataStore untuk path penyimpanan)
+# Okio
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 
 # Lifecycle & ViewModel
@@ -63,25 +66,24 @@ lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name =
 # Navigation
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 
-# Coil (Image Loading)
+# Coil
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
 
-# ─── NUTRISCAN ADDITIONS ────────────────────────────────────────────────────
-
-# ML Kit Barcode Scanning (Android only - via expect/actual)
-# Digunakan di androidMain untuk scan barcode produk makanan/minuman
+# ML Kit Barcode Scanning
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode" }
 
-# CameraX (Android only - untuk preview kamera saat scan)
+# CameraX
 camerax-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
 camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 
-# ─── TESTING ────────────────────────────────────────────────────────────────
+# Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+mockk-common = { group = "io.mockk", name = "mockk-common", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -91,3 +93,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

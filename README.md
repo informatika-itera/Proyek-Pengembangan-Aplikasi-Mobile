@@ -226,7 +226,13 @@ Analisis didasarkan pada **% Angka Kecukupan Gizi (AKG)** harian yang disesuaika
 
 ---
 
-[![Demo NutriScan](https://img.shields.io/badge/▶%20Demo%20Video-Google%20Drive-blue?style=for-the-badge&logo=google-drive)](https://drive.google.com/file/d/1OgK3ieI7e-v-M9r-Y9AN1-Yo9KPTCx73/view?usp=sharing)
+[![Demo NutriScan](https://img.shields.io/badge/▶%20Demo%20Video-Google%20Drive-blue?style=for-the-badge&logo=google-drive)](https://drive.google.com/file/d/1RXEF24xgiuptpOwfNTZz1h-6iBXPDWQD/view?usp=sharing)
+
+## 📊 Coverage Report
+
+<p align="center">
+  <img src="docs/images/coverage-report.png" alt="Coverage Report NutriScan" width="800"/>
+</p>
 
 ---
 ## 📄 Lisensi

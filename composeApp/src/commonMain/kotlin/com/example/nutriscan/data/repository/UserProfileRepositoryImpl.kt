@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
+import com.example.nutriscan.data.repository.ConsumptionRepositoryImpl
+import com.example.nutriscan.domain.repository.ConsumptionRepository
 
 class UserProfileRepositoryImpl(
     private val database: NutriScanDatabase

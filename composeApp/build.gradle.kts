@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.util.Properties
 
 plugins {
@@ -8,9 +9,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+
+    // Coverage: Kover untuk Kotlin/KMP, JaCoCo sebagai fallback Android unit test.
+    id("org.jetbrains.kotlinx.kover")
+    jacoco
 }
 
-// Load local.properties for API keys
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
@@ -42,17 +46,14 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
-            // CameraX
             implementation(libs.camerax.core)
             implementation(libs.camerax.camera2)
             implementation(libs.camerax.lifecycle)
             implementation(libs.camerax.view)
-            // ML Kit Barcode Scanning
             implementation(libs.mlkit.barcode.scanning)
         }
 
         commonMain.dependencies {
-            // Compose
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -60,39 +61,23 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-
-            // Kotlin
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-
-            // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
-
-            // Koin DI
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-
-            // SQLDelight
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-
-            // DataStore + Okio
             implementation(libs.datastore.preferences)
             implementation(libs.okio)
-
-            // Lifecycle & ViewModel
             implementation(libs.lifecycle.viewmodel)
             implementation(libs.lifecycle.runtime.compose)
-
-            // Navigation
             implementation(libs.navigation.compose)
-
-            // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
@@ -101,6 +86,14 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+        }
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.mockk.android)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.sqldelight.sqlite.driver)
+            }
         }
 
         iosMain.dependencies {
@@ -121,12 +114,13 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        // Inject API key from local.properties
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     packaging {
@@ -136,6 +130,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            // Dibutuhkan agar testDebugUnitTest menghasilkan file .exec untuk JaCoCo.
+            enableUnitTestCoverage = true
+        }
+
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(
@@ -153,6 +152,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 sqldelight {
@@ -163,6 +168,118 @@ sqldelight {
     }
 }
 
+// ── Coverage Configuration ────────────────────────────────────────────────
+// Kover digunakan sesuai materi Sprint 4.
+// Command utama:
+// ./gradlew koverHtmlReport
+//
+// Command module:
+// ./gradlew :composeApp:koverHtmlReport
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "*.BuildConfig",
+                    "*.BuildConfig.*",
+                    "*.Manifest*",
+                    "*.R",
+                    "*.R.*",
+                    "*ComposableSingletons*",
+                    "*Preview*",
+                    "*Database*",
+                    "*Queries*",
+                    "*MainActivity*",
+                    "*Application*"
+                )
+
+                packages(
+                    "com.example.nutriscan.presentation.theme",
+                    "com.example.nutriscan.presentation.navigation",
+                    "com.example.nutriscan.core.di"
+                )
+            }
+        }
+    }
+}
+
+// Fallback JaCoCo.
+// Jalankan:
+// ./gradlew :composeApp:jacocoTestReport
+//
+// Output:
+// composeApp/build/reports/jacoco/html/index.html
+tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Generate JaCoCo coverage report for Android debug unit tests."
+
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/html"))
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/jacocoTestReport.xml"))
+    }
+
+    val excludes = listOf(
+        "**/BuildConfig.*",
+        "**/BuildConfig*",
+        "**/R.class",
+        "**/R$*.class",
+        "**/*Database*.*",
+        "**/*Queries*.*",
+        "**/ComposableSingletons*.*",
+        "**/di/**",
+        "**/theme/**",
+        "**/navigation/**",
+        "**/*Activity*.*",
+        "**/*Application*.*"
+    )
+
+    sourceDirectories.setFrom(
+        files(
+            "src/commonMain/kotlin",
+            "src/androidMain/kotlin"
+        )
+    )
+
+    classDirectories.setFrom(
+        files(
+            fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) {
+                exclude(excludes)
+            },
+            fileTree(layout.buildDirectory.dir("intermediates/javac/debug/classes")) {
+                exclude(excludes)
+            }
+        )
+    )
+
+    executionData.setFrom(
+        fileTree(layout.buildDirectory) {
+            include(
+                "outputs/unit_test_code_coverage/debugUnitTest/*.exec",
+                "outputs/unit_test_code_coverage/debugUnitTest/**/*.exec",
+                "jacoco/*.exec",
+                "jacoco/**/*.exec",
+                "**/*.ec"
+            )
+        }
+    )
+}
+
+// Supaya `check` ikut menjalankan unit test Android.
+tasks.named("check") {
+    dependsOn("testDebugUnitTest")
+}
+
 dependencies {
     debugImplementation(compose.uiTooling)
+
+    // Compose UI test, butuh emulator/device.
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.5")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.5")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
 }

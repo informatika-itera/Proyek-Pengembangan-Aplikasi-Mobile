@@ -1,0 +1,95 @@
+CREATE TABLE Anime (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    mal_id INTEGER NOT NULL,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE AnimeEpisodeProgress (
+    anime_id INTEGER NOT NULL,
+    episode_number INTEGER NOT NULL,
+    watched INTEGER NOT NULL DEFAULT 0,
+    marked INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL,
+    PRIMARY KEY(anime_id, episode_number)
+);
+
+CREATE TABLE AnimeDetailCache (
+    anime_id INTEGER NOT NULL PRIMARY KEY,
+    detail_json TEXT NOT NULL,
+    episodes_json TEXT NOT NULL,
+    cached_at INTEGER NOT NULL
+);
+
+getWatchedEpisodeNumbers:
+SELECT episode_number
+FROM AnimeEpisodeProgress
+WHERE anime_id = ? AND watched = 1
+ORDER BY episode_number ASC;
+
+getMarkedEpisodeNumbers:
+SELECT episode_number
+FROM AnimeEpisodeProgress
+WHERE anime_id = ? AND marked = 1
+ORDER BY episode_number ASC;
+
+upsertEpisodeWatched:
+INSERT OR REPLACE INTO AnimeEpisodeProgress(
+    anime_id,
+    episode_number,
+    watched,
+    marked,
+    updated_at
+)
+VALUES (
+    :anime_id,
+    :episode_number,
+    :watched,
+    COALESCE(
+        (
+            SELECT marked
+            FROM AnimeEpisodeProgress
+            WHERE anime_id = :anime_id
+              AND episode_number = :episode_number
+        ),
+        0
+    ),
+    :updated_at
+);
+
+upsertEpisodeMarked:
+INSERT OR REPLACE INTO AnimeEpisodeProgress(
+    anime_id,
+    episode_number,
+    watched,
+    marked,
+    updated_at
+)
+VALUES (
+    :anime_id,
+    :episode_number,
+    COALESCE(
+        (
+            SELECT watched
+            FROM AnimeEpisodeProgress
+            WHERE anime_id = :anime_id
+              AND episode_number = :episode_number
+        ),
+        0
+    ),
+    :marked,
+    :updated_at
+);
+
+getAnimeDetailCache:
+SELECT *
+FROM AnimeDetailCache
+WHERE anime_id = ?;
+
+upsertAnimeDetailCache:
+INSERT OR REPLACE INTO AnimeDetailCache(
+    anime_id,
+    detail_json,
+    episodes_json,
+    cached_at
+)
+VALUES (?, ?, ?, ?);

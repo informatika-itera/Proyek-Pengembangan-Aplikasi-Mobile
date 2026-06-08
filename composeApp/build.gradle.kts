@@ -1,4 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+import java.io.File
+import java.time.Instant
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,9 +17,13 @@ plugins {
     alias(libs.plugins.sqldelight)
 }
 
+compose.resources {
+    packageOfResClass = "id.my.sinanonym.mybawanggacha.generated.resources"
+}
+
 kotlin {
     androidLibrary {
-        namespace = "com.example.mybawanggacha.shared"
+        namespace = "id.my.sinanonym.mybawanggacha.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         compilerOptions {
@@ -41,6 +53,10 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqlDelight.native.driver)
+        }
+
+        commonMain {
+            kotlin.srcDir(layout.buildDirectory.dir("generated/build-info/commonMain/kotlin"))
         }
 
         commonMain.dependencies {
@@ -110,7 +126,198 @@ dependencies {
 sqldelight {
     databases {
         create("NoteDatabase") {
-            packageName.set("com.example.mybawanggacha.data.local")
+            packageName.set("id.my.sinanonym.mybawanggacha.data.local")
         }
+    }
+}
+
+// ==================== BUILD INFO CONFIGURATION ====================
+
+abstract class GenerateBuildInfoTask : DefaultTask() {
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:Input
+    abstract val repositoryRoot: Property<String>
+
+    @get:Input
+    abstract val versionName: Property<String>
+
+    @get:Input
+    abstract val versionCode: Property<String>
+
+    @get:Input
+    abstract val buildProfile: Property<String>
+
+    @get:Input
+    abstract val buildTarget: Property<String>
+
+    @get:Input
+    abstract val repository: Property<String>
+
+    @get:Input
+    abstract val branchOverride: Property<String>
+
+    @get:Input
+    abstract val commitOverride: Property<String>
+
+    @get:Input
+    abstract val commitStateOverride: Property<String>
+
+    @get:Input
+    abstract val buildDateOverride: Property<String>
+
+    @get:Input
+    abstract val ci: Property<String>
+
+    @get:Input
+    abstract val runId: Property<String>
+
+    @TaskAction
+    fun generate() {
+        val generatedDir = outputDir.get().asFile.resolve("id/my/sinanonym/mybawanggacha/core/build")
+        generatedDir.mkdirs()
+
+        val branch = branchOverride.get().takeKnown()
+            ?: gitOutput("rev-parse", "--abbrev-ref", "HEAD")
+        val commit = commitOverride.get().takeKnown()
+            ?: gitOutput("rev-parse", "HEAD")
+        val commitState = commitStateOverride.get().takeKnown()
+            ?: gitCommitState()
+        val buildDate = buildDateOverride.get().takeKnown()
+            ?: Instant.now().toString()
+
+        val content = """
+            package id.my.sinanonym.mybawanggacha.core.build
+
+            internal object GeneratedBuildInfo {
+                const val VERSION_NAME = "${kotlinStringLiteral(versionName.get())}"
+                const val VERSION_CODE = "${kotlinStringLiteral(versionCode.get())}"
+                const val BUILD_PROFILE = "${kotlinStringLiteral(buildProfile.get())}"
+                const val BUILD_TARGET = "${kotlinStringLiteral(buildTarget.get())}"
+                const val REPOSITORY = "${kotlinStringLiteral(repository.get())}"
+                const val BRANCH = "${kotlinStringLiteral(branch)}"
+                const val COMMIT = "${kotlinStringLiteral(commit)}"
+                const val COMMIT_STATE = "${kotlinStringLiteral(commitState)}"
+                const val BUILD_DATE = "${kotlinStringLiteral(buildDate)}"
+                const val CI = "${kotlinStringLiteral(ci.get())}"
+                const val RUN_ID = "${kotlinStringLiteral(runId.get())}"
+            }
+        """.trimIndent()
+
+        generatedDir.resolve("GeneratedBuildInfo.kt").writeText(content)
+    }
+
+    private fun gitCommitState(): String {
+        val status = gitOutput("status", "--porcelain")
+
+        return when {
+            status == "not embedded" -> "not embedded"
+            status.isBlank() -> "clean"
+            else -> "dirty"
+        }
+    }
+
+    private fun gitOutput(vararg args: String): String {
+        return try {
+            val process = ProcessBuilder(listOf("git", *args))
+                .directory(File(repositoryRoot.get()))
+                .redirectErrorStream(true)
+                .start()
+
+            val output = process.inputStream.bufferedReader().readText().trim()
+            val exitCode = process.waitFor()
+
+            if (exitCode == 0) {
+                output.ifBlank { "not embedded" }
+            } else {
+                "not embedded"
+            }
+        } catch (_: Exception) {
+            "not embedded"
+        }
+    }
+
+    private fun String.takeKnown(): String? {
+        return takeIf { value ->
+            value.isNotBlank() && !value.equals("not embedded", ignoreCase = true)
+        }
+    }
+
+    private fun kotlinStringLiteral(value: String): String {
+        return value
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+    }
+}
+
+val generateBuildInfo = tasks.register<GenerateBuildInfoTask>("generateBuildInfo") {
+    outputDir.set(layout.buildDirectory.dir("generated/build-info/commonMain/kotlin"))
+    repositoryRoot.set(rootDir.absolutePath)
+
+    versionName.set(
+        providers.gradleProperty("app.versionName")
+            .orElse(providers.environmentVariable("APP_VERSION_NAME"))
+            .orElse("1.0-rc3")
+    )
+    versionCode.set(
+        providers.gradleProperty("app.versionCode")
+            .orElse(providers.environmentVariable("APP_VERSION_CODE"))
+            .orElse(providers.environmentVariable("GITHUB_RUN_NUMBER"))
+            .orElse("not embedded")
+    )
+    buildProfile.set(
+        providers.gradleProperty("buildProfile")
+            .orElse(providers.environmentVariable("BUILD_PROFILE"))
+            .orElse(if (providers.environmentVariable("CI").orNull == "true") "ci" else "local")
+    )
+    buildTarget.set(
+        providers.gradleProperty("buildTarget")
+            .orElse(providers.environmentVariable("BUILD_TARGET"))
+            .orElse("Kotlin Multiplatform")
+    )
+    repository.set(
+        providers.gradleProperty("buildRepository")
+            .orElse(providers.environmentVariable("GITHUB_REPOSITORY").map { "https://github.com/$it" })
+            .orElse("https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile")
+    )
+    branchOverride.set(
+        providers.gradleProperty("buildBranch")
+            .orElse(providers.environmentVariable("GITHUB_REF_NAME"))
+            .orElse("not embedded")
+    )
+    commitOverride.set(
+        providers.gradleProperty("buildCommit")
+            .orElse(providers.environmentVariable("GITHUB_SHA"))
+            .orElse("not embedded")
+    )
+    commitStateOverride.set(
+        providers.gradleProperty("buildCommitState")
+            .orElse("not embedded")
+    )
+    buildDateOverride.set(
+        providers.gradleProperty("buildDate")
+            .orElse(providers.environmentVariable("BUILD_DATE"))
+            .orElse("not embedded")
+    )
+    ci.set(
+        providers.gradleProperty("buildCi")
+            .orElse(providers.environmentVariable("CI"))
+            .orElse("false")
+    )
+    runId.set(
+        providers.gradleProperty("buildRunId")
+            .orElse(providers.environmentVariable("GITHUB_RUN_ID"))
+            .orElse("not embedded")
+    )
+
+    outputs.upToDateWhen { false }
+}
+
+tasks.configureEach {
+    if (name.startsWith("compile") || name.startsWith("assemble")) {
+        dependsOn(generateBuildInfo)
     }
 }

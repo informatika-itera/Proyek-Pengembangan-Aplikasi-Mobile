@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS AiChatMessageEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    session_key TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);

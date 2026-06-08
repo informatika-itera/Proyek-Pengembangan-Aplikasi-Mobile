@@ -1,0 +1,176 @@
+name: Release Dry Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Dry-run version name. Leave empty for automatic dry version.
+        required: false
+        default: ""
+        type: string
+  pull_request:
+    branches: [ main ]
+    paths:
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-dry-build.yml"
+      - "androidApp/**"
+      - "composeApp/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+
+permissions:
+  contents: read
+
+jobs:
+  android-dry-build:
+    name: Android release dry build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve dry version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            short_sha="${GITHUB_SHA::7}"
+            version="0.0.0-dry.${GITHUB_RUN_NUMBER}.${short_sha}"
+          fi
+          echo "DRY_VERSION=$version" >> "$GITHUB_ENV"
+          echo "Dry build version: $version"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x ./gradlew
+
+      - name: Compile shared Kotlin metadata
+        run: ./gradlew :composeApp:compileKotlinMetadata -PbuildProfile=release -PbuildTarget=metadata -Papp.versionName=${DRY_VERSION}
+
+      - name: Compile unit test sources
+        run: ./gradlew :composeApp:assembleUnitTest -PbuildProfile=release -PbuildTarget=tests -Papp.versionName=${DRY_VERSION}
+
+      - name: Build Android release APKs
+        run: ./gradlew :androidApp:assembleRelease -PbuildProfile=release -PbuildTarget=Android -Papp.versionName=${DRY_VERSION}
+
+      - name: Rename Android APKs and generate checksums
+        shell: bash
+        run: |
+          version="v${DRY_VERSION#v}"
+          output_dir="release-dry-artifacts/android"
+          mkdir -p "$output_dir"
+
+          find androidApp/build/outputs/apk/release -type f -name "*.apk" -print0 |
+          while IFS= read -r -d '' apk; do
+            apk_name="$(basename "$apk")"
+            arch="universal"
+            case "$apk_name" in
+              *arm64-v8a*) arch="arm-v8a" ;;
+              *armeabi-v7a*) arch="arm-v7a" ;;
+              *x86_64*) arch="x86-64" ;;
+              *universal*) arch="universal" ;;
+            esac
+            cp "$apk" "$output_dir/MyBawangGacha-${version}-${arch}.apk"
+          done
+
+          for arch in arm-v8a arm-v7a x86-64 universal; do
+            if [ ! -f "$output_dir/MyBawangGacha-${version}-${arch}.apk" ]; then
+              echo "::warning::Missing APK for ${arch}"
+            fi
+          done
+
+          if ! find "$output_dir" -type f -name "*.apk" | grep -q .; then
+            echo "No Android APK was produced"
+            exit 1
+          fi
+
+          (
+            cd "$output_dir"
+            shasum -a 256 *.apk | sort > SHA256SUMS
+          )
+
+      - name: Upload Android APKs and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: mybawanggacha-${{ env.DRY_VERSION }}-android-apks
+          path: |
+            release-dry-artifacts/android/*.apk
+            release-dry-artifacts/android/SHA256SUMS
+          if-no-files-found: error
+
+  ios-dry-build:
+    name: iOS simulator dry build (optional)
+    runs-on: macos-latest
+
+    steps:
+      - name: Resolve dry version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            short_sha="${GITHUB_SHA::7}"
+            version="0.0.0-dry.${GITHUB_RUN_NUMBER}.${short_sha}"
+          fi
+          echo "DRY_VERSION=$version" >> "$GITHUB_ENV"
+          echo "Dry build version: $version"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x ./gradlew
+
+      - name: Build iOS simulator artifact (optional)
+        shell: bash
+        run: |
+          set +e
+          ./gradlew :composeApp:compileKotlinIosSimulatorArm64 -PbuildProfile=release -PbuildTarget=iOS-simulator -Papp.versionName=${DRY_VERSION}
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::Optional iOS simulator artifact build failed."
+          fi
+          exit 0
+
+      - name: Collect iOS artifact and generate checksum
+        shell: bash
+        run: |
+          mkdir -p release-dry-artifacts/ios
+          find composeApp/build -type f \( -name "*.klib" -o -name "*.framework.zip" \) -print -exec cp {} release-dry-artifacts/ios/ \; || true
+
+          (
+            cd release-dry-artifacts
+            find . -type f -print0 | sort -z | xargs -0 shasum -a 256 > SHA256SUMS || true
+          )
+
+      - name: Upload iOS dry build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mybawanggacha-${{ env.DRY_VERSION }}-ios-dry-build
+          path: release-dry-artifacts/
+          if-no-files-found: warn

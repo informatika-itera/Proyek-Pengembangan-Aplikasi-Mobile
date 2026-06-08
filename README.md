@@ -2,7 +2,9 @@
 
 #  AI Travel Planner
 
-<video src="docs/demo_TP.mp4" width="100%" controls></video>
+> [!TIP]
+> **[▶️ Tonton Video Demo Aplikasi di Sini](docs/demo_TP.mp4)**
+> *(Klik tautan di atas untuk memutar video demo aplikasi langsung di GitHub)*
 
 Aplikasi **AI Travel Planner** adalah asisten perencana perjalanan berbasis kecerdasan buatan (*Artificial Intelligence*) yang mengotomatisasi penyusunan *itinerary*, pencarian transportasi, rekomendasi akomodasi, dan kalkulasi biaya. Aplikasi ini dibangun secara tangguh menggunakan **Kotlin Multiplatform (KMP)** dengan kepatuhan penuh terhadap prinsip *Clean Architecture* dan pola MVVM untuk memastikan performa *native* di Android dan iOS dari satu basis kode.
 

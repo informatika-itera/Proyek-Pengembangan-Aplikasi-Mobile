@@ -10,13 +10,17 @@ import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
 
 @Composable
-fun App() {
+fun App(
+    skipSplash: Boolean = false
+) {
     KoinContext {
         val userPreferences: UserPreferences = koinInject()
         val isDarkMode by userPreferences.isDarkMode.collectAsStateWithLifecycle(initialValue = false)
-        
+
         FitKosTheme(darkTheme = isDarkMode) {
-            AppNavHost()
+            AppNavHost(
+                skipSplash = skipSplash
+            )
         }
     }
 }

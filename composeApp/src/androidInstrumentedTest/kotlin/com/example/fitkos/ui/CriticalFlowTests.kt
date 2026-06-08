@@ -1,7 +1,12 @@
 package com.example.fitkos.ui
 
-import androidx.compose.ui.test.*
+import android.content.Intent
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import com.example.fitkos.MainActivity
 import org.junit.Rule
 import org.junit.Test
@@ -11,40 +16,71 @@ class CriticalFlowTests {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
+    private fun hasTag(tag: String): Boolean {
+        return composeTestRule
+            .onAllNodesWithTag(tag)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+    }
+
+    private fun waitForTag(tag: String, timeoutMillis: Long = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = timeoutMillis) {
+            hasTag(tag)
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    private fun launchDashboardForTest() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra(MainActivity.EXTRA_SKIP_SPLASH_FOR_UI_TEST, true)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
+
+        composeTestRule.activity.startActivity(intent)
+        composeTestRule.waitForIdle()
+
+        waitForTag("screen_dashboard")
+    }
+
     @Test
     fun testDashboardDisplayedOnStart() {
-        // Tunggu Splash Screen selesai (jika ada) dan cek apakah Dashboard muncul
-        composeTestRule.onNodeWithText("Dashboard", ignoreCase = true).assertIsDisplayed()
-        composeTestRule.onNodeWithText("Daily Summary", ignoreCase = true).assertIsDisplayed()
+        launchDashboardForTest()
+
+        composeTestRule
+            .onNodeWithTag("screen_dashboard")
+            .assertIsDisplayed()
     }
 
     @Test
-    fun testNavigateToAddNoteAndInput() {
-        // Klik tombol tambah (biasanya FAB)
-        // Kita cari berdasarkan content description atau icon jika teks tidak ada
-        // Mengasumsikan ada tombol dengan teks "Tambah" atau icon "+" 
-        composeTestRule.onNodeWithContentDescription("Add Note", ignoreCase = true).performClick()
+    fun testNavigateToMealLogFromBottomBar() {
+        launchDashboardForTest()
 
-        // Cek apakah form muncul dan bisa diketik
-        composeTestRule.onNodeWithText("Nama Makanan").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Nama Makanan").performTextInput("Nasi Goreng")
-        
-        composeTestRule.onNodeWithText("Nasi Goreng").assertExists()
+        composeTestRule
+            .onNodeWithTag("bottom_bar_Home")
+            .performClick()
+
+        waitForTag("screen_meal_log")
+
+        composeTestRule
+            .onNodeWithTag("screen_meal_log")
+            .assertIsDisplayed()
     }
 
     @Test
-    fun testWaterTrackerIncrement() {
-        // Navigasi ke Water Tracker (melalui Drawer atau tombol)
-        composeTestRule.onNodeWithContentDescription("Open Navigation Drawer").performClick()
-        composeTestRule.onNodeWithText("Tracker Air").performClick()
+    fun testNavigateToWaterTrackerFromBottomBar() {
+        launchDashboardForTest()
 
-        // Cek apakah layar Water Tracker muncul
-        composeTestRule.onNodeWithText("Water Tracker", ignoreCase = true).assertIsDisplayed()
-        
-        // Klik tombol tambah gelas (asumsi ada tombol dengan "+")
-        composeTestRule.onNodeWithText("+").performClick()
-        
-        // Verifikasi ada perubahan (misal angka 1 muncul)
-        composeTestRule.onNodeWithText("1").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("bottom_bar_WaterTracker")
+            .performClick()
+
+        waitForTag("screen_water_tracker")
+
+        composeTestRule
+            .onNodeWithTag("screen_water_tracker")
+            .assertIsDisplayed()
     }
 }

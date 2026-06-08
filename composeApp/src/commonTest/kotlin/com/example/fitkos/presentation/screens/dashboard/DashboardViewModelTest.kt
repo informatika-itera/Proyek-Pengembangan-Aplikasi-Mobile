@@ -1,6 +1,5 @@
 package com.example.fitkos.presentation.screens.dashboard
 
-import app.cash.turbine.test
 import com.example.fitkos.createTestDataStore
 import com.example.fitkos.data.local.datastore.UserPreferences
 import com.example.fitkos.data.repository.FakeNoteRepository
@@ -11,8 +10,8 @@ import com.example.fitkos.domain.model.NoteColor
 import com.example.fitkos.domain.model.WaterLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -28,6 +27,7 @@ import kotlin.test.assertEquals
 class DashboardViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+
     private lateinit var noteRepository: FakeNoteRepository
     private lateinit var waterRepository: FakeWaterRepository
     private lateinit var userPreferences: UserPreferences
@@ -52,10 +52,13 @@ class DashboardViewModelTest {
     }
 
     private fun setupViewModel(testScope: kotlinx.coroutines.test.TestScope) {
-        // Gunakan backgroundScope agar DataStore tidak menggantung setelah tes selesai
         val testDataStore = createTestDataStore(testScope.backgroundScope)
         userPreferences = UserPreferences(testDataStore)
-        viewModel = DashboardViewModel(noteRepository, waterRepository, userPreferences)
+        viewModel = DashboardViewModel(
+            repository = noteRepository,
+            waterRepository = waterRepository,
+            userPreferences = userPreferences
+        )
     }
 
     @Test
@@ -63,21 +66,18 @@ class DashboardViewModelTest {
         // Arrange
         noteRepository.insertNote(createTestNote("Lunch"))
         waterRepository.upsertWaterLog(WaterLog(todayDate, 5, 8))
-        
+
         setupViewModel(this)
 
-        // Act & Assert
-        viewModel.uiState.test {
-            // Tunggu sampai state pertama muncul (biasanya default)
-            // Dan tunggu sampai emisi data dari repository masuk
-            val state = awaitItem()
-            
-            assertEquals(1, state.mealCount)
-            assertEquals(5, state.waterGlasses)
-            assertEquals(8, state.waterTarget)
-
-            cancelAndIgnoreRemainingEvents()
+        // Assert
+        // Tunggu sampai Flow benar-benar mengirim state yang sudah berisi data repository.
+        val state = viewModel.uiState.first {
+            it.mealCount == 1 && it.waterGlasses == 5
         }
+
+        assertEquals(1, state.mealCount)
+        assertEquals(5, state.waterGlasses)
+        assertEquals(8, state.waterTarget)
     }
 
     private fun createTestNote(title: String): Note {

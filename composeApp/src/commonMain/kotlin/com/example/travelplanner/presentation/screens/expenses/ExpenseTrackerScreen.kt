@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -92,7 +93,7 @@ fun ExpenseTrackerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val s = LocalStrings.current
-    var inputText by remember { mutableStateOf("") }
+    var inputText by rememberSaveable { mutableStateOf("") }
     var showVoiceAssistantModal by remember { mutableStateOf(false) }
 
     LaunchedEffect(tripId) { viewModel.initializeTrip(tripId ?: "") }
@@ -127,6 +128,34 @@ fun ExpenseTrackerScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
+        } else if (uiState.errorMessage != null) {
+            Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ErrorOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = uiState.errorMessage ?: s.failedLoad,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
+                    Button(
+                        onClick = { viewModel.initializeTrip(tripId ?: "") },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (s.isEnglish) "Retry" else "Coba Lagi")
+                    }
+                }
+            }
         } else if (uiState.trip == null) {
             Box(Modifier.fillMaxSize().padding(padding).padding(32.dp),
                 contentAlignment = Alignment.Center) {
@@ -141,7 +170,7 @@ fun ExpenseTrackerScreen(
                     Text(s.noActiveTripBody, style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                     if (onNavigateToTrips != null) {
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                         Button(onClick = onNavigateToTrips) { Text(s.goToTrips) }
                     }
                 }
@@ -151,7 +180,7 @@ fun ExpenseTrackerScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 120.dp, start = 24.dp, end = 24.dp, top = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
                         ExpenseSummaryCard(

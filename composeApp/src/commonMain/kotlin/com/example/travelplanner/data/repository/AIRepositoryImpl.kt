@@ -12,7 +12,7 @@ class AIRepositoryImpl(
 ) : AIRepository {
 
     private val apiKey = com.example.travelplanner.core.network.ApiConfig.geminiApiKey
-    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey"
+    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=$apiKey"
 
     override suspend fun generateItinerary(destination: String, duration: String, vibe: String, language: String): String {
         val systemPrompt = """
@@ -66,12 +66,8 @@ class AIRepositoryImpl(
             Jika tidak ada nominal atau item tidak valid, kembalikan array kosong []. Jangan berasumsi atau berhalusinasi.
         """.trimIndent()
 
-        return try {
-            val response = makeGeminiApiCall(systemPrompt)
-            parseGeminiResponse(response)
-        } catch (e: Exception) {
-            "[]"
-        }
+        val response = makeGeminiApiCall(systemPrompt)
+        return parseGeminiResponse(response)
     }
 
     override suspend fun translateItinerary(jsonItinerary: String): String {
@@ -128,6 +124,14 @@ class AIRepositoryImpl(
 
     private fun parseGeminiResponse(responseBody: String): String {
         val jsonElement = Json.parseToJsonElement(responseBody)
+        
+        // Cek jika API merespons dengan objek error
+        val errorObject = jsonElement.jsonObject["error"]?.jsonObject
+        if (errorObject != null) {
+            val errorMsg = errorObject["message"]?.jsonPrimitive?.content ?: "Unknown API error"
+            throw Exception(errorMsg)
+        }
+
         // Ekstraksi rekursif ke dalam struktur internal JSON Gemini response object: candidates[0].content.parts[0].text
         val textResult = jsonElement.jsonObject["candidates"]
             ?.jsonArray?.get(0)

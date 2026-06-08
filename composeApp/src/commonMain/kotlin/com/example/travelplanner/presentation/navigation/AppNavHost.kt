@@ -15,8 +15,10 @@ import com.example.travelplanner.presentation.screens.trips.MyTripsScreen
 import com.example.travelplanner.presentation.screens.expenses.ExpenseTrackerScreen
 import com.example.travelplanner.presentation.screens.settings.SettingsScreen
 import com.example.travelplanner.presentation.screens.profile.ProfileScreen
+import com.example.travelplanner.presentation.screens.splash.SplashScreen
 
 sealed class Route {
+    @Serializable data object Splash : Route()
     @Serializable data object Home : Route()
     @Serializable data object GenerateTrip : Route()
     @Serializable data class  TripResult(val tripId: String) : Route()
@@ -35,7 +37,17 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     modifier: Modifier = Modifier
 ) {
-    NavHost(navController = navController, startDestination = Route.Home, modifier = modifier) {
+    NavHost(navController = navController, startDestination = Route.Splash, modifier = modifier) {
+
+        composable<Route.Splash> {
+            SplashScreen(
+                onNavigateToHome = {
+                    navController.navigate(Route.Home) {
+                        popUpTo(Route.Splash) { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable<Route.Home> {
             HomeScreen(

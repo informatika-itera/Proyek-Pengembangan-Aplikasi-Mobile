@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -102,7 +103,9 @@ fun GenerateTripScreen(
             VibeOption(s.vibeCulinary,  s.vibeCulinarySub)  { m -> KulinerAnimatedScene(m) },
             VibeOption(s.vibeHistory,   s.vibeHistorySub)   { m -> SejarahAnimatedScene(m) },
             VibeOption(s.vibeRelax,     s.vibeRelaxSub)     { m -> SantaiAnimatedScene(m) },
-            VibeOption(s.vibeAdventure, s.vibeAdventureSub) { m -> PetualanganAnimatedScene(m) }
+            VibeOption(s.vibeAdventure, s.vibeAdventureSub) { m -> PetualanganAnimatedScene(m) },
+            VibeOption(s.vibeFormal,    s.vibeFormalSub)    { m -> FormalAnimatedScene(m) },
+            VibeOption(s.vibeRomantic,  s.vibeRomanticSub)  { m -> RomanticAnimatedScene(m) }
         )
     }
     val budgetPresets = remember(s) {
@@ -114,15 +117,15 @@ fun GenerateTripScreen(
         )
     }
 
-    var departureCity     by remember { mutableStateOf("") }
-    var destination       by remember { mutableStateOf("") }
-    var startDate         by remember { mutableStateOf("") }
-    var endDate           by remember { mutableStateOf("") }
-    var selectedBudgetKey by remember { mutableStateOf("") }
-    var customBudgetRaw   by remember { mutableStateOf("") }
-    var numberOfTravelers by remember { mutableStateOf("1") }
-    var selectedVibe      by remember { mutableStateOf("") }
-    var specialNotes      by remember { mutableStateOf("") }
+    var departureCity     by rememberSaveable { mutableStateOf("") }
+    var destination       by rememberSaveable { mutableStateOf("") }
+    var startDate         by rememberSaveable { mutableStateOf("") }
+    var endDate           by rememberSaveable { mutableStateOf("") }
+    var selectedBudgetKey by rememberSaveable { mutableStateOf("") }
+    var customBudgetRaw   by rememberSaveable { mutableStateOf("") }
+    var numberOfTravelers by rememberSaveable { mutableStateOf("1") }
+    var selectedVibe      by rememberSaveable { mutableStateOf("") }
+    var specialNotes      by rememberSaveable { mutableStateOf("") }
 
     val budgetValue = remember(selectedBudgetKey, customBudgetRaw) {
         when {

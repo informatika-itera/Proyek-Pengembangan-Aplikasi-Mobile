@@ -17,6 +17,8 @@ work = "2.9.0"
 
 # Testing
 turbine = "1.2.0"
+kover = "0.8.3"
+mockk = "1.13.12"
 
 [libraries]
 # Kotlin
@@ -67,6 +69,11 @@ coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", v
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.1.5" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.5.1" }
+ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version = "1.6.8" }
+ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.6.8" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -76,3 +83,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

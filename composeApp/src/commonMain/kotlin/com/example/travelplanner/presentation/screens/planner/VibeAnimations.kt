@@ -474,3 +474,147 @@ private fun DrawScope.drawPineTree(cx: Float, baseY: Float, treeH: Float, sway: 
         }
     }
 }
+
+@Composable
+fun FormalAnimatedScene(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "formal")
+    val moonGlow by transition.animateFloat(
+        initialValue = 0.85f, targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(tween(3000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "glow"
+    )
+    val windowFlashProgress = (0..5).map { i ->
+        transition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                tween(2000 + i * 400, easing = LinearEasing),
+                RepeatMode.Reverse,
+                initialStartOffset = StartOffset(i * 300)
+            ),
+            label = "win$i"
+        )
+    }
+
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val w = size.width; val h = size.height
+        // Soft corporate night/dusk gradient sky
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155))),
+            size = size
+        )
+        // Soft background stars or glow
+        drawCircle(Color(0xFF64748B).copy(alpha = 0.15f * moonGlow), radius = 50f * moonGlow, center = Offset(w * 0.2f, h * 0.25f))
+        drawCircle(Color(0xFF94A3B8).copy(alpha = 0.3f), radius = 35f, center = Offset(w * 0.2f, h * 0.25f))
+
+        // Office building silhouettes (back to front)
+        // Back buildings
+        drawRect(Color(0xFF1E293B).copy(alpha = 0.7f), topLeft = Offset(w * 0.1f, h * 0.45f), size = Size(w * 0.22f, h * 0.55f))
+        drawRect(Color(0xFF1E293B).copy(alpha = 0.7f), topLeft = Offset(w * 0.65f, h * 0.4f), size = Size(w * 0.25f, h * 0.6f))
+
+        // Front buildings
+        val frontBuilding1TopLeft = Offset(w * 0.25f, h * 0.32f)
+        val frontBuilding1Size = Size(w * 0.28f, h * 0.68f)
+        drawRect(Color(0xFF0F172A), topLeft = frontBuilding1TopLeft, size = frontBuilding1Size)
+
+        val frontBuilding2TopLeft = Offset(w * 0.50f, h * 0.38f)
+        val frontBuilding2Size = Size(w * 0.22f, h * 0.62f)
+        drawRect(Color(0xFF0F172A), topLeft = frontBuilding2TopLeft, size = frontBuilding2Size)
+
+        // Draw office windows lighting up
+        // Building 1 windows (rows and columns)
+        val rows = 4
+        val cols = 3
+        val winW = w * 0.04f
+        val winH = h * 0.05f
+        val startX = frontBuilding1TopLeft.x + w * 0.04f
+        val startY = frontBuilding1TopLeft.y + h * 0.06f
+        val gapX = w * 0.07f
+        val gapY = h * 0.13f
+
+        for (r in 0 until rows) {
+            for (c in 0 until cols) {
+                val index = (r * cols + c) % 6
+                val flash = windowFlashProgress[index].value
+                val winColor = if (flash > 0.5f) Color(0xFFFDE047).copy(alpha = 0.85f * flash) else Color(0xFF475569)
+                drawRect(
+                    color = winColor,
+                    topLeft = Offset(startX + c * gapX, startY + r * gapY),
+                    size = Size(winW, winH)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RomanticAnimatedScene(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "romantic")
+    val heartProgress = (0..5).map { i ->
+        transition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                tween(2000 + i * 300, easing = LinearEasing),
+                RepeatMode.Restart,
+                initialStartOffset = StartOffset(i * 200)
+            ),
+            label = "heart$i"
+        )
+    }
+    val moonPulse by transition.animateFloat(
+        initialValue = 0.95f, targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(tween(2500, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "moon"
+    )
+
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val w = size.width; val h = size.height
+        // Soft romantic pink/violet gradient sky
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFF4C1D95), Color(0xFF831843), Color(0xFFDB2777), Color(0xFFF472B6))),
+            size = size
+        )
+
+        // Soft romantic crescent moon or soft sun
+        val cx = w * 0.5f
+        val cy = h * 0.35f
+        drawCircle(Color(0xFFFCE7F3).copy(alpha = 0.2f * moonPulse), radius = 45f * moonPulse, center = Offset(cx, cy))
+        drawCircle(Color(0xFFFFF1F2).copy(alpha = 0.4f), radius = 32f, center = Offset(cx, cy))
+
+        // Draw floating hearts
+        val heartXOffsets = listOf(0.25f, 0.40f, 0.55f, 0.70f, 0.33f, 0.62f)
+        heartProgress.forEachIndexed { i, prog ->
+            val p = prog.value
+            val hx = w * heartXOffsets[i] + sin(p * PI.toFloat() * 2 + i) * w * 0.05f
+            val hy = (h * 0.85f) - p * h * 0.65f
+            val alpha = (1f - p) * 0.85f
+            val scale = (0.6f + i * 0.1f) * (1f - p * 0.3f)
+            
+            // Draw a simple vector heart
+            withTransform({
+                translate(hx, hy)
+                scale(scale, scale)
+            }) {
+                val path = Path().apply {
+                    moveTo(0f, 0f)
+                    // left lobe
+                    cubicTo(-12f, -12f, -24f, 0f, 0f, 18f)
+                    // right lobe
+                    cubicTo(24f, 0f, 12f, -12f, 0f, 0f)
+                    close()
+                }
+                drawPath(path, Color(0xFFFFF1F2).copy(alpha = alpha))
+            }
+        }
+
+        // Silhouette of ground with hills
+        val hillsPath = Path().apply {
+            moveTo(0f, h)
+            lineTo(0f, h * 0.78f)
+            quadraticTo(w * 0.35f, h * 0.72f, w * 0.65f, h * 0.80f)
+            quadraticTo(w * 0.85f, h * 0.76f, w, h * 0.82f)
+            lineTo(w, h)
+            close()
+        }
+        drawPath(hillsPath, Color(0xFF4C1D95).copy(alpha = 0.9f))
+    }
+}

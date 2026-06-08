@@ -58,11 +58,11 @@ fun ConnectivityBanner(isOnline: Boolean, modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .background(Color(0xFFB71C1C))
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         Icons.Default.WifiOff,
@@ -100,11 +100,11 @@ fun ConnectivityBanner(isOnline: Boolean, modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .background(Color(0xFF1B5E20))
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         Icons.Default.Wifi,

@@ -23,7 +23,7 @@ data class ExpenseUiState(
     val expenses: List<Expense> = emptyList(),
     val filteredExpenses: List<Expense> = emptyList(),
     val totalExpenses: Double = 0.0,
-    val activeCategoryFilter: String = "Semua",
+    val activeCategoryFilter: String = "",
     val aiIsProcessing: Boolean = false,
     val errorMessage: String? = null
 )
@@ -95,7 +95,7 @@ class ExpenseViewModel(
     }
 
     private fun filterExpenses(expenses: List<Expense>, category: String): List<Expense> {
-        return if (category == "Semua") {
+        return if (category.isBlank()) {
             expenses
         } else {
             expenses.filter { it.kategori.equals(category, ignoreCase = true) }

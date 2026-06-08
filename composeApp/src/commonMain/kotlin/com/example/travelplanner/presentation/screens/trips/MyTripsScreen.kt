@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +36,7 @@ fun MyTripsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val s = LocalStrings.current
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.loadTrips() }
 
@@ -85,6 +86,34 @@ fun MyTripsScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
+            } else if (uiState.errorMessage != null) {
+                Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ErrorOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = uiState.errorMessage ?: s.failedLoad,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Button(
+                            onClick = { viewModel.loadTrips() },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (s.isEnglish) "Retry" else "Coba Lagi")
+                        }
+                    }
+                }
             } else if (filteredTrips.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -110,7 +139,7 @@ fun MyTripsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(filteredTrips, key = { it.id }) { trip ->
-                        var showConfirmDelete by remember { mutableStateOf(false) }
+                        var showConfirmDelete by rememberSaveable(trip.id) { mutableStateOf(false) }
                         val (gradStart, gradEnd) = remember(trip.destination) { getDestinationGradient(trip.destination) }
                         // Gambar kota diambil dari ViewModel state (sudah terisi instan dari cache/loremflickr)
                         val photoUrl: String = uiState.cityImages[trip.destination] ?: ""
@@ -146,7 +175,7 @@ fun MyTripsScreen(
                                 Surface(modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                                     shape = RoundedCornerShape(12.dp),
                                     color = MaterialTheme.colorScheme.errorContainer) {
-                                    Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween) {
                                         Text(s.deleteThisTrip, style = MaterialTheme.typography.bodyMedium,

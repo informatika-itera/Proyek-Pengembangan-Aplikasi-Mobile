@@ -43,6 +43,8 @@ fun String.localizeVibe(): String {
         "sejarah", "history" -> s.vibeHistory
         "santai", "relaxed", "relax" -> s.vibeRelax
         "petualangan", "adventure" -> s.vibeAdventure
+        "formal", "bisnis", "business" -> s.vibeFormal
+        "romantis", "romantic", "love" -> s.vibeRomantic
         else -> this
     }
 }
@@ -104,8 +106,8 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 20.dp)
-                        .height(52.dp),
+                        .padding(top = 24.dp)
+                        .height(56.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -135,7 +137,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 20.dp, bottom = 12.dp),
+                        .padding(top = 24.dp, bottom = 16.dp),
                     verticalAlignment     = Alignment.Bottom,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -162,8 +164,39 @@ fun HomeScreen(
             // ── 4. TRIP CARDS ─────────────────────────────────────────
             if (uiState.isLoading) {
                 item {
-                    Box(Modifier.fillMaxWidth().padding(vertical = 40.dp), Alignment.Center) {
+                    Box(Modifier.fillMaxWidth().padding(vertical = 48.dp), Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            } else if (uiState.errorMessage != null) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ErrorOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = uiState.errorMessage ?: s.failedLoad,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Button(
+                            onClick = { viewModel.loadRecentTrips() },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (s.isEnglish) "Retry" else "Coba Lagi")
+                        }
                     }
                 }
             } else if (uiState.recentTrips.isEmpty()) {
@@ -189,7 +222,7 @@ fun HomeScreen(
                     TripCard(
                         trip     = visualTrip,
                         onClick  = { onNavigateToTripDetail(trip.id) },
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                     )
                 }
             }
@@ -226,7 +259,7 @@ fun HeroSection() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(270.dp)
+            .height(272.dp)
     ) {
         // Animasi pantai — full bleed, terlihat penuh
         PantaiAnimatedScene(modifier = Modifier.fillMaxSize())

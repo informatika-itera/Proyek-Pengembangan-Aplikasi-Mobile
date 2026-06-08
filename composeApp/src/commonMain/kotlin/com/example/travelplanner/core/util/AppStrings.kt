@@ -81,6 +81,10 @@ data class AppStrings(
     val vibeRelaxSub: String,
     val vibeAdventure: String,
     val vibeAdventureSub: String,
+    val vibeFormal: String,
+    val vibeFormalSub: String,
+    val vibeRomantic: String,
+    val vibeRomanticSub: String,
 
     // ── Budget Presets ────────────────────────────────────────────────
     val budgetSavings: String,
@@ -176,6 +180,13 @@ data class AppStrings(
     val instantKAITicket: String,
     val completeTransport: String,
     val bestBusTravel: String,
+    val lodgingRecommendation: String,
+    val compareLodgingTitle: (String) -> String,
+    val checkInPrefix: String,
+    val checkOutPrefix: String,
+    val searchHotel: String,
+    val compareAndBookHotel: String,
+    val bookingPartnerHotel: String,
 
     // ── Expense empty state ───────────────────────────────────────────
     val noActiveTripTitle: String,
@@ -249,6 +260,8 @@ val StringsID = AppStrings(
     vibeHistory = "Sejarah", vibeHistorySub = "Budaya & peninggalan",
     vibeRelax = "Santai", vibeRelaxSub = "Slow travel & rehat",
     vibeAdventure = "Petualangan", vibeAdventureSub = "Adrenalin & outdoor",
+    vibeFormal = "Bisnis", vibeFormalSub = "Dinas & seminar",
+    vibeRomantic = "Romantis", vibeRomanticSub = "Bulan madu & kencan",
 
     budgetSavings = "Hemat", budgetMedium = "Sedang",
     budgetComfort = "Nyaman", budgetLuxury = "Mewah",
@@ -311,6 +324,13 @@ val StringsID = AppStrings(
     instantKAITicket = "Pesan Tiket KAI Instan",
     completeTransport = "Lengkap KAI, Whoosh, & Bus",
     bestBusTravel = "Pesan Tiket Bus & Travel Terbaik",
+    lodgingRecommendation = "Rekomendasi Penginapan",
+    compareLodgingTitle = { dest -> "Pilih platform untuk mencari penginapan di $dest" },
+    checkInPrefix = "Check-in",
+    checkOutPrefix = "Check-out",
+    searchHotel = "Cari Hotel",
+    compareAndBookHotel = "Bandingkan & Pesan Penginapan",
+    bookingPartnerHotel = "Platform pemesanan hotel terpopuler",
 
     noActiveTripTitle = "Belum Ada Perjalanan Aktif",
     noActiveTripBody = "Buat rencana liburan dari menu Rencanakan, lalu catat pengeluaran dari halaman detail perjalanan.",
@@ -382,6 +402,8 @@ val StringsEN = AppStrings(
     vibeHistory = "History", vibeHistorySub = "Culture & heritage",
     vibeRelax = "Relaxed", vibeRelaxSub = "Slow travel & leisure",
     vibeAdventure = "Adventure", vibeAdventureSub = "Adrenaline & outdoor",
+    vibeFormal = "Business", vibeFormalSub = "Work & seminars",
+    vibeRomantic = "Romantic", vibeRomanticSub = "Honeymoon & dates",
 
     budgetSavings = "Budget", budgetMedium = "Moderate",
     budgetComfort = "Comfort", budgetLuxury = "Luxury",
@@ -444,6 +466,13 @@ val StringsEN = AppStrings(
     instantKAITicket = "Instant KAI Ticket Booking",
     completeTransport = "Complete KAI, Whoosh, & Bus",
     bestBusTravel = "Best Bus & Travel Tickets",
+    lodgingRecommendation = "Lodging Recommendation",
+    compareLodgingTitle = { dest -> "Select a platform to search for lodging in $dest" },
+    checkInPrefix = "Check-in",
+    checkOutPrefix = "Check-out",
+    searchHotel = "Find Hotels",
+    compareAndBookHotel = "Compare & Book Lodging",
+    bookingPartnerHotel = "Most popular hotel booking platform",
 
     noActiveTripTitle = "No Active Trip",
     noActiveTripBody = "Plan a trip first using the Plan button, then track expenses from the trip detail page.",

@@ -38,16 +38,25 @@ FitKos juga dilengkapi dengan AI Assistant berbasis Gemini API yang dapat member
 - [x] UI/UX polish pada Dashboard, Meal Log, Add/Edit, Detail, AI, Water Tracker, dan Exercise Screen
 
 ### Sudah Diimplementasikan pada Sprint 4
-- [x] 10+ unit tests untuk Repository, UseCase, dan ViewModel
-- [x] 3+ UI tests untuk critical user flows (Navigation, Add Note, Water Tracker)
-- [x] 50%+ code coverage pada core logic (Logic-only coverage)
-- [x] Kover integration untuk reporting coverage
-- [x] Testing infrastructure dengan Fakes dan Mock DataStore
-- [x] README updated dengan instruksi testing
 
-### Direncanakan untuk Sprint Berikutnya
-- [ ] All known bugs fixed: tidak ada crash dan semua fitur utama berjalan
-- [ ] UI polished: desain konsisten, spacing rapi, dan state aplikasi jelas
+- [x] Bug fixing berdasarkan issue/masalah yang ditemukan selama pengembangan
+- [x] UI polish pada screen utama agar tampilan lebih konsisten dan terbaca pada light mode maupun dark mode
+- [x] 10+ unit tests untuk Repository, UseCase, dan ViewModel
+- [x] 3+ UI tests untuk critical user flows
+- [x] Compose UI Test untuk Dashboard, Meal Log navigation, dan Water Tracker navigation
+- [x] Kover integration untuk reporting coverage
+- [x] 50%+ filtered line coverage pada testable logic utama
+- [x] Testing infrastructure dengan Fake Repository dan Test DataStore
+- [x] README updated dengan instruksi testing dan coverage report
+
+### Direncanakan untuk Sprint 5
+- [ ] Memastikan semua bug tersisa sudah diperbaiki dan aplikasi stabil
+- [ ] Menyiapkan presentation slides dalam format PDF/PPTX
+- [ ] Menulis dan melatih demo script untuk Demo Day
+- [ ] Membuat release APK dan mengujinya pada device/emulator
+- [ ] Finalisasi README dengan fitur, setup, screenshot, dan instruksi testing
+- [ ] Menyiapkan backup video demo untuk mengantisipasi kendala teknis
+- [ ] Melakukan latihan demo minimal 2 kali bersama tim
 
 ## 🏗️ Arsitektur & Teknologi Stack
 FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, mudah dikembangkan, dan mudah diuji.
@@ -83,9 +92,10 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
     │   ├── addnote/              # Add/Edit meal log
     │   ├── detail/               # Meal log detail
     │   ├── ai/                   # FitKos AI Assistant
-    │   ├── water/                # Daily water tracker
+    │   ├── watertracker/         # Daily water tracker
     │   ├── exercise/             # Exercise timer and workout tips
     │   └── settings/             # User preferences and dark mode
+    │   └──splash/                # Splash and first user setup
     └── theme/                    # Material theme
 ```
 
@@ -122,7 +132,6 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 [Demo](https://youtu.be/MZyQGsvdlZo)
 
 ## 📌 Sprint 3 - Advanced Features
-
 ### Deliverables Sprint 3
 - [x] Search/filter functionality pada catatan makanan
 - [x] API integration menggunakan Gemini API
@@ -142,6 +151,33 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 ### 🎥 Demo Sprint 3
 [Demo](https://youtu.be/oRgG741M1VE)
 
+## 📌 Sprint 4 - Polish & Testing
+### Deliverables Sprint 4
+- [x] All known bugs fixed
+- [x] UI polished dengan tampilan yang konsisten
+- [x] 10+ unit tests
+- [x] 3+ UI tests untuk critical flows
+- [x] 50%+ code coverage pada filtered testable logic
+- [x] README updated dengan instruksi testing
+
+### Bug Fixing & UI Polish
+- Bug tracking dilakukan menggunakan dokumen `docs/sprint4-bug-tracking.md`
+- UI polish checklist dilakukan menggunakan dokumen `docs/sprint4-ui-polish-checklist.md`
+- Search field pada Catatan Makan diperbaiki agar input dan filter berjalan normal
+- Tampilan Dashboard dan Water Tracker diperbaiki agar tetap terbaca pada dark mode
+- Bottom navigation pada AI Assistant diperbaiki agar konsisten dengan menu utama lainnya
+- Padding bawah pada list Catatan Makan diperbaiki agar card makanan tidak tertutup area kosong
+
+### Testing & Coverage
+- Unit test mencakup Repository, UseCase, dan ViewModel
+- UI test mencakup critical flows seperti Dashboard, Meal Log navigation, dan Water Tracker navigation
+- Coverage report dibuat menggunakan Kover
+- Filtered line coverage terakhir: 77.1%
+- Filtered instruction coverage terakhir: 70.6%
+
+### 🎥 Demo Sprint 4
+[Demo Sprint 4](ISI_LINK_DEMO_SPRINT_4_DI_SINI)
+
 ## 🚀 Getting Started
 
 1. Clone Repository
@@ -157,29 +193,56 @@ Tambahkan `GEMINI_API_KEY=your_key` di file `local.properties`.
 3. Buka di Android Studio Ladybug+ dan jalankan task: `:composeApp:installDebug`
 
 ## 🧪 Testing
-
-FitKos menggunakan unit testing untuk memastikan keandalan logika bisnis pada ViewModel, UseCase, dan Repository.
+FitKos menggunakan unit test, UI test, dan coverage report untuk memastikan fitur utama berjalan stabil pada Sprint 4.
 
 ### Menjalankan Unit Test
-Untuk menjalankan seluruh unit test di modul `composeApp`:
+Unit test digunakan untuk menguji logika pada Repository, UseCase, dan ViewModel.
 ```bash
 ./gradlew :composeApp:testDebugUnitTest
 ```
+Untuk menjalankan seluruh test:
+```bash
+./gradlew test
+```
 
 ### Menjalankan UI Test
-Untuk menjalankan instrumented UI test (membutuhkan emulator/device):
+UI test digunakan untuk menguji critical user flows menggunakan Compose UI Test. Pengujian ini membutuhkan emulator atau device Android yang aktif.
 ```bash
 ./gradlew :composeApp:connectedDebugAndroidTest
 ```
 
-### Laporan Coverage (Kover)
-Aplikasi ini menggunakan **Kover** untuk mengukur coverage. Fokus testing adalah pada core logic, sehingga kelas UI, DI, dan generated code dikecualikan dari perhitungan.
+UI test yang tersedia mencakup:
+- Dashboard ditampilkan saat aplikasi dibuka dalam mode test
+- Navigasi ke Meal Log melalui bottom navigation
+- Navigasi ke Water Tracker melalui bottom navigation
 
-Untuk membuat laporan HTML coverage:
+### Laporan Coverage (Kover)
+Aplikasi ini menggunakan Kover untuk membuat laporan coverage.
 ```bash
 ./gradlew :composeApp:koverHtmlReport
 ```
 Laporan dapat ditemukan di: `composeApp/build/reports/kover/html/index.html`
+
+Hasil coverage terakhir:
+- Filtered line coverage: 77.1%
+- Filtered instruction coverage: 70.6%
+
+Coverage report screenshot:
+<img width="1879" height="957" alt="Screenshot 2026-06-08 224425" src="https://github.com/user-attachments/assets/e35e57b9-5abf-4577-8f2c-610645a89a6f" />
+
+Coverage dihitung menggunakan filtered scope pada testable logic utama, seperti:
+- Domain model
+- Domain use case
+- ViewModel / screen logic utama
+
+Beberapa bagian dikecualikan dari coverage report karena bukan target utama unit test, seperti:
+- Generated resources
+- Dependency injection
+- Navigation shell
+- Theme
+- Platform-specific configuration
+- Remote DTO/API
+- Pure UI Compose shell
 
 ### Infrastruktur Testing
 - **Fakes**: Digunakan `FakeNoteRepository` dan `FakeWaterRepository` untuk mensimulasikan database.

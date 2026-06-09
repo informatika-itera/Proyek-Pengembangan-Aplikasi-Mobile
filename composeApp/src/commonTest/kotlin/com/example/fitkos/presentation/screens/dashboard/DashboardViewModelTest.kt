@@ -10,8 +10,11 @@ import com.example.fitkos.domain.model.NoteColor
 import com.example.fitkos.domain.model.WaterLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -51,7 +54,7 @@ class DashboardViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun setupViewModel(testScope: kotlinx.coroutines.test.TestScope) {
+    private fun setupViewModel(testScope: TestScope) {
         val testDataStore = createTestDataStore(testScope.backgroundScope)
         userPreferences = UserPreferences(testDataStore)
         viewModel = DashboardViewModel(
@@ -63,14 +66,12 @@ class DashboardViewModelTest {
 
     @Test
     fun `initial state should reflect repositories data`() = runTest {
-        // Arrange
         noteRepository.insertNote(createTestNote("Lunch"))
         waterRepository.upsertWaterLog(WaterLog(todayDate, 5, 8))
 
         setupViewModel(this)
+        advanceUntilIdle()
 
-        // Assert
-        // Tunggu sampai Flow benar-benar mengirim state yang sudah berisi data repository.
         val state = viewModel.uiState.first {
             it.mealCount == 1 && it.waterGlasses == 5
         }
@@ -78,6 +79,8 @@ class DashboardViewModelTest {
         assertEquals(1, state.mealCount)
         assertEquals(5, state.waterGlasses)
         assertEquals(8, state.waterTarget)
+
+        backgroundScope.cancel()
     }
 
     private fun createTestNote(title: String): Note {

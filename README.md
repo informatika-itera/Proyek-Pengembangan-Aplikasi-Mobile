@@ -176,7 +176,7 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 - Filtered instruction coverage terakhir: 70.6%
 
 ### 🎥 Demo Sprint 4
-[Demo Sprint 4](ISI_LINK_DEMO_SPRINT_4_DI_SINI)
+[Demo Sprint 4](https://youtu.be/at6TFoI4SOg)
 
 ## 🚀 Getting Started
 

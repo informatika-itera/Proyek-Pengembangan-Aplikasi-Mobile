@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +28,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
+    onNavigateBack: () -> Unit = {},
     onAddFoodClick: () -> Unit = {},
     viewModel: CalendarViewModel = koinViewModel()
 ) {
@@ -38,8 +40,17 @@ fun CalendarScreen(
             TopAppBar(
                 title = { 
                     Column {
-                        Text("Food Calendar", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                        Text("Kalender Makanan", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                         Text("Lihat jadwal kedaluwarsa makananmu.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack, modifier = Modifier.testTag("btn_back")) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Kembali ke Beranda",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -79,7 +90,7 @@ fun CalendarScreen(
                             ) { food ->
                                 FoodItemCard(
                                     item = food,
-                                    onClick = { /* Handle click if needed */ },
+                                    onClick = { },
                                     modifier = Modifier.testTag("food_card_${food.id}")
                                 )
                             }

@@ -46,7 +46,6 @@ class AIAssistantViewModel(
     fun onActionSelected(action: AIAction) {
         _uiState.update { it.copy(selectedAction = action) }
         
-        // Auto-fill prompt for inventory suggestion
         if (action == AIAction.SUGGEST_FROM_INVENTORY) {
             _uiState.update { it.copy(inputText = "Bantu saya carikan ide resep dari bahan makanan yang ada di kulkas.") }
         }
@@ -172,7 +171,7 @@ data class AIAssistantUiState(
     val inputText: String = "",
     val selectedAction: AIAction = AIAction.SUGGEST_FROM_INVENTORY,
     val writingStyle: WritingStyle = WritingStyle.NEUTRAL,
-    val targetLanguage: String = "English",
+    val targetLanguage: String = "Indonesia",
     val isLoading: Boolean = false,
     val result: String? = null,
     val error: String? = null

@@ -92,7 +92,7 @@ fun FoodDetailScreen(
                 },
                 actions = {
                     IconButton(onClick = { onNavigateToEdit(foodId) }, modifier = Modifier.testTag("btn_edit_food")) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.Edit, contentDescription = "Ubah", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.testTag("btn_show_delete")) {
                         Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
@@ -124,7 +124,7 @@ fun FoodDetailScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
-                                modifier = Modifier.padding(24.dp),
+                                modifier = Modifier.fillMaxWidth().padding(24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Surface(
@@ -149,7 +149,8 @@ fun FoodDetailScreen(
                                     text = food.category,
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 StatusBadge(status = food.getStatus())
@@ -168,7 +169,7 @@ fun FoodDetailScreen(
                                 
                                 val expiryDate = food.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date
                                 InfoRow(
-                                    label = "Batas kesegaran", 
+                                    label = "Batas kedaluwarsa", 
                                     value = "${expiryDate.dayOfMonth} / ${expiryDate.monthNumber} / ${expiryDate.year}"
                                 )
                                 
@@ -252,7 +253,7 @@ fun RecommendationCard(status: FoodStatus) {
             if (isDark) ExpiredTextDark else ExpiredTextLight
         )
         FoodStatus.NEAR_EXPIRY -> Triple(
-            "Bahan ini sudah harus segera diolah biar nggak mubazir.",
+            "Bahan ini harus segera diolah agar tidak terbuang.",
             if (isDark) WarningBgDark else WarningBgLight,
             if (isDark) WarningTextDark else WarningTextLight
         )

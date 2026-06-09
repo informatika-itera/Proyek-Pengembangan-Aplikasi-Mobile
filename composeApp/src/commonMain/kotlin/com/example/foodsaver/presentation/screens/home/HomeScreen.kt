@@ -72,10 +72,10 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onAIClick, modifier = Modifier.testTag("btn_ai_assistant")) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "Asisten AI", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = onCalendarClick, modifier = Modifier.testTag("btn_calendar_nav")) {
-                        Icon(Icons.Outlined.Event, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Outlined.Event, contentDescription = "Kalender", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -441,14 +441,14 @@ fun SummarySection(state: HomeUiState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryItem(
-                label = "Total Stok",
+                label = "Total",
                 count = state.totalItems.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
                 icon = Icons.Outlined.Inventory,
                 modifier = Modifier.weight(1f).testTag("summary_total")
             )
             SummaryItem(
-                label = "Masih Aman",
+                label = "Aman",
                 count = state.safeCount.toString(),
                 color = MaterialTheme.colorScheme.primary,
                 icon = Icons.Outlined.CheckCircle,
@@ -461,14 +461,14 @@ fun SummarySection(state: HomeUiState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryItem(
-                label = "Segera Masak",
+                label = "Segera",
                 count = state.nearlyExpiredCount.toString(),
                 color = MaterialTheme.colorScheme.secondary,
                 icon = Icons.Outlined.Warning,
                 modifier = Modifier.weight(1f).testTag("summary_nearly")
             )
             SummaryItem(
-                label = "Lewat Tanggal",
+                label = "Kadaluwarsa",
                 count = state.expiredCount.toString(),
                 color = MaterialTheme.colorScheme.error,
                 icon = Icons.Outlined.ErrorOutline,
@@ -607,7 +607,7 @@ fun EmptyHomeState(onAddFoodClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Yuk mulai catat stok makananmu biar FoodSaver bisa ingatkan kalau ada yang mau expired.",
+            "Yuk mulai catat stok makananmu biar FoodSaver bisa ingatkan kalau ada yang mau kadaluwarsa.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

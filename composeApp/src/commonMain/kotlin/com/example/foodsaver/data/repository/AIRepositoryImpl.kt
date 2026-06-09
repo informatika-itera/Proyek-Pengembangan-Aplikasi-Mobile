@@ -5,9 +5,6 @@ import com.example.foodsaver.data.remote.api.SystemPrompts
 import com.example.foodsaver.domain.repository.AIRepository
 import com.example.foodsaver.domain.repository.WritingStyle
 
-/**
- * Implementasi AIRepository menggunakan Google Gemini API.
- */
 class AIRepositoryImpl(
     private val geminiService: GeminiService
 ) : AIRepository {
@@ -75,7 +72,7 @@ class AIRepositoryImpl(
     override suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
         val styleInstruction = when (style) {
             WritingStyle.FORMAL -> "Gunakan gaya formal dan profesional."
-            WritingStyle.CASUAL -> "Gunakan gaya santai dan friendly."
+            WritingStyle.CASUAL -> "Gunakan gaya santai dan ramah."
             WritingStyle.ACADEMIC -> "Gunakan gaya akademik dan ilmiah."
             WritingStyle.CREATIVE -> "Gunakan gaya kreatif dan menarik."
             WritingStyle.NEUTRAL -> "Gunakan gaya netral."

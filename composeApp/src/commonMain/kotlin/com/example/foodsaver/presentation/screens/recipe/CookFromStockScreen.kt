@@ -129,7 +129,7 @@ fun CookFromStockScreen(
                 Tab(
                     selected = selectedMode == RecipeInputMode.INVENTORY,
                     onClick = { selectedMode = RecipeInputMode.INVENTORY },
-                    text = { Text("Inventory", fontWeight = FontWeight.Bold) },
+                    text = { Text("Inventaris", fontWeight = FontWeight.Bold) },
                     modifier = Modifier.testTag("recipe_inventory_tab")
                 )
                 Tab(
@@ -176,7 +176,7 @@ fun CookFromStockScreen(
 
                     item {
                         Text(
-                            if (selectedMode == RecipeInputMode.INVENTORY) "Pilih bahan dari inventory kamu" else "Masukkan bahan secara manual",
+                            if (selectedMode == RecipeInputMode.INVENTORY) "Pilih bahan dari inventaris kamu" else "Masukkan bahan secara manual",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -287,8 +287,8 @@ fun CookFromStockScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Prioritaskan bahan hampir expired", style = MaterialTheme.typography.bodyMedium)
-                                Text("Berikan resep menggunakan bahan paling urgent.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Prioritaskan bahan hampir kedaluwarsa", style = MaterialTheme.typography.bodyMedium)
+                                Text("Berikan resep menggunakan bahan paling mendesak.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Switch(
                                 checked = state.prioritizeExpired,
@@ -415,7 +415,7 @@ fun EmptyIngredientsState(onAddFoodClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Belum ada bahan di inventory",
+            "Belum ada bahan di inventaris",
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center

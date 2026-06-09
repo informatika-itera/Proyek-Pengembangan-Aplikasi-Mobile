@@ -51,7 +51,7 @@ fun RecipeRecommendationScreen(
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             title = { Text("Gunakan Bahan?") },
-            text = { Text("Apakah semua bahan dari inventory yang digunakan dalam resep ini ingin ditandai sebagai sudah dikonsumsi?") },
+            text = { Text("Apakah semua bahan dari inventaris yang digunakan dalam resep ini ingin ditandai sebagai sudah dikonsumsi?") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -156,7 +156,6 @@ fun RecipeRecommendationScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Header Card
                         Card(
                             modifier = Modifier.fillMaxWidth().testTag("recipe_header_card"),
                             shape = RoundedCornerShape(28.dp),
@@ -210,7 +209,6 @@ fun RecipeRecommendationScreen(
                             }
                         }
 
-                        // Warning if any
                         recipe.warningMessage?.let { warning ->
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
@@ -225,7 +223,6 @@ fun RecipeRecommendationScreen(
                             }
                         }
 
-                        // Reason Card
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -238,7 +235,6 @@ fun RecipeRecommendationScreen(
                             }
                         }
 
-                        // Ingredients Section
                         SectionTitle("Bahan Digunakan")
                         recipe.usedIngredients.forEach { ingredient ->
                             IngredientRow(ingredient, isUsed = true)
@@ -251,7 +247,6 @@ fun RecipeRecommendationScreen(
                             }
                         }
 
-                        // Steps Section
                         SectionTitle("Langkah Memasak")
                         recipe.steps.forEachIndexed { index, step ->
                             StepRow(index + 1, step)

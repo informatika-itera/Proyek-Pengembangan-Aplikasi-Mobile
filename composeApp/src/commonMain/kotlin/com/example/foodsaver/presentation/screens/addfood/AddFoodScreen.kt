@@ -85,7 +85,7 @@ fun AddFoodScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        if (foodId == null) "Tambah Makanan" else "Edit Makanan",
+                        if (foodId == null) "Tambah Makanan" else "Ubah Makanan",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 20.sp
                     ) 
@@ -193,7 +193,7 @@ fun AddFoodScreen(
                             OutlinedTextField(
                                 value = state.expiryDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),
                                 onValueChange = {},
-                                label = { Text("Estimasi Expired / Segar Hingga") },
+                                label = { Text("Estimasi Kedaluwarsa") },
                                 modifier = Modifier.fillMaxWidth().testTag("tf_expiry_date"),
                                 shape = RoundedCornerShape(12.dp),
                                 readOnly = true,

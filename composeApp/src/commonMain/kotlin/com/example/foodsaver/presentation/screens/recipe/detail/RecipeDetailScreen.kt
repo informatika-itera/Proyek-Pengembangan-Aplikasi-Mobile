@@ -230,10 +230,25 @@ fun MealPlanSelectionDialog(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                    val monthIndo = when(selectedDate.month) {
+                        Month.JANUARY -> "Januari"
+                        Month.FEBRUARY -> "Februari"
+                        Month.MARCH -> "Maret"
+                        Month.APRIL -> "April"
+                        Month.MAY -> "Mei"
+                        Month.JUNE -> "Juni"
+                        Month.JULY -> "Juli"
+                        Month.AUGUST -> "Agustus"
+                        Month.SEPTEMBER -> "September"
+                        Month.OCTOBER -> "Oktober"
+                        Month.NOVEMBER -> "November"
+                        Month.DECEMBER -> "Desember"
+                        else -> selectedDate.month.name
+                    }
                     val label = when (selectedDate) {
                         today -> "Hari Ini"
                         today.plus(1, DateTimeUnit.DAY) -> "Besok"
-                        else -> "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }}"
+                        else -> "${selectedDate.dayOfMonth} $monthIndo"
                     }
                     Text("Tanggal: $label", fontWeight = FontWeight.Bold)
                 }

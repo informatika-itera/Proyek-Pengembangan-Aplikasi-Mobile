@@ -77,7 +77,6 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // User Header
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -96,7 +95,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "FoodSaver User", 
+                "Pengguna FoodSaver", 
                 style = MaterialTheme.typography.headlineSmall, 
                 fontWeight = FontWeight.ExtraBold, 
                 color = MaterialTheme.colorScheme.onBackground
@@ -110,7 +109,6 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Stats Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -121,7 +119,7 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        "Statistik Inventory", 
+                        "Statistik Inventaris", 
                         fontWeight = FontWeight.Bold, 
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -145,7 +143,7 @@ fun ProfileScreen(
                         )
                         VerticalDivider(modifier = Modifier.height(40.dp).padding(horizontal = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
                         StatItem(
-                            label = "Expired", 
+                            label = "Kadaluwarsa",
                             value = state.expiredCount.toString(), 
                             color = MaterialTheme.colorScheme.error
                         )
@@ -155,7 +153,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Settings Section
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
                     "Pengaturan", 
@@ -167,7 +164,7 @@ fun ProfileScreen(
                 
                 SettingsItem(
                     icon = Icons.Outlined.Notifications, 
-                    title = "Notifikasi & Reminder", 
+                    title = "Notifikasi & Pengingat", 
                     subtitle = if (state.notificationsEnabled) "Aktif (${state.reminderDays} hari sebelum)" else "Nonaktif",
                     onClick = { showNotificationDialog = true },
                     modifier = Modifier.testTag("notification_setting_button")
@@ -245,7 +242,7 @@ fun ThemeOption(text: String, mode: ThemeMode, selected: Boolean, onClick: () ->
 fun NotificationSettingsDialog(enabled: Boolean, reminderDays: Int, onDismiss: () -> Unit, onToggleEnabled: (Boolean) -> Unit, onSelectDays: (Int) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Notifikasi & Reminder", fontWeight = FontWeight.Bold) },
+        title = { Text("Notifikasi & Pengingat", fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {

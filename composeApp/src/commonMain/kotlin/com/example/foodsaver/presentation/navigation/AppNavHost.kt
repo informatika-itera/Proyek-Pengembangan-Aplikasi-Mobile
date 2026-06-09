@@ -10,7 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -39,11 +41,11 @@ fun AppNavHost() {
     val currentDestination = navBackStackEntry?.destination
 
     val items = listOf(
-        BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory, "bottom_nav_home"),
-        BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant, "bottom_nav_expiry"),
+        BottomNavItem("Beranda", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory, "bottom_nav_home"),
+        BottomNavItem("Peringatan", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant, "bottom_nav_expiry"),
         BottomNavItem("Resep", "recipe", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu, "bottom_nav_recipe"),
-        BottomNavItem("Calendar", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, "bottom_nav_calendar"),
-        BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Outlined.Person, "bottom_nav_profile")
+        BottomNavItem("Kalender", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, "bottom_nav_calendar"),
+        BottomNavItem("Profil", "profile", Icons.Filled.Person, Icons.Outlined.Person, "bottom_nav_profile")
     )
 
     Scaffold(
@@ -65,13 +67,19 @@ fun AppNavHost() {
                                     contentDescription = item.title 
                                 ) 
                             },
-                            label = { Text(item.title) },
+                            label = { 
+                                Text(
+                                    text = item.title,
+                                    fontSize = 9.sp,
+                                    softWrap = false,
+                                    textAlign = TextAlign.Center
+                                ) 
+                            },
                             selected = selected,
                             onClick = {
                                 if (!selected) {
                                     navController.navigate(item.route) {
-                                        val startRoute = navController.graph.findStartDestination().route ?: "home"
-                                        popUpTo(startRoute) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
                                             saveState = true
                                         }
                                         launchSingleTop = true
@@ -102,8 +110,24 @@ fun AppNavHost() {
                     onAddFoodClick = { navController.navigate("add_food") },
                     onFoodClick = { id -> navController.navigate("detail/$id") },
                     onAIClick = { navController.navigate("ai") },
-                    onCalendarClick = { navController.navigate("calendar") },
-                    onCookFromStockClick = { navController.navigate("recipe") }
+                    onCalendarClick = { 
+                        navController.navigate("calendar") {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onCookFromStockClick = { 
+                        navController.navigate("recipe") {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 )
             }
 
@@ -156,6 +180,7 @@ fun AppNavHost() {
 
             composable("calendar") {
                 CalendarScreen(
+                    onNavigateBack = { navController.popBackStack() },
                     onAddFoodClick = { navController.navigate("add_food") }
                 )
             }

@@ -1,6 +1,7 @@
 package com.example.foodsaver.presentation.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -111,6 +112,7 @@ fun FoodItemCard(
 ) {
     val status = item.getStatus()
     val isDark = isSystemInDarkTheme()
+    val isHighlighted = status != FoodStatus.SAFE
     
     val statusColor = when (status) {
         FoodStatus.SAFE -> if (isDark) SafeTextDark else SafeTextLight
@@ -118,8 +120,8 @@ fun FoodItemCard(
         else -> if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
-    val cardBgColor = if (status == FoodStatus.EXPIRED || status == FoodStatus.EXPIRED_TODAY) {
-        statusColor.copy(alpha = 0.05f)
+    val cardBgColor = if (isHighlighted) {
+        statusColor.copy(alpha = 0.1f)
     } else {
         MaterialTheme.colorScheme.surface
     }
@@ -133,7 +135,8 @@ fun FoodItemCard(
             containerColor = cardBgColor,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isHighlighted) 0.dp else 2.dp),
+        border = if (isHighlighted) BorderStroke(1.dp, statusColor.copy(alpha = 0.3f)) else null,
         onClick = { onClick?.invoke() }
     ) {
         Row(
@@ -168,8 +171,10 @@ fun FoodItemCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     StatusBadge(status = status)
                 }
                 
@@ -206,8 +211,8 @@ fun StatusBadge(status: FoodStatus) {
     val isDark = isSystemInDarkTheme()
     val (text, color) = when (status) {
         FoodStatus.SAFE -> "Aman" to if (isDark) SafeTextDark else SafeTextLight
-        FoodStatus.NEAR_EXPIRY -> "Penting" to if (isDark) WarningTextDark else WarningTextLight
-        FoodStatus.EXPIRED -> "Expired" to if (isDark) ExpiredTextDark else ExpiredTextLight
+        FoodStatus.NEAR_EXPIRY -> "Segera" to if (isDark) WarningTextDark else WarningTextLight
+        FoodStatus.EXPIRED -> "Kadaluwarsa" to if (isDark) ExpiredTextDark else ExpiredTextLight
         FoodStatus.EXPIRED_TODAY -> "Hari Ini" to if (isDark) ExpiredTextDark else ExpiredTextLight
     }
 
@@ -220,7 +225,9 @@ fun StatusBadge(status: FoodStatus) {
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.ExtraBold,
-            color = color
+            color = color,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

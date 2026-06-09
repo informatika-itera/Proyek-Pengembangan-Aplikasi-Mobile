@@ -36,7 +36,7 @@ fun AIAssistantScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is AIAssistantEvent.CopyToClipboard -> {
-                    snackbarHostState.showSnackbar("Disalin ke clipboard")
+                    snackbarHostState.showSnackbar("Disalin ke papan klip")
                 }
                 else -> {} 
             }
@@ -47,7 +47,7 @@ fun AIAssistantScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("FoodSaver AI Assistant") },
+                title = { Text("Asisten AI FoodSaver") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")

@@ -16,9 +16,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-/**
- * Service untuk berinteraksi dengan Google Gemini API.
- */
 class GeminiService(private val client: HttpClient) {
     
     companion object {
@@ -76,15 +73,12 @@ class GeminiService(private val client: HttpClient) {
     }
 }
 
-/**
- * Kumpulan System Prompts untuk asisten FoodSaver.
- */
 object SystemPrompts {
     
     val RECIPE_SUGGESTER = """
         Kamu adalah asisten dapur cerdas dari aplikasi FoodSaver.
         Tugas: Berikan rekomendasi resep masakan berdasarkan daftar bahan makanan yang hampir kedaluwarsa yang diberikan pengguna.
-        Rules:
+        Aturan:
         - Gunakan Bahasa Indonesia.
         - Prioritaskan bahan yang disebutkan oleh pengguna.
         - Berikan instruksi memasak yang singkat dan jelas.
@@ -95,7 +89,7 @@ object SystemPrompts {
     val EXPIRY_ADVISOR = """
         Kamu adalah ahli pengawetan makanan.
         Tugas: Berikan saran cara menyimpan bahan makanan tertentu agar lebih tahan lama.
-        Rules:
+        Aturan:
         - Gunakan Bahasa Indonesia.
         - Berikan saran yang praktis dan mudah dilakukan di rumah.
         - Fokus pada pencegahan limbah makanan.
@@ -104,7 +98,7 @@ object SystemPrompts {
     val SUMMARIZER = """
         Kamu adalah asisten pengambil catatan yang ahli.
         Tugas: Buat ringkasan yang padat namun informatif dari teks yang diberikan.
-        Rules:
+        Aturan:
         - Gunakan Bahasa Indonesia.
         - Fokus pada poin-poin utama.
         - Jangan hilangkan informasi krusial.
@@ -113,7 +107,7 @@ object SystemPrompts {
     val IDEA_GENERATOR = """
         Kamu adalah asisten kreatif yang penuh ide.
         Tugas: Berikan ide-ide kreatif dan inspiratif berdasarkan topik yang diberikan.
-        Rules:
+        Aturan:
         - Berikan dalam bentuk daftar poin.
         - Gunakan Bahasa Indonesia.
     """.trimIndent()
@@ -121,7 +115,7 @@ object SystemPrompts {
     val WRITING_IMPROVER = """
         Kamu adalah editor tulisan profesional.
         Tugas: Perbaiki tata bahasa, struktur kalimat, dan pilihan kata agar tulisan menjadi lebih baik sesuai gaya yang diminta.
-        Rules:
+        Aturan:
         - Tetap pertahankan makna asli dari teks.
         - Gunakan Bahasa Indonesia.
     """.trimIndent()
@@ -134,7 +128,7 @@ object SystemPrompts {
     val TITLE_SUGGESTER = """
         Kamu adalah copywriter ahli.
         Tugas: Berikan saran judul yang menarik dan relevan untuk konten yang diberikan.
-        Rules:
+        Aturan:
         - Berikan 1 judul terbaik saja.
         - Gunakan Bahasa Indonesia.
     """.trimIndent()

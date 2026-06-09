@@ -38,7 +38,7 @@ fun ExpiryScreen(
     viewModel: ExpiryViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val tabs = listOf("Semua", "Hampir Expired", "Expired")
+    val tabs = listOf("Semua", "Segera", "Kadaluwarsa")
 
     Scaffold(
         modifier = Modifier.testTag("expiry_screen"),
@@ -47,12 +47,12 @@ fun ExpiryScreen(
                 title = { 
                     Column {
                         Text(
-                            "Expiry Alert", 
+                            "Status Kedaluwarsa",
                             fontWeight = FontWeight.ExtraBold, 
                             fontSize = 20.sp
                         ) 
                         Text(
-                            "Pantau bahan yang hampir kedaluwarsa.",
+                            "Pantau bahan yang harus segera digunakan.",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -170,15 +170,15 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = if (totalUrgent > 0) "$totalUrgent Makanan Perlu Perhatian" else "Semua Stok Aman",
+                    text = if (totalUrgent > 0) "$totalUrgent Stok Perlu Segera" else "Semua Stok Aman",
                     fontWeight = FontWeight.ExtraBold,
                     color = contentColor,
                     fontSize = 16.sp
                 )
                 Text(
                     text = if (totalUrgent > 0) 
-                        "$nearlyExpired hampir expired, $expired sudah expired." 
-                        else "Tidak ada makanan yang akan segera kedaluwarsa.",
+                        "$nearlyExpired masuk kategori segera, $expired sudah kedaluwarsa." 
+                        else "Bagus! Tidak ada makanan yang akan segera mubazir.",
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor.copy(alpha = 0.8f),
                     fontWeight = FontWeight.Bold
@@ -192,18 +192,18 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
 fun EmptyExpiryState(tabIndex: Int, onAddFoodClick: () -> Unit) {
     val (message, subMessage, icon) = when (tabIndex) {
         1 -> Triple(
-            "Tidak ada makanan hampir expired 🎉",
-            "Semua stok makananmu masih aman.",
+            "Tidak ada stok mendesak 🎉",
+            "Semua stok makananmu masih dalam kondisi aman.",
             Icons.Default.CheckCircle
         )
         2 -> Triple(
-            "Tidak ada makanan expired",
+            "Tidak ada makanan kedaluwarsa",
             "Bagus! Kamu mengelola makanan dengan sangat baik.",
             Icons.Default.CheckCircle
         )
         else -> Triple(
             "Belum ada data makanan",
-            "Tambahkan stok makananmu di halaman Home.",
+            "Tambahkan stok makananmu di halaman Beranda.",
             Icons.Default.Info
         )
     }

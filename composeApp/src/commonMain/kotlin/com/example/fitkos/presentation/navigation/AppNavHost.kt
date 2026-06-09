@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WaterDrop
@@ -39,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,13 +65,12 @@ import org.koin.compose.koinInject
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    skipSplash: Boolean = false
 ) {
     val navigationActions = createNavigationActions(navController)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
-    // Jangan pakai substringAfterLast(".") karena route typed-navigation bisa punya argumen.
-    // Pakai raw route lalu cek dengan contains().
     val currentRoute = navBackStackEntry?.destination?.route
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -212,7 +211,7 @@ fun AppNavHost(
                             }
                         },
                         actions = {
-                            // Kosongkan bagian actions untuk menghapus ikon lonceng
+                            // Kosongkan actions.
                         }
                     )
                 }
@@ -230,7 +229,7 @@ fun AppNavHost(
         ) { paddingValues ->
             NavHost(
                 navController = navController,
-                startDestination = Route.Splash,
+                startDestination = if (skipSplash) Route.Dashboard else Route.Splash,
                 modifier = modifier.padding(paddingValues)
             ) {
                 composable<Route.Splash> {
@@ -246,73 +245,83 @@ fun AppNavHost(
                 }
 
                 composable<Route.Dashboard> {
-                    DashboardScreen(
-                        onNavigateToMealLog = {
-                            navigationActions.navigateToHome()
-                        },
-                        onNavigateToAddMeal = {
-                            navigationActions.navigateToAddNote()
-                        },
-                        onNavigateToWaterTracker = {
-                            navigationActions.navigateToWaterTracker()
-                        },
-                        onNavigateToExercise = {
-                            navigationActions.navigateToExercise()
-                        },
-                        onNavigateToAI = {
-                            navigationActions.navigateToAIAssistant(
-                                initialText = """
-                                    Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
-                                    Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
-                                """.trimIndent()
-                            )
-                        }
-                    )
+                    Box(modifier = Modifier.testTag("screen_dashboard")) {
+                        DashboardScreen(
+                            onNavigateToMealLog = {
+                                navigationActions.navigateToHome()
+                            },
+                            onNavigateToAddMeal = {
+                                navigationActions.navigateToAddNote()
+                            },
+                            onNavigateToWaterTracker = {
+                                navigationActions.navigateToWaterTracker()
+                            },
+                            onNavigateToExercise = {
+                                navigationActions.navigateToExercise()
+                            },
+                            onNavigateToAI = {
+                                navigationActions.navigateToAIAssistant(
+                                    initialText = """
+                                        Saya penghuni kos dan ingin menjaga hidup sehat dengan budget terbatas.
+                                        Tolong beri saran makanan sehat hemat, kebiasaan minum air, dan olahraga ringan yang realistis untuk hari ini.
+                                    """.trimIndent()
+                                )
+                            }
+                        )
+                    }
                 }
 
                 composable<Route.Home> {
-                    HomeScreen(
-                        onNavigateToAddNote = {
-                            navigationActions.navigateToAddNote()
-                        },
-                        onNavigateToDetail = { noteId ->
-                            navigationActions.navigateToNoteDetail(noteId)
-                        },
-                        onNavigateToAI = {
-                            navigationActions.navigateToAIAssistant()
-                        }
-                    )
+                    Box(modifier = Modifier.testTag("screen_meal_log")) {
+                        HomeScreen(
+                            onNavigateToAddNote = {
+                                navigationActions.navigateToAddNote()
+                            },
+                            onNavigateToDetail = { noteId ->
+                                navigationActions.navigateToNoteDetail(noteId)
+                            },
+                            onNavigateToAI = {
+                                navigationActions.navigateToAIAssistant()
+                            }
+                        )
+                    }
                 }
 
                 composable<Route.WaterTracker> {
-                    WaterTrackerScreen(
-                        onNavigateBack = {
-                            navigationActions.navigateBack()
-                        }
-                    )
+                    Box(modifier = Modifier.testTag("screen_water_tracker")) {
+                        WaterTrackerScreen(
+                            onNavigateBack = {
+                                navigationActions.navigateBack()
+                            }
+                        )
+                    }
                 }
 
                 composable<Route.Exercise> {
-                    ExerciseScreen(
-                        onNavigateBack = {
-                            navigationActions.navigateBack()
-                        }
-                    )
+                    Box(modifier = Modifier.testTag("screen_exercise")) {
+                        ExerciseScreen(
+                            onNavigateBack = {
+                                navigationActions.navigateBack()
+                            }
+                        )
+                    }
                 }
 
                 composable<Route.Settings> {
-                    SettingsScreen(
-                        onNavigateBack = {
-                            navigationActions.navigateBack()
-                        },
-                        onLogout = {
-                            navController.navigate(Route.Splash) {
-                                popUpTo(Route.Dashboard) {
-                                    inclusive = true
+                    Box(modifier = Modifier.testTag("screen_settings")) {
+                        SettingsScreen(
+                            onNavigateBack = {
+                                navigationActions.navigateBack()
+                            },
+                            onLogout = {
+                                navController.navigate(Route.Splash) {
+                                    popUpTo(Route.Dashboard) {
+                                        inclusive = true
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
 
                 composable<Route.AddNote> { backStackEntry ->
@@ -350,14 +359,16 @@ fun AppNavHost(
                 composable<Route.AIAssistant> { backStackEntry ->
                     val route: Route.AIAssistant = backStackEntry.toRoute()
 
-                    AIAssistantScreen(
-                        noteId = route.noteId,
-                        initialText = route.initialText,
-                        onNavigateBack = {
-                            navigationActions.navigateBack()
-                        },
-                        onApplyResult = null
-                    )
+                    Box(modifier = Modifier.testTag("screen_ai")) {
+                        AIAssistantScreen(
+                            noteId = route.noteId,
+                            initialText = route.initialText,
+                            onNavigateBack = {
+                                navigationActions.navigateBack()
+                            },
+                            onApplyResult = null
+                        )
+                    }
                 }
             }
         }
@@ -419,7 +430,8 @@ private fun FitKosBottomBar(
                 },
                 label = {
                     Text(item.label)
-                }
+                },
+                modifier = Modifier.testTag("bottom_bar_${item.routeKey}")
             )
         }
     }
@@ -440,7 +452,6 @@ private fun String?.shouldShowBottomBar(): Boolean {
     return this.isRoute("Dashboard") ||
             this.isRoute("Home") ||
             this.isRoute("WaterTracker") ||
-            this.isRoute("AIAssistant") ||
             this.isRoute("Exercise") ||
             this.isRoute("Settings")
 }

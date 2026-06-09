@@ -61,32 +61,26 @@ fun FitKosTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(34.dp)
-                .padding(horizontal = 16.dp)
-                .offset(y = (-8).dp),
+                .height(56.dp)
+                .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (onNavigateBack != null) {
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clickable { onNavigateBack() },
-                    contentAlignment = Alignment.Center
-                ) {
+                IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali",
-                        modifier = Modifier.size(24.dp)
+                        contentDescription = "Kembali"
                     )
                 }
-
-                Spacer(modifier = Modifier.width(8.dp))
+            } else {
+                Spacer(modifier = Modifier.width(16.dp))
             }
 
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = if (onNavigateBack != null) 4.dp else 0.dp)
             )
         }
     }

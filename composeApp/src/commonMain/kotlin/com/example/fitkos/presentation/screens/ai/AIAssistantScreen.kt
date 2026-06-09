@@ -134,6 +134,8 @@ fun AIAssistantScreen(
                     onSend = viewModel::executeAction,
                     isLoading = uiState.isLoading
                 )
+                
+                Spacer(modifier = Modifier.navigationBarsPadding())
             }
         }
     ) { paddingValues ->
@@ -437,9 +439,7 @@ fun ChatInputBar(
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .navigationBarsPadding()
-                .imePadding(),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(

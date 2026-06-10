@@ -6,14 +6,9 @@ import com.studymate.domain.model.Note
 import com.studymate.domain.repository.NoteRepository
 import com.studymate.domain.repository.ActivityRepository
 import com.studymate.domain.usecase.RefineNoteUseCase
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 sealed class NoteEvent {
     data class ShowMessage(val message: String) : NoteEvent()
@@ -35,71 +30,84 @@ class NotesViewModel(
     private val _events = MutableSharedFlow<NoteEvent>()
     val events: SharedFlow<NoteEvent> = _events.asSharedFlow()
 
-    private var allNotes: List<Note> = emptyList()
-
     init {
-        loadNotes()
+        observeNotes()
     }
 
-    private fun loadNotes() {
+    private fun observeNotes() {
         viewModelScope.launch {
             noteRepository.getAllNotes()
+                .combine(_searchQuery) { notes, query ->
+                    if (notes.isEmpty()) {
+                        NotesUiState.Empty
+                    } else {
+                        val filtered = if (query.isBlank()) {
+                            notes
+                        } else {
+                            notes.filter { note ->
+                                note.title.contains(query, ignoreCase = true) ||
+                                        note.rawContent.contains(query, ignoreCase = true) ||
+                                        note.subject.contains(query, ignoreCase = true) ||
+                                        note.refinedContent?.contains(query, ignoreCase = true) == true
+                            }
+                        }
+                        if (filtered.isEmpty()) NotesUiState.Empty else NotesUiState.Success(filtered)
+                    }
+                }
                 .catch { e ->
                     _uiState.emit(NotesUiState.Error(e.message ?: "Gagal memuat catatan"))
                 }
-                .collect { notes ->
-                    allNotes = notes
-                    filterNotes(_searchQuery.value)
+                .collect { state ->
+                    _uiState.emit(state)
                 }
         }
     }
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-        filterNotes(query)
     }
 
-    private fun filterNotes(query: String) {
+    fun addNote(title: String, rawContent: String, subject: String, onComplete: () -> Unit = {}) {
+        if (title.isBlank() || subject.isBlank()) {
+            viewModelScope.launch {
+                _events.emit(NoteEvent.ShowMessage("Judul dan Mata Kuliah tidak boleh kosong"))
+            }
+            return
+        }
         viewModelScope.launch {
-            if (allNotes.isEmpty()) {
-                _uiState.emit(NotesUiState.Empty)
-                return@launch
-            }
-
-            val filtered = if (query.isBlank()) {
-                allNotes
-            } else {
-                allNotes.filter {
-                    it.title.contains(query, ignoreCase = true) ||
-                            it.rawContent.contains(query, ignoreCase = true) ||
-                            it.subject.contains(query, ignoreCase = true) ||
-                            it.refinedContent?.contains(query, ignoreCase = true) == true
-                }
-            }
-
-            if (filtered.isEmpty() && query.isNotBlank()) {
-                _uiState.emit(NotesUiState.Empty) // Or a specific NoResults state
-            } else if (filtered.isEmpty()) {
-                _uiState.emit(NotesUiState.Empty)
-            } else {
-                _uiState.emit(NotesUiState.Success(filtered))
+            try {
+                val newNote = Note(
+                    title = title,
+                    rawContent = rawContent,
+                    subject = subject
+                )
+                noteRepository.insertNote(newNote)
+                _events.emit(NoteEvent.ShowMessage("Catatan berhasil disimpan!"))
+                onComplete()
+            } catch (e: Exception) {
+                _events.emit(NoteEvent.ShowMessage("Gagal menyimpan: ${e.message}"))
             }
         }
     }
 
-    fun addNote(title: String, rawContent: String, subject: String) {
-        if (title.isBlank() || rawContent.isBlank()) return
-        viewModelScope.launch {
-            noteRepository.insertNote(Note(title = title, rawContent = rawContent, subject = subject))
-            activityRepository.recordNoteCreation()
-            _events.emit(NoteEvent.ShowMessage("Catatan berhasil disimpan!"))
+    fun updateNote(note: Note, onComplete: () -> Unit = {}) {
+        if (note.title.isBlank() || note.subject.isBlank()) {
+            viewModelScope.launch {
+                _events.emit(NoteEvent.ShowMessage("Judul dan Mata Kuliah tidak boleh kosong"))
+            }
+            return
         }
-    }
-
-    fun updateNote(note: Note) {
         viewModelScope.launch {
-            noteRepository.updateNote(note)
-            _events.emit(NoteEvent.ShowMessage("Catatan diperbarui!"))
+            try {
+                val updatedNote = note.copy(
+                    updatedAt = Clock.System.now().toEpochMilliseconds()
+                )
+                noteRepository.updateNote(updatedNote)
+                _events.emit(NoteEvent.ShowMessage("Catatan diperbarui!"))
+                onComplete()
+            } catch (e: Exception) {
+                _events.emit(NoteEvent.ShowMessage("Gagal memperbarui: ${e.message}"))
+            }
         }
     }
 
@@ -119,14 +127,14 @@ class NotesViewModel(
         }
     }
 
-    fun refineContent(content: String, onRefined: (String) -> Unit) {
+    fun refineContent(subject: String, title: String, content: String, onRefined: (String) -> Unit) {
         viewModelScope.launch {
             val currentState = _uiState.value
             val notes = if (currentState is NotesUiState.Success) currentState.notes else emptyList()
             
             _uiState.emit(NotesUiState.Refining(notes, -1L))
             
-            val result = refineNoteUseCase.refineRawContent(content)
+            val result = refineNoteUseCase.refineRawContent(subject, title, content)
             
             if (result.isSuccess) {
                 val refinedText = result.getOrThrow()

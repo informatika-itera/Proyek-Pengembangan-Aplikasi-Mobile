@@ -31,7 +31,7 @@ class HomeViewModelTest {
     
     private val testDispatcher = StandardTestDispatcher()
     
-    private lateinit var noteRepository: FakeNoteRepository
+    private lateinit var noteRepository: NoteRepository
     private lateinit var profileRepository: FakeUserProfileRepository
     private lateinit var mantraRepository: FakeMantraRepository
     private lateinit var viewModel: HomeViewModel
@@ -76,7 +76,7 @@ class HomeViewModelTest {
         profileRepository.saveProfile(
             UserProfile(
                 id = 1,
-                name = "Budi",
+                localName = "Budi",
                 nim = "123",
                 currentStreak = 2,
                 dailyMantra = "Jangan pernah berhenti belajar, karena hidup tidak pernah berhenti mengajar."
@@ -103,6 +103,14 @@ class FakeUserProfileRepository : UserProfileRepository {
     
     override suspend fun saveProfile(profile: UserProfile) {
         _profile.value = profile
+    }
+
+    override suspend fun updateLocalProfile(name: String?, photoPath: String?, nim: String?, major: String?) {
+        _profile.update { it?.copy(localName = name, localPhotoPath = photoPath, nim = nim ?: "", major = major ?: "") }
+    }
+
+    override suspend fun updateStreak(streak: Int, lastStudyDate: Long?) {
+        _profile.update { it?.copy(currentStreak = streak, lastStudyDate = lastStudyDate) }
     }
     
     override suspend fun updateMantra(mantra: String) {

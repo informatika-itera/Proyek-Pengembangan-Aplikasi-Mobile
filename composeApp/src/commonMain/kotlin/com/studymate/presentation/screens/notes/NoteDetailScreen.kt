@@ -3,6 +3,7 @@ package com.studymate.presentation.screens.notes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,6 +46,16 @@ fun NoteDetailScreen(
     var content by remember { mutableStateOf("") }
     var subject by remember { mutableStateOf("") }
     var currentNote by remember { mutableStateOf<Note?>(null) }
+    
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            if (event is NoteEvent.ShowMessage) {
+                snackbarHostState.showSnackbar(event.message)
+            }
+        }
+    }
 
     LaunchedEffect(uiState) {
         if (uiState is NotesUiState.Success) {
@@ -60,10 +72,11 @@ fun NoteDetailScreen(
 
     val isRefining = uiState is NotesUiState.Refining
 
-    // Add a summary/explain button for new notes or when text is long enough
-    val showAIAction = content.length > 20
+    // AI Refine is available if at least Subject and Title are filled
+    val showAIAction = subject.isNotBlank() && title.isNotBlank()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { 
@@ -78,16 +91,40 @@ fun NoteDetailScreen(
                     }
                 },
                 actions = {
+                    if (noteId != -1L) {
+                        IconButton(
+                            onClick = {
+                                viewModel.deleteNote(noteId)
+                                onBack()
+                            },
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(40.dp)
+                                .background(Color.Red.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color.Red.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Hapus",
+                                tint = Color.Red,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
                     Button(
                         onClick = {
                             if (noteId == -1L) {
-                                viewModel.addNote(title, content, subject)
+                                viewModel.addNote(title, content, subject) {
+                                    onBack()
+                                }
                             } else {
                                 currentNote?.let { note ->
-                                    viewModel.updateNote(note.copy(title = title, rawContent = content, subject = subject))
+                                    viewModel.updateNote(note.copy(title = title, rawContent = content, subject = subject)) {
+                                        onBack()
+                                    }
                                 }
                             }
-                            onBack()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryLight),
                         shape = RoundedCornerShape(12.dp),
@@ -109,9 +146,7 @@ fun NoteDetailScreen(
                 AIActionBar(
                     onRefineClick = {
                         if (noteId == -1L) {
-                            // If it's a new note, we might need to save it first or just refine the current content
-                            // For simplicity, let's allow refining the local content
-                            viewModel.refineContent(content) { refined: String ->
+                            viewModel.refineContent(subject, title, content) { refined: String ->
                                 content = refined
                             }
                         } else {

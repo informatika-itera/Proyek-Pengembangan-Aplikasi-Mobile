@@ -1,9 +1,8 @@
 package com.studymate.core.di
 
+import com.studymate.core.network.ApiConfig
 import com.studymate.core.network.HttpClientFactory
-import com.studymate.core.util.getApiKey
 import com.studymate.data.local.StudyMateDatabase
-import com.studymate.data.remote.api.GeminiService
 import com.studymate.data.repository.*
 import com.studymate.domain.repository.*
 import com.studymate.domain.usecase.GetUserProfileUseCase
@@ -20,7 +19,6 @@ import org.koin.dsl.module
 
 val networkModule = module {
     single { HttpClientFactory.createHttpClient() }
-    single { GeminiService(client = get(), apiKey = getApiKey()) }
 }
 
 val databaseModule = module {
@@ -28,7 +26,7 @@ val databaseModule = module {
 }
 
 val dataModule = module {
-    single<AIRepository> { AIRepositoryImpl(geminiService = get()) }
+    single<AIRepository> { AIRepositoryImpl(client = get(), apiKey = ApiConfig.geminiApiKey) }
     single<MantraRepository> { MantraRepositoryImpl(database = get()) }
     single<NoteRepository> { NoteRepositoryImpl(database = get()) }
     single<UserProfileRepository> { UserProfileRepositoryImpl(database = get()) }

@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.auth)
             
             // Koin DI
             implementation(libs.koin.core)
@@ -97,6 +98,7 @@ kotlin {
             implementation(libs.generativeai)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.ktor.client.core)
             implementation(libs.sqldelight.android.driver)
             
             // Google Services

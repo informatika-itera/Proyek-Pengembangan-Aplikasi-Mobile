@@ -54,11 +54,15 @@ class NoteRepositoryImpl(
             )
             val noteId = database.noteQueries.lastInsertRowId().executeAsOne()
             
-            // Record activity
-            val today = Clock.System.now()
-                .toLocalDateTime(TimeZone.currentSystemDefault())
-                .date.toString()
-            database.activityQueries.incrementNotesCount(today)
+            // Record activity safely
+            try {
+                val today = Clock.System.now()
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date.toString()
+                database.activityQueries.incrementNotesCount(today)
+            } catch (_: Exception) {
+                // Ignore activity errors to ensure note is saved
+            }
             
             noteId
         }

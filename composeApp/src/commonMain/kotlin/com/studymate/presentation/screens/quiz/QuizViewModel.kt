@@ -54,13 +54,11 @@ class QuizViewModel(
         viewModelScope.launch {
             _uiState.value = QuizUiState.Loading
             
-            val content = """
-                Judul: ${note.title}
-                Mata Kuliah: ${note.subject}
-                Isi: ${note.refinedContent ?: note.rawContent}
-            """.trimIndent()
-
-            val result = aiRepository.generateQuiz(content)
+            val result = aiRepository.generateQuiz(
+                subject = note.subject,
+                title = note.title,
+                noteContent = note.refinedContent ?: note.rawContent
+            )
             result.onSuccess { jsonString ->
                 try {
                     val cleanedJson = jsonString.trim()

@@ -63,4 +63,12 @@ class AIRepositoryImpl(
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         )
     }
+
+    override suspend fun breakdownTask(title: String, description: String): Result<String> {
+        val prompt = "Judul Tugas: $title\nDeskripsi: $description\n\nPecah tugas ini menjadi sub-tugas terstruktur."
+        return geminiService.generateContent(
+            prompt = prompt,
+            systemPrompt = SystemPrompts.TASK_BREAKDOWN
+        )
+    }
 }

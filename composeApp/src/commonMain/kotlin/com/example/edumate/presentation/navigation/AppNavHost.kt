@@ -53,10 +53,7 @@ fun AppNavHost(
             DetailScreen(
                 taskId = route.taskId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToEdit = { taskId -> navController.navigate(Route.AddEditTask(taskId)) },
-                onNavigateToAIAssistant = { initialText ->
-                    navController.navigate(Route.AIAssistant(taskId = route.taskId, initialText = initialText))
-                }
+                onNavigateToEdit = { taskId -> navController.navigate(Route.AddEditTask(taskId)) }
             )
         }
 

@@ -5,6 +5,7 @@ import com.example.inventra.core.util.DatabaseDriverFactory
 import com.example.inventra.data.local.InventRaDatabase
 import com.example.inventra.data.local.datastore.DataStoreFactory
 import com.example.inventra.data.local.datastore.UserPreferences
+import com.example.inventra.data.local.datastore.UserPreferencesImpl
 import com.example.inventra.data.local.datastore.create
 import com.example.inventra.data.remote.api.GeminiService
 import com.example.inventra.data.repository.AIRepositoryImpl
@@ -26,6 +27,7 @@ import com.example.inventra.presentation.screens.catalog.CatalogViewModel
 import com.example.inventra.presentation.screens.dashboard.DashboardViewModel
 import com.example.inventra.presentation.screens.detail.ItemDetailViewModel
 import com.example.inventra.presentation.screens.history.HistoryViewModel
+import com.example.inventra.presentation.screens.management.UserDetailViewModel
 import com.example.inventra.presentation.screens.management.UserManagementViewModel
 import com.example.inventra.presentation.screens.profile.ProfileViewModel
 import org.koin.core.context.startKoin
@@ -50,11 +52,11 @@ val databaseModule = module {
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
-    single { UserPreferences(get()) }
+    single<UserPreferences> { UserPreferencesImpl(get()) }
 }
 
 val repositoryModule = module {
-    single<AuthRepository> { AuthRepositoryImpl() }
+    single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<ItemRepository> { ItemRepositoryImpl(get()) }
     single<BorrowRepository> { BorrowRepositoryImpl(get()) }
     singleOf(::AIRepositoryImpl) bind AIRepository::class
@@ -73,10 +75,11 @@ val viewModelModule = module {
     viewModelOf(::CatalogViewModel)
     viewModelOf(::HistoryViewModel)
     viewModelOf(::AIInventoryViewModel)
-    single { ProfileViewModel(get()) }
-    single { UserManagementViewModel(get()) }
+    viewModelOf(::ProfileViewModel)
+    viewModelOf(::UserManagementViewModel)
+    viewModelOf(::UserDetailViewModel)
     factory { (itemId: Long?) -> AddEditItemViewModel(itemId, get(), get()) }
-    factory { (itemId: Long) -> ItemDetailViewModel(itemId, get(), get()) }
+    factory { (itemId: Long) -> ItemDetailViewModel(itemId, get(), get(), get()) }
 }
 
 val sharedModules = listOf(

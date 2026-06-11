@@ -4,4 +4,5 @@ expect object ApiConfig {
     val geminiApiKey: String
     val supabaseUrl: String
     val supabaseAnonKey: String
+    val supabaseServiceRoleKey: String
 }

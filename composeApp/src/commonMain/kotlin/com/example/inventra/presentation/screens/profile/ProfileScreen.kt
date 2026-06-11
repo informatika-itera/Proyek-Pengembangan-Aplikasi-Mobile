@@ -1,7 +1,5 @@
 package com.example.inventra.presentation.screens.profile
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,11 +15,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.example.inventra.core.localization.AppStrings
+import com.example.inventra.core.localization.Language
+import com.example.inventra.core.localization.LocalLanguage
+import com.example.inventra.core.localization.Strings
+import com.example.inventra.core.util.rememberImagePickerLauncher
 import com.example.inventra.domain.model.User
 import com.example.inventra.domain.model.UserDivision
 import com.example.inventra.domain.model.UserRole
@@ -34,54 +40,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
-// ==================== DIVISION INFO DATA ====================
-
-data class DivisionInfo(
-    val division: UserDivision,
-    val ketuaDivisi: String,
-    val staffList: List<String>
-)
-
-val divisionInfoMap: Map<UserDivision, DivisionInfo> = mapOf(
-    UserDivision.BENDAHARA_UMUM to DivisionInfo(
-        division = UserDivision.BENDAHARA_UMUM,
-        ketuaDivisi = "Nabila Ramadhani Mujahidin",
-        staffList = listOf("Muhammad Naufal Fakmal", "Nabilah Sekar Arum")
-    ),
-    UserDivision.PUBDOK to DivisionInfo(
-        division = UserDivision.PUBDOK,
-        ketuaDivisi = "Ketua Pubdok",
-        staffList = listOf("Staff Pubdok 1", "Staff Pubdok 2", "Staff Pubdok 3")
-    ),
-    UserDivision.KONTEN to DivisionInfo(
-        division = UserDivision.KONTEN,
-        ketuaDivisi = "Ketua Konten",
-        staffList = listOf("Staff Konten 1", "Staff Konten 2")
-    ),
-    UserDivision.DEKRAF to DivisionInfo(
-        division = UserDivision.DEKRAF,
-        ketuaDivisi = "Ketua Dekraf",
-        staffList = listOf("Staff Dekraf 1", "Staff Dekraf 2")
-    ),
-    UserDivision.TECHNOPRENEUR to DivisionInfo(
-        division = UserDivision.TECHNOPRENEUR,
-        ketuaDivisi = "Ketua Technopreneur",
-        staffList = listOf("Staff Technopreneur 1", "Staff Technopreneur 2")
-    ),
-    UserDivision.BEASISWA to DivisionInfo(
-        division = UserDivision.BEASISWA,
-        ketuaDivisi = "Ketua Beasiswa",
-        staffList = listOf("Staff Beasiswa 1", "Staff Beasiswa 2")
-    ),
-    UserDivision.PPK to DivisionInfo(
-        division = UserDivision.PPK,
-        ketuaDivisi = "Ketua PPK",
-        staffList = listOf("Staff PPK 1", "Staff PPK 2")
-    )
-)
-
-// ==================== UI STATE ====================
-
 data class ProfileUiState(
     val user: User? = null,
     val isLoading: Boolean = true,
@@ -90,20 +48,56 @@ data class ProfileUiState(
     val successMessage: String? = null,
     val isEditMode: Boolean = false,
     val editName: String = "",
-    val editPhone: String = ""
+    val editPhone: String = "",
+    val editStudentId: String = "",
+    val editDivisionHead: String = "",
+    val editStaffList: String = "",
+    val divisionMembers: List<User> = emptyList(),
+    val isLoadingMembers: Boolean = false
 )
 
-// ==================== VIEWMODEL ====================
-
 class ProfileViewModel(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val itemRepository: com.example.inventra.domain.repository.ItemRepository,
+    private val borrowRepository: com.example.inventra.domain.repository.BorrowRepository,
+    private val userPreferences: com.example.inventra.data.local.datastore.UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    init {
-        loadProfile()
+    init { loadProfile() }
+
+    fun setDarkMode(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferences.setDarkMode(enabled)
+        }
+    }
+
+    fun setLanguage(language: Language) {
+        viewModelScope.launch {
+            userPreferences.setLanguage(language.code)
+        }
+    }
+
+    fun resetAllData(strings: Strings) {
+        _uiState.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            try {
+                itemRepository.deleteAll()
+                borrowRepository.deleteAll()
+                _uiState.update { it.copy(isSaving = false, successMessage = strings.resetDataSuccess) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isSaving = false, error = "${strings.resetDataError}: ${e.message}") }
+            }
+        }
+    }
+
+    fun logout(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            authRepository.logout()
+            onComplete()
+        }
     }
 
     fun loadProfile() {
@@ -112,12 +106,28 @@ class ProfileViewModel(
             val user = authRepository.getCurrentUser()
             _uiState.update {
                 it.copy(
-                    isLoading = false,
+                    isLoading = false, 
                     user = user,
-                    editName = user?.name ?: "",
-                    editPhone = user?.phone ?: ""
+                    editName = user?.name ?: "", 
+                    editPhone = user?.phone ?: "",
+                    editStudentId = user?.studentId ?: "",
+                    editDivisionHead = user?.divisionHead ?: "",
+                    editStaffList = user?.staffList ?: ""
                 )
             }
+            if (user != null) loadDivisionMembers(user)
+        }
+    }
+
+    private fun loadDivisionMembers(currentUser: User) {
+        _uiState.update { it.copy(isLoadingMembers = true) }
+        viewModelScope.launch {
+            authRepository.getAllUsers()
+                .onSuccess { users ->
+                    val members = users.filter { it.division == currentUser.division }
+                    _uiState.update { it.copy(divisionMembers = members, isLoadingMembers = false) }
+                }
+                .onFailure { _uiState.update { it.copy(isLoadingMembers = false) } }
         }
     }
 
@@ -125,36 +135,23 @@ class ProfileViewModel(
     fun exitEditMode() = _uiState.update { it.copy(isEditMode = false) }
     fun onNameChange(v: String) = _uiState.update { it.copy(editName = v) }
     fun onPhoneChange(v: String) = _uiState.update { it.copy(editPhone = v) }
+    fun onStudentIdChange(v: String) = _uiState.update { it.copy(editStudentId = v) }
+    fun onDivisionHeadChange(v: String) = _uiState.update { it.copy(editDivisionHead = v) }
+    fun onStaffListChange(v: String) = _uiState.update { it.copy(editStaffList = v) }
 
-    fun saveProfile() {
-        val state = _uiState.value
+    fun uploadAvatar(bytes: ByteArray, fileName: String, strings: Strings) {
         _uiState.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            authRepository.updateProfile(
-                name = state.editName,
-                phone = state.editPhone.ifBlank { null },
-                avatarUrl = null
-            ).onSuccess { user ->
-                _uiState.update {
-                    it.copy(isSaving = false, isEditMode = false, user = user,
-                        successMessage = "Profil berhasil diperbarui")
-                }
-            }.onFailure { e ->
-                _uiState.update { it.copy(isSaving = false, error = e.message) }
-            }
-        }
-    }
-
-    fun uploadAvatar(imageBytes: ByteArray, fileName: String) {
-        _uiState.update { it.copy(isSaving = true) }
-        viewModelScope.launch {
-            authRepository.updateAvatar(imageBytes, fileName)
+            authRepository.updateAvatar(bytes, fileName)
                 .onSuccess { url ->
-                    val updatedUser = _uiState.value.user?.copy(avatarUrl = url)
                     _uiState.update {
-                        it.copy(isSaving = false, user = updatedUser,
-                            successMessage = "Foto profil berhasil diperbarui")
+                        it.copy(
+                            isSaving = false,
+                            user = it.user?.copy(avatarUrl = url),
+                            successMessage = strings.profilePhotoUpdated
+                        )
                     }
+                    loadProfile() // Re-fetch to ensure sync
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isSaving = false, error = e.message) }
@@ -162,10 +159,29 @@ class ProfileViewModel(
         }
     }
 
+    fun saveProfile(strings: Strings) {
+        val state = _uiState.value
+        _uiState.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            authRepository.updateProfile(
+                name = state.editName,
+                phone = state.editPhone.ifBlank { null },
+                avatarUrl = null,
+                divisionHead = state.editDivisionHead,
+                staffList = state.editStaffList,
+                studentId = state.editStudentId.ifBlank { null }
+            ).onSuccess { user ->
+                _uiState.update { it.copy(isSaving = false, isEditMode = false, user = user, successMessage = strings.profileUpdated) }
+                loadProfile() // Re-fetch
+                loadDivisionMembers(user)
+            }.onFailure { e ->
+                _uiState.update { it.copy(isSaving = false, error = e.message) }
+            }
+        }
+    }
+
     fun clearMessages() = _uiState.update { it.copy(error = null, successMessage = null) }
 }
-
-// ==================== SCREEN ====================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,58 +194,92 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDarkTheme = LocalThemeIsDark.current
+    val currentLanguage = LocalLanguage.current
+    val strings = AppStrings.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+
+    var showImageSourceOptions by remember { mutableStateOf(false) }
+    val imagePicker = rememberImagePickerLauncher { bytes, fileName ->
+        viewModel.uploadAvatar(bytes, fileName, strings)
+    }
+
+    if (showImageSourceOptions) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceOptions = false },
+            title = { Text(strings.choosePhotoSource) },
+            text = { Text(strings.choosePhotoSourceDesc) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showImageSourceOptions = false
+                    imagePicker.takePhoto()
+                }) {
+                    Text(strings.camera)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showImageSourceOptions = false
+                    imagePicker.pickImage()
+                }) {
+                    Text(strings.gallery)
+                }
+            }
+        )
+    }
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
-        uiState.successMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearMessages()
-        }
-        uiState.error?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearMessages()
-        }
+        uiState.successMessage?.let { snackbarHostState.showSnackbar(it); viewModel.clearMessages() }
+        uiState.error?.let { snackbarHostState.showSnackbar(it); viewModel.clearMessages() }
     }
 
     val user = uiState.user
-    val isAdmin = user?.role == UserRole.ADMIN
-    val divisionInfo = user?.division?.let { divisionInfoMap[it] }
+    val isBendaharaUmum = user?.division == UserDivision.BENDAHARA_UMUM
+    var showAvatarDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Profil Saya",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
+                title = { Text(strings.myProfile, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
                 actions = {
                     if (!uiState.isEditMode) {
                         IconButton(onClick = viewModel::enterEditMode) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Profil")
+                            Icon(Icons.Default.Edit, strings.editProfile)
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
                 )
             )
         },
-        bottomBar = {
-            InventRaBottomNav(currentRoute = currentRoute, onNavigate = onNavigate)
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        bottomBar = { InventRaBottomNav(currentRoute = currentRoute, onNavigate = onNavigate) },
+        containerColor = Color.Transparent
     ) { paddingValues ->
 
         if (uiState.isLoading) {
-            Box(
-                Modifier.fillMaxSize().padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            Box(Modifier.fillMaxSize().padding(paddingValues), Alignment.Center) {
+                CircularProgressIndicator()
+            }
             return@Scaffold
+        }
+
+        if (showAvatarDialog && user?.avatarUrl != null) {
+            AlertDialog(
+                onDismissRequest = { showAvatarDialog = false },
+                text = {
+                    AsyncImage(
+                        model = user.avatarUrl,
+                        contentDescription = "Foto Profil Besar",
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showAvatarDialog = false }) { Text(strings.close) }
+                }
+            )
         }
 
         Column(
@@ -240,387 +290,386 @@ fun ProfileScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            // ==================== AVATAR SECTION ====================
-            Box(
-                contentAlignment = Alignment.BottomEnd,
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) {
-                // Avatar circle
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape),
-                    contentAlignment = Alignment.Center
+            // ── Avatar ──────────────────────────────────────────────────────
+            Box(modifier = Modifier.size(96.dp), contentAlignment = Alignment.BottomEnd) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(96.dp).clickable { if (user?.avatarUrl != null) showAvatarDialog = true }
                 ) {
-                    if (user?.avatarUrl != null) {
-                        // Tampilkan inisial jika avatar URL ada tapi belum bisa load
-                        Text(
-                            user.name.take(1).uppercase(),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    } else {
-                        Text(
-                            (user?.name ?: "?").take(1).uppercase(),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                    Box(contentAlignment = Alignment.Center) {
+                        if (user?.avatarUrl != null) {
+                            AsyncImage(
+                                model = user.avatarUrl,
+                                contentDescription = "Foto Profil",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                (user?.name ?: "?").take(1).uppercase(),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                 }
-
-                // Camera button untuk upload foto
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable {
-                            // Placeholder — on real device gunakan file picker
-                            // Di KMP, ini memerlukan expect/actual untuk akses galeri
-                        }
+                    modifier = Modifier.size(32.dp).clickable { showImageSourceOptions = true }
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Default.CameraAlt,
-                            contentDescription = "Ganti Foto",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        if (uiState.isSaving) {
+                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                        } else {
+                            Icon(Icons.Default.CameraAlt, strings.changePhoto, tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(18.dp))
+                        }
                     }
                 }
             }
+            Spacer(Modifier.height(8.dp))
 
-            // Nama & Role
-            Text(
-                user?.name ?: "Pengguna",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                if (isAdmin) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            "ADMIN",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                }
+            // ── Nama & Role ────────────────────────────────────────────────
+            Text(user?.name ?: "Pengguna", style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold)
+            
+            if (!user?.studentId.isNullOrBlank()) {
                 Text(
-                    user?.division?.displayName ?: "",
+                    text = user?.studentId ?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ==================== EDIT MODE ====================
-            if (uiState.isEditMode) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "Edit Profil",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(
-                            value = uiState.editName,
-                            onValueChange = viewModel::onNameChange,
-                            label = { Text("Nama Lengkap") },
-                            singleLine = true,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = uiState.editPhone,
-                            onValueChange = viewModel::onPhoneChange,
-                            label = { Text("Nomor HP") },
-                            singleLine = true,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(
-                                onClick = viewModel::exitEditMode,
-                                modifier = Modifier.weight(1f)
-                            ) { Text("Batal") }
-                            Button(
-                                onClick = viewModel::saveProfile,
-                                modifier = Modifier.weight(1f),
-                                enabled = !uiState.isSaving
-                            ) {
-                                if (uiState.isSaving) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                } else {
-                                    Text("Simpan")
-                                }
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // ==================== DIVISION INFO ====================
-            if (divisionInfo != null) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Groups,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Divisi ${divisionInfo.division.displayName}",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Kepala Divisi
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            Icons.Default.Star,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(
-                                        "Kepala Divisi",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                    )
-                                    Text(
-                                        divisionInfo.ketuaDivisi,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Staff List
-                        Text(
-                            "Staff (${divisionInfo.staffList.size})",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        divisionInfo.staffList.forEachIndexed { index, staff ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Text(
-                                            "${index + 1}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    staff,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            if (index < divisionInfo.staffList.size - 1) {
-                                HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                    modifier = Modifier.padding(start = 38.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // ==================== SETTINGS ====================
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Pengaturan",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    // Dark Mode Toggle
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (isDarkTheme.value) Icons.Default.DarkMode
-                                else Icons.Default.LightMode,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    "Tema Gelap",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    if (isDarkTheme.value) "Aktif" else "Nonaktif",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.outline
-                                )
-                            }
-                        }
-                        Switch(
-                            checked = isDarkTheme.value,
-                            onCheckedChange = { isDarkTheme.value = it }
-                        )
-                    }
-                }
-            }
-
-            // ==================== ADMIN ONLY: MANAGE USERS ====================
-            if (isAdmin) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Card(
+            
+            if (!user?.phone.isNullOrBlank()) {
+                Text(
+                    text = user?.phone ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onNavigateToUserManagement() },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.ManageAccounts,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "Manajemen Akun",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Text(
-                                "Buat dan kelola akun anggota divisi",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                            )
+                        .padding(vertical = 2.dp)
+                        .clickable {
+                            val phone = user?.phone?.replace(Regex("[^0-9]"), "") ?: ""
+                            val formattedPhone = if (phone.startsWith("0")) "62" + phone.substring(1) else phone
+                            if (formattedPhone.isNotBlank()) {
+                                uriHandler.openUri("https://wa.me/$formattedPhone")
+                            }
                         }
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+
+            if (isBendaharaUmum) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(4.dp)) {
+                        Text("BENDAHARA UMUM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                    }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+
+            // ── Edit Mode ──────────────────────────────────────────────────
+            if (uiState.isEditMode) {
+                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(strings.editProfile, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        
+                        OutlinedTextField(value = uiState.editName, onValueChange = viewModel::onNameChange,
+                            label = { Text(strings.fullName) }, singleLine = true,
+                            shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth())
+
+                        OutlinedTextField(value = uiState.editStudentId, onValueChange = viewModel::onStudentIdChange,
+                            label = { Text("NIM / Student ID") }, singleLine = true,
+                            shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth())
+                        
+                        OutlinedTextField(value = uiState.editPhone, onValueChange = viewModel::onPhoneChange,
+                            label = { Text(strings.phoneNumber) }, singleLine = true,
+                            shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth())
+
+                        OutlinedTextField(value = uiState.editDivisionHead, onValueChange = viewModel::onDivisionHeadChange,
+                            label = { Text(if (isBendaharaUmum) "Bendahara Umum" else strings.adminHead) }, singleLine = true,
+                            shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth())
+
+                        OutlinedTextField(value = uiState.editStaffList, onValueChange = viewModel::onStaffListChange,
+                            label = { Text(if (isBendaharaUmum) "Daftar Staff (Pisahkan dengan koma)" else strings.members + " (Pisahkan dengan koma)") },
+                            placeholder = { Text("Nama 1, Nama 2, ...") },
+                            shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth(),
+                            minLines = 2)
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = viewModel::exitEditMode, modifier = Modifier.weight(1f)) { Text(strings.cancel) }
+                            Button(onClick = { viewModel.saveProfile(strings) }, modifier = Modifier.weight(1f),
+                                enabled = !uiState.isSaving) {
+                                if (uiState.isSaving) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                                else Text(strings.save)
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            // ── Division Info ──────────────────────────────────────────────
+            DivisionInfoCard(
+                user = user,
+                strings = strings
+            )
+            Spacer(Modifier.height(16.dp))
+
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(strings.settings, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp))
+                    
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(if (isDarkTheme.value) Icons.Default.DarkMode else Icons.Default.LightMode,
+                                null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(strings.darkMode, style = MaterialTheme.typography.titleSmall)
+                                Text(if (isDarkTheme.value) strings.darkThemeActive else strings.darkThemeInactive,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+                        Switch(checked = isDarkTheme.value, onCheckedChange = { 
+                            isDarkTheme.value = it
+                            viewModel.setDarkMode(it)
+                        })
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // Language Selection
+                    var showLanguageDialog by remember { mutableStateOf(false) }
+                    if (showLanguageDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showLanguageDialog = false },
+                            title = { Text(strings.changeLanguage) },
+                            text = {
+                                Column {
+                                    Language.entries.forEach { lang ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    viewModel.setLanguage(lang)
+                                                    showLanguageDialog = false
+                                                }
+                                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            RadioButton(
+                                                selected = currentLanguage.value == lang,
+                                                onClick = null
+                                            )
+                                            Spacer(Modifier.width(12.dp))
+                                            Text(lang.displayName)
+                                        }
+                                    }
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = { showLanguageDialog = false }) { Text(strings.close) }
+                            }
                         )
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth().clickable { showLanguageDialog = true }.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Language, null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(strings.language, style = MaterialTheme.typography.titleSmall)
+                                Text(currentLanguage.value.displayName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+                        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outline)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (user?.role == UserRole.ADMIN) {
+                var showResetDialog by remember { mutableStateOf(false) }
 
-            // ==================== LOGOUT ====================
-            OutlinedButton(
-                onClick = onLogoutClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Icon(Icons.Default.Logout, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Logout Akun", fontWeight = FontWeight.Bold)
+                if (showResetDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showResetDialog = false },
+                        title = { Text(strings.confirmResetTitle) },
+                        text = { Text(strings.confirmResetMessage) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showResetDialog = false
+                                    viewModel.resetAllData(strings)
+                                },
+                                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                            ) { Text(strings.resetAllData, fontWeight = FontWeight.Bold) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showResetDialog = false }) { Text(strings.cancel) }
+                        }
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Card(modifier = Modifier.fillMaxWidth().clickable { onNavigateToUserManagement() },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.ManageAccounts, null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(28.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(strings.accountManagement, style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            Text(strings.createAndManageAccountDesc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f))
+                        }
+                        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable { showResetDialog = true },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                ) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.DeleteForever, null,
+                            tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(28.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(strings.resetAllData, style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
+                            Text(strings.resetDataDesc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f))
+                        }
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = {
+                    viewModel.logout { onLogoutClick() }
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                Icon(Icons.AutoMirrored.Filled.Logout, null)
+                Spacer(Modifier.width(8.dp))
+                Text(strings.logout, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "InventRa v1.0.0",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+private fun DivisionInfoCard(user: User?, strings: Strings) {
+    if (user == null) return
+    val isBendaharaUmum = user.division == UserDivision.BENDAHARA_UMUM
+    val staffList = user.staffList?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList()
+    
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(if (isBendaharaUmum) Icons.Default.AccountBalance else Icons.Default.Groups, 
+                    null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    if (isBendaharaUmum) user.division.displayName else "Divisi ${user.division.displayName}", 
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            
+            val headLabel = if (isBendaharaUmum) "Bendahara Umum" else strings.adminHead
+            
+            Text(headLabel, style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 6.dp))
+            
+            if (user.divisionHead.isNullOrBlank()) {
+                Text("- Belum diisi -", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            } else {
+                Surface(color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(if (isBendaharaUmum) Icons.Default.Person else Icons.Default.Star, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                            }
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(user.divisionHead, style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                if (isBendaharaUmum) "Daftar Staff" else strings.members, 
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outline, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+
+            if (staffList.isEmpty()) {
+                Text(strings.noMembers, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline)
+            } else {
+                staffList.forEachIndexed { index, name ->
+                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.size(28.dp)) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("${index + 1}", style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            }
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(name, style = MaterialTheme.typography.bodyMedium)
+                    }
+                    if (index < staffList.size - 1) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                            modifier = Modifier.padding(start = 38.dp))
+                    }
+                }
+            }
         }
     }
 }

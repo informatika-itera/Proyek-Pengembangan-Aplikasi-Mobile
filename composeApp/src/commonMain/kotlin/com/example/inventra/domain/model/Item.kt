@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 
 data class Item(
     val id: Long = 0,
+    val remoteId: String? = null,
     val name: String,
     val description: String = "",
     val category: ItemCategory,
@@ -13,6 +14,7 @@ data class Item(
     val availableStock: Int,
     val condition: ItemCondition = ItemCondition.GOOD,
     val picName: String = "",         // Person In Charge
+    val picPhone: String = "",        // PIC Phone Number
     val imageUrl: String? = null,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()

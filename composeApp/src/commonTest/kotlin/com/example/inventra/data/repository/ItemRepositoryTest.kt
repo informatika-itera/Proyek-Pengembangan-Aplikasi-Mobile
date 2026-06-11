@@ -1,14 +1,10 @@
 package com.example.inventra.data.repository
 
 import app.cash.turbine.test
+import com.example.inventra.FakeItemRepository
 import com.example.inventra.domain.model.Item
 import com.example.inventra.domain.model.ItemCategory
 import com.example.inventra.domain.model.ItemCondition
-import com.example.inventra.domain.repository.ItemRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlin.test.BeforeTest
@@ -112,46 +108,5 @@ class ItemRepositoryTest {
             createdAt = Clock.System.now(),
             updatedAt = Clock.System.now()
         )
-    }
-}
-
-class FakeItemRepository : ItemRepository {
-    private val items = MutableStateFlow<List<Item>>(emptyList())
-    private var nextId = 1L
-    
-    override fun getAllItems(): Flow<List<Item>> = items
-    
-    override fun getItemsByCategory(category: ItemCategory): Flow<List<Item>> {
-        return items.map { list -> list.filter { it.category == category } }
-    }
-    
-    override fun searchItems(query: String): Flow<List<Item>> {
-        return items.map { list ->
-            list.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                it.description.contains(query, ignoreCase = true)
-            }
-        }
-    }
-    
-    override fun getItemById(id: Long): Flow<Item?> {
-        return items.map { list -> list.find { it.id == id } }
-    }
-    
-    override suspend fun insertItem(item: Item): Long {
-        val id = nextId++
-        val newItem = item.copy(id = id)
-        items.update { it + newItem }
-        return id
-    }
-    
-    override suspend fun updateItem(item: Item) {
-        items.update { list ->
-            list.map { if (it.id == item.id) item else it }
-        }
-    }
-    
-    override suspend fun deleteItem(id: Long) {
-        items.update { list -> list.filter { it.id != id } }
     }
 }

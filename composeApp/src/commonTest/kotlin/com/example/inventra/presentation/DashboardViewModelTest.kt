@@ -1,21 +1,18 @@
 package com.example.inventra.presentation
 
 import app.cash.turbine.test
-import com.example.inventra.data.repository.FakeItemRepository
+import com.example.inventra.FakeAuthRepository
+import com.example.inventra.FakeBorrowRepository
+import com.example.inventra.FakeItemRepository
 import com.example.inventra.domain.model.BorrowRecord
 import com.example.inventra.domain.model.BorrowStatus
 import com.example.inventra.domain.model.Item
 import com.example.inventra.domain.model.ItemCategory
 import com.example.inventra.domain.model.ItemCondition
-import com.example.inventra.domain.repository.BorrowRepository
 import com.example.inventra.presentation.screens.dashboard.DashboardUiState
 import com.example.inventra.presentation.screens.dashboard.DashboardViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -26,6 +23,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,6 +32,7 @@ class DashboardViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var itemRepository: FakeItemRepository
     private lateinit var borrowRepository: FakeBorrowRepository
+    private lateinit var authRepository: FakeAuthRepository
     private lateinit var viewModel: DashboardViewModel
 
     @BeforeTest
@@ -41,7 +40,18 @@ class DashboardViewModelTest {
         Dispatchers.setMain(testDispatcher)
         itemRepository = FakeItemRepository()
         borrowRepository = FakeBorrowRepository()
-        viewModel = DashboardViewModel(itemRepository, borrowRepository)
+        authRepository = FakeAuthRepository()
+        
+        // Login as admin to see all records by default in tests
+        authRepository.loggedInUser = com.example.inventra.domain.model.User(
+            id = "admin-id",
+            name = "Admin",
+            email = "admin@test.com",
+            role = com.example.inventra.domain.model.UserRole.ADMIN,
+            division = com.example.inventra.domain.model.UserDivision.BENDAHARA_UMUM
+        )
+
+        viewModel = DashboardViewModel(itemRepository, borrowRepository, authRepository)
     }
 
     @AfterTest
@@ -79,12 +89,24 @@ class DashboardViewModelTest {
         borrowRepository.addRecord(createOverdueRecord())
 
         viewModel.uiState.test {
-            skipItems(1)
+            // Kita tunggu sampai state stabil di Success dengan data yang diharapkan
             advanceUntilIdle()
-
-            val state = awaitItem()
-            assertTrue(state is DashboardUiState.Success)
-            assertEquals(1, (state as DashboardUiState.Success).overdueItems)
+            
+            // Cari state Success terakhir dari semua event yang terkumpul
+            var lastSuccess: DashboardUiState.Success? = null
+            
+            // Cek item yang ada di turbine
+            while(true) {
+                val item = try { awaitItem() } catch (e: Throwable) { break }
+                if (item is DashboardUiState.Success) {
+                    lastSuccess = item
+                    // Jika sudah dapat yang kita mau, bisa break
+                    if (item.overdueItems == 1) break
+                }
+            }
+            
+            assertNotNull(lastSuccess, "Harusnya ada state Success")
+            assertEquals(1, lastSuccess.overdueItems)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -127,30 +149,5 @@ class DashboardViewModelTest {
             dueDate = now,
             status = BorrowStatus.OVERDUE
         )
-    }
-}
-
-class FakeBorrowRepository : BorrowRepository {
-    private val records = MutableStateFlow<List<BorrowRecord>>(emptyList())
-
-    fun addRecord(record: BorrowRecord) {
-        records.update { it + record }
-    }
-
-    override fun getAllRecords(): Flow<List<BorrowRecord>> = records
-
-    override fun getActiveRecords(): Flow<List<BorrowRecord>> = records.map { list ->
-        list.filter { it.status == BorrowStatus.ACTIVE || it.status == BorrowStatus.OVERDUE }
-    }
-
-    override suspend fun borrowItem(record: BorrowRecord): Long {
-        records.update { it + record }
-        return record.id
-    }
-
-    override suspend fun returnItem(recordId: Long) {
-        records.update { list ->
-            list.map { if (it.id == recordId) it.copy(status = BorrowStatus.RETURNED) else it }
-        }
     }
 }

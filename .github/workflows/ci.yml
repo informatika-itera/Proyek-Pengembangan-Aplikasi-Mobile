@@ -1,13 +1,17 @@
-name: CI
+name: Build and Release InventRa
 
 on:
   push:
-    branches: [ main, develop, 'project/123140062_123140132_InventRa' ]
+    branches: [ 'project/123140062_123140132_InventRa' ]
+    tags:
+      - 'v*'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ 'project/123140062_123140132_InventRa' ]
 
 jobs:
-  build:
+  # --- JOB 1: BUILD ANDROID (Cepat) ---
+  build-android:
+    name: Build Android
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +20,104 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build with Gradle
+          cache: 'gradle'
+      
+      - name: Setup local.properties
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> local.properties
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> local.properties
+
+      - name: Build Android Release APK
+        run: ./gradlew :composeApp:assembleRelease --no-daemon --quiet
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: InventRa-Android
+          path: composeApp/build/outputs/apk/release/*.apk
+
+  # --- JOB 2: RELEASE ANDROID DULUAN (Hanya menunggu Job 1) ---
+  release-android:
+    name: Release Android APK
+    needs: [build-android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: InventRa-Android
+          path: .
+
+      - name: Create/Update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.apk"
+          name: "InventRa v${{ github.ref_name }}"
+          body: |
+            ## 📦 InventRa Release
+            - **Android:** APK sudah tersedia di bawah.
+            - **iOS:** Sedang diproses (akan muncul otomatis jika selesai).
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # --- JOB 3: BUILD IOS (Lama) ---
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+      
+      - name: Setup local.properties
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> local.properties
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
+
+      - name: Build iOS Framework
+        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64 --no-daemon --quiet
+
+      - name: Zip iOS Framework
+        run: |
+          cd composeApp/build/bin/iosArm64/releaseFramework/
+          zip -r ../../../../InventRa-iOS-Framework.zip .
+          
+      - name: Upload iOS Framework
+        uses: actions/upload-artifact@v4
+        with:
+          name: InventRa-iOS
+          path: InventRa-iOS-Framework.zip
+
+  # --- JOB 4: UPDATE RELEASE DENGAN IOS (Menunggu Job 2 & 3) ---
+  update-release-with-ios:
+    name: Add iOS to Release
+    needs: [build-ios, release-android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download iOS Framework
+        uses: actions/download-artifact@v4
+        with:
+          name: InventRa-iOS
+          path: .
+
+      - name: Append iOS to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.zip"
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

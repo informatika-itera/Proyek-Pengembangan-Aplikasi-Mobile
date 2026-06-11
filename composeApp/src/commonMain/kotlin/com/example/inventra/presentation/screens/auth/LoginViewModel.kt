@@ -1,5 +1,6 @@
 package com.example.inventra.presentation.screens.auth
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inventra.domain.model.User
@@ -11,8 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
-    val email: String = "",
-    val password: String = "",
+    val email: TextFieldValue = TextFieldValue(""),
+    val password: TextFieldValue = TextFieldValue(""),
     val isLoading: Boolean = false,
     val error: String? = null,
     val loggedInUser: User? = null
@@ -29,15 +30,18 @@ class LoginViewModel(
         checkExistingSession()
     }
 
-    fun onEmailChange(email: String) =
+    fun onEmailChange(email: TextFieldValue) =
         _uiState.update { it.copy(email = email, error = null) }
 
-    fun onPasswordChange(password: String) =
+    fun onPasswordChange(password: TextFieldValue) =
         _uiState.update { it.copy(password = password, error = null) }
 
     fun login() {
         val state = _uiState.value
-        if (state.email.isBlank() || state.password.isBlank()) {
+        val emailStr = state.email.text
+        val passwordStr = state.password.text
+
+        if (emailStr.isBlank() || passwordStr.isBlank()) {
             _uiState.update { it.copy(error = "Email dan password harus diisi") }
             return
         }
@@ -45,7 +49,7 @@ class LoginViewModel(
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
-            authRepository.login(state.email, state.password)
+            authRepository.login(emailStr, passwordStr)
                 .onSuccess { user ->
                     _uiState.update { it.copy(isLoading = false, loggedInUser = user) }
                 }

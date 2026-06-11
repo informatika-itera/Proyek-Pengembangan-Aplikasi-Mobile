@@ -1,5 +1,7 @@
 package com.example.inventra.presentation.screens.addedit
 
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,21 +9,25 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.example.inventra.core.localization.AppStrings
+import com.example.inventra.core.util.rememberImagePickerLauncher
 import com.example.inventra.domain.model.ItemCategory
 import com.example.inventra.domain.model.ItemCondition
+import com.example.inventra.presentation.util.getDisplayName
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -34,32 +40,66 @@ fun AddEditItemScreen(
 ) {
     val viewModel: AddEditItemViewModel = koinViewModel { parametersOf(itemId) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
+    val strings = AppStrings.current
+
+    var showImageSourceOptions by remember { mutableStateOf(false) }
+    // Image picker dari galeri HP — harus di level Composable, bukan di dalam onClick
+    val imagePicker = rememberImagePickerLauncher { bytes, fileName ->
+        viewModel.uploadAndSaveImage(bytes, fileName)
+    }
+
+    if (showImageSourceOptions) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceOptions = false },
+            title = { Text(strings.choosePhotoSource) },
+            text = { Text(strings.choosePhotoSourceDesc) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showImageSourceOptions = false
+                    imagePicker.takePhoto()
+                }) {
+                    Text(strings.camera)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showImageSourceOptions = false
+                    imagePicker.pickImage()
+                }) {
+                    Text(strings.gallery)
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = if (itemId != null) "Edit Barang" else "Tambah Barang",
+                        if (itemId != null) strings.editProfile else strings.registerNewItem,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, strings.cancel)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { viewModel.saveItem(onSuccess = onSaveSuccess) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                onClick = { 
+                    focusManager.clearFocus()
+                    viewModel.saveItem(onSuccess = onSaveSuccess) 
+                },
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
                 if (uiState.isSaving) {
                     CircularProgressIndicator(
@@ -68,11 +108,11 @@ fun AddEditItemScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(Icons.Default.Save, contentDescription = "Simpan")
+                    Icon(Icons.Default.Save, strings.save)
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -82,6 +122,7 @@ fun AddEditItemScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Error
             if (uiState.error != null) {
                 Card(
                     colors = CardDefaults.cardColors(
@@ -89,7 +130,7 @@ fun AddEditItemScreen(
                     )
                 ) {
                     Text(
-                        text = uiState.error!!,
+                        uiState.error!!,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(12.dp)
@@ -97,47 +138,71 @@ fun AddEditItemScreen(
                 }
             }
 
+            // Nama Barang
             OutlinedTextField(
                 value = uiState.name,
                 onValueChange = viewModel::onNameChange,
-                label = { Text("Nama Barang *") },
+                label = { Text(strings.itemName + " *") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true
             )
 
+            // Deskripsi
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::onDescriptionChange,
-                label = { Text("Deskripsi") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
+                label = { Text(strings.description) },
+                modifier = Modifier.fillMaxWidth().height(120.dp),
                 shape = RoundedCornerShape(12.dp),
-                maxLines = 4
+                singleLine = false,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Default
+                )
             )
 
+            // Lokasi
             OutlinedTextField(
                 value = uiState.location,
                 onValueChange = viewModel::onLocationChange,
-                label = { Text("Lokasi Penyimpanan") },
-                modifier = Modifier.fillMaxWidth(),
+                label = { Text(strings.location) },
+                placeholder = { Text("Nama Lokasi https://maps.google...") },
+                modifier = Modifier.fillMaxWidth().height(100.dp),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = false,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    imeAction = ImeAction.Default
+                )
             )
 
-            OutlinedTextField(
-                value = uiState.picName,
-                onValueChange = viewModel::onPicNameChange,
-                label = { Text("Penanggung Jawab (PIC)") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
+            // PIC
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = uiState.picName,
+                    onValueChange = viewModel::onPicNameChange,
+                    label = { Text(strings.pic) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = uiState.picPhone,
+                    onValueChange = viewModel::onPicPhoneChange,
+                    label = { Text(strings.picPhone) },
+                    placeholder = { Text("08xx") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+                    )
+                )
+            }
 
-            // ==================== FOTO BARANG ====================
+            // ── Foto Barang ──────────────────────────────────────
             Text(
-                "Foto Barang (Opsional)",
+                strings.addPhotoTitle,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -145,77 +210,105 @@ fun AddEditItemScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
+                    .height(200.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable { /* File picker — perlu implement ImagePicker expect/actual */ },
+                    .clickable(enabled = !uiState.isSaving) { showImageSourceOptions = true },
                 contentAlignment = Alignment.Center
             ) {
-                if (uiState.imageUrl.isNotBlank()) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Foto sudah dipilih",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                        Text(
-                            uiState.imageUrl.takeLast(40),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
+                when {
+                    uiState.isSaving && uiState.imageUrl.isBlank() -> {
+                        // Sedang upload
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                strings.uploadingPhoto,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
                     }
-                } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.AddPhotoAlternate,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.size(48.dp)
+                    uiState.imageUrl.isNotBlank() -> {
+                        // Foto sudah ada — tampilkan preview
+                        AsyncImage(
+                            model = uiState.imageUrl,
+                            contentDescription = "Foto barang",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Tap untuk pilih foto",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                        Text(
-                            "Upload dari galeri perangkat",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
-                        )
+                        // Overlay tombol ganti
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    null,
+                                    tint = androidx.compose.ui.graphics.Color.White,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Text(
+                                    strings.changePhoto,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = androidx.compose.ui.graphics.Color.White
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        // Belum ada foto
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Default.AddPhotoAlternate,
+                                null,
+                                tint = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                strings.addPhotoDescription,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            Text(
+                                strings.photoSupportedFormats,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
             }
 
-            if (uiState.imageUrl.isNotBlank()) {
+            // Hapus foto jika sudah ada
+            if (uiState.imageUrl.isNotBlank() && !uiState.isSaving) {
                 TextButton(
                     onClick = { viewModel.onImageUrlChange("") },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Hapus Foto", style = MaterialTheme.typography.labelMedium)
+                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(strings.deletePhoto)
                 }
             }
 
+            // Stok
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = uiState.totalStock,
                     onValueChange = viewModel::onTotalStockChange,
-                    label = { Text("Total Stok") },
+                    label = { Text(strings.totalStock) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
@@ -223,43 +316,42 @@ fun AddEditItemScreen(
                 OutlinedTextField(
                     value = uiState.availableStock,
                     onValueChange = viewModel::onAvailableStockChange,
-                    label = { Text("Stok Tersedia") },
+                    label = { Text(strings.availableStock) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
                 )
             }
 
-            CategoryDropdown(selected = uiState.category, onSelected = viewModel::onCategoryChange)
-            ConditionDropdown(selected = uiState.condition, onSelected = viewModel::onConditionChange)
+            CategoryDropdown(selected = uiState.category, onSelected = viewModel::onCategoryChange, strings = strings)
+            ConditionDropdown(selected = uiState.condition, onSelected = viewModel::onConditionChange, strings = strings)
 
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(Modifier.height(80.dp))
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CategoryDropdown(selected: ItemCategory, onSelected: (ItemCategory) -> Unit) {
+private fun CategoryDropdown(selected: ItemCategory, onSelected: (ItemCategory) -> Unit, strings: com.example.inventra.core.localization.Strings) {
     var expanded by remember { mutableStateOf(false) }
     val categories = ItemCategory.entries.filter { it != ItemCategory.ALL }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = selected.displayName,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Kategori") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
+            value = selected.getDisplayName(strings), 
+            onValueChange = {}, readOnly = true,
+            label = { Text(strings.category) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
             shape = RoundedCornerShape(12.dp)
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            categories.forEach { category ->
+            categories.forEach { cat ->
                 DropdownMenuItem(
-                    text = { Text(category.displayName) },
-                    onClick = { onSelected(category); expanded = false }
+                    text = { 
+                        Text(cat.getDisplayName(strings))
+                    },
+                    onClick = { onSelected(cat); expanded = false }
                 )
             }
         }
@@ -268,25 +360,21 @@ private fun CategoryDropdown(selected: ItemCategory, onSelected: (ItemCategory) 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ConditionDropdown(selected: ItemCondition, onSelected: (ItemCondition) -> Unit) {
+private fun ConditionDropdown(selected: ItemCondition, onSelected: (ItemCondition) -> Unit, strings: com.example.inventra.core.localization.Strings) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = selected.displayName,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Kondisi Barang") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
+            value = selected.getDisplayName(strings), onValueChange = {}, readOnly = true,
+            label = { Text(strings.condition) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
             shape = RoundedCornerShape(12.dp)
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            ItemCondition.entries.forEach { condition ->
+            ItemCondition.entries.forEach { cond ->
                 DropdownMenuItem(
-                    text = { Text(condition.displayName) },
-                    onClick = { onSelected(condition); expanded = false }
+                    text = { Text(cond.getDisplayName(strings)) },
+                    onClick = { onSelected(cond); expanded = false }
                 )
             }
         }

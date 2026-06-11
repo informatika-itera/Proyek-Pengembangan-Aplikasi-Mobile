@@ -2,16 +2,13 @@ package com.example.inventra.presentation.screens.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.inventra.data.repository.DataSeeder
 import com.example.inventra.domain.model.BorrowRecord
 import com.example.inventra.domain.model.BorrowStatus
+import com.example.inventra.domain.model.User
+import com.example.inventra.domain.repository.AuthRepository
 import com.example.inventra.domain.repository.BorrowRepository
 import com.example.inventra.domain.repository.ItemRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 
 sealed interface DashboardUiState {
     data object Loading : DashboardUiState
@@ -26,32 +23,46 @@ sealed interface DashboardUiState {
 
 class DashboardViewModel(
     itemRepository: ItemRepository,
-    borrowRepository: BorrowRepository
+    borrowRepository: BorrowRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    init {
-        // Seed data inventaris HMIF jika tabel masih kosong
-        viewModelScope.launch {
-            DataSeeder.seedIfEmpty()
-        }
-    }
+    val currentUser: StateFlow<User?> = flow {
+        emit(authRepository.getCurrentUser())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val uiState: StateFlow<DashboardUiState> = combine(
         itemRepository.getAllItems(),
-        borrowRepository.getActiveRecords()
-    ) { items, activeRecords ->
-        val borrowedCount = items.count { it.availableStock < it.totalStock }
-        val overdueCount = activeRecords.count { it.status == BorrowStatus.OVERDUE }
-
+        borrowRepository.getAllRecords(), // Ambil semua record untuk count global
+        currentUser
+    ) { items, allRecords, user ->
+        val borrowedCount = allRecords.count { 
+            it.status == BorrowStatus.ACTIVE || it.status == BorrowStatus.OVERDUE 
+        }
+        
+        val filteredActive = if (user?.role == com.example.inventra.domain.model.UserRole.ADMIN) {
+            allRecords.filter { it.status == BorrowStatus.ACTIVE || it.status == BorrowStatus.OVERDUE }
+        } else {
+            allRecords.filter { 
+                (it.status == BorrowStatus.ACTIVE || it.status == BorrowStatus.OVERDUE) && 
+                it.borrowerId == user?.id 
+            }
+        }
+        
+        val overdueCount = filteredActive.count { it.status == BorrowStatus.OVERDUE }
         DashboardUiState.Success(
             totalItems = items.size,
             borrowedItems = borrowedCount,
             overdueItems = overdueCount,
-            activeBorrowings = activeRecords.take(5)
+            activeBorrowings = filteredActive.take(5)
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = DashboardUiState.Loading
     )
+
+    fun refresh() {
+        // Flow otomatis reaktif, tidak perlu manual refresh
+    }
 }

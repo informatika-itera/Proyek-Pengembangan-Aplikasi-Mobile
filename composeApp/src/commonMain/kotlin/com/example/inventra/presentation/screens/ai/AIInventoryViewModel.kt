@@ -1,7 +1,9 @@
 package com.example.inventra.presentation.screens.ai
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.inventra.core.localization.Strings
 import com.example.inventra.domain.model.Item
 import com.example.inventra.domain.model.BorrowRecord
 import com.example.inventra.domain.repository.AIRepository
@@ -20,7 +22,7 @@ import kotlinx.coroutines.launch
 // ==================== UI STATE ====================
 
 data class AIInventoryUiState(
-    val inputText: String = "",
+    val inputText: TextFieldValue = TextFieldValue(""),
     val selectedAction: InventoryAIAction = InventoryAIAction.ANALYZE_STOCK,
     val isLoading: Boolean = false,
     val result: String? = null,
@@ -38,33 +40,29 @@ sealed interface AIInventoryEvent {
 // ==================== AI ACTIONS ====================
 
 enum class InventoryAIAction(
-    val displayName: String,
-    val description: String,
-    val needsInput: Boolean = false,
-    val inputHint: String = ""
+    val needsInput: Boolean = false
 ) {
-    ANALYZE_STOCK(
-        displayName = "Analisis Stok",
-        description = "Analisis kondisi stok inventaris saat ini dan berikan rekomendasi"
-    ),
-    SUGGEST_PROCUREMENT(
-        displayName = "Saran Pengadaan",
-        description = "Dapatkan saran barang apa yang perlu diadakan berdasarkan data"
-    ),
-    BORROWING_REPORT(
-        displayName = "Laporan Peminjaman",
-        description = "Ringkasan dan analisis pola peminjaman barang"
-    ),
-    OVERDUE_ACTION(
-        displayName = "Tindak Overdue",
-        description = "Saran tindakan untuk barang yang terlambat dikembalikan"
-    ),
-    CUSTOM_QUERY(
-        displayName = "Tanya Bebas",
-        description = "Tanyakan apapun tentang inventaris Anda",
-        needsInput = true,
-        inputHint = "Contoh: Barang apa yang paling sering dipinjam? Apa saran untuk meningkatkan pengelolaan?"
-    )
+    ANALYZE_STOCK,
+    SUGGEST_PROCUREMENT,
+    BORROWING_REPORT,
+    OVERDUE_ACTION,
+    CUSTOM_QUERY(needsInput = true);
+    
+    fun getDisplayName(strings: Strings): String = when(this) {
+        ANALYZE_STOCK -> strings.aiAnalyzeStock
+        SUGGEST_PROCUREMENT -> strings.aiSuggestProcurement
+        BORROWING_REPORT -> strings.aiBorrowingReport
+        OVERDUE_ACTION -> strings.aiOverdueAction
+        CUSTOM_QUERY -> strings.aiCustomQuery
+    }
+    
+    fun getDescription(strings: Strings): String = when(this) {
+        ANALYZE_STOCK -> strings.aiAnalyzeStockDesc
+        SUGGEST_PROCUREMENT -> strings.aiSuggestProcurementDesc
+        BORROWING_REPORT -> strings.aiBorrowingReportDesc
+        OVERDUE_ACTION -> strings.aiOverdueActionDesc
+        CUSTOM_QUERY -> strings.aiCustomQueryDesc
+    }
 }
 
 // ==================== VIEWMODEL ====================
@@ -103,7 +101,7 @@ class AIInventoryViewModel(
         }
     }
 
-    fun onInputTextChange(text: String) {
+    fun onInputTextChange(text: TextFieldValue) {
         _uiState.update { it.copy(inputText = text, error = null) }
     }
 
@@ -111,18 +109,18 @@ class AIInventoryViewModel(
         _uiState.update { it.copy(selectedAction = action, result = null, error = null) }
     }
 
-    fun executeAction() {
+    fun executeAction(strings: Strings) {
         val state = _uiState.value
 
-        if (state.selectedAction.needsInput && state.inputText.isBlank()) {
-            _uiState.update { it.copy(error = "Masukkan pertanyaan terlebih dahulu") }
+        if (state.selectedAction.needsInput && state.inputText.text.isBlank()) {
+            _uiState.update { it.copy(error = strings.aiCustomQueryHint) }
             return
         }
 
         _uiState.update { it.copy(isLoading = true, error = null, result = null) }
 
         viewModelScope.launch {
-            val prompt = buildPrompt(state.selectedAction, state.inputText)
+            val prompt = buildPrompt(state.selectedAction, state.inputText.text, strings)
 
             aiRepository.chat(prompt)
                 .onSuccess { result ->
@@ -132,87 +130,55 @@ class AIInventoryViewModel(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = error.message ?: "Terjadi kesalahan saat menghubungi AI"
+                            error = error.message ?: "Error"
                         )
                     }
                 }
         }
     }
 
-    private fun buildPrompt(action: InventoryAIAction, userInput: String): String {
+    private fun buildPrompt(action: InventoryAIAction, userInput: String, strings: Strings): String {
         val inventarySummary = buildInventarySummary()
 
         val systemContext = """
-            Kamu adalah asisten manajemen inventaris untuk HMIF ITERA (Himpunan Mahasiswa Informatika Institut Teknologi Sumatera).
-            Kamu membantu pengelolaan aset dan barang-barang organisasi.
-            Selalu gunakan Bahasa Indonesia yang jelas dan profesional.
-            Berikan jawaban yang terstruktur, praktis, dan actionable.
+            Kamu adalah asisten manajemen inventaris untuk Kabinet Nexara HMIF ITERA 2026.
+            Tugasmu adalah membantu pengurus dalam mengelola aset organisasi dengan memberikan informasi yang singkat, padat, dan jelas.
             
+            ATURAN PENTING:
+            1. JANGAN gunakan format Markdown (seperti #, ##, ***, atau tabel).
+            2. Gunakan gaya bahasa chat biasa yang santai namun tetap sopan.
+            3. Jawablah langsung ke intinya, hindari basa-basi yang panjang.
+            4. Gunakan list sederhana dengan simbol peluru (•) atau penomoran biasa jika diperlukan.
+            5. Pastikan jawaban lengkap dan tidak terpotong, meskipun singkat.
+            6. ${strings.aiSystemContext}
+
             DATA INVENTARIS SAAT INI:
             $inventarySummary
         """.trimIndent()
 
         val taskPrompt = when (action) {
             InventoryAIAction.ANALYZE_STOCK -> """
-                Lakukan analisis mendalam terhadap kondisi stok inventaris di atas.
-                
-                Sertakan dalam analisis:
-                1. **Ringkasan Kondisi** — overview total item, stok tersedia vs dipinjam
-                2. **Item Kritis** — barang dengan stok rendah atau kondisi buruk
-                3. **Distribusi Kategori** — apakah ada kategori yang kurang terwakili?
-                4. **Kesehatan Inventaris** — penilaian keseluruhan (Baik/Perlu Perhatian/Kritis)
-                5. **Rekomendasi Prioritas** — 3 tindakan utama yang perlu dilakukan
-                
-                Format jawaban dengan header yang jelas dan poin-poin terstruktur.
+                Analisis stok inventaris saat ini secara singkat.
+                Berikan ringkasan total barang, item yang stoknya kritis (sedikit/habis), dan rekomendasi singkat untuk pengelola.
             """.trimIndent()
 
             InventoryAIAction.SUGGEST_PROCUREMENT -> """
-                Berdasarkan data inventaris di atas, berikan saran pengadaan barang.
-                
-                Analisis dan rekomendasikan:
-                1. **Barang yang Habis/Kritis** — item yang stoknya menipis dan perlu segera diadakan
-                2. **Barang Baru yang Disarankan** — berdasarkan kategori yang ada, apa yang mungkin dibutuhkan HMIF?
-                3. **Prioritas Pengadaan** — urutkan dari paling mendesak
-                4. **Estimasi Kebutuhan** — berapa unit yang disarankan untuk diadakan
-                5. **Tips Pengelolaan** — saran untuk menjaga ketersediaan stok
-                
-                Pertimbangkan konteks sebagai organisasi mahasiswa yang memiliki keterbatasan anggaran.
+                Berikan saran pengadaan barang yang mendesak berdasarkan data stok.
+                Sebutkan nama barang dan jumlah yang disarankan untuk ditambah.
             """.trimIndent()
 
             InventoryAIAction.BORROWING_REPORT -> """
-                Buat laporan dan analisis peminjaman berdasarkan data di atas.
-                
-                Laporan harus mencakup:
-                1. **Statistik Peminjaman** — total aktif, selesai, overdue
-                2. **Pola Peminjaman** — barang apa yang paling sering dipinjam?
-                3. **Status Overdue** — daftar dan kondisi peminjaman yang terlambat
-                4. **Analisis Peminjam** — siapa yang paling sering meminjam?
-                5. **Rekomendasi Kebijakan** — saran untuk meningkatkan disiplin pengembalian
-                6. **Ringkasan Denda** — total potensi denda dari overdue
-                
-                Sampaikan dengan format yang mudah dipresentasikan ke rapat organisasi.
+                Berikan ringkasan laporan peminjaman. 
+                Sebutkan berapa yang aktif, selesai, dan overdue secara singkat.
             """.trimIndent()
 
             InventoryAIAction.OVERDUE_ACTION -> """
-                Berikan panduan tindakan untuk menangani peminjaman overdue berdasarkan data di atas.
-                
-                Sertakan:
-                1. **Daftar Overdue** — semua peminjaman yang melewati batas waktu
-                2. **Prioritas Penagihan** — urutkan berdasarkan lama keterlambatan
-                3. **Template Pesan** — contoh pesan notifikasi yang sopan tapi tegas
-                4. **Prosedur Penanganan** — langkah-langkah yang disarankan
-                5. **Perhitungan Denda** — estimasi denda berdasarkan aturan (Rp 10.000/hari)
-                6. **Pencegahan ke Depan** — saran agar overdue berkurang di masa mendatang
-                
-                Tone: profesional dan tegas namun tetap collegial sesama mahasiswa.
+                Sebutkan daftar peminjaman yang overdue dan berikan satu saran tindakan cepat untuk menanganinya.
             """.trimIndent()
 
             InventoryAIAction.CUSTOM_QUERY -> """
-                Pertanyaan dari pengelola inventaris: $userInput
-                
-                Jawab pertanyaan ini berdasarkan data inventaris yang tersedia.
-                Berikan jawaban yang spesifik, akurat berdasarkan data, dan actionable.
-                Jika pertanyaan tidak bisa dijawab dengan data yang ada, jelaskan apa data tambahan yang dibutuhkan.
+                Pertanyaan: $userInput
+                Jawablah secara singkat dan akurat berdasarkan data yang ada.
             """.trimIndent()
         }
 

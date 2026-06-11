@@ -43,3 +43,26 @@
 -keepclassmembers class * extends androidx.lifecycle.ViewModel {
     <init>(...);
 }
+
+# Supabase
+-keep class io.github.jan.tennert.supabase.** { *; }
+-keepclassmembers class io.github.jan.tennert.supabase.** { *; }
+-dontwarn io.github.jan.tennert.supabase.**
+
+# Coil Image Loading
+-keep class coil3.** { *; }
+-dontwarn coil3.**
+
+# Kotlin Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+
+# DataStore
+-keep class androidx.datastore.** { *; }
+
+# Keep all data classes for serialization
+-keep @kotlinx.serialization.Serializable class * { *; }
+-keepclassmembers class * {
+    @kotlinx.serialization.SerialName *;
+}
+

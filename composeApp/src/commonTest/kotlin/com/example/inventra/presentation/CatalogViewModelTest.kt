@@ -1,11 +1,12 @@
 package com.example.inventra.presentation
 
+import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
-import com.example.inventra.data.repository.FakeItemRepository
+import com.example.inventra.FakeAuthRepository
+import com.example.inventra.FakeItemRepository
 import com.example.inventra.domain.model.Item
 import com.example.inventra.domain.model.ItemCategory
 import com.example.inventra.domain.model.ItemCondition
-import com.example.inventra.domain.usecase.SearchItemsUseCase
 import com.example.inventra.presentation.screens.catalog.CatalogUiState
 import com.example.inventra.presentation.screens.catalog.CatalogViewModel
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,7 @@ class CatalogViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     
     private lateinit var repository: FakeItemRepository
-    private lateinit var searchItemsUseCase: SearchItemsUseCase
+    private lateinit var authRepository: FakeAuthRepository
     private lateinit var viewModel: CatalogViewModel
     
     @BeforeTest
@@ -36,10 +37,11 @@ class CatalogViewModelTest {
         Dispatchers.setMain(testDispatcher)
         
         repository = FakeItemRepository()
-        searchItemsUseCase = SearchItemsUseCase(repository)
+        authRepository = FakeAuthRepository()
         
         viewModel = CatalogViewModel(
-            searchItemsUseCase = searchItemsUseCase
+            itemRepository = repository,
+            authRepository = authRepository
         )
     }
     
@@ -88,7 +90,9 @@ class CatalogViewModelTest {
             advanceUntilIdle()
             skipItems(1) // Initial success (all items)
             
-            viewModel.onSearchQueryChange("Project")
+            viewModel.onSearchQueryChange(TextFieldValue("Project"))
+            // Debounce is 300ms in CatalogViewModel
+            testDispatcher.scheduler.advanceTimeBy(400)
             advanceUntilIdle()
             
             val state = awaitItem()

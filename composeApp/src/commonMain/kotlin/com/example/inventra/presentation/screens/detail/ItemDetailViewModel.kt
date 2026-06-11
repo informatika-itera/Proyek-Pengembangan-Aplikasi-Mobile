@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.inventra.domain.model.BorrowRecord
 import com.example.inventra.domain.model.BorrowStatus
 import com.example.inventra.domain.model.Item
+import com.example.inventra.domain.model.User
+import com.example.inventra.domain.repository.AuthRepository
 import com.example.inventra.domain.repository.BorrowRepository
 import com.example.inventra.domain.repository.ItemRepository
 import kotlinx.coroutines.flow.*
@@ -24,8 +26,13 @@ sealed interface ItemDetailUiState {
 class ItemDetailViewModel(
     private val itemId: Long,
     private val itemRepository: ItemRepository,
-    private val borrowRepository: BorrowRepository
+    private val borrowRepository: BorrowRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
+
+    val currentUser: StateFlow<User?> = flow {
+        emit(authRepository.getCurrentUser())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val uiState: StateFlow<ItemDetailUiState> = itemRepository.getItemById(itemId)
         .map { item ->
@@ -46,24 +53,40 @@ class ItemDetailViewModel(
         }
     }
 
-    /**
-     * Buat permintaan peminjaman dengan status PENDING.
-     * Admin (Nabila) perlu approve dari HistoryScreen.
-     */
-    fun requestBorrow(borrowerName: String, borrowerDivision: String, onSuccess: () -> Unit) {
+    fun requestBorrow(
+        borrowerName: String,
+        borrowerDivision: String, // parameter ini sekarang diabaikan, ambil dari repo
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit = {}
+    ) {
         val currentState = uiState.value
-        if (currentState !is ItemDetailUiState.Success) return
+
+        if (currentState !is ItemDetailUiState.Success) {
+            onError("Data barang belum dimuat, coba lagi")
+            return
+        }
+
+        val item = currentState.item
+
+        if (item.availableStock <= 0) {
+            onError("Stok barang habis")
+            return
+        }
 
         viewModelScope.launch {
-            val item = currentState.item
-            if (item.availableStock > 0) {
+            try {
+                val currentUser = authRepository.getCurrentUser()
+                val division = currentUser?.division?.name ?: "PUBDOK"
+
                 val now = Clock.System.now()
                 val dueDate = now.plus(2, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
 
                 val record = BorrowRecord(
                     itemId = item.id,
+                    borrowerId = currentUser?.id ?: "anonymous",
                     itemName = item.name,
-                    borrowerName = "$borrowerName ($borrowerDivision)",
+                    borrowerName = borrowerName,
+                    borrowerDivision = division,
                     borrowDate = now,
                     dueDate = dueDate,
                     status = BorrowStatus.PENDING
@@ -71,6 +94,8 @@ class ItemDetailViewModel(
 
                 borrowRepository.borrowItem(record)
                 onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Gagal meminjam, coba lagi")
             }
         }
     }

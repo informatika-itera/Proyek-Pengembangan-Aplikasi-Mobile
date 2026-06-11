@@ -19,3 +19,9 @@
 # Dapatkan API key gratis di: https://aistudio.google.com/
 # Tanpa key ini, fitur AI tidak akan berjalan (app tetap bisa dibuka).
 GEMINI_API_KEY=your_api_key_here
+
+# Signing Config (untuk release APK)
+# KEYSTORE_PATH=path/to/your/release.jks
+# KEYSTORE_PASSWORD=your_keystore_password
+# KEY_ALIAS=inventra
+# KEY_PASSWORD=your_key_password

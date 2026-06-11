@@ -9,13 +9,14 @@ data class User(
     val studentId: String? = null,
     val phone: String? = null,
     val avatarUrl: String? = null,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val divisionHead: String? = null,
+    val staffList: String? = null // Comma separated names
 )
 
 enum class UserRole(val displayName: String) {
     ADMIN("Admin"),
-    MEMBER("Anggota"),
-    VIEWER("Tamu")
+    MEMBER("Anggota")
 }
 
 enum class UserDivision(val displayName: String) {

@@ -2,21 +2,6 @@ package com.example.inventra.data.remote.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-@Serializable
-data class ProfileDto(
-    val id: String,
-    val name: String,
-    val role: String = "MEMBER",
-    val division: String = "PUBDOK",
-    @SerialName("student_id") val studentId: String? = null,
-    val phone: String? = null,
-    @SerialName("avatar_url") val avatarUrl: String? = null,
-    @SerialName("is_active") val isActive: Boolean = true,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val updatedAt: String? = null
-)
-
 @Serializable
 data class ItemDto(
     val id: String = "",
@@ -28,6 +13,7 @@ data class ItemDto(
     @SerialName("available_stock") val availableStock: Int = 1,
     val condition: String = "GOOD",
     @SerialName("pic_name") val picName: String = "",
+    @SerialName("pic_phone") val picPhone: String = "",
     @SerialName("image_url") val imageUrl: String? = null,
     @SerialName("is_active") val isActive: Boolean = true,
     @SerialName("created_at") val createdAt: String? = null,
@@ -50,6 +36,7 @@ data class BorrowRecordDto(
     @SerialName("return_date") val returnDate: String? = null,
     val status: String = "PENDING",
     @SerialName("fine_amount") val fineAmount: Long = 0,
+    @SerialName("return_proof_url") val returnProofUrl: String? = null,
     @SerialName("admin_note") val adminNote: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null
@@ -76,6 +63,7 @@ data class InsertItemDto(
     @SerialName("available_stock") val availableStock: Int = 1,
     val condition: String = "GOOD",
     @SerialName("pic_name") val picName: String = "",
+    @SerialName("pic_phone") val picPhone: String = "",
     @SerialName("image_url") val imageUrl: String? = null
 )
 

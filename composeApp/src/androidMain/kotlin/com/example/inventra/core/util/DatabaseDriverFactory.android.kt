@@ -6,10 +6,11 @@ import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.inventra.data.local.InventRaDatabase
 
 /**
- * Android implementation of DatabaseDriverFactory
- * 
+ * Android implementation of DatabaseDriverFactory.
+ *
  * Menggunakan AndroidSqliteDriver yang membungkus SQLite bawaan Android.
- * Database disimpan di internal storage aplikasi.
+ * Nama DB diganti ke "InventRa_v2.db" untuk menghindari conflict
+ * schema migration (local DB adalah pure cache dari Supabase).
  */
 actual class DatabaseDriverFactory(
     private val context: Context
@@ -18,7 +19,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = InventRaDatabase.Schema,
             context = context,
-            name = "Inventra.db"
+            name = "InventRa_v3.db"
         )
     }
 }

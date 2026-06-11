@@ -14,9 +14,7 @@ actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
             schema = SholatYukDatabase.Schema,
-            name = "noteai.db"
+            name = "sholatyuk.db"
         )
     }
 }
-
-

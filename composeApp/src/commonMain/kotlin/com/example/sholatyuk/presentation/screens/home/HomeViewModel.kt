@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sholatyuk.core.location.LocationService
 import com.example.sholatyuk.domain.repository.PrayerRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -23,6 +25,18 @@ class HomeViewModel(
 
     init {
         fetchPrayerTimes()
+        startClock()
+    }
+
+    private fun startClock() {
+        viewModelScope.launch {
+            while (isActive) {
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val timeString = "${now.hour.toString().padStart(2, '0')}:${now.minute.toString().padStart(2, '0')}:${now.second.toString().padStart(2, '0')}"
+                _uiState.update { it.copy(currentTime = timeString) }
+                delay(1000)
+            }
+        }
     }
 
     fun fetchPrayerTimes() {

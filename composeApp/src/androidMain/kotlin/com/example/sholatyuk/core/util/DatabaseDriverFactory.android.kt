@@ -18,9 +18,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = SholatYukDatabase.Schema,
             context = context,
-            name = "noteai.db"
+            name = "sholatyuk.db"
         )
     }
 }
-
-

@@ -1,6 +1,6 @@
 CREATE TABLE PrayerTimeEntity (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    date        TEXT    NOT NULL,
+    date        TEXT    NOT NULL UNIQUE,
     fajr        TEXT    NOT NULL,
     sunrise     TEXT    NOT NULL,
     dhuhr       TEXT    NOT NULL,
@@ -17,11 +17,12 @@ CREATE TABLE PrayerTimeEntity (
 -- Ambil jadwal sholat berdasarkan tanggal
 getPrayerTimeByDate:
 SELECT * FROM PrayerTimeEntity
-WHERE date = ?;
+WHERE date = ?
+LIMIT 1;
 
 -- Simpan jadwal sholat baru
 insertPrayerTime:
-INSERT INTO PrayerTimeEntity (
+INSERT OR REPLACE INTO PrayerTimeEntity (
     date, fajr, sunrise, dhuhr, asr, maghrib,
     isha, imsak, midnight, latitude, longitude, city_name
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);

@@ -26,8 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sholatyuk.domain.model.PrayerTime
 import com.example.sholatyuk.presentation.theme.*
-// 👇 Import ProfileViewModel ditambahkan di sini
 import com.example.sholatyuk.presentation.screens.profile.ProfileViewModel
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -36,14 +38,15 @@ fun HomeScreen(
     onNavigateToDoa: () -> Unit = {},
     onNavigateToIslamAI: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToKajianNotes: () -> Unit = {},
+    onNavigateToQibla: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
-    profileViewModel: ProfileViewModel = koinViewModel() // 👇 ProfileViewModel diinjeksi di sini
+    profileViewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // 👇 Mengambil data nama pengguna dari ProfileViewModel
     val userName by profileViewModel.userName.collectAsState()
+    val isLightModeEnabled by profileViewModel.isLightModeEnabled.collectAsState()
 
-    // Pop-up Dialog GPS
     if (uiState.showGpsDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissGpsDialog() },
@@ -65,9 +68,9 @@ fun HomeScreen(
                     Text("Nanti Saja", color = Color.Gray)
                 }
             },
-            containerColor = Color.White,
-            titleContentColor = DeepBlue,
-            textContentColor = Color.DarkGray
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
     }
 
@@ -78,40 +81,48 @@ fun HomeScreen(
                 onHomeClick = {},
                 onShalatClick = onNavigateToShalat,
                 onDoaClick = onNavigateToDoa,
-                onIslamAIClick = onNavigateToIslamAI
+                onIslamAIClick = onNavigateToIslamAI,
+                isLightMode = isLightModeEnabled
             )
         },
-        containerColor = DeepBlue
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(DarkTeal, DeepBlue),
-                        startY = 0f,
-                        endY = 1200f
-                    )
+                    brush = if (isLightModeEnabled) {
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFFE0F2F1), Color(0xFFF5F5F5)),
+                            startY = 0f,
+                            endY = 1200f
+                        )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(DarkTeal, DeepBlue),
+                            startY = 0f,
+                            endY = 1200f
+                        )
+                    }
                 )
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                // 👇 Oper userName ke dalam HeaderSection
                 item {
                     HeaderSection(
                         userName = userName,
-                        onProfileClick = onNavigateToProfile
+                        onProfileClick = onNavigateToProfile,
+                        isLightMode = isLightModeEnabled
                     )
                 }
 
-                // SMART BANNER: Ketuk untuk Refresh
                 if (uiState.isLoading) {
                     item {
                         Text(
                             text = "Mencari lokasi dan jadwal sholat...",
-                            color = AccentYellow,
+                            color = if (isLightModeEnabled) DeepBlue else AccentYellow,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(20.dp),
@@ -138,20 +149,20 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Default.Refresh,
                                     contentDescription = null,
-                                    tint = AccentYellow,
+                                    tint = if (isLightModeEnabled) Color.Red else AccentYellow,
                                     modifier = Modifier.size(28.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = uiState.error ?: "Terjadi kesalahan",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     textAlign = TextAlign.Center,
                                     fontSize = 13.sp
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = "Ketuk area ini untuk mencoba lagi",
-                                    color = AccentYellow,
+                                    color = if (isLightModeEnabled) DeepBlue else AccentYellow,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -160,12 +171,161 @@ fun HomeScreen(
                     }
                 }
 
-                item { PrayerClockCard(uiState.prayerTime) }
-                item { PrayerTimesRow(uiState.prayerTime) }
+                item { 
+                    PrayerClockCard(
+                        currentTime = uiState.currentTime,
+                        prayerTime = uiState.prayerTime, 
+                        isLightMode = isLightModeEnabled,
+                        onClick = onNavigateToShalat
+                    ) 
+                }
+                item { PrayerTimesRow(uiState.prayerTime, isLightModeEnabled) }
 
-                item { VideoBanner() }
-                item { MenuGrid() }
+                item {
+                    KajianNotesEntryCard(onClick = onNavigateToKajianNotes, isLightMode = isLightModeEnabled)
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        ActionCard(
+                            title = "Doa",
+                            subtitle = "Kumpulan Doa",
+                            icon = Icons.AutoMirrored.Filled.MenuBook,
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToDoa,
+                            isLightMode = isLightModeEnabled
+                        )
+                        ActionCard(
+                            title = "Kiblat",
+                            subtitle = "Arah Ka'bah",
+                            icon = Icons.Default.Explore,
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToQibla,
+                            isLightMode = isLightModeEnabled
+                        )
+                    }
+                }
+                
                 item { Spacer(modifier = Modifier.height(32.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+fun KajianNotesEntryCard(onClick: () -> Unit, isLightMode: Boolean) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isLightMode) Color.White else CardBackground
+        ),
+        border = BorderStroke(1.dp, (if (isLightMode) DeepBlue else AccentYellow).copy(alpha = 0.1f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isLightMode) 2.dp else 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background((if (isLightMode) DeepBlue else AccentYellow).copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.EditNote,
+                    contentDescription = null,
+                    tint = if (isLightMode) DeepBlue else AccentYellow,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(20.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Catatan Kajian",
+                    color = if (isLightMode) Color.Black else TextWhite,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Kelola ringkasan ilmu di sini",
+                    color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.7f),
+                    fontSize = 13.sp
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = if (isLightMode) DeepBlue else AccentYellow
+            )
+        }
+    }
+}
+
+@Composable
+fun ActionCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    isLightMode: Boolean
+) {
+    Card(
+        modifier = modifier
+            .height(140.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isLightMode) Color.White else CardBackground
+        ),
+        border = BorderStroke(1.dp, (if (isLightMode) DeepBlue else AccentYellow).copy(alpha = 0.1f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isLightMode) 2.dp else 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background((if (isLightMode) DeepBlue else AccentYellow).copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isLightMode) DeepBlue else AccentYellow,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Column {
+                Text(
+                    text = title,
+                    color = if (isLightMode) Color.Black else TextWhite,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = subtitle,
+                    color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.6f),
+                    fontSize = 12.sp
+                )
             }
         }
     }
@@ -174,8 +334,7 @@ fun HomeScreen(
 // ====================================================================
 
 @Composable
-fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = {}) { // 👇 Parameter userName ditambahkan
-    // 👇 Logika untuk mengambil maksimal 2 huruf inisial dari nama
+fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = {}, isLightMode: Boolean) {
     val initials = userName.split(" ")
         .take(2)
         .mapNotNull { it.firstOrNull()?.uppercase() }
@@ -192,23 +351,23 @@ fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = 
         Column {
             Text(
                 text = "BEKAL ISLAM",
-                color = TextWhite.copy(alpha = 0.8f),
+                color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.8f),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 letterSpacing = 0.5.sp
             )
             Text(
                 text = "الإسلام",
-                color = TextWhite,
+                color = if (isLightMode) Color.Black else TextWhite,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold
             )
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = Icons.Default.Brightness3,
+                imageVector = if (isLightMode) Icons.Default.LightMode else Icons.Default.Brightness3,
                 contentDescription = null,
-                tint = AccentYellow,
+                tint = if (isLightMode) DeepBlue else AccentYellow,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -216,12 +375,12 @@ fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = 
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.Black)
+                    .background(if (isLightMode) DeepBlue else Color.Black)
                     .clickable { onProfileClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = initials, // 👇 Gunakan inisial dinamis di sini
+                    text = initials,
                     color = Color.White,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -232,14 +391,24 @@ fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = 
 }
 
 @Composable
-fun PrayerClockCard(prayerTime: PrayerTime?) {
+fun PrayerClockCard(
+    currentTime: String,
+    prayerTime: PrayerTime?, 
+    isLightMode: Boolean,
+    onClick: () -> Unit = {}
+) {
+    val nextPrayerReminder = getNextPrayerReminder(prayerTime)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.08f)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        colors = CardDefaults.cardColors(
+            containerColor = (if (isLightMode) Color.Black else Color.White).copy(alpha = 0.08f)
+        ),
+        border = BorderStroke(1.dp, (if (isLightMode) Color.Black else Color.White).copy(alpha = 0.1f))
     ) {
         Column(
             modifier = Modifier
@@ -251,30 +420,49 @@ fun PrayerClockCard(prayerTime: PrayerTime?) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(prayerTime?.cityName ?: "Mencari Lokasi...", color = TextWhite.copy(alpha = 0.9f), fontSize = 13.sp)
-                Text(prayerTime?.date?.toString() ?: "-", color = TextWhite.copy(alpha = 0.9f), fontSize = 13.sp)
+                Text(
+                    prayerTime?.cityName ?: "Mencari Lokasi...", 
+                    color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.9f), 
+                    fontSize = 13.sp
+                )
+                Text(
+                    prayerTime?.date?.toString() ?: "-", 
+                    color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.9f), 
+                    fontSize = 13.sp
+                )
             }
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = prayerTime?.dhuhr ?: "--:--",
-                color = TextWhite,
-                fontSize = 80.sp,
+                text = currentTime,
+                color = if (isLightMode) Color.Black else TextWhite,
+                fontSize = 64.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = (-2).sp
+                letterSpacing = (-1).sp
             )
+            
+            if (nextPrayerReminder != null) {
+                Text(
+                    text = nextPrayerReminder,
+                    color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.6f),
+                    fontSize = 11.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.AccessTime,
                     contentDescription = null,
-                    tint = TextWhite.copy(alpha = 0.8f),
+                    tint = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.8f),
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Waktu Dzuhur Hari Ini",
-                    color = TextWhite.copy(alpha = 0.9f),
+                    text = "Waktu Lokal Saat Ini",
+                    color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.9f),
                     fontSize = 13.sp
                 )
             }
@@ -283,159 +471,74 @@ fun PrayerClockCard(prayerTime: PrayerTime?) {
 }
 
 @Composable
-fun PrayerTimesRow(prayerTime: PrayerTime?) {
+fun PrayerTimesRow(prayerTime: PrayerTime?, isLightMode: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        PrayerTimeItem("Subuh", prayerTime?.fajr ?: "--:--", Icons.Default.WbSunny)
-        PrayerTimeItem("Dzuhur", prayerTime?.dhuhr ?: "--:--", Icons.Default.WbSunny)
-        PrayerTimeItem("Ashar", prayerTime?.asr ?: "--:--", Icons.Default.Cloud)
-        PrayerTimeItem("Maghrib", prayerTime?.maghrib ?: "--:--", Icons.Default.Waves)
-        PrayerTimeItem("Isya", prayerTime?.isha ?: "--:--", Icons.Default.NightsStay)
+        val prayers = listOf(
+            Triple("Subuh", prayerTime?.fajr ?: "--:--", Icons.Default.WbSunny),
+            Triple("Dzuhur", prayerTime?.dhuhr ?: "--:--", Icons.Default.WbSunny),
+            Triple("Ashar", prayerTime?.asr ?: "--:--", Icons.Default.Cloud),
+            Triple("Maghrib", prayerTime?.maghrib ?: "--:--", Icons.Default.Waves),
+            Triple("Isya", prayerTime?.isha ?: "--:--", Icons.Default.NightsStay)
+        )
+
+        prayers.forEach { (label, time, icon) ->
+            PrayerTimeItem(
+                label = label,
+                time = time,
+                icon = icon,
+                remaining = if (time != "--:--") calculateRemainingFor(time, label) else null,
+                isLightMode = isLightMode
+            )
+        }
     }
 }
 
 @Composable
-fun PrayerTimeItem(label: String, time: String, icon: ImageVector, isNext: Boolean = false) {
+fun PrayerTimeItem(
+    label: String, 
+    time: String, 
+    icon: ImageVector, 
+    isNext: Boolean = false, 
+    remaining: String? = null,
+    isLightMode: Boolean
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (isNext) AccentYellow else TextWhite.copy(alpha = 0.7f),
+            tint = if (isNext) (if (isLightMode) DeepBlue else AccentYellow) else (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.7f),
             modifier = Modifier.size(28.dp)
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = label,
-            color = if (isNext) AccentYellow else TextWhite.copy(alpha = 0.7f),
+            color = if (isNext) (if (isLightMode) DeepBlue else AccentYellow) else (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.7f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium
         )
         Text(
             text = time,
-            color = if (isNext) AccentYellow else TextWhite,
+            color = if (isNext) (if (isLightMode) DeepBlue else AccentYellow) else (if (isLightMode) Color.Black else TextWhite),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
-    }
-}
-
-@Composable
-fun VideoBanner() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Black)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.PlayCircle,
-                    contentDescription = null,
-                    tint = TextWhite,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "Video UFA",
-                    color = TextWhite,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 20.sp
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = null,
-                tint = TextWhite,
-                modifier = Modifier.size(24.dp)
+        if (remaining != null) {
+            Text(
+                text = remaining,
+                color = (if (isLightMode) DeepBlue else AccentYellow).copy(alpha = 0.5f),
+                fontSize = 8.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 9.sp,
+                modifier = Modifier.padding(top = 2.dp).widthIn(max = 60.dp)
             )
         }
     }
 }
-
-@Composable
-fun MenuGrid() {
-    val items = listOf(
-        MenuItem("Dzikir & Doa", Icons.Default.BackHand),
-        MenuItem("Al-Quran", Icons.AutoMirrored.Filled.MenuBook),
-        MenuItem("Sirah", Icons.Default.HistoryEdu),
-        MenuItem("Rukun Islam", Icons.Default.NightsStay),
-        MenuItem("Rukun Iman", Icons.Default.AutoAwesome),
-        MenuItem("Asmaul Husna", Icons.Default.Star),
-        MenuItem("Penuntut Ilmu", Icons.Default.Lightbulb),
-        MenuItem("Fatwa Al-'Utsaimin", Icons.AutoMirrored.Filled.MenuBook),
-        MenuItem("Tanya Ustadz", Icons.Default.QuestionAnswer),
-        MenuItem("Umrah & Haji", Icons.Default.LocationCity),
-        MenuItem("UFA Official", Icons.Default.AccountCircle),
-        MenuItem("Maheer Travel", Icons.Default.AirplanemodeActive)
-    )
-
-    Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-        for (i in items.indices step 4) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                for (j in 0 until 4) {
-                    if (i + j < items.size) {
-                        MenuIconItem(items[i + j], modifier = Modifier.weight(1f))
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-    }
-}
-
-@Composable
-fun MenuIconItem(item: MenuItem, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .padding(4.dp)
-            .clickable { },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(CardBackground),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = null,
-                tint = AccentYellow,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = item.title,
-            color = TextWhite,
-            fontSize = 11.sp,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            lineHeight = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-data class MenuItem(val title: String, val icon: ImageVector)
 
 @Composable
 fun BottomNavigationBar(
@@ -443,23 +546,27 @@ fun BottomNavigationBar(
     onHomeClick: () -> Unit = {},
     onShalatClick: () -> Unit = {},
     onDoaClick: () -> Unit = {},
-    onIslamAIClick: () -> Unit = {}
+    onIslamAIClick: () -> Unit = {},
+    isLightMode: Boolean = false
 ) {
     NavigationBar(
-        containerColor = DeepBlue,
-        contentColor = TextWhite,
+        containerColor = if (isLightMode) Color.White else DeepBlue,
+        contentColor = if (isLightMode) Color.Black else TextWhite,
         tonalElevation = 8.dp
     ) {
+        val selectedColor = if (isLightMode) DeepBlue else AccentYellow
+        val unselectedColor = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.5f)
+        
         NavigationBarItem(
             selected = currentRoute == "home",
             onClick = onHomeClick,
             icon = { Icon(Icons.Default.Home, contentDescription = null) },
             label = { Text("Beranda") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow,
-                selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f),
-                unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                selectedIconColor = selectedColor,
+                selectedTextColor = selectedColor,
+                unselectedIconColor = unselectedColor,
+                unselectedTextColor = unselectedColor,
                 indicatorColor = Color.Transparent
             )
         )
@@ -469,8 +576,8 @@ fun BottomNavigationBar(
             icon = { Icon(Icons.Default.Mosque, contentDescription = null) },
             label = { Text("Shalat") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow, selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f), unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                selectedIconColor = selectedColor, selectedTextColor = selectedColor,
+                unselectedIconColor = unselectedColor, unselectedTextColor = unselectedColor,
                 indicatorColor = Color.Transparent
             )
         )
@@ -480,8 +587,8 @@ fun BottomNavigationBar(
             icon = { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null) },
             label = { Text("Doa") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow, selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f), unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                selectedIconColor = selectedColor, selectedTextColor = selectedColor,
+                unselectedIconColor = unselectedColor, unselectedTextColor = unselectedColor,
                 indicatorColor = Color.Transparent
             )
         )
@@ -491,10 +598,72 @@ fun BottomNavigationBar(
             icon = { Icon(Icons.Default.AutoAwesome, contentDescription = null) },
             label = { Text("IslamAI") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow, selectedTextColor = AccentYellow,
-                unselectedIconColor = TextWhite.copy(alpha = 0.5f), unselectedTextColor = TextWhite.copy(alpha = 0.5f),
+                selectedIconColor = selectedColor, selectedTextColor = selectedColor,
+                unselectedIconColor = unselectedColor, unselectedTextColor = unselectedColor,
                 indicatorColor = Color.Transparent
             )
         )
+    }
+}
+
+private fun getNextPrayerReminder(prayerTime: PrayerTime?): String? {
+    if (prayerTime == null) return null
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    val currentMinutes = now.hour * 60 + now.minute
+    
+    val prayers = listOf(
+        "Subuh" to prayerTime.fajr,
+        "Dzuhur" to prayerTime.dhuhr,
+        "Ashar" to prayerTime.asr,
+        "Maghrib" to prayerTime.maghrib,
+        "Isya" to prayerTime.isha
+    )
+    
+    val next = prayers.find {
+        val parts = it.second.split(":")
+        if (parts.size < 2) false
+        else (parts[0].trim().toInt() * 60 + parts[1].trim().toInt()) > currentMinutes
+    } ?: prayers.first()
+    
+    val parts = next.second.split(":")
+    val pMinutes = parts[0].trim().toInt() * 60 + parts[1].trim().toInt()
+    
+    var diff = pMinutes - currentMinutes
+    if (diff < 0) diff += 24 * 60
+    
+    if (diff == 0) return "Waktunya ${next.first}"
+    
+    val h = diff / 60
+    val m = diff % 60
+    
+    return buildString {
+        if (h > 0) append("$h jam ")
+        if (m > 0) append("$m menit ")
+        append("lagi menuju waktu ${next.first.lowercase()}")
+    }
+}
+
+private fun calculateRemainingFor(timeStr: String, label: String): String? {
+    try {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val currentMinutes = now.hour * 60 + now.minute
+        val parts = timeStr.split(":")
+        val pMinutes = parts[0].trim().toInt() * 60 + parts[1].trim().toInt()
+        
+        var diff = pMinutes - currentMinutes
+        if (diff < 0) diff += 24 * 60
+        
+        if (diff == 0) return "Waktunya"
+        
+        val h = diff / 60
+        val m = diff % 60
+        
+        return buildString {
+            if (h > 0) append("${h}j ")
+            if (m > 0) append("${m}m ")
+            append("lagi")
+        }
+    } catch (e: Exception) {
+        return null
     }
 }

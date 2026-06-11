@@ -1,0 +1,27 @@
+CREATE TABLE KajianNoteEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    judul TEXT NOT NULL,
+    ustadz TEXT NOT NULL,
+    tanggal TEXT NOT NULL,
+    kategori TEXT NOT NULL,
+    isi TEXT NOT NULL
+);
+
+getAllNotes:
+SELECT * FROM KajianNoteEntity ORDER BY tanggal DESC;
+
+getNotesByCategory:
+SELECT * FROM KajianNoteEntity WHERE kategori = ? ORDER BY tanggal DESC;
+
+insertNote:
+INSERT OR REPLACE INTO KajianNoteEntity(id, judul, ustadz, tanggal, kategori, isi)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteNote:
+DELETE FROM KajianNoteEntity WHERE id = ?;
+
+searchNotes:
+SELECT * FROM KajianNoteEntity
+WHERE judul LIKE ('%' || ? || '%')
+OR ustadz LIKE ('%' || ? || '%')
+ORDER BY tanggal DESC;

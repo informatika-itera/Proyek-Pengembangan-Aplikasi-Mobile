@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 
 /**
  * Android MainActivity
- * 
+ *
  * Entry point untuk Android app.
  */
 class MainActivity : ComponentActivity() {
@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         
         // Enable edge-to-edge display
         enableEdgeToEdge()
-        
+
         setContent {
             App()
         }

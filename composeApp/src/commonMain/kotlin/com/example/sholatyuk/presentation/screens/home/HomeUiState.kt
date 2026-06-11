@@ -4,6 +4,7 @@ import com.example.sholatyuk.domain.model.PrayerTime
 
 data class HomeUiState(
     val prayerTime: PrayerTime? = null,
+    val currentTime: String = "--:--",
     val isLoading: Boolean = false,
     val error: String? = null,
     val showGpsDialog: Boolean = false

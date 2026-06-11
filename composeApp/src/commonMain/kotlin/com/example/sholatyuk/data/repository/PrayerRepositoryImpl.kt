@@ -11,13 +11,14 @@ import kotlinx.datetime.LocalDate
 
 class PrayerRepositoryImpl(
     private val database: SholatYukDatabase,
-    private val aladhanService: AladhanService // <-- Tambahan: Menyuntikkan API Service
+    private val aladhanService: AladhanService
 ) : PrayerRepository {
 
     private val queries = database.prayerTimeQueries
 
     override fun getPrayerTimeByDate(date: LocalDate): Flow<PrayerTime?> = flow {
-        val result = queries.getPrayerTimeByDate(date.toString()).executeAsOneOrNull()
+        // Gunakan executeAsList().firstOrNull() untuk menghindari crash jika ada data duplikat
+        val result = queries.getPrayerTimeByDate(date.toString()).executeAsList().firstOrNull()
         emit(result?.toDomain())
     }
 
@@ -26,42 +27,36 @@ class PrayerRepositoryImpl(
         longitude: Double,
         date: LocalDate
     ): Result<PrayerTime> {
-        // 1. Cek cache: Jika jadwal hari ini sudah ada di database, gunakan itu (hemat kuota)
-        val cached = queries.getPrayerTimeByDate(date.toString()).executeAsOneOrNull()
+        // Gunakan executeAsList().firstOrNull() untuk menghindari crash
+        val cached = queries.getPrayerTimeByDate(date.toString()).executeAsList().firstOrNull()
         if (cached != null) {
             return Result.success(cached.toDomain())
         }
 
-        // 2. Jika belum ada, ambil dari internet (Aladhan API)
         return aladhanService.getTimingsByLocation(latitude, longitude).fold(
             onSuccess = { response ->
                 val timings = response.data.timings
 
-                // 3. Mapping: Ubah data dari JSON menjadi model PrayerTime aplikasi
                 val newPrayerTime = PrayerTime(
-                    id = 0L, // Hapus baris ini jika PrayerTime Anda tidak mewajibkan id
+                    id = 0L,
                     date = date,
                     imsak = timings.imsak,
                     fajr = timings.fajr,
-                    sunrise = "-", // Default sementara karena di AladhanDto belum kita masukkan
+                    sunrise = "-",
                     dhuhr = timings.dhuhr,
                     asr = timings.asr,
                     maghrib = timings.maghrib,
                     isha = timings.isha,
-                    midnight = "-", // Default sementara
+                    midnight = "-",
                     latitude = latitude,
                     longitude = longitude,
-                    cityName = response.data.meta.timezone // Aladhan menyediakan timezone, bisa dipakai sementara
+                    cityName = response.data.meta.timezone
                 )
 
-                // 4. Simpan ke database lokal
                 savePrayerTime(newPrayerTime)
-
-                // 5. Kembalikan data yang baru saja disimpan
                 Result.success(newPrayerTime)
             },
             onFailure = { exception ->
-                // Jika gagal (misal tidak ada internet) kembalikan error
                 Result.failure(exception)
             }
         )

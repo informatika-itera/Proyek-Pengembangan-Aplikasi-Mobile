@@ -30,9 +30,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
-    viewModel: ProfileViewModel = koinViewModel() // 👇 Ambil ViewModel
+    viewModel: ProfileViewModel = koinViewModel()
 ) {
-    // 👇 Ambil state dari ViewModel
     val userName by viewModel.userName.collectAsState()
     val userBio by viewModel.userBio.collectAsState()
     val isAdzanEnabled by viewModel.isAdzanEnabled.collectAsState()
@@ -43,16 +42,29 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil & Pengaturan", color = TextWhite, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { 
+                    Text(
+                        "Profil & Pengaturan", 
+                        color = if (isLightModeEnabled) Color.Black else TextWhite, 
+                        fontWeight = FontWeight.Bold, 
+                        fontSize = 18.sp
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = AccentYellow)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = "Kembali", 
+                            tint = if (isLightModeEnabled) DeepBlue else AccentYellow
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = DeepBlue)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
-        containerColor = DeepBlue
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -87,11 +99,18 @@ fun ProfileScreen(
 
                 OutlinedTextField(
                     value = userName,
-                    onValueChange = { viewModel.updateUserName(it) }, // 👇 Simpan ke ViewModel
-                    textStyle = TextStyle(color = TextWhite, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
+                    onValueChange = { viewModel.updateUserName(it) },
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onBackground, 
+                        fontSize = 24.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        textAlign = TextAlign.Center
+                    ),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AccentYellow, unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
+                        focusedBorderColor = AccentYellow, 
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent, 
+                        unfocusedContainerColor = Color.Transparent,
                     ),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -101,11 +120,17 @@ fun ProfileScreen(
 
                 OutlinedTextField(
                     value = userBio,
-                    onValueChange = { viewModel.updateUserBio(it) }, // 👇 Simpan ke ViewModel
-                    textStyle = TextStyle(color = TextWhite.copy(alpha = 0.7f), fontSize = 14.sp, textAlign = TextAlign.Center),
+                    onValueChange = { viewModel.updateUserBio(it) },
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f), 
+                        fontSize = 14.sp, 
+                        textAlign = TextAlign.Center
+                    ),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AccentYellow, unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
+                        focusedBorderColor = AccentYellow, 
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent, 
+                        unfocusedContainerColor = Color.Transparent,
                     ),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
@@ -116,19 +141,31 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // 2. BAGIAN PENGATURAN UTAMA
-            Text(text = "PENGATURAN", color = AccentYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+            Text(
+                text = "PENGATURAN", 
+                color = if (isLightModeEnabled) DeepBlue else AccentYellow, 
+                fontSize = 12.sp, 
+                fontWeight = FontWeight.Bold, 
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
             Card(
-                modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = CardBackground)
+                modifier = Modifier.fillMaxWidth(), 
+                shape = RoundedCornerShape(16.dp), 
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = if (isLightModeEnabled) 2.dp else 0.dp)
             ) {
                 Column {
                     SettingItemSwitch(
                         icon = Icons.Default.NotificationsActive, title = "Notifikasi Adzan",
-                        isChecked = isAdzanEnabled, onCheckedChange = { viewModel.updateAdzan(it) } // 👇 Simpan ke ViewModel
+                        isChecked = isAdzanEnabled, onCheckedChange = { viewModel.updateAdzan(it) }
                     )
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), 
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                     SettingItemSwitch(
                         icon = Icons.Default.LightMode, title = "Tema Terang (Light Mode)",
-                        isChecked = isLightModeEnabled, onCheckedChange = { viewModel.updateLightMode(it) } // 👇 Simpan ke ViewModel
+                        isChecked = isLightModeEnabled, onCheckedChange = { viewModel.updateLightMode(it) }
                     )
                 }
             }
@@ -136,13 +173,25 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // 3. BAGIAN TENTANG APLIKASI
-            Text(text = "INFORMASI", color = AccentYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+            Text(
+                text = "INFORMASI", 
+                color = if (isLightModeEnabled) DeepBlue else AccentYellow, 
+                fontSize = 12.sp, 
+                fontWeight = FontWeight.Bold, 
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
             Card(
-                modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = CardBackground)
+                modifier = Modifier.fillMaxWidth(), 
+                shape = RoundedCornerShape(16.dp), 
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = if (isLightModeEnabled) 2.dp else 0.dp)
             ) {
                 Column {
                     SettingItemText(icon = Icons.Default.Info, title = "Versi Aplikasi", value = "v1.0.0 (Sprint 3)")
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), 
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                     SettingItemText(icon = Icons.Default.BugReport, title = "Laporkan Masalah", value = "")
                 }
             }
@@ -150,7 +199,6 @@ fun ProfileScreen(
     }
 }
 
-// ... (Biarkan fungsi SettingItemText dan SettingItemSwitch di sini sama seperti sebelumnya) ...
 @Composable
 fun SettingItemText(icon: ImageVector, title: String, value: String) {
     Row(
@@ -159,12 +207,17 @@ fun SettingItemText(icon: ImageVector, title: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon, contentDescription = null, tint = AccentYellow, modifier = Modifier.size(24.dp))
+            Icon(
+                imageVector = icon, 
+                contentDescription = null, 
+                tint = if (MaterialTheme.colorScheme.background == Color(0xFFF5F5F5)) DeepBlue else AccentYellow, 
+                modifier = Modifier.size(24.dp)
+            )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = title, color = TextWhite, fontSize = 15.sp)
+            Text(text = title, color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp)
         }
         if (value.isNotEmpty()) {
-            Text(text = value, color = TextWhite.copy(alpha = 0.6f), fontSize = 14.sp)
+            Text(text = value, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 14.sp)
         }
     }
 }
@@ -177,15 +230,22 @@ fun SettingItemSwitch(icon: ImageVector, title: String, isChecked: Boolean, onCh
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon, contentDescription = null, tint = AccentYellow, modifier = Modifier.size(24.dp))
+            Icon(
+                imageVector = icon, 
+                contentDescription = null, 
+                tint = if (MaterialTheme.colorScheme.background == Color(0xFFF5F5F5)) DeepBlue else AccentYellow, 
+                modifier = Modifier.size(24.dp)
+            )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = title, color = TextWhite, fontSize = 15.sp)
+            Text(text = title, color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp)
         }
         Switch(
             checked = isChecked, onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = DeepBlue, checkedTrackColor = AccentYellow,
-                uncheckedThumbColor = Color.Gray, uncheckedTrackColor = Color.DarkGray
+                checkedThumbColor = Color.White, 
+                checkedTrackColor = if (MaterialTheme.colorScheme.background == Color(0xFFF5F5F5)) DeepBlue else AccentYellow,
+                uncheckedThumbColor = Color.Gray, 
+                uncheckedTrackColor = Color.DarkGray
             )
         )
     }

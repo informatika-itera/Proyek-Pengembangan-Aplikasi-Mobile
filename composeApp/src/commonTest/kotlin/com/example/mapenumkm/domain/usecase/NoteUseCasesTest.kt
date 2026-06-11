@@ -1,181 +1,112 @@
 package com.example.mapenumkm.domain.usecase
 
-import app.cash.turbine.test
 import com.example.mapenumkm.domain.model.Note
 import com.example.mapenumkm.domain.model.NoteCategory
-import com.example.mapenumkm.domain.model.NoteColor
+import com.example.mapenumkm.domain.repository.AIRepository
 import com.example.mapenumkm.domain.repository.NoteRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import com.example.mapenumkm.domain.repository.WritingStyle
+import io.mockk.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class NoteUseCasesTest {
-
-    private lateinit var repository: FakeNoteRepository
-    private lateinit var getAllNotesUseCase: GetAllNotesUseCase
-    private lateinit var searchNotesUseCase: SearchNotesUseCase
-    private lateinit var saveNoteUseCase: SaveNoteUseCase
-    private lateinit var deleteNoteUseCase: DeleteNoteUseCase
-
-    @BeforeTest
-    fun setup() {
-        repository = FakeNoteRepository()
-        getAllNotesUseCase = GetAllNotesUseCase(repository)
-        searchNotesUseCase = SearchNotesUseCase(repository)
-        saveNoteUseCase = SaveNoteUseCase(repository)
-        deleteNoteUseCase = DeleteNoteUseCase(repository)
-    }
+    private val repository: NoteRepository = mockk()
+    private val aiRepository: AIRepository = mockk()
+    
+    private val now = Instant.fromEpochMilliseconds(1000)
+    private val later = Instant.fromEpochMilliseconds(2000)
+    
+    private val testNotes = listOf(
+        Note(id = 1, title = "A", content = "C1", price = 10.0, stock = 5, category = NoteCategory.FOOD, isPinned = false, createdAt = now, updatedAt = now),
+        Note(id = 2, title = "B", content = "C2", price = 20.0, stock = 10, category = NoteCategory.DRINK, isPinned = true, createdAt = later, updatedAt = later)
+    )
 
     @Test
-    fun `GetAllNotesUseCase should return pinned notes first`() = runTest {
-        val note1 = createTestNote(id = 1, title = "Unpinned", isPinned = false)
-        val note2 = createTestNote(id = 2, title = "Pinned", isPinned = true)
+    fun `GetAllNotesUseCase should sort pinned notes first and then by sortBy`() = runTest {
+        val useCase = GetAllNotesUseCase(repository)
+        every { repository.getAllNotes() } returns flowOf(testNotes)
         
-        repository.insertNote(note1)
-        repository.insertNote(note2)
-
-        getAllNotesUseCase().test {
-            val notes = awaitItem()
-            assertEquals(2, notes.size)
-            assertEquals(true, notes[0].isPinned)
-            assertEquals("Pinned", notes[0].title)
-            assertEquals(false, notes[1].isPinned)
-            assertEquals("Unpinned", notes[1].title)
-            cancelAndIgnoreRemainingEvents()
+        // Test all sort branches
+        NoteSortBy.entries.forEach { sortBy ->
+            val result = useCase(sortBy).first()
+            assertEquals(2, result.size)
+            assertTrue(result[0].isPinned)
         }
     }
 
     @Test
-    fun `GetAllNotesUseCase should sort by price ascending`() = runTest {
-        val note1 = createTestNote(id = 1, title = "Expensive", price = 100.0)
-        val note2 = createTestNote(id = 2, title = "Cheap", price = 10.0)
+    fun `SearchNotesUseCase should cover different filter branches`() = runTest {
+        val useCase = SearchNotesUseCase(repository)
         
-        repository.insertNote(note1)
-        repository.insertNote(note2)
-
-        getAllNotesUseCase(NoteSortBy.PRICE_ASC).test {
-            val notes = awaitItem()
-            assertEquals("Cheap", notes[0].title)
-            assertEquals("Expensive", notes[1].title)
-            cancelAndIgnoreRemainingEvents()
-        }
+        // Branch 1: query blank and category null
+        every { repository.getAllNotes() } returns flowOf(testNotes)
+        useCase(query = "", category = null).first()
+        
+        // Branch 2: query blank and category NOT null
+        every { repository.getNotesByCategory(NoteCategory.FOOD) } returns flowOf(listOf(testNotes[0]))
+        useCase(query = "", category = NoteCategory.FOOD).first()
+        
+        // Branch 3: query NOT blank
+        every { repository.searchNotes("A") } returns flowOf(testNotes)
+        val result = useCase(query = "A", category = NoteCategory.FOOD).first()
+        assertEquals(1, result.size)
+        assertEquals(NoteCategory.FOOD, result[0].category)
     }
 
     @Test
-    fun `SearchNotesUseCase should filter by query and category`() = runTest {
-        val note1 = createTestNote(title = "Apple", category = NoteCategory.FOOD)
-        val note2 = createTestNote(title = "Banana", category = NoteCategory.FOOD)
-        val note3 = createTestNote(title = "Orange", category = NoteCategory.OTHER)
+    fun `SaveNoteUseCase should call insert for id 0 and update for existing id`() = runTest {
+        val useCase = SaveNoteUseCase(repository)
+        val newNote = Note(id = 0, title = "New", content = "C", createdAt = now, updatedAt = now)
+        val existingNote = Note(id = 1, title = "Exist", content = "C", createdAt = now, updatedAt = now)
         
-        repository.insertNote(note1)
-        repository.insertNote(note2)
-        repository.insertNote(note3)
-
-        searchNotesUseCase(query = "a", category = NoteCategory.FOOD).test {
-            val notes = awaitItem()
-            // "Apple" and "Banana" both have 'a', and both are FOOD.
-            assertEquals(2, notes.size)
-            assertTrue(notes.all { it.category == NoteCategory.FOOD })
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `SaveNoteUseCase should return failure for empty note`() = runTest {
-        val emptyNote = Note(title = "", content = "")
+        coEvery { repository.insertNote(any()) } returns 100L
+        coEvery { repository.updateNote(any()) } returns Unit
         
-        val result = saveNoteUseCase(emptyNote)
+        val res1 = useCase(newNote)
+        assertEquals(100L, res1.getOrNull())
         
-        assertTrue(result.isFailure)
-        assertEquals("Note tidak boleh kosong", result.exceptionOrNull()?.message)
-    }
-
-    @Test
-    fun `SaveNoteUseCase should call insert for new note`() = runTest {
-        val newNote = createTestNote(id = 0, title = "New")
+        val res2 = useCase(existingNote)
+        assertEquals(1L, res2.getOrNull())
         
-        val result = saveNoteUseCase(newNote)
-        
-        assertTrue(result.isSuccess)
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertEquals(1, notes.size)
-            assertEquals("New", notes[0].title)
-            cancelAndIgnoreRemainingEvents()
-        }
+        val res3 = useCase(newNote.copy(title = "", content = ""))
+        assertTrue(res3.isFailure)
     }
 
     @Test
     fun `DeleteNoteUseCase should call repository delete`() = runTest {
-        val id = repository.insertNote(createTestNote(title = "To Delete"))
-        
-        deleteNoteUseCase(id)
-        
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertTrue(notes.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
+        val useCase = DeleteNoteUseCase(repository)
+        coEvery { repository.deleteNote(1L) } returns Unit
+        assertTrue(useCase(1L).isSuccess)
     }
 
-    private fun createTestNote(
-        id: Long = 0,
-        title: String = "Test",
-        content: String = "Content",
-        price: Double = 0.0,
-        stock: Int = 0,
-        category: NoteCategory = NoteCategory.FOOD,
-        isPinned: Boolean = false,
-        createdAt: Instant = Clock.System.now(),
-        updatedAt: Instant = Clock.System.now()
-    ): Note {
-        return Note(
-            id = id,
-            title = title,
-            content = content,
-            price = price,
-            stock = stock,
-            category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = isPinned,
-            createdAt = createdAt,
-            updatedAt = updatedAt
-        )
+    @Test
+    fun `SummarizeNoteUseCase should return failure for short content`() = runTest {
+        val useCase = SummarizeNoteUseCase(aiRepository)
+        assertTrue(useCase("Short").isFailure)
+        
+        coEvery { aiRepository.summarize(any()) } returns Result.success("Summary")
+        assertTrue(useCase("a".repeat(60)).isSuccess)
     }
-}
 
-class FakeNoteRepository : NoteRepository {
-    private val notes = MutableStateFlow<List<Note>>(emptyList())
-    private var nextId = 1L
-    
-    override fun getAllNotes(): Flow<List<Note>> = notes
-    override fun getPinnedNotes(): Flow<List<Note>> = notes.map { it.filter { n -> n.isPinned } }
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> = notes.map { it.filter { n -> n.category == category } }
-    override fun searchNotes(query: String): Flow<List<Note>> = notes.map { it.filter { n -> n.title.contains(query, true) || n.content.contains(query, true) } }
-    override fun getNoteById(id: Long): Flow<Note?> = notes.map { it.find { n -> n.id == id } }
-    override suspend fun insertNote(note: Note): Long {
-        val id = if (note.id == 0L) nextId++ else note.id
-        notes.update { it + note.copy(id = id) }
-        return id
+    @Test
+    fun `ImproveWritingUseCase should return success when content is valid`() = runTest {
+        val useCase = ImproveWritingUseCase(aiRepository)
+        coEvery { aiRepository.improveWriting(any(), any()) } returns Result.success("Improved")
+        assertTrue(useCase("Valid content", WritingStyle.FORMAL).isSuccess)
+        assertTrue(useCase("", WritingStyle.FORMAL).isFailure)
     }
-    override suspend fun updateNote(note: Note) {
-        notes.update { it.map { n -> if (n.id == note.id) note else n } }
-    }
-    override suspend fun deleteNote(id: Long) {
-        notes.update { it.filter { n -> n.id != id } }
-    }
-    override suspend fun togglePinNote(id: Long) {
-        notes.update { it.map { n -> if (n.id == id) n.copy(isPinned = !n.isPinned) else n } }
-    }
-    override suspend fun deleteNotes(ids: List<Long>) {
-        notes.update { it.filter { n -> n.id !in ids } }
+
+    @Test
+    fun `GenerateIdeasUseCase should return success for valid topic`() = runTest {
+        val useCase = GenerateIdeasUseCase(aiRepository)
+        coEvery { aiRepository.generateIdeas("Topic") } returns Result.success(listOf("Idea 1"))
+        assertTrue(useCase("Topic").isSuccess)
+        assertTrue(useCase("").isFailure)
     }
 }

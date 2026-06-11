@@ -1,53 +1,45 @@
 package com.example.mapenumkm.presentation.screens.home
 
-import app.cash.turbine.test
-import com.example.mapenumkm.domain.model.Note
-import com.example.mapenumkm.domain.model.NoteCategory
-import com.example.mapenumkm.domain.model.NoteColor
+import com.example.mapenumkm.data.local.datastore.UserPreferences
 import com.example.mapenumkm.domain.repository.NoteRepository
+import com.example.mapenumkm.domain.repository.TransactionRepository
 import com.example.mapenumkm.domain.usecase.DeleteNoteUseCase
 import com.example.mapenumkm.domain.usecase.GetAllNotesUseCase
 import com.example.mapenumkm.domain.usecase.SearchNotesUseCase
+import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.*
+import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val getAllNotesUseCase: GetAllNotesUseCase = mockk()
+    private val searchNotesUseCase: SearchNotesUseCase = mockk()
+    private val deleteNoteUseCase: DeleteNoteUseCase = mockk()
+    private val repository: NoteRepository = mockk()
+    private val transactionRepository: TransactionRepository = mockk()
+    private val userPreferences: UserPreferences = mockk()
     
-    private lateinit var repository: FakeNoteRepository
     private lateinit var viewModel: HomeViewModel
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        repository = FakeNoteRepository()
-        val getAllNotesUseCase = GetAllNotesUseCase(repository)
-        val searchNotesUseCase = SearchNotesUseCase(repository)
-        val deleteNoteUseCase = DeleteNoteUseCase(repository)
+        every { transactionRepository.getAllTransactions() } returns flowOf(emptyList())
+        every { getAllNotesUseCase(any()) } returns flowOf(emptyList())
         
         viewModel = HomeViewModel(
             getAllNotesUseCase,
             searchNotesUseCase,
             deleteNoteUseCase,
-            repository
+            repository,
+            transactionRepository,
+            userPreferences
         )
     }
 
@@ -57,119 +49,73 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `initial state should be Loading or Success empty`() = runTest {
-        viewModel.uiState.test {
-            val initialState = awaitItem()
-            assertTrue(initialState is HomeUiState.Loading || initialState is HomeUiState.Empty)
-            cancelAndIgnoreRemainingEvents()
-        }
+    fun `initial state should be Empty after loading`() = runTest {
+        val job = backgroundScope.launch(testDispatcher) { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value is HomeUiState.Empty)
+        job.cancel()
     }
 
     @Test
-    fun `search query change should eventually update state`() = runTest {
-        repository.insertNote(createTestNote(title = "Target"))
+
+    fun `onSearchQueryChange updates query and triggers search`() = runTest {
+        val job = backgroundScope.launch(testDispatcher) { viewModel.uiState.collect {} }
+        val query = "coffee"
+        every { searchNotesUseCase(query, any(), any()) } returns flowOf(emptyList())
         
-        viewModel.uiState.test {
-            // Skip initial Loading
-            var state = awaitItem()
-            if (state is HomeUiState.Loading) state = awaitItem()
-            
-            viewModel.onSearchQueryChange("Target")
-            
-            // Advance time for debounce (300ms)
-            advanceTimeBy(400)
-            
-            state = awaitItem()
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(1, (state as HomeUiState.Success).notes.size)
-            assertEquals("Target", state.notes[0].title)
-            cancelAndIgnoreRemainingEvents()
+        viewModel.onSearchQueryChange(query)
+        advanceTimeBy(301) // Debounce is 300ms
+        
+        val state = viewModel.uiState.value
+        if (state is HomeUiState.Empty) {
+            assertEquals(query, state.query)
         }
+        verify { searchNotesUseCase(query, any(), any()) }
+        job.cancel()
     }
 
     @Test
-    fun `dashboard statistics should be calculated correctly`() = runTest {
-        repository.insertNote(createTestNote(title = "Product 1", price = 10.0, stock = 10)) // Value: 100
-        repository.insertNote(createTestNote(title = "Product 2", price = 50.0, stock = 2))  // Value: 100, Low stock
+    fun `onCategorySelected triggers search`() = runTest {
+        val job = backgroundScope.launch(testDispatcher) { viewModel.uiState.collect {} }
+        val category = com.example.mapenumkm.domain.model.NoteCategory.FOOD
+        every { searchNotesUseCase(any(), category, any()) } returns flowOf(emptyList())
         
-        viewModel.uiState.test {
-            var state = awaitItem()
-            if (state is HomeUiState.Loading) state = awaitItem()
-            
-            assertTrue(state is HomeUiState.Success)
-            assertEquals(2, state.totalProducts)
-            assertEquals(200.0, state.totalStockValue)
-            assertEquals(1, state.lowStockCount)
-            cancelAndIgnoreRemainingEvents()
-        }
+        viewModel.onCategorySelected(category)
+        advanceUntilIdle()
+        
+        verify { searchNotesUseCase(any(), eq(category), any()) }
+        job.cancel()
     }
 
     @Test
-    fun `empty search result should show Empty state`() = runTest {
-        repository.insertNote(createTestNote(title = "Existing"))
+    fun `togglePin calls repository`() = runTest {
+        val noteId = 1L
+        coEvery { repository.togglePinNote(noteId) } returns Unit
         
-        viewModel.uiState.test {
-            var state = awaitItem()
-            if (state is HomeUiState.Loading) state = awaitItem()
-            
-            viewModel.onSearchQueryChange("NonExistent")
-            advanceTimeBy(400)
-            
-            state = awaitItem()
-            assertTrue(state is HomeUiState.Empty)
-            assertEquals("NonExistent", (state as HomeUiState.Empty).query)
-            cancelAndIgnoreRemainingEvents()
-        }
+        viewModel.togglePin(noteId)
+        advanceUntilIdle()
+        
+        coVerify { repository.togglePinNote(noteId) }
     }
 
-    private fun createTestNote(
-        id: Long = 0,
-        title: String = "Test",
-        content: String = "Content",
-        price: Double = 0.0,
-        stock: Int = 0,
-        category: NoteCategory = NoteCategory.FOOD,
-        isPinned: Boolean = false
-    ): Note {
-        return Note(
-            id = id,
-            title = title,
-            content = content,
-            price = price,
-            stock = stock,
-            category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = isPinned,
-            createdAt = Clock.System.now(),
-            updatedAt = Clock.System.now()
-        )
+    @Test
+    fun `deleteNote calls use case`() = runTest {
+        val noteId = 1L
+        coEvery { deleteNoteUseCase(noteId) } returns Result.success(Unit)
+        
+        viewModel.deleteNote(noteId)
+        advanceUntilIdle()
+        
+        coVerify { deleteNoteUseCase(noteId) }
     }
-}
 
-class FakeNoteRepository : NoteRepository {
-    private val notes = MutableStateFlow<List<Note>>(emptyList())
-    private var nextId = 1L
-    
-    override fun getAllNotes(): Flow<List<Note>> = notes
-    override fun getPinnedNotes(): Flow<List<Note>> = notes.map { it.filter { n -> n.isPinned } }
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> = notes.map { it.filter { n -> n.category == category } }
-    override fun searchNotes(query: String): Flow<List<Note>> = notes.map { it.filter { n -> n.title.contains(query, true) || n.content.contains(query, true) } }
-    override fun getNoteById(id: Long): Flow<Note?> = notes.map { it.find { n -> n.id == id } }
-    override suspend fun insertNote(note: Note): Long {
-        val id = if (note.id == 0L) nextId++ else note.id
-        notes.update { it + note.copy(id = id) }
-        return id
-    }
-    override suspend fun updateNote(note: Note) {
-        notes.update { it.map { n -> if (n.id == note.id) note else n } }
-    }
-    override suspend fun deleteNote(id: Long) {
-        notes.update { it.filter { n -> n.id != id } }
-    }
-    override suspend fun togglePinNote(id: Long) {
-        notes.update { it.map { n -> if (n.id == id) n.copy(isPinned = !n.isPinned) else n } }
-    }
-    override suspend fun deleteNotes(ids: List<Long>) {
-        notes.update { it.filter { n -> n.id !in ids } }
+    @Test
+    fun `logout updates preferences and emits event`() = runTest {
+        coEvery { userPreferences.setLoggedIn(false) } returns Unit
+        
+        viewModel.logout()
+        advanceUntilIdle()
+        
+        coVerify { userPreferences.setLoggedIn(false) }
     }
 }

@@ -265,8 +265,3 @@ fun ProductManageItem(
     }
 }
 
-data class ProductListState(
-    val products: List<Note> = emptyList(),
-    val searchQuery: String = "",
-    val selectedCategory: NoteCategory? = null
-)

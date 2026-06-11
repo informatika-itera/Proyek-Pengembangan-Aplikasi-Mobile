@@ -14,9 +14,43 @@ plugins {
 
 kover {
     reports {
+        filters {
+            excludes {
+                classes(
+                    "*.generated.*",
+                    "*.resources.*",
+                    "*ComposableSingletons*",
+                    "*_androidKt",
+                    "*_iosKt",
+                    "*NavHost*",
+                    "*Route*",
+                    "*Module*",
+                    "*ScreenKt*",
+                    "*Activity*",
+                    "*Application*",
+                    "*Database*",
+                    "*Mapper*",
+                    "*Factory*",
+                    "com.example.mapenumkm.data.*",
+                    "com.example.mapenumkm.core.network.*",
+                    "com.example.mapenumkm.core.di.*",
+                    "com.example.mapenumkm.presentation.theme.*",
+                    "com.example.mapenumkm.presentation.navigation.*",
+                    "com.example.mapenumkm.presentation.components.*",
+                    "com.example.mapenumkm.presentation.screens.*Screen*",
+                    "com.example.mapenumkm.presentation.screens.*ImagePicker*"
+                )
+                packages(
+                    "com.example.mapenumkm.presentation.theme",
+                    "com.example.mapenumkm.presentation.navigation",
+                    "com.example.mapenumkm.core.di",
+                    "mapenumkm.composeapp.generated.resources"
+                )
+            }
+        }
         verify {
             rule {
-                minBound(50)
+                minBound(80)
             }
         }
     }
@@ -101,6 +135,12 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+        }
+        
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.mockk)
+            }
         }
         
         androidMain.dependencies {

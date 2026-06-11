@@ -50,9 +50,9 @@ fun KostCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            containerColor = Color.Transparent
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
             // Thumbnail Image with favorite overlay
@@ -64,7 +64,7 @@ fun KostCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(3f / 2f)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .clip(RoundedCornerShape(16.dp))
                 )
 
                 // Tipe Kos badge (top-left)
@@ -107,7 +107,7 @@ fun KostCard(
             }
 
             // Card body
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
                 // Name
                 Text(
                     text = kost.namaKos,

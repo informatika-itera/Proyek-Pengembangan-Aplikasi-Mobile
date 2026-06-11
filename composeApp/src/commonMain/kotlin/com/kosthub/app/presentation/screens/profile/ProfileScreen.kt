@@ -156,6 +156,7 @@ private fun ProfileForm(
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
+        
         Text(
             text = email.ifBlank { "Belum ada email" },
             style = MaterialTheme.typography.bodyMedium,

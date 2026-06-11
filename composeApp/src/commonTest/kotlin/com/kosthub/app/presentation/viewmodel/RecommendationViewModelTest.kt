@@ -42,23 +42,23 @@ class RecommendationViewModelTest {
     }
 
     @Test
-    fun testEmptyPreferenceShowsError() = runTest(testDispatcher) {
+    fun testEmptyPreferenceShowsDefaults() = runTest(testDispatcher) {
         viewModel.onPreferenceChange("")
         viewModel.generateRecommendation(sampleKosts)
-        
+
         val state = viewModel.state.value
-        assertTrue(state is RecommendationState.Error)
-        assertEquals("Masukkan preferensi kost terlebih dahulu.", (state as RecommendationState.Error).message)
+        // Should show default recommendations from kost data
+        assertTrue(state is RecommendationState.Idle)
     }
 
     @Test
-    fun testEmptyKostListShowsError() = runTest(testDispatcher) {
+    fun testEmptyKostListSilentlyStaysIdle() = runTest(testDispatcher) {
         viewModel.onPreferenceChange("Dekat kampus, murah")
         viewModel.generateRecommendation(emptyList())
-        
+
         val state = viewModel.state.value
-        assertTrue(state is RecommendationState.Error)
-        assertEquals("Belum ada data kost untuk dianalisis.", (state as RecommendationState.Error).message)
+        // Should silently stay Idle instead of showing error
+        assertTrue(state is RecommendationState.Idle)
     }
 
     @Test
@@ -72,16 +72,18 @@ class RecommendationViewModelTest {
             val apiKey = PlatformConfig.geminiApiKey
 
             if (apiKey.isBlank()) {
+                // With blank API key, should show default recommendations from kost data
                 val state = awaitItem()
-                assertTrue(state is RecommendationState.Error, "Expected Error state when API key is blank but got $state")
-                assertTrue((state as RecommendationState.Error).message.contains("API key Gemini belum dikonfigurasi"))
+                assertTrue(state is RecommendationState.Success, "Expected Success with defaults but got $state")
+                cancelAndIgnoreRemainingEvents()
             } else {
                 assertEquals(RecommendationState.Loading, awaitItem())
                 val state = awaitItem()
                 assertTrue(state is RecommendationState.Success, "Expected Success but got $state")
                 assertEquals(mockResponseText, (state as RecommendationState.Success).result)
+                cancelAndIgnoreRemainingEvents()
             }
-            cancelAndIgnoreRemainingEvents()
         }
     }
 }
+

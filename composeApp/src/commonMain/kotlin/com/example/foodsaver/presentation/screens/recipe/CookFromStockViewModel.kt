@@ -9,16 +9,16 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 sealed class RecommendationUiState {
-    object Idle : RecommendationUiState()
-    object Loading : RecommendationUiState()
+    data object Idle : RecommendationUiState()
+    data object Loading : RecommendationUiState()
     data class Success(val recommendation: RecipeRecommendation) : RecommendationUiState()
-    object Empty : RecommendationUiState()
+    data object Empty : RecommendationUiState()
     data class Error(val message: String) : RecommendationUiState()
     data class Fallback(val recommendation: RecipeRecommendation) : RecommendationUiState()
 }
 
 sealed class CookFromStockEvent {
-    object NavigateToResult : CookFromStockEvent()
+    data object NavigateToResult : CookFromStockEvent()
 }
 
 data class CookFromStockUiState(
@@ -54,6 +54,9 @@ class CookFromStockViewModel(
                 .map { items -> 
                     items.filter { !it.isConsumed && !it.isDiscarded }
                         .sortedBy { it.getDaysRemaining() }
+                }
+                .catch { e ->
+                    _state.update { it.copy(isLoadingIngredients = false, validationError = "Gagal memuat bahan dari stok.") }
                 }
                 .collect { items ->
                     _state.update { it.copy(isLoadingIngredients = false, ingredients = items) }
@@ -113,10 +116,6 @@ class CookFromStockViewModel(
         ) }
     }
 
-    fun resetRecommendationState() {
-        _state.update { it.copy(recommendationState = RecommendationUiState.Idle) }
-    }
-    
     fun clearValidationError() {
         _state.update { it.copy(validationError = null) }
     }
@@ -139,15 +138,7 @@ class CookFromStockViewModel(
             ) }
             
             try {
-                val currentIngredients = if (_state.value.ingredients.isEmpty()) {
-                    foodRepository.getAllFoodItems()
-                        .map { it.filter { f -> !f.isConsumed && !f.isDiscarded } }
-                        .first()
-                } else {
-                    _state.value.ingredients
-                }
-                
-                val inventoryItems = currentIngredients.filter { ingredientIds.contains(it.id) }
+                val inventoryItems = _state.value.ingredients.filter { ingredientIds.contains(it.id) }
                 
                 val recipeIngredients = inventoryItems.map { 
                     RecipeIngredient(
@@ -165,13 +156,10 @@ class CookFromStockViewModel(
                     )
                 }
 
-                val result = recipeRepository.getRecommendations(recipeIngredients, pref, prioritize)
-                
-                result.fold(
-                    onSuccess = { recommendation ->
+                recipeRepository.getRecommendations(recipeIngredients, pref, prioritize)
+                    .onSuccess { recommendation ->
                         val isFallback = recommendation.description.contains("Lokal") || 
-                                         recommendation.reason.contains("lokal", ignoreCase = true) ||
-                                         recommendation.warningMessage?.contains("lokal", ignoreCase = true) == true
+                                         recommendation.reason.contains("lokal", ignoreCase = true)
                         
                         _state.update { 
                             if (isFallback) {
@@ -180,36 +168,40 @@ class CookFromStockViewModel(
                                 it.copy(recommendationState = RecommendationUiState.Success(recommendation))
                             }
                         }
-                    },
-                    onFailure = { e ->
+                        _events.emit(CookFromStockEvent.NavigateToResult)
+                    }
+                    .onFailure { e ->
                         _state.update { it.copy(
-                            recommendationState = RecommendationUiState.Error(e.message ?: "Resep belum bisa dimuat. Periksa koneksi internet kamu lalu coba lagi.")
+                            recommendationState = RecommendationUiState.Error(mapErrorMessage(e))
                         ) }
                     }
-                )
             } catch (e: Exception) {
                 _state.update { it.copy(
-                    recommendationState = RecommendationUiState.Error("Terjadi kesalahan sistem. Silakan coba lagi nanti.")
+                    recommendationState = RecommendationUiState.Error("Maaf, terjadi kesalahan saat mencari resep.")
                 ) }
-            } finally {
-                // Once we have a result (Success/Fallback/Error/Empty), we navigate.
-                // We only navigate if the state is NOT Idle or Loading.
-                val currentState = _state.value.recommendationState
-                if (currentState !is RecommendationUiState.Idle && currentState !is RecommendationUiState.Loading) {
-                    _events.emit(CookFromStockEvent.NavigateToResult)
-                }
             }
+        }
+    }
+
+    private fun mapErrorMessage(e: Throwable): String {
+        return when {
+            e.message?.contains("internet", ignoreCase = true) == true -> "Koneksi bermasalah. Coba lagi nanti."
+            else -> "Resep belum ditemukan. Coba kombinasi bahan lain."
         }
     }
 
     fun markIngredientsAsUsed(ids: List<Long>, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            ids.forEach { id ->
-                foodRepository.getFoodItemById(id)?.let { item ->
-                    foodRepository.updateFoodItem(item.copy(isConsumed = true))
+            try {
+                ids.forEach { id ->
+                    foodRepository.getFoodItemById(id)?.let { item ->
+                        foodRepository.updateFoodItem(item.copy(isConsumed = true))
+                    }
                 }
+                onSuccess()
+            } catch (e: Exception) {
+                // Silently fail or log
             }
-            onSuccess()
         }
     }
 }

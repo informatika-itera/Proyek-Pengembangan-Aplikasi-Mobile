@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.sqldelight)
 }
 
-// Load local.properties for API keys
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
@@ -40,7 +39,6 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-            // Compose
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -49,38 +47,30 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             
-            // Kotlin
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             
-            // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
             
-            // Koin DI
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             
-            // SQLDelight
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
             
-            // DataStore + Okio
             implementation(libs.datastore.preferences)
             implementation(libs.okio)
             
-            // Lifecycle & ViewModel
             implementation(libs.lifecycle.viewmodel)
             implementation(libs.lifecycle.runtime.compose)
             
-            // Navigation
             implementation(libs.navigation.compose)
             
-            // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
@@ -125,7 +115,6 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         
-        // Inject API key from local.properties
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
@@ -165,7 +154,7 @@ sqldelight {
     databases {
         create("FoodSaverDatabase") {
             packageName.set("com.example.foodsaver.data.local")
-            verifyMigrations.set(false) // Disable verification due to SQLite environment issues
+            verifyMigrations.set(false)
         }
     }
 }

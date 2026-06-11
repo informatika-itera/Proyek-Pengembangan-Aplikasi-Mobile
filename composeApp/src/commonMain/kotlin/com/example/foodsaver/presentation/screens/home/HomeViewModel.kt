@@ -61,7 +61,12 @@ class HomeViewModel(
             _state.update { it.copy(isLoading = true, error = null) }
             getAllFoodUseCase()
                 .catch { e ->
-                    _state.update { it.copy(isLoading = false, error = e.message) }
+                    _state.update { 
+                        it.copy(
+                            isLoading = false, 
+                            error = mapErrorMessage(e)
+                        ) 
+                    }
                 }
                 .collect { allItems ->
                     val activeItems = allItems.filter { !it.isConsumed && !it.isDiscarded }
@@ -106,19 +111,15 @@ class HomeViewModel(
 
     fun onSearchQueryChange(query: String) {
         _state.update { 
-            it.copy(
-                searchQuery = query,
-                filteredItems = filterItems(it.activeItems, query, it.selectedCategory)
-            )
+            val filtered = filterItems(it.activeItems, query, it.selectedCategory)
+            it.copy(searchQuery = query, filteredItems = filtered)
         }
     }
 
     fun onCategoryChange(category: String) {
         _state.update {
-            it.copy(
-                selectedCategory = category,
-                filteredItems = filterItems(it.activeItems, it.searchQuery, category)
-            )
+            val filtered = filterItems(it.activeItems, it.searchQuery, category)
+            it.copy(selectedCategory = category, filteredItems = filtered)
         }
     }
 
@@ -137,7 +138,18 @@ class HomeViewModel(
 
     fun deleteItem(id: Long) {
         viewModelScope.launch {
-            deleteFoodUseCase(id)
+            try {
+                deleteFoodUseCase(id)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Gagal menghapus data. Silakan coba lagi.") }
+            }
+        }
+    }
+
+    private fun mapErrorMessage(throwable: Throwable): String {
+        return when {
+            throwable is kotlinx.serialization.SerializationException -> "Gagal memproses data stok."
+            else -> "Terjadi kendala saat memuat data. Coba lagi ya!"
         }
     }
 }

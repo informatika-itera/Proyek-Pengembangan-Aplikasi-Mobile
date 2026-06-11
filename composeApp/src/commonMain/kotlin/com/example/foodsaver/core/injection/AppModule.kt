@@ -1,4 +1,4 @@
-package com.example.foodsaver.core.di
+package com.example.foodsaver.core.injection
 
 import app.cash.sqldelight.ColumnAdapter
 import com.example.foodsaver.core.network.HttpClientFactory

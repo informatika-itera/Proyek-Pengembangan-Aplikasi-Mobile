@@ -1,18 +1,15 @@
 package com.example.foodsaver.presentation.screens.expiry
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
@@ -20,12 +17,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.presentation.components.FoodItemCard
 import com.example.foodsaver.presentation.theme.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -43,87 +40,38 @@ fun ExpiryScreen(
     Scaffold(
         modifier = Modifier.testTag("expiry_screen"),
         topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text(
-                            "Status Kedaluwarsa",
-                            fontWeight = FontWeight.ExtraBold, 
-                            fontSize = 20.sp
-                        ) 
-                        Text(
-                            "Pantau bahan yang harus segera digunakan.",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
+            ExpiryTopBar()
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            ExpirySummaryCard(
-                nearlyExpired = state.nearlyExpiredCount,
-                expired = state.expiredCount
+            ExpirySummarySection(
+                nearlyExpiredCount = state.nearlyExpiredCount,
+                expiredCount = state.expiredCount
             )
 
-            TabRow(
-                selectedTabIndex = state.selectedTab,
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.primary,
-                divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) },
-                indicator = { tabPositions ->
-                    if (state.selectedTab < tabPositions.size) {
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[state.selectedTab]),
+            ExpiryTabRow(
+                tabs = tabs,
+                selectedTab = state.selectedTab,
+                onTabSelected = viewModel::onTabSelected
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                },
-                modifier = Modifier.testTag("expiry_tab_row")
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = state.selectedTab == index,
-                        onClick = { viewModel.onTabSelected(index) },
-                        modifier = Modifier.testTag("expiry_tab_$index"),
-                        text = {
-                            Text(
-                                title,
-                                fontWeight = if (state.selectedTab == index) FontWeight.Bold else FontWeight.Medium,
-                                color = if (state.selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    )
-                }
-            }
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center), 
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                } else if (state.filteredItems.isEmpty()) {
-                    EmptyExpiryState(state.selectedTab, onAddFoodClick)
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize().testTag("expiry_food_list"),
-                        contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(state.filteredItems, key = { it.id }) { item ->
-                            FoodItemCard(
-                                item = item,
-                                onClick = { onFoodClick(item.id) },
-                                modifier = Modifier.testTag("food_card_${item.id}")
-                            )
-                        }
+                    state.filteredItems.isEmpty() -> {
+                        EmptyExpiryState(state.selectedTab, onAddFoodClick)
+                    }
+                    else -> {
+                        ExpiryFoodList(
+                            items = state.filteredItems,
+                            onFoodClick = onFoodClick
+                        )
                     }
                 }
             }
@@ -131,9 +79,34 @@ fun ExpiryScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
-    val totalUrgent = nearlyExpired + expired
+private fun ExpiryTopBar() {
+    TopAppBar(
+        title = {
+            Column {
+                Text(
+                    "Status Kedaluwarsa",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 20.sp
+                )
+                Text(
+                    "Pantau bahan yang harus segera digunakan.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground
+        )
+    )
+}
+
+@Composable
+private fun ExpirySummarySection(nearlyExpiredCount: Int, expiredCount: Int) {
+    val totalUrgent = nearlyExpiredCount + expiredCount
     val isDark = isSystemInDarkTheme()
     
     val bgColor = if (totalUrgent > 0) {
@@ -177,7 +150,7 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
                 )
                 Text(
                     text = if (totalUrgent > 0) 
-                        "$nearlyExpired masuk kategori segera, $expired sudah kedaluwarsa." 
+                        "$nearlyExpiredCount masuk kategori segera, $expiredCount sudah kedaluwarsa."
                         else "Bagus! Tidak ada makanan yang akan segera mubazir.",
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor.copy(alpha = 0.8f),
@@ -189,7 +162,65 @@ fun ExpirySummaryCard(nearlyExpired: Int, expired: Int) {
 }
 
 @Composable
-fun EmptyExpiryState(tabIndex: Int, onAddFoodClick: () -> Unit) {
+private fun ExpiryTabRow(
+    tabs: List<String>,
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit
+) {
+    TabRow(
+        selectedTabIndex = selectedTab,
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primary,
+        divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) },
+        indicator = { tabPositions ->
+            if (selectedTab < tabPositions.size) {
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        modifier = Modifier.testTag("expiry_tab_row")
+    ) {
+        tabs.forEachIndexed { index, title ->
+            Tab(
+                selected = selectedTab == index,
+                onClick = { onTabSelected(index) },
+                modifier = Modifier.testTag("expiry_tab_$index"),
+                text = {
+                    Text(
+                        title,
+                        fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
+                        color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpiryFoodList(
+    items: List<FoodItem>,
+    onFoodClick: (Long) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().testTag("expiry_food_list"),
+        contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(items, key = { it.id }) { item ->
+            FoodItemCard(
+                item = item,
+                onClick = { onFoodClick(item.id) },
+                modifier = Modifier.testTag("food_card_${item.id}")
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyExpiryState(tabIndex: Int, onAddFoodClick: () -> Unit) {
     val (message, subMessage, icon) = when (tabIndex) {
         1 -> Triple(
             "Tidak ada stok mendesak 🎉",

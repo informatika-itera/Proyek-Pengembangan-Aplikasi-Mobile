@@ -54,7 +54,7 @@ class AIAssistantViewModel(
         val state = _uiState.value
         
         if (ApiConfig.geminiApiKey.isBlank()) {
-            _uiState.update { it.copy(error = "API key Gemini belum dikonfigurasi. Tambahkan GEMINI_API_KEY di local.properties.") }
+            _uiState.update { it.copy(error = "API key belum diatur. Selesaikan konfigurasi di Pengaturan.") }
             return
         }
 
@@ -62,18 +62,13 @@ class AIAssistantViewModel(
         
         viewModelScope.launch {
             try {
-                // Perbaikan 1: Ambil hanya data inventory AKTIF (sama dengan Home Screen)
                 val allItems = getAllFoodUseCase().first()
                 val activeItems = allItems.filter { !it.isConsumed && !it.isDiscarded }
                 
-                // Perbaikan 2: Hitung statistik di aplikasi, bukan oleh AI
                 val totalActive = activeItems.size
                 val safeCount = activeItems.count { it.getStatus() == FoodStatus.SAFE }
                 val nearlyExpiredCount = activeItems.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
                 val expiredCount = activeItems.count { it.getStatus() == FoodStatus.EXPIRED || it.getStatus() == FoodStatus.EXPIRED_TODAY }
-
-                // Debug Log (Perbaikan 6)
-                println("AI inventory count: $totalActive")
 
                 val prompt = buildFoodSaverPrompt(
                     mode = state.selectedAction,
@@ -84,9 +79,6 @@ class AIAssistantViewModel(
                     nearlyExpiredCount = nearlyExpiredCount,
                     expiredCount = expiredCount
                 )
-
-                // Debug Log Prompt (Perbaikan 6)
-                // println("AI prompt: $prompt")
 
                 val systemPrompt = when (state.selectedAction) {
                     AIAction.CHECK_STOCK -> SystemPrompts.STOCK_CHECKER
@@ -110,26 +102,24 @@ class AIAssistantViewModel(
                         _uiState.update { it.copy(isLoading = false, result = sanitized) }
                     }
                     .onFailure { error ->
-                        val errorMessage = error.message ?: "Terjadi kesalahan teknis."
                         val fallback = getFallbackResponse(state.selectedAction, state.inputText, activeItems)
                         
                         if (fallback != null) {
                             _uiState.update { it.copy(
                                 isLoading = false, 
                                 result = sanitizeAiResponse(fallback), 
-                                error = "Gagal terhubung ke AI: $errorMessage. Menampilkan saran alternatif."
+                                error = "Koneksi ke AI bermasalah. Menampilkan saran alternatif."
                             ) }
                         } else {
-                            _uiState.update { it.copy(isLoading = false, error = errorMessage) }
+                            _uiState.update { it.copy(isLoading = false, error = "Maaf, AI sedang tidak bisa diakses. Coba lagi nanti.") }
                         }
                     }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message ?: "Gagal memproses data inventory.") }
+                _uiState.update { it.copy(isLoading = false, error = "Terjadi kesalahan saat memproses data.") }
             }
         }
     }
 
-    // Perbaikan 3: Prompt eksplisit dan akurat
     private fun buildFoodSaverPrompt(
         mode: AIAction,
         userInput: String,
@@ -141,52 +131,27 @@ class AIAssistantViewModel(
     ): String {
         val inventoryContext = if (totalActive > 0) {
             """
-            Data inventory pengguna:
-            Total makanan aktif: $totalActive
-            Masih aman: $safeCount
-            Perlu segera dimasak: $nearlyExpiredCount
-            Lewat tanggal: $expiredCount
+            Data inventory:
+            Total stok: $totalActive
+            Aman: $safeCount
+            Segera: $nearlyExpiredCount
+            Lewat: $expiredCount
             
-            Daftar makanan aktif:
+            Daftar:
             ${inventoryItems.joinToString("\n") { item ->
-                "- ${item.name}: ${item.quantity} ${item.unit}, Lokasi: ${item.storageLocation}, Status: ${item.getStatusLabel()}, Sisa hari: ${item.getDaysRemaining()}"
+                "- ${item.name}: ${item.quantity} ${item.unit}, Lokasi: ${item.storageLocation}, Status: ${item.getStatusLabel()}"
             }}
             """.trimIndent()
         } else {
-            "Total makanan aktif: 0\nDaftar makanan aktif: kosong"
-        }
-
-        val instruction = if (totalActive == 0) {
-            "Inventory masih kosong. Jelaskan bahwa belum ada makanan yang tercatat. Jangan mengarang data. Jangan menyebut ada stok makanan jika total aktif 0."
-        } else {
-            "Jawab HANYA berdasarkan data inventory di atas. JANGAN mengarang jumlah makanan. JANGAN menambahkan bahan lain. Total makanan aktif saat ini ADALAH $totalActive, jadi jangan menyebut angka selain $totalActive untuk total stok."
+            "Inventory masih kosong."
         }
 
         return """
             Mode: ${mode.displayName}
-            
             $inventoryContext
+            Pertanyaan: $userInput
             
-            Pertanyaan pengguna:
-            $userInput
-            
-            Instruksi:
-            $instruction
-            Gunakan Bahasa Indonesia.
-            JANGAN gunakan format Markdown (# atau *).
-            
-            Jika mode Ringkas Stok, gunakan format ini:
-            Ringkasan Stok:
-            - Total stok: $totalActive
-            - Masih aman: $safeCount
-            - Perlu segera dimasak: $nearlyExpiredCount
-            - Lewat tanggal: $expiredCount
-
-            Prioritas Hari Ini:
-            - (sebutkan bahan yang paling urgent)
-
-            Saran FoodSaver:
-            - (saran praktis)
+            Berikan jawaban yang ramah dalam Bahasa Indonesia tanpa Markdown.
         """.trimIndent()
     }
     
@@ -202,11 +167,11 @@ class AIAssistantViewModel(
         return when (action) {
             AIAction.SUMMARIZE_INVENTORY -> {
                 if (inventory.isEmpty()) {
-                    "Inventory kamu masih kosong. Tambahkan makanan terlebih dahulu agar FoodSaver bisa membantu memantau stok."
+                    "Stok kamu masih kosong. Tambahkan makanan agar saya bisa membantu memantau."
                 } else {
                     val total = inventory.size
                     val expiring = inventory.count { it.getStatus() == FoodStatus.NEAR_EXPIRY }
-                    "Ringkasan Stok:\n- Total stok: $total\n- Perlu segera dimasak: $expiring\nSemua data sinkron dengan inventory aplikasi."
+                    "Ringkasan Stok:\n- Total stok: $total\n- Perlu segera dimasak: $expiring\nSemua data sesuai dengan daftar makanan kamu."
                 }
             }
             else -> null
@@ -233,14 +198,7 @@ enum class AIAction(val displayName: String, val description: String, val placeh
     CREATE_RECIPE("Buat Resep", "Rekomendasi resep dari bahan tersedia", "Contoh: Saya punya bakso dan telur, masak apa?"),
     STORAGE_TIPS("Tips Simpan", "Saran agar makanan tahan lebih lama", "Contoh: Cara simpan daging biar awet?"),
     SUMMARIZE_INVENTORY("Ringkas Stok", "Kondisi keseluruhan inventorymu", "Contoh: Ringkas kondisi stok saya"),
-    COOKING_IDEAS("Ide Masak", "Ide kreatif masakan seadanya", "Contoh: Beri ide masakan praktis"),
-    
-    CHAT("Tanya Bebas", "Ngobrol santai dengan AI", "Tanya apa saja..."),
-    SUMMARIZE("Ringkas Teks", "Ringkas teks apa saja", ""),
-    GENERATE_IDEAS("Ide Kreatif", "Dapatkan ide untuk topikmu", ""),
-    IMPROVE_WRITING("Perbaiki Teks", "Buat tulisanmu jadi rapi", ""),
-    TRANSLATE("Terjemahkan", "Ganti teks ke bahasa lain", ""),
-    SUGGEST_TITLE("Saran Judul", "Dapatkan judul menarik", "")
+    COOKING_IDEAS("Ide Masak", "Ide kreatif masakan seadanya", "Contoh: Beri ide masakan praktis")
 }
 
 data class AIAssistantUiState(

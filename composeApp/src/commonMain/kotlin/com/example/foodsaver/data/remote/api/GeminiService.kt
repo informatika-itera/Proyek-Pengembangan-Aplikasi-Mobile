@@ -1,13 +1,13 @@
 package com.example.foodsaver.data.remote.api
 
 import com.example.foodsaver.core.network.ApiConfig
-import com.example.foodsaver.data.remote.dto.GeminiContent
-import com.example.foodsaver.data.remote.dto.GeminiPart
-import com.example.foodsaver.data.remote.dto.GeminiRequest
-import com.example.foodsaver.data.remote.dto.GeminiResponse
-import com.example.foodsaver.data.remote.dto.GenerationConfig
-import com.example.foodsaver.data.remote.dto.getErrorMessage
-import com.example.foodsaver.data.remote.dto.getTextContent
+import com.example.foodsaver.data.remote.model.GeminiContent
+import com.example.foodsaver.data.remote.model.GeminiPart
+import com.example.foodsaver.data.remote.model.GeminiRequest
+import com.example.foodsaver.data.remote.model.GeminiResponse
+import com.example.foodsaver.data.remote.model.GenerationConfig
+import com.example.foodsaver.data.remote.model.getErrorMessage
+import com.example.foodsaver.data.remote.model.getTextContent
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.expectSuccess
@@ -110,7 +110,7 @@ object SystemPrompts {
     """.trimIndent()
 
     val STOCK_CHECKER = """
-        $BASE_FOODSAVER
+        ${'$'}BASE_FOODSAVER
         Mode: Cek Stok
         Tugas: Analisis daftar stok makanan pengguna dan tentukan makanan mana yang harus diprioritaskan.
         Instruksi format (Tanpa Markdown):
@@ -167,26 +167,25 @@ object SystemPrompts {
     """.trimIndent()
 
     val STORAGE_ADVISOR = """
-        $BASE_FOODSAVER
+        ${'$'}BASE_FOODSAVER
         Mode: Tips Simpan
         Tugas: Memberi saran cara menyimpan bahan makanan agar lebih tahan lama.
         Aturan khusus: Jelaskan tempat simpan (kulkas/freezer/suhu ruang), hal yang dihindari, dan estimasi ketahanan. Maksimal 5 poin. Gunakan teks biasa tanpa Markdown.
     """.trimIndent()
 
     val INVENTORY_SUMMARIZER = """
-        $BASE_FOODSAVER
+        ${'$'}BASE_FOODSAVER
         Mode: Ringkas Stok
         Tugas: Meringkas kondisi inventory pengguna secara statistik dan deskriptif.
         Jelaskan total item, status kedaluwarsa, dan saran umum. Jangan mengarang data jika inventory kosong. Gunakan teks biasa tanpa Markdown.
     """.trimIndent()
 
     val COOKING_IDEAS = """
-        $BASE_FOODSAVER
+        ${'$'}BASE_FOODSAVER
         Mode: Ide Masak
         Tugas: Memberikan 3 ide masakan kreatif singkat dari bahan yang tersedia. Gunakan teks biasa tanpa Markdown.
     """.trimIndent()
 
-    // Mode lama (helper)
     val SUMMARIZER = "Rangkum teks berikut dalam Bahasa Indonesia tanpa menggunakan Markdown."
     val IDEA_GENERATOR = "Berikan ide kreatif untuk topik berikut tanpa menggunakan Markdown."
     val WRITING_IMPROVER = "Perbaiki tata bahasa teks berikut tanpa menggunakan Markdown."

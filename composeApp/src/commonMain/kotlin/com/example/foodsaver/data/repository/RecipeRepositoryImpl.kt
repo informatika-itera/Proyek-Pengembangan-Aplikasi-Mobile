@@ -7,9 +7,7 @@ import com.example.foodsaver.data.remote.api.GeminiService
 import com.example.foodsaver.data.remote.api.MealApiService
 import com.example.foodsaver.data.remote.api.IndonesianRecipeApiService
 import com.example.foodsaver.data.remote.api.SystemPrompts
-import com.example.foodsaver.data.remote.dto.MealDto
-import com.example.foodsaver.data.remote.api.IndoRecipeDetailDto
-import com.example.foodsaver.data.util.IngredientMapper
+import com.example.foodsaver.data.mapper.*
 import com.example.foodsaver.domain.engine.RuleBasedRecipeEngine
 import com.example.foodsaver.domain.model.*
 import com.example.foodsaver.domain.repository.RecipeRepository
@@ -25,7 +23,7 @@ class RecipeRepositoryImpl(
     private val apiService: MealApiService,
     private val indonesianApiService: IndonesianRecipeApiService,
     private val geminiService: GeminiService,
-    private val db: FoodSaverDatabase
+    db: FoodSaverDatabase
 ) : RecipeRepository {
 
     private val queries = db.recipeQueries
@@ -51,7 +49,7 @@ class RecipeRepositoryImpl(
                 val response = apiService.getRecipeDetails(id)
                 val dto = response.meals?.firstOrNull() ?: return@withContext null
                 val isFav = queries.getFavoriteById(id).executeAsOneOrNull() != null
-                dto.toDomain().copy(isFavorite = isFav)
+                dto.toDomain(isFavorite = isFav)
             } catch (e: Exception) {
                 null
             }
@@ -78,7 +76,7 @@ class RecipeRepositoryImpl(
             return@withContext Result.failure(Exception("Pilih minimal satu bahan terlebih dahulu."))
         }
 
-        // 1. Indonesian API
+        // 1. Indonesian API Fallback Chain
         val searchCandidates = ingredients.take(3)
         for (ingredient in searchCandidates) {
             val query = ingredient.name.lowercase()
@@ -97,7 +95,7 @@ class RecipeRepositoryImpl(
                     }
                 }
             } catch (e: Exception) {
-                // Continue to next source
+                // Silently continue to next source
             }
         }
 
@@ -121,9 +119,9 @@ class RecipeRepositoryImpl(
                 for ((id, _) in topCandidates) {
                     val detailResponse = withTimeoutOrNull(4000) { apiService.getRecipeDetails(id) }
                     detailResponse?.meals?.firstOrNull()?.let { dto ->
-                        val recipeIngredients = dto.getIngredients()
+                        val recipeIngredientsList = dto.getIngredientsList()
                         val matchedCount = englishIngredients.count { userIng -> 
-                            recipeIngredients.any { it.contains(userIng, ignoreCase = true) }
+                            recipeIngredientsList.any { it.contains(userIng, ignoreCase = true) }
                         }
                         val matchScore = matchedCount.toDouble() / (englishIngredients.size.coerceAtLeast(1))
                         recommendations.add(dto.toRecommendation(matchScore, ingredients))
@@ -135,152 +133,16 @@ class RecipeRepositoryImpl(
                 }
             }
         } catch (e: Exception) {
-            // Continue to fallback
+            // Silently continue to local fallback
         }
         
-        // 3. Local Fallback
-        return@withContext try {
+        // 3. Local Rule-Based Fallback
+        try {
             val localFallback = ruleBasedEngine.generateRecommendations(ingredients, preference, prioritizeExpiring)
             Result.success(localFallback)
         } catch (e: Exception) {
             Result.failure(Exception("Resep belum bisa dimuat. Periksa koneksi internet kamu lalu coba lagi."))
         }
-    }
-
-    private fun IndoRecipeDetailDto.toRecommendation(userIngredients: List<RecipeIngredient>): RecipeRecommendation {
-        val recipeIngredients = ingredient ?: emptyList()
-        val used = userIngredients.filter { userIng ->
-            recipeIngredients.any { it.contains(userIng.name, ignoreCase = true) }
-        }.map { it.name }
-        
-        val optional = recipeIngredients.filter { recIng ->
-            !userIngredients.any { recIng.contains(it.name, ignoreCase = true) }
-        }
-
-        val cleanedSteps = cleanRecipeInstructionsFromList(step ?: emptyList())
-
-        return RecipeRecommendation(
-            title = title,
-            description = "Resep Indonesia",
-            usedIngredients = used,
-            optionalIngredients = optional,
-            cookingTimeMinutes = times?.filter { it.isDigit() }?.toIntOrNull() ?: (cleanedSteps.size * 3) + 5,
-            difficulty = difficulty ?: when {
-                cleanedSteps.size < 5 -> "Mudah"
-                cleanedSteps.size < 10 -> "Sedang"
-                else -> "Sulit"
-            },
-            reason = "Ditemukan resep Indonesia yang cocok dengan bahan kamu.",
-            steps = cleanedSteps,
-            warningMessage = buildExpiryWarning(userIngredients),
-            imageUrl = thumb,
-            matchScore = 1.0
-        )
-    }
-
-    private fun MealDto.toRecommendation(matchScore: Double, userIngredients: List<RecipeIngredient>): RecipeRecommendation {
-        val recipeIngredients = getIngredients()
-        val englishUserIngredients = userIngredients.map { IngredientMapper.mapToEnglish(it.name) }
-        
-        val used = userIngredients.filter { userIng ->
-            val eng = IngredientMapper.mapToEnglish(userIng.name)
-            recipeIngredients.any { it.contains(eng, ignoreCase = true) }
-        }.map { it.name }
-        
-        val optional = recipeIngredients.filter { recIng ->
-            !englishUserIngredients.any { recIng.contains(it, ignoreCase = true) }
-        }
-
-        val cleanedSteps = cleanRecipeInstructions(instructions ?: "")
-
-        return RecipeRecommendation(
-            title = name,
-            description = area ?: "Resep Global", 
-            usedIngredients = used,
-            optionalIngredients = optional,
-            cookingTimeMinutes = (cleanedSteps.size * 2) + 10,
-            difficulty = when {
-                cleanedSteps.size < 5 -> "Mudah"
-                cleanedSteps.size < 10 -> "Sedang"
-                else -> "Sulit"
-            },
-            reason = "Resep ini ditemukan berdasarkan bahan: ${used.joinToString(", ")}.",
-            steps = cleanedSteps,
-            warningMessage = buildExpiryWarning(userIngredients),
-            imageUrl = thumbUrl,
-            matchScore = matchScore
-        )
-    }
-
-    private fun cleanRecipeInstructionsFromList(rawSteps: List<String>): List<String> {
-        return rawSteps.map { it.trim() }
-            .filter { it.isNotBlank() }
-            .map { it.replace(Regex("^(?i)step\\s*\\d+[:.]?\\s*", RegexOption.IGNORE_CASE), "") }
-            .map { it.replace(Regex("^\\d+[:.]?\\s*"), "") }
-            .map { it.replace(Regex("^Langkah\\s+\\d+[:.]?\\s*", RegexOption.IGNORE_CASE), "") }
-            .distinct()
-    }
-
-    private fun cleanRecipeInstructions(rawInstructions: String): List<String> {
-        if (rawInstructions.isBlank()) return emptyList()
-        
-        val stepHeaderPattern = Regex("(?i)^step\\s*[:\\-]?\\s*(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten)[:.)]?\\s*$", RegexOption.IGNORE_CASE)
-        val stepPrefixPattern = Regex("(?i)^step\\s*[:\\-]?\\s*(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten)[:.)]?\\s*", RegexOption.IGNORE_CASE)
-        val numericPrefixPattern = Regex("^\\d+[:.)]\\s*")
-
-        val refinedSteps = mutableListOf<String>()
-        val lines = rawInstructions.split(Regex("\\r?\\n"))
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-
-        for (line in lines) {
-            if (line.matches(stepHeaderPattern)) continue
-            
-            var cleanedLine = line.replace(stepPrefixPattern, "")
-            cleanedLine = cleanedLine.replace(numericPrefixPattern, "").trim()
-            
-            if (cleanedLine.isBlank()) continue
-            
-            if (cleanedLine.length > 160 && cleanedLine.contains(". ")) {
-                val sentences = cleanedLine.split(Regex("\\.\\s+(?=[A-Z])"))
-                    .map { it.trim() }
-                    .filter { it.isNotBlank() }
-                
-                for (sentence in sentences) {
-                    val finalSentence = if (!sentence.endsWith(".") && sentence.length > 2) "$sentence." else sentence
-                    refinedSteps.add(finalSentence)
-                }
-            } else {
-                refinedSteps.add(cleanedLine)
-            }
-        }
-        
-        return refinedSteps
-            .filter { it.length > 3 }
-            .distinct()
-    }
-
-    private fun buildExpiryWarning(userIngredients: List<RecipeIngredient>): String? {
-        val expiredCount = userIngredients.count { it.daysLeft != null && it.daysLeft < 0 }
-        val nearExpiryCount = userIngredients.count { it.daysLeft != null && it.daysLeft in 0..3 }
-        
-        return when {
-            expiredCount > 0 -> "Peringatan: Ada bahan yang sudah kedaluwarsa. Mohon cek kondisi bahan sebelum memasak."
-            nearExpiryCount > 0 -> "Catatan FoodSaver: Bahan hampir kedaluwarsa diprioritaskan agar tidak terbuang."
-            else -> null
-        }
-    }
-
-    private fun MealDto.getIngredients(): List<String> {
-        val list = mutableListOf<String>()
-        val fields = listOf(
-            strIngredient1, strIngredient2, strIngredient3, strIngredient4, strIngredient5,
-            strIngredient6, strIngredient7, strIngredient8, strIngredient9, strIngredient10,
-            strIngredient11, strIngredient12, strIngredient13, strIngredient14, strIngredient15,
-            strIngredient16, strIngredient17, strIngredient18, strIngredient19, strIngredient20
-        )
-        fields.forEach { if (!it.isNullOrBlank()) list.add(it.lowercase()) }
-        return list
     }
 
     override suspend fun generateAiRecipe(
@@ -302,17 +164,17 @@ class RecipeRepositoryImpl(
         prioritizeExpiring: Boolean
     ): String {
         val ingredientList = ingredients.joinToString("\n") { 
-            "- ${it.name} (${it.quantity}), Sumber: ${it.source}, Status: ${it.expiryStatus ?: "Aman"}${it.daysLeft?.let { d -> ", Sisa hari: $d" } ?: ""}"
+            "- ${it.name} (${it.quantity}), Status: ${it.expiryStatus ?: "Aman"}${it.daysLeft?.let { d -> ", Sisa hari: $d" } ?: ""}"
         }
         
         return """
-            Berikut adalah bahan-bahan yang saya miliki:
+            Bahan yang tersedia:
             $ingredientList
 
-            Preferensi saya: $preference
+            Preferensi: $preference
             Prioritaskan bahan hampir expired: ${if (prioritizeExpiring) "Ya" else "Tidak"}
 
-            Tolong buatkan rekomendasi resep terbaik.
+            Buatkan rekomendasi resep terbaik sesuai format.
         """.trimIndent()
     }
 
@@ -325,8 +187,9 @@ class RecipeRepositoryImpl(
             
             val result = mutableListOf<String>()
             for (i in startIndex + 1 until lines.size) {
-                if (lines[i].contains(":") && !lines[i].startsWith("-") && !lines[i].getOrNull(0)?.isDigit()!!) break
-                if (lines[i].isNotBlank()) result.add(lines[i].trim())
+                val line = lines[i]
+                if (line.contains(":") && !line.startsWith("-") && line.getOrNull(0)?.isDigit() != true) break
+                if (line.isNotBlank()) result.add(line.trim())
             }
             return result.joinToString("\n")
         }
@@ -363,7 +226,7 @@ class RecipeRepositoryImpl(
             difficulty = difficulty,
             reason = reason,
             steps = steps,
-            warningMessage = if (note.isNotBlank()) note else null
+            warningMessage = note.takeIf { it.isNotBlank() }
         )
     }
 
@@ -399,54 +262,15 @@ class RecipeRepositoryImpl(
                 category = recipe.category,
                 area = recipe.area,
                 instructions = recipe.instructions,
-                ingredients = "", 
+                ingredients = "",
                 dateSaved = Clock.System.now().toEpochMilliseconds()
             )
         }
     }
 
     override suspend fun isFavorite(id: String): Boolean {
-        return queries.getFavoriteById(id).executeAsOneOrNull() != null
-    }
-
-    private fun MealDto.toDomain(): Recipe {
-        val ingredientsList = mutableListOf<IngredientAmount>()
-        
-        fun addIfNotEmpty(ingredient: String?, measure: String?) {
-            if (!ingredient.isNullOrBlank()) {
-                ingredientsList.add(IngredientAmount(ingredient, measure ?: ""))
-            }
+        return withContext(Dispatchers.IO) {
+            queries.getFavoriteById(id).executeAsOneOrNull() != null
         }
-
-        addIfNotEmpty(strIngredient1, strMeasure1)
-        addIfNotEmpty(strIngredient2, strMeasure2)
-        addIfNotEmpty(strIngredient3, strMeasure3)
-        addIfNotEmpty(strIngredient4, strMeasure4)
-        addIfNotEmpty(strIngredient5, strMeasure5)
-        addIfNotEmpty(strIngredient6, strMeasure6)
-        addIfNotEmpty(strIngredient7, strMeasure7)
-        addIfNotEmpty(strIngredient8, strMeasure8)
-        addIfNotEmpty(strIngredient9, strMeasure9)
-        addIfNotEmpty(strIngredient10, strMeasure10)
-        addIfNotEmpty(strIngredient11, strMeasure11)
-        addIfNotEmpty(strIngredient12, strMeasure12)
-        addIfNotEmpty(strIngredient13, strMeasure13)
-        addIfNotEmpty(strIngredient14, strMeasure14)
-        addIfNotEmpty(strIngredient15, strMeasure15)
-        addIfNotEmpty(strIngredient16, strMeasure16)
-        addIfNotEmpty(strIngredient17, strMeasure17)
-        addIfNotEmpty(strIngredient18, strMeasure18)
-        addIfNotEmpty(strIngredient19, strMeasure19)
-        addIfNotEmpty(strIngredient20, strMeasure20)
-
-        return Recipe(
-            id = id,
-            name = name,
-            imageUrl = thumbUrl ?: "",
-            category = category,
-            area = area,
-            instructions = instructions,
-            ingredients = ingredientsList
-        )
     }
 }

@@ -31,10 +31,9 @@ import com.example.foodsaver.presentation.screens.home.HomeScreen
 import com.example.foodsaver.presentation.screens.mealplan.MealPlannerScreen
 import com.example.foodsaver.presentation.screens.profile.ProfileScreen
 import com.example.foodsaver.presentation.screens.recipe.CookFromStockScreen
-import com.example.foodsaver.presentation.screens.recipe.RecipeListScreen
+import com.example.foodsaver.presentation.screens.recipe.CookFromStockViewModel
 import com.example.foodsaver.presentation.screens.recipe.RecipeRecommendationScreen
 import com.example.foodsaver.presentation.screens.recipe.detail.RecipeDetailScreen
-import com.example.foodsaver.presentation.screens.recipe.CookFromStockViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -117,9 +116,7 @@ fun AppNavHost() {
                     onCalendarClick = { 
                         navController.navigate("calendar") {
                             val startRoute = navController.graph.findStartDestination().route ?: "home"
-                            popUpTo(startRoute) {
-                                saveState = true
-                            }
+                            popUpTo(startRoute) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -127,9 +124,7 @@ fun AppNavHost() {
                     onCookFromStockClick = { 
                         navController.navigate("recipe") {
                             val startRoute = navController.graph.findStartDestination().route ?: "home"
-                            popUpTo(startRoute) {
-                                saveState = true
-                            }
+                            popUpTo(startRoute) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -147,30 +142,24 @@ fun AppNavHost() {
             composable("recipe") {
                 CookFromStockScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToResult = { ids, manual, prioritize, pref ->
+                    onNavigateToResult = { ids, _, _, _ ->
                         val idsString = if (ids.isEmpty()) "" else ids.joinToString(",")
-                        val manualString = if (manual.isEmpty()) "" else manual.joinToString(",")
-                        navController.navigate("recipe_recommendation?ids=$idsString&manual=$manualString&prioritize=$prioritize&pref=$pref")
+                        navController.navigate("recipe_recommendation?ids=$idsString")
                     },
                     onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
 
             composable(
-                route = "recipe_recommendation?ids={ids}&manual={manual}&prioritize={prioritize}&pref={pref}",
+                route = "recipe_recommendation?ids={ids}",
                 arguments = listOf(
-                    navArgument("ids") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("manual") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("prioritize") { type = NavType.BoolType; defaultValue = true },
-                    navArgument("pref") { type = NavType.StringType; defaultValue = "Praktis" }
+                    navArgument("ids") { type = NavType.StringType; defaultValue = "" }
                 )
             ) { backStackEntry ->
-                val ids = backStackEntry.arguments?.getString("ids")?.split(",")?.filter { it.isNotEmpty() }?.map { it.toLong() } ?: emptyList()
-                val manual = backStackEntry.arguments?.getString("manual")?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
-                val prioritize = backStackEntry.arguments?.getBoolean("prioritize") ?: true
-                val pref = backStackEntry.arguments?.getString("pref") ?: "Praktis"
+                val ids = backStackEntry.arguments?.getString("ids")
+                    ?.split(",")?.filter { it.isNotEmpty() }?.map { it.toLong() } ?: emptyList()
                 
-                // Use the ViewModel from the "recipe" back stack entry to share the state
+                // Menggunakan shared ViewModel dari entry "recipe"
                 val recipeEntry = remember(backStackEntry) {
                     navController.getBackStackEntry("recipe")
                 }
@@ -178,9 +167,6 @@ fun AppNavHost() {
 
                 RecipeRecommendationScreen(
                     ingredientIds = ids,
-                    manualIngredients = manual,
-                    prioritizeExpired = prioritize,
-                    preference = pref,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToHome = { 
                         navController.navigate("home") {
@@ -207,10 +193,7 @@ fun AppNavHost() {
             composable(
                 route = "add_food?foodId={foodId}",
                 arguments = listOf(
-                    navArgument("foodId") {
-                        type = NavType.LongType
-                        defaultValue = -1L
-                    }
+                    navArgument("foodId") { type = NavType.LongType; defaultValue = -1L }
                 )
             ) { backStackEntry ->
                 val foodId = backStackEntry.arguments?.getLong("foodId")?.takeIf { it != -1L }

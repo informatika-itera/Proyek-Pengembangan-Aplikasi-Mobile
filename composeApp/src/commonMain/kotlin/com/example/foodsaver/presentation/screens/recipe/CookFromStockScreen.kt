@@ -23,11 +23,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.foodsaver.core.utility.formatQuantity
 import com.example.foodsaver.domain.model.FoodItem
 import com.example.foodsaver.domain.model.FoodStatus
 import com.example.foodsaver.presentation.components.getEmojiForCategory
 import com.example.foodsaver.presentation.theme.*
-import com.example.foodsaver.core.util.formatQuantity
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class RecipeInputMode {
@@ -57,7 +57,6 @@ fun CookFromStockScreen(
         }
     }
 
-    // Use event-based navigation to prevent looping
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -68,9 +67,6 @@ fun CookFromStockScreen(
                         state.prioritizeExpired,
                         state.preference
                     )
-                    // Reset the recommendation state after navigation so that if we come back, 
-                    // it doesn't immediately show the old result if we were to use the old LaunchedEffect logic.
-                    // But here it's even safer because it's a SharedFlow event.
                 }
             }
         }
@@ -79,67 +75,25 @@ fun CookFromStockScreen(
     Scaffold(
         modifier = Modifier.testTag("recipe_screen"),
         topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text("Masak dari Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
-                        Text("Buat resep dari bahan yang tersedia.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.resetIngredients() }, enabled = !isGenerating) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Reset")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            CookFromStockTopBar(
+                onBackClick = onNavigateBack,
+                onResetClick = { viewModel.resetIngredients() },
+                isGenerating = isGenerating
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 8.dp,
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.generateRecommendation(
-                            state.selectedIngredientIds.toList(),
-                            state.manualIngredients,
-                            state.prioritizeExpired,
-                            state.preference
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .height(56.dp)
-                        .testTag("recipe_generate_button"),
-                    enabled = !isGenerating,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    if (isGenerating) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Text("Mencari resep...", fontWeight = FontWeight.Bold)
-                    } else {
-                        Icon(Icons.Default.RestaurantMenu, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Buat Rekomendasi Resep", fontWeight = FontWeight.Bold)
-                    }
+            GenerateRecipeButton(
+                isGenerating = isGenerating,
+                onClick = {
+                    viewModel.generateRecommendation(
+                        state.selectedIngredientIds.toList(),
+                        state.manualIngredients,
+                        state.prioritizeExpired,
+                        state.preference
+                    )
                 }
-            }
+            )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
@@ -148,25 +102,10 @@ fun CookFromStockScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            TabRow(
-                selectedTabIndex = selectedMode.ordinal,
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.primary,
-                divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) }
-            ) {
-                Tab(
-                    selected = selectedMode == RecipeInputMode.INVENTORY,
-                    onClick = { if (!isGenerating) selectedMode = RecipeInputMode.INVENTORY },
-                    text = { Text("Inventaris", fontWeight = FontWeight.Bold) },
-                    modifier = Modifier.testTag("recipe_inventory_tab")
-                )
-                Tab(
-                    selected = selectedMode == RecipeInputMode.MANUAL,
-                    onClick = { if (!isGenerating) selectedMode = RecipeInputMode.MANUAL },
-                    text = { Text("Input Manual", fontWeight = FontWeight.Bold) },
-                    modifier = Modifier.testTag("recipe_manual_tab")
-                )
-            }
+            IngredientSourceTabs(
+                selectedMode = selectedMode,
+                onModeSelected = { if (!isGenerating) selectedMode = it }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -180,31 +119,11 @@ fun CookFromStockScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    "Punya bahan seadanya?",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Text(
-                                    "Masukkan bahan seperti telur, nasi, bakso, atau sayur. FoodSaver akan bantu kasih ide masakan.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                                )
-                            }
-                        }
-                    }
+                    item { CookFromStockIntroCard() }
 
                     item {
                         Text(
-                            if (selectedMode == RecipeInputMode.INVENTORY) "Pilih bahan dari inventaris kamu" else "Masukkan bahan secara manual",
+                            text = if (selectedMode == RecipeInputMode.INVENTORY) "Pilih bahan dari inventaris kamu" else "Masukkan bahan secara manual",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -225,134 +144,287 @@ fun CookFromStockScreen(
                         }
                     } else {
                         item {
-                            OutlinedTextField(
-                                value = manualInput,
-                                onValueChange = { manualInput = it },
-                                modifier = Modifier.fillMaxWidth().testTag("manual_ingredient_input"),
-                                enabled = !isGenerating,
-                                placeholder = { Text("Contoh: telur, nasi, bakso") },
-                                label = { Text("Tambah Bahan") },
-                                trailingIcon = {
-                                    IconButton(
-                                        onClick = {
-                                            viewModel.addManualIngredient(manualInput)
-                                            manualInput = ""
-                                            focusManager.clearFocus()
-                                        },
-                                        enabled = !isGenerating && manualInput.isNotBlank(),
-                                        modifier = Modifier.testTag("btn_add_manual")
-                                    ) {
-                                        Icon(Icons.Default.Add, contentDescription = "Tambah")
-                                    }
-                                },
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = {
+                            ManualIngredientSection(
+                                manualInput = manualInput,
+                                onManualInputChange = { manualInput = it },
+                                manualIngredients = state.manualIngredients,
+                                isGenerating = isGenerating,
+                                onAddIngredient = {
                                     viewModel.addManualIngredient(manualInput)
                                     manualInput = ""
                                     focusManager.clearFocus()
-                                }),
-                                shape = RoundedCornerShape(12.dp)
+                                },
+                                onRemoveIngredient = { viewModel.removeManualIngredient(it) }
                             )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            if (state.manualIngredients.isNotEmpty()) {
-                                Text("Bahan Manual:", style = MaterialTheme.typography.labelLarge)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    state.manualIngredients.forEach { ingredient ->
-                                        InputChip(
-                                            selected = false,
-                                            onClick = {},
-                                            enabled = !isGenerating,
-                                            label = { Text(ingredient) },
-                                            trailingIcon = {
-                                                Icon(
-                                                    Icons.Default.Close,
-                                                    contentDescription = "Hapus",
-                                                    modifier = Modifier.size(16.dp).clickable(enabled = !isGenerating) {
-                                                        viewModel.removeManualIngredient(ingredient)
-                                                    }
-                                                )
-                                            },
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                    }
-                                }
-                            } else {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().padding(32.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        "Belum ada bahan manual.\nKetik bahan di atas dan tekan tombol +",
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
                         }
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Text(
-                            "Preferensi Masak",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
+                        RecipePreferenceSection(
+                            prioritizeExpired = state.prioritizeExpired,
+                            onPrioritizeExpiredChange = { viewModel.setPrioritizeExpired(it) },
+                            selectedPreference = state.preference,
+                            onPreferenceSelected = { viewModel.setPreference(it) },
+                            isGenerating = isGenerating
                         )
-                        
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Prioritaskan bahan hampir kedaluwarsa", style = MaterialTheme.typography.bodyMedium)
-                                Text("Berikan resep menggunakan bahan paling mendesak.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            Switch(
-                                checked = state.prioritizeExpired,
-                                onCheckedChange = { viewModel.setPrioritizeExpired(it) },
-                                enabled = !isGenerating,
-                                modifier = Modifier.testTag("switch_prioritize")
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Text("Gaya Resep:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            val preferences = listOf("Cepat", "Praktis", "Sehat")
-                            preferences.forEach { pref ->
-                                FilterChip(
-                                    selected = state.preference == pref,
-                                    onClick = { viewModel.setPreference(pref) },
-                                    enabled = !isGenerating,
-                                    label = { Text(pref) },
-                                    modifier = Modifier.weight(1f).testTag("chip_pref_$pref")
-                                )
-                            }
-                        }
                         
                         Spacer(modifier = Modifier.height(80.dp)) 
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CookFromStockTopBar(
+    onBackClick: () -> Unit,
+    onResetClick: () -> Unit,
+    isGenerating: Boolean
+) {
+    TopAppBar(
+        title = { 
+            Column {
+                Text("Masak dari Stok", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                Text("Buat resep dari bahan yang tersedia.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+            }
+        },
+        actions = {
+            IconButton(onClick = onResetClick, enabled = !isGenerating) {
+                Icon(Icons.Default.Refresh, contentDescription = "Reset")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+    )
+}
+
+@Composable
+private fun IngredientSourceTabs(
+    selectedMode: RecipeInputMode,
+    onModeSelected: (RecipeInputMode) -> Unit
+) {
+    TabRow(
+        selectedTabIndex = selectedMode.ordinal,
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primary,
+        divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)) }
+    ) {
+        Tab(
+            selected = selectedMode == RecipeInputMode.INVENTORY,
+            onClick = { onModeSelected(RecipeInputMode.INVENTORY) },
+            text = { Text("Inventaris", fontWeight = FontWeight.Bold) },
+            modifier = Modifier.testTag("recipe_inventory_tab")
+        )
+        Tab(
+            selected = selectedMode == RecipeInputMode.MANUAL,
+            onClick = { onModeSelected(RecipeInputMode.MANUAL) },
+            text = { Text("Input Manual", fontWeight = FontWeight.Bold) },
+            modifier = Modifier.testTag("recipe_manual_tab")
+        )
+    }
+}
+
+@Composable
+private fun CookFromStockIntroCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "Punya bahan seadanya?",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                "Masukkan bahan seperti telur, nasi, bakso, atau sayur. FoodSaver akan bantu kasih ide masakan.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ManualIngredientSection(
+    manualInput: String,
+    onManualInputChange: (String) -> Unit,
+    manualIngredients: List<String>,
+    isGenerating: Boolean,
+    onAddIngredient: () -> Unit,
+    onRemoveIngredient: (String) -> Unit
+) {
+    Column {
+        OutlinedTextField(
+            value = manualInput,
+            onValueChange = onManualInputChange,
+            modifier = Modifier.fillMaxWidth().testTag("manual_ingredient_input"),
+            enabled = !isGenerating,
+            placeholder = { Text("Contoh: telur, nasi, bakso") },
+            label = { Text("Tambah Bahan") },
+            trailingIcon = {
+                IconButton(
+                    onClick = onAddIngredient,
+                    enabled = !isGenerating && manualInput.isNotBlank(),
+                    modifier = Modifier.testTag("btn_add_manual")
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah")
+                }
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onAddIngredient() }),
+            shape = RoundedCornerShape(12.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (manualIngredients.isNotEmpty()) {
+            Text("Bahan Manual:", style = MaterialTheme.typography.labelLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            @OptIn(ExperimentalLayoutApi::class)
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                manualIngredients.forEach { ingredient ->
+                    InputChip(
+                        selected = false,
+                        onClick = {},
+                        enabled = !isGenerating,
+                        label = { Text(ingredient) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Hapus",
+                                modifier = Modifier.size(16.dp).clickable(enabled = !isGenerating) {
+                                    onRemoveIngredient(ingredient)
+                                }
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "Belum ada bahan manual.\nKetik bahan di atas dan tekan tombol +",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecipePreferenceSection(
+    prioritizeExpired: Boolean,
+    onPrioritizeExpiredChange: (Boolean) -> Unit,
+    selectedPreference: String,
+    onPreferenceSelected: (String) -> Unit,
+    isGenerating: Boolean
+) {
+    Column {
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            "Preferensi Masak",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Prioritaskan bahan hampir kedaluwarsa", style = MaterialTheme.typography.bodyMedium)
+                Text("Berikan resep menggunakan bahan paling mendesak.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Switch(
+                checked = prioritizeExpired,
+                onCheckedChange = onPrioritizeExpiredChange,
+                enabled = !isGenerating,
+                modifier = Modifier.testTag("switch_prioritize")
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text("Gaya Resep:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val preferences = listOf("Cepat", "Praktis", "Sehat")
+            preferences.forEach { pref ->
+                FilterChip(
+                    selected = selectedPreference == pref,
+                    onClick = { onPreferenceSelected(pref) },
+                    enabled = !isGenerating,
+                    label = { Text(pref) },
+                    modifier = Modifier.weight(1f).testTag("chip_pref_$pref")
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GenerateRecipeButton(
+    isGenerating: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        tonalElevation = 8.dp,
+        shadowElevation = 8.dp,
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Button(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .height(56.dp)
+                .testTag("recipe_generate_button"),
+            enabled = !isGenerating,
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        ) {
+            if (isGenerating) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+                Spacer(Modifier.width(12.dp))
+                Text("Mencari resep...", fontWeight = FontWeight.Bold)
+            } else {
+                Icon(Icons.Default.RestaurantMenu, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Buat Rekomendasi Resep", fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -467,22 +539,5 @@ fun EmptyIngredientsState(onAddFoodClick: () -> Unit) {
         ) {
             Text("Tambah Makanan", fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun FlowRow(
-    modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.foundation.layout.FlowRow(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement,
-        verticalArrangement = verticalArrangement
-    ) {
-        content()
     }
 }

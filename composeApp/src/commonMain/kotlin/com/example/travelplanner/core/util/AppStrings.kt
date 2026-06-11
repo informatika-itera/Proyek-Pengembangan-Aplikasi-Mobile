@@ -302,13 +302,13 @@ val StringsID = AppStrings(
     menuFinanceSummary = "Ringkasan Keuangan", menuFinanceSummarySub = "Total pengeluaran semua trip",
     menuOthers = "LAINNYA",
     menuHelp = "Bantuan & FAQ", menuHelpSub = "Panduan penggunaan aplikasi",
-    menuAbout = "Tentang Aplikasi", menuAboutSub = "Versi 1.0.0 · Powered by Gemini AI",
+    menuAbout = "Tentang Aplikasi", menuAboutSub = "Versi 1.1.0 · Powered by Gemini AI",
 
     settingsTitle = "Pengaturan", sectionDisplay = "TAMPILAN",
     darkMode = "Mode Gelap", language = "Bahasa", languageValue = "Indonesia (ID)",
     isEnglish = false,
     sectionNotification = "NOTIFIKASI", travelReminder = "Pengingat Perjalanan",
-    appVersion = "AI Travel Planner v1.0.0\nPowered by Google Gemini 1.5 Flash",
+    appVersion = "AI Travel Planner v1.1.0\nPowered by Google Gemini 1.5 Flash",
     switchToLanguage = "Switch to English",
 
     flightRecommendation = "Rekomendasi Penerbangan",
@@ -444,13 +444,13 @@ val StringsEN = AppStrings(
     menuFinanceSummary = "Financial Summary", menuFinanceSummarySub = "Total expenses across all trips",
     menuOthers = "MORE",
     menuHelp = "Help & FAQ", menuHelpSub = "App usage guide",
-    menuAbout = "About App", menuAboutSub = "Version 1.0.0 · Powered by Gemini AI",
+    menuAbout = "About App", menuAboutSub = "Version 1.1.0 · Powered by Gemini AI",
 
     settingsTitle = "Settings", sectionDisplay = "DISPLAY",
     darkMode = "Dark Mode", language = "Language", languageValue = "English (EN)",
     isEnglish = true,
     sectionNotification = "NOTIFICATIONS", travelReminder = "Travel Reminder",
-    appVersion = "AI Travel Planner v1.0.0\nPowered by Google Gemini 1.5 Flash",
+    appVersion = "AI Travel Planner v1.1.0\nPowered by Google Gemini 1.5 Flash",
     switchToLanguage = "Ganti ke Indonesia",
 
     flightRecommendation = "Flight Recommendation",

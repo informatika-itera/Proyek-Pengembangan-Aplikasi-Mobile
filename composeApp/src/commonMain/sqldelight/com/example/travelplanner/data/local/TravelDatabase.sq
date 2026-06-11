@@ -46,3 +46,16 @@ DELETE FROM expenseEntity WHERE id = ?;
 
 getTotalExpensesForTrip:
 SELECT SUM(nominal) FROM expenseEntity WHERE trip_id = ?;
+
+CREATE TABLE profileEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL
+);
+
+getProfile:
+SELECT * FROM profileEntity LIMIT 1;
+
+insertOrUpdateProfile:
+INSERT OR REPLACE INTO profileEntity(id, name, email)
+VALUES (?, ?, ?);

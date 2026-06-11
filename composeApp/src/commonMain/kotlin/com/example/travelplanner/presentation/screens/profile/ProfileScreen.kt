@@ -35,8 +35,69 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val s = LocalStrings.current
+
+    LaunchedEffect(Unit) {
+        viewModel.loadRecentTrips()
+        viewModel.loadUserProfile()
+    }
+
     val tripCount = uiState.recentTrips.size
     val destinationCount = uiState.recentTrips.map { it.destination }.distinct().size
+    val countryCount = remember(uiState.recentTrips) {
+        if (uiState.recentTrips.isEmpty()) 0
+        else uiState.recentTrips.map { getCountryForDestination(it.destination) }.distinct().size
+    }
+
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editNameInput by remember { mutableStateOf("") }
+
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = {
+                Text(
+                    text = if (s.isEnglish) "Edit Profile Name" else "Ubah Nama Profil",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = editNameInput,
+                        onValueChange = { editNameInput = it },
+                        label = { Text(if (s.isEnglish) "Name" else "Nama") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (editNameInput.isNotBlank()) {
+                            viewModel.updateProfile(editNameInput.trim())
+                            showEditDialog = false
+                        }
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(if (s.isEnglish) "Save" else "Simpan")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showEditDialog = false }
+                ) {
+                    Text(if (s.isEnglish) "Cancel" else "Batal")
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -71,7 +132,11 @@ fun ProfileScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth().shadow(8.dp, RoundedCornerShape(20.dp)),
                 shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surface
+                color = MaterialTheme.colorScheme.surface,
+                onClick = {
+                    editNameInput = uiState.userProfile.name
+                    showEditDialog = true
+                }
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -85,11 +150,36 @@ fun ProfileScreen(
                             )),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("TF", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        val initials = remember(uiState.userProfile.name) {
+                            val parts = uiState.userProfile.name.trim().split(" ")
+                            if (parts.size >= 2) {
+                                (parts[0].take(1) + parts[1].take(1)).uppercase()
+                            } else if (parts.isNotEmpty() && parts[0].isNotBlank()) {
+                                parts[0].take(2).uppercase()
+                            } else {
+                                "TF"
+                            }
+                        }
+                        Text(initials, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Taufik Hidayat", style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                uiState.userProfile.name,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = if (s.isEnglish) "Edit Name" else "Ubah Nama",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                         Spacer(Modifier.height(2.dp))
                         Surface(shape = RoundedCornerShape(50),
                             color = MaterialTheme.colorScheme.secondaryContainer) {
@@ -100,7 +190,7 @@ fun ProfileScreen(
                                 fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp)
                         }
                         Spacer(Modifier.height(2.dp))
-                        Text("taufik@traveler.com", style = MaterialTheme.typography.bodySmall,
+                        Text(uiState.userProfile.email, style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
@@ -110,7 +200,7 @@ fun ProfileScreen(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ProfileStatCard("$tripCount",         s.statTrips,     Icons.Default.Map,        Modifier.weight(1f))
                 ProfileStatCard("$destinationCount",  s.statCities,    Icons.Default.LocationOn, Modifier.weight(1f))
-                ProfileStatCard("0",                  s.statCountries, Icons.Default.Public,     Modifier.weight(1f))
+                ProfileStatCard("$countryCount",      s.statCountries, Icons.Default.Public,     Modifier.weight(1f))
             }
 
             // ── MENU PROFIL ────────────────────────────────────────────
@@ -214,3 +304,20 @@ private fun ProfileMenuItem(
         }
     }
 }
+
+private fun getCountryForDestination(destination: String): String {
+    val q = destination.lowercase().trim()
+    return when {
+        q.contains("singapore") || q.contains("singapura") -> "Singapore"
+        q.contains("kuala lumpur") || q.contains("malaysia") -> "Malaysia"
+        q.contains("phuket") || q.contains("bangkok") || q.contains("thailand") -> "Thailand"
+        q.contains("tokyo") || q.contains("japan") || q.contains("jepang") -> "Japan"
+        q.contains("seoul") || q.contains("korea") -> "South Korea"
+        q.contains("london") || q.contains("uk") || q.contains("inggris") || q.contains("united kingdom") -> "United Kingdom"
+        q.contains("paris") || q.contains("prancis") || q.contains("france") -> "France"
+        q.contains("new york") || q.contains("usa") || q.contains("amerika") || q.contains("united states") -> "United States"
+        q.contains("dubai") || q.contains("uea") || q.contains("uae") || q.contains("arab") -> "United Arab Emirates"
+        else -> "Indonesia"
+    }
+}
+

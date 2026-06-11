@@ -2,6 +2,7 @@ package com.example.travelplanner.data.repository
 
 import com.example.travelplanner.domain.model.Trip
 import com.example.travelplanner.domain.model.ItineraryItem
+import com.example.travelplanner.domain.model.UserProfile
 import com.example.travelplanner.domain.repository.TripRepository
 import com.example.travelplanner.data.local.TravelPlannerDatabase
 import app.cash.sqldelight.coroutines.asFlow
@@ -82,6 +83,28 @@ class TripRepositoryImpl(
 
     override suspend fun deleteTrip(id: String) {
         queries.deleteTrip(id)
+    }
+
+    override fun getProfile(): Flow<UserProfile?> {
+        return queries.getProfile()
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.Default)
+            .map { entity ->
+                entity?.let {
+                    UserProfile(
+                        name = it.name,
+                        email = it.email
+                    )
+                }
+            }
+    }
+
+    override suspend fun saveProfile(profile: UserProfile) {
+        queries.insertOrUpdateProfile(
+            id = "user_profile",
+            name = profile.name,
+            email = profile.email
+        )
     }
 
     private fun extractEndDate(startDate: String, duration: String): String {

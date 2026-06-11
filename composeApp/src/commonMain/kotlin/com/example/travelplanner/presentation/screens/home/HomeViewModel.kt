@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.travelplanner.core.service.CityImageService
 import com.example.travelplanner.domain.model.Trip
+import com.example.travelplanner.domain.model.UserProfile
 import com.example.travelplanner.domain.repository.TripRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -19,7 +20,8 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val recentTrips: List<Trip> = emptyList(),
     val cityImages: Map<String, String> = emptyMap(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val userProfile: UserProfile = UserProfile("Taufik Hidayat", "taufik@traveler.com")
 )
 
 class HomeViewModel(
@@ -92,6 +94,24 @@ class HomeViewModel(
             withContext(Dispatchers.Main) {
                 _uiState.update { it.copy(cityImages = it.cityImages + results) }
             }
+        }
+    }
+
+    fun loadUserProfile() {
+        viewModelScope.launch {
+            tripRepository.getProfile()
+                .catch { /* silent error */ }
+                .collect { profile ->
+                    if (profile != null) {
+                        _uiState.update { it.copy(userProfile = profile) }
+                    }
+                }
+        }
+    }
+
+    fun updateProfile(name: String, email: String = "taufik@traveler.com") {
+        viewModelScope.launch {
+            tripRepository.saveProfile(UserProfile(name, email))
         }
     }
 }

@@ -1,10 +1,14 @@
 package com.example.travelplanner.presentation.screens.about
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import org.jetbrains.compose.resources.painterResource
+import noteai.composeapp.generated.resources.Res
+import noteai.composeapp.generated.resources.icon_travel_planner
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -79,29 +83,14 @@ fun AboutScreen(
             Surface(
                 modifier = Modifier
                     .size(120.dp)
-                    .shadow(8.dp, CircleShape),
-                shape = CircleShape
+                    .shadow(8.dp, RoundedCornerShape(24.dp)),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.secondary
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Explore,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
+                Image(
+                    painter = painterResource(Res.drawable.icon_travel_planner),
+                    contentDescription = "App Logo",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -245,7 +234,7 @@ fun AboutScreen(
                 )
                 
                 Text(
-                    text = "Taufik Hidayat",
+                    text = "Taufik Hidayat & Romadhon Santoso",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface

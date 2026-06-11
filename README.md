@@ -2,20 +2,17 @@
 
 ![CI](https://github.com/Awesome1209/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
+## Logo
+
+<p align="center">
+<img width="300" height="300" alt="Presentation (1)" src="https://github.com/user-attachments/assets/f004c87f-19c4-474d-807c-6bf0c1dca7c7" />
+</p>
+
 ## 📌 Project Overview
 
 **Hujjah** adalah aplikasi mobile referensi Islam berbasis AI yang membantu pengguna membaca Al-Qur’an dan hadis secara manual, serta menemukan dalil berdasarkan kondisi sehari-hari melalui fitur **Hujjah Lens**.
 
-Melalui Hujjah Lens, pengguna dapat menuliskan kondisi seperti:
-
-- "Aku sedang marah"
-- "Aku merasa sedih"
-- "Aku ingin bertaubat"
-- "Aku malas shalat"
-- "Aku takut masa depan"
-
-Aplikasi kemudian akan memetakan input pengguna ke topik Islami yang relevan, menampilkan referensi Al-Qur’an dan hadis, lalu menyusun **Solusi Berdalil**, yaitu solusi yang setiap poinnya memiliki dasar dari ayat atau hadis yang ditampilkan.
-
+Melalui Hujjah Lens, pengguna dapat menuliskan kondisi curhatan atau cerita yang kemudian akan memetakan input pengguna ke topik Islami yang relevan, menampilkan referensi Al-Qur’an, lalu menghubungkan ke halaman ayat Al-qur'an terkait.
 > Hujjah bukan aplikasi fatwa dan bukan pengganti ulama. Hujjah adalah aplikasi pembelajaran referensi Islam berbasis Al-Qur’an dan hadis.
 
 ---
@@ -26,6 +23,26 @@ Aplikasi kemudian akan memetakan input pengguna ke topik Islami yang relevan, me
 |---|---|-----------------------------------------------|---|
 | AWI SEPTIAN PRASETYO | 123140201 | [@awesome1209](https://github.com/Awesome1209) | Lead / Mobile Developer |
 | MUHAMMAD BIMASTIAR | 123140211 | [@211-Bimas](https://github.com/211-Bimas)    | API & Data Developer |
+
+---
+
+## 🎦 Vidio Sprint
+
+## Vidio Demo
+
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=rr8zjp12_hg">
+    <img src="https://img.youtube.com/vi/rr8zjp12_hg/0.jpg" alt="Preview Aplikasi Mobile AI Islami" width="300">
+  </a>
+</div>
+
+### Sprint 2
+
+https://github.com/user-attachments/assets/8bc1e5dd-0d35-47af-b859-5827582aedf7
+
+### Sprint 3
+
+https://github.com/user-attachments/assets/3a352384-808b-4a4b-9306-eee70b3a3b75
 
 ---
 
@@ -91,47 +108,47 @@ Solusi Berdalil:
 
 ### Minimum Features
 
-- [ ] **Hujjah Lens**
+- [x] **Hujjah Lens**
     - Input kondisi pengguna.
     - AI memetakan input ke topik Islami.
     - Menampilkan referensi Al-Qur’an dan hadis.
     - Menyusun Solusi Berdalil.
 
-- [ ] **Al-Qur’an Manual**
+- [x] **Al-Qur’an Manual**
     - Menampilkan daftar surah.
     - Menampilkan detail surah.
     - Menampilkan ayat dan terjemahan Bahasa Indonesia.
     - Bookmark ayat.
 
-- [ ] **Hadis Manual**
+- [x] **Hadis Manual**
     - Menampilkan daftar hadis atau hadis tematik.
     - Menampilkan detail hadis.
     - Bookmark hadis.
 
-- [ ] **Reference Detail**
+- [x] **Reference Detail**
     - Menampilkan detail referensi Al-Qur’an atau hadis.
     - Menampilkan teks Arab, terjemahan, sumber, dan topik.
 
-- [ ] **Bookmark Reference**
+- [x] **Bookmark Reference**
     - Menyimpan referensi Al-Qur’an dan hadis ke database lokal.
     - Menampilkan daftar referensi tersimpan.
     - Menghapus bookmark.
 
-- [ ] **Multi-screen Navigation**
+- [x] **Multi-screen Navigation**
     - Navigasi antar halaman menggunakan Compose Navigation.
     - Mendukung argument passing untuk detail referensi.
 
-- [ ] **State Management**
+- [x] **State Management**
     - Menggunakan ViewModel.
     - Menggunakan StateFlow untuk UI state.
 
-- [ ] **Clean Architecture**
+- [x] **Clean Architecture**
     - Memisahkan layer `presentation`, `domain`, dan `data`.
 
-- [ ] **Dependency Injection**
+- [x] **Dependency Injection**
     - Menggunakan Koin.
 
-- [ ] **Testing**
+- [x] **Testing**
     - Unit test untuk use case/repository.
     - UI test untuk screen utama.
 
@@ -139,71 +156,62 @@ Solusi Berdalil:
 
 ### Bonus Features
 
-- [ ] **Gemini AI Integration**
+- [x] **Gemini AI Integration**
     - AI digunakan untuk mapping input, ringkasan, dan Solusi Berdalil.
 
-- [ ] **Offline-first Bookmark**
+- [x] **Offline-first Bookmark**
     - Referensi yang sudah disimpan dapat diakses tanpa internet.
 
-- [ ] **Dark Mode**
+- [x] **Dark Mode**
     - Mendukung tema terang dan gelap.
 
-- [ ] **Meaningful Animations**
+- [x] **Meaningful Animations**
     - Animasi sederhana untuk transisi dan loading state.
 
-- [ ] **CI/CD**
+- [x] **CI/CD**
     - GitHub Actions untuk build dan test otomatis.
 
 ---
 
 ## 🧠 AI Usage Policy
 
-AI dalam Hujjah digunakan sebagai **reasoning layer**, bukan sebagai sumber utama.
+AI dalam Hujjah digunakan sebagai **reasoning & conversational layer** untuk meningkatkan pengalaman interaktif, bukan sebagai pembuat fatwa agama.
 
-Sumber utama aplikasi tetap:
+Sumber utama dalil dan teks suci tetap diambil secara langsung dari database lokal dan API resmi:
+- Al-Qur'an (Teks Arab dan Terjemahan Kemenag RI)
+- Hadits (9 Kitab Perawi Terkenal)
 
-- Al-Qur’an
-- Hadis
-- Data/API referensi yang digunakan aplikasi
-
-AI digunakan untuk:
-
-- Memahami input pengguna.
-- Memetakan input ke kategori/topik Islami.
-- Membuat keyword pencarian.
-- Meringkas dalil yang sudah ditemukan.
-- Menyusun Solusi Berdalil berdasarkan referensi yang ditampilkan.
+AI (Gemini API dengan model `gemini-flash-latest`) digunakan untuk:
+- **Hujjah Lens:** Menjadi asisten obrolan spiritual yang hangat dan interaktif. AI memproses curahan hati atau pertanyaan pengguna, memberikan jawaban natural yang memotivasi, dan menyematkan rujukan dalil yang relevan secara kontekstual di dalam paragraf.
+- **Navigasi Dalil Otomatis:** AI secara dinamis menyertakan tag navigasi tersembunyi `[NAVIGASI: QS. NamaSurah: Ayat (surahNumber: X, verseNumber: Y)]` yang diparsing oleh aplikasi untuk memunculkan tombol pintasan langsung menuju ayat/surah Al-Qur'an.
+- **AI Note Assistant:** Membantu pengguna meringkas konten catatan, menyarankan judul catatan secara singkat dan kreatif, memperbaiki tata bahasa tulisan catatan, serta menghasilkan ide-ide menulis yang baru.
 
 AI tidak digunakan untuk:
-
-- Memberikan fatwa final.
-- Menentukan hukum halal-haram secara bebas.
-- Menggantikan ustadz/ulama.
-- Menjawab tanpa referensi.
-- Menambahkan dalil yang tidak tersedia dalam data aplikasi.
+- Memberikan fatwa final atau menentukan hukum halal-haram secara bebas.
+- Menggantikan posisi ulama/ustadz dalam penyelesaian masalah fikih atau akidah yang kompleks.
+- Menafsirkan dalil secara bebas tanpa bersandar pada rujukan tepercaya.
 
 Disclaimer:
-
-> Ringkasan AI dan Solusi Berdalil bersifat pembelajaran umum, bukan fatwa atau pengganti nasihat ulama.
+> Obrolan dan saran dari Hujjah Lens bersifat pembelajaran dan pengingat spiritual umum, bukan fatwa hukum atau nasihat medis/keagamaan mutlak.
 
 ---
 
-## 🧩 Initial Hujjah Lens Categories
+## 🧩 Khazanah Dalil Categories (Offline Curated)
 
-Pada tahap MVP, input pengguna bersifat bebas, tetapi sistem akan memetakan input tersebut ke kategori awal yang terkurasi.
+Selain curhat interaktif lewat AI, pengguna juga dapat menjelajahi kategori dalil terkurasi secara offline di tab **Khazanah Dalil** (bersumber dari `SampleIslamicReferences`):
 
-| Kategori | Contoh Input | Contoh Referensi |
+| Kategori | Deskripsi / Subtitel | Contoh Rujukan |
 |---|---|---|
-| Mengendalikan Amarah | marah, emosi, kesal | QS Ali Imran: 134, hadis “Jangan marah” |
-| Ketenangan Hati | sedih, galau, kecewa | QS Ar-Ra’d: 28, QS Al-Insyirah: 5–6 |
-| Sabar | diuji, musibah, capek | QS Al-Baqarah: 153, QS Az-Zumar: 10 |
-| Taubat | dosa, menyesal, ingin berubah | QS Az-Zumar: 53, QS At-Tahrim: 8 |
-| Syukur | kurang bersyukur, iri | QS Ibrahim: 7 |
-| Shalat | malas shalat, lalai | QS Al-Ma’un: 4–5, QS Al-Baqarah: 45 |
-| Tawakkal / Cemas | takut masa depan, overthinking | QS Ath-Thalaq: 3 |
-| Ilmu | malas belajar, ingin belajar | QS Al-Mujadilah: 11 |
-| Orang Tua | konflik dengan orang tua | QS Al-Isra: 23 |
-| Rezeki | takut miskin, kerja, nafkah | QS Hud: 6, QS Ath-Thalaq: 2–3 |
+| Mengendalikan Amarah | Dalil saat emosi mulai menguasai diri | QS. Ali 'Imran: 134, HR. Bukhari (Jangan Marah) |
+| Ketenangan Hati | Pengingat saat hati gelisah dan cemas | QS. Ar-Ra'd: 28, QS. Al-Insyirah: 5–6 |
+| Sabar | Pegangan ketika menghadapi ujian | QS. Al-Baqarah: 153, QS. Az-Zumar: 10 |
+| Taubat | Kembali kepada Allah tanpa putus asa | QS. Az-Zumar: 53, QS. At-Tahrim: 8 |
+| Syukur | Mengingat nikmat dan karunia Allah | QS. Ibrahim: 7 |
+| Shalat | Mengingat kewajiban tiang agama | QS. Al-Ma’un: 4–5, QS. Al-Baqarah: 45 |
+| Tawakkal / Cemas | Pasrah dan percaya pada rencana Allah | QS. Ath-Thalaq: 3 |
+| Ilmu | Keutamaan menuntut ilmu dan belajar | QS. Al-Mujadilah: 11 |
+| Berbakti Orang Tua | Adab dan kewajiban kepada orang tua | QS. Al-Isra: 23 |
+| Rezeki | Jaminan rezeki dan usaha yang berkah | QS. Hud: 6, QS. Ath-Thalaq: 2–3 |
 
 ---
 
@@ -219,8 +227,8 @@ Pada tahap MVP, input pengguna bersifat bebas, tetapi sistem akan memetakan inpu
 | Serialization | Kotlinx Serialization |
 | Local Storage | SQLDelight, DataStore Preferences |
 | Dependency Injection | Koin |
-| AI | Gemini API |
-| Testing | kotlin.test, MockK, Turbine, Compose Test |
+| AI | Gemini API (`gemini-flash-latest` via REST API) |
+| Testing | kotlin.test, MockK, Turbine, Compose Test, Robolectric |
 | CI/CD | GitHub Actions |
 
 ---
@@ -230,60 +238,38 @@ Pada tahap MVP, input pengguna bersifat bebas, tetapi sistem akan memetakan inpu
 ### Al-Qur’an
 
 Primary source:
-
 ```text
-equran.id API
+quran-api-id.vercel.app API
 ```
-
 Digunakan untuk:
-
-- Daftar surah.
-- Detail surah.
-- Ayat Al-Qur’an.
-- Terjemahan Bahasa Indonesia.
-- Audio atau tafsir jika memungkinkan.
-
-Backup source:
-
-```text
-alquran.cloud API
-```
-
-Digunakan jika sumber utama tidak tersedia atau ada endpoint yang tidak sesuai kebutuhan.
+- Mengambil daftar 114 surah secara dinamis.
+- Mengambil detail ayat dan terjemahan Bahasa Indonesia.
+- Database lokal menggunakan **SQLDelight** sebagai *Single Source of Truth* (SSOT) agar aplikasi dapat bekerja sepenuhnya secara luring (*offline-first*).
 
 ---
 
 ### Hadis
 
-Primary plan:
-
+Primary source:
 ```text
-Data lokal hadis tematik
+api.hadith.gading.dev API
 ```
-
-Digunakan agar demo tetap stabil meskipun internet atau API hadis bermasalah.
-
-Optional API:
-
-```text
-gadingnst/hadith-api
-```
-
-Digunakan jika API stabil dan sesuai kebutuhan aplikasi.
+Digunakan untuk:
+- Mengambil daftar 9 kitab perawi hadits (Bukhari, Muslim, Tirmidzi, Nasai, Abu Daud, Ibnu Majah, Ahmad, Darimi, Malik).
+- Mengambil riwayat hadits berdasarkan rentang nomor hadits secara dinamis.
+- Database lokal menggunakan **SQLDelight** sebagai *Single Source of Truth* (SSOT) untuk mendukung akses luring (*offline-first*).
 
 ---
 
 ### AI
 
+REST API Google AI Studio:
 ```text
-Gemini API
+https://generativelanguage.googleapis.com/v1beta
 ```
-
 Digunakan untuk:
-
-- Mapping input pengguna ke kategori Islami.
-- Membuat ringkasan pembelajaran.
-- Menyusun Solusi Berdalil berdasarkan daftar dalil yang sudah ditemukan.
+- Mengirim instruksi system prompt dan riwayat percakapan chat obrolan Hujjah Lens.
+- Memproses analisis tulisan dan asisten catatan secara langsung menggunakan model `gemini-flash-latest`.
 
 ---
 
@@ -312,144 +298,219 @@ Domain tidak bergantung pada data layer maupun presentation layer.
 
 ---
 
-## 📁 Recommended Project Structure
+## 📁 Project Structure
+
+Struktur direktori aktual dari modul `composeApp` mengikuti arsitektur Clean Architecture:
 
 ```text
-composeApp/src/commonMain/kotlin/...
+composeApp/src/commonMain/kotlin/com/example/hujjah/
 ├── core/
 │   ├── di/
+│   │   └── AppModule.kt                       # Koin Dependency Injection setup
 │   ├── network/
-│   ├── util/
-│   └── constants/
+│   │   ├── ApiConfig.kt                       # Ktor API endpoints & keys configuration (expect)
+│   │   ├── HttpClientFactory.kt               # Ktor HTTP client provider
+│   │   └── NetworkMonitor.kt                  # Network connection monitor (expect)
+│   └── util/
+│       └── NetworkUtil.kt                     # Utility helpers
 ├── data/
 │   ├── local/
-│   │   ├── database/
-│   │   └── mapper/
+│   │   ├── datastore/
+│   │   │   └── UserPreferences.kt             # Daily reading target & streak manager
+│   │   └── entity/
+│   │       ├── BookmarkMapper.kt              # SQLDelight Bookmark entity mapper
+│   │       └── NoteMapper.kt                  # SQLDelight Note entity mapper
 │   ├── remote/
-│   │   ├── quran/
-│   │   │   ├── QuranApiService.kt
-│   │   │   └── dto/
-│   │   ├── hadith/
-│   │   │   ├── HadithApiService.kt
-│   │   │   └── dto/
-│   │   └── ai/
-│   │       ├── GeminiService.kt
-│   │       └── dto/
-│   └── repository/
-│       ├── QuranRepositoryImpl.kt
-│       ├── HadithRepositoryImpl.kt
-│       ├── HujjahRepositoryImpl.kt
-│       └── BookmarkRepositoryImpl.kt
+│   │   ├── api/
+│   │   │   └── GeminiService.kt               # Gemini API client interface
+│   │   └── dto/
+│   │       ├── GeminiDto.kt                   # Gemini API request/response models
+│   │       └── HadithDto.kt                   # Hadith API response models
+│   ├── repository/
+│   │   ├── AIRepositoryImpl.kt                # AI Services repository implementation
+│   │   ├── NoteRepositoryImpl.kt              # Note CRUD repository implementation
+│   │   └── hujjah/
+│   │       ├── BookmarkRepositoryImpl.kt      # Bookmark repository implementation
+│   │       └── HujjahRepositoryImpl.kt        # Quran & Hadith offline-first repository
+│   └── sample/
+│       └── SampleIslamicReferences.kt         # Pre-defined offline dalil topics & references
 ├── domain/
 │   ├── model/
-│   │   ├── SourceType.kt
-│   │   ├── IslamicReference.kt
-│   │   ├── HujjahResult.kt
-│   │   ├── EvidenceBasedSolution.kt
-│   │   └── BookmarkReference.kt
+│   │   ├── Note.kt                            # Note domain entity
+│   │   └── islamic/
+│   │       ├── BookmarkReference.kt           # Bookmark domain model
+│   │       ├── ChatModels.kt                  # Lens Chat domain models
+│   │       ├── HadithModels.kt                # Hadith domain models
+│   │       ├── IslamicReference.kt            # Islamic curated reference domain model
+│   │       ├── QuranModels.kt                 # Quran domain models
+│   │       ├── SourceType.kt                  # Source Enum (QURAN, HADITH)
+│   │       └── TopicOption.kt                 # Curated topic option model
 │   ├── repository/
-│   │   ├── QuranRepository.kt
-│   │   ├── HadithRepository.kt
-│   │   ├── HujjahRepository.kt
-│   │   └── BookmarkRepository.kt
+│   │   ├── AIRepository.kt                    # AI repository interface
+│   │   ├── NoteRepository.kt                  # Note repository interface
+│   │   └── hujjah/
+│   │       ├── BookmarkRepository.kt          # Bookmark repository interface
+│   │       └── HujjahRepository.kt            # Quran, Hadith, & Lens Chat repository interface
 │   └── usecase/
-│       ├── AnalyzeUserInputUseCase.kt
-│       ├── GetQuranReferencesUseCase.kt
-│       ├── GetHadithReferencesUseCase.kt
-│       ├── GenerateHujjahSolutionUseCase.kt
-│       ├── SaveBookmarkUseCase.kt
-│       ├── DeleteBookmarkUseCase.kt
-│       └── GetBookmarksUseCase.kt
+│       └── NoteUseCases.kt                    # Note Usecases (GetAll, Search, Save, Delete, Summarize, etc.)
 └── presentation/
-    ├── navigation/
-    ├── theme/
     ├── components/
+    │   ├── NoteComponents.kt                  # Reusable Note UI components
+    │   └── hujjah/
+    │       ├── HujjahComponents.kt            # Curated reference & Islamic UI components
+    │       ├── HujjahShimmer.kt               # Loading placeholder animations
+    │       └── HujjahSprint2MenuBar.kt        # Custom bottom navigation bar
+    ├── navigation/
+    │   ├── AppNavHost.kt                      # Compose navigation host & route handler
+    │   └── Routes.kt                          # Route definitions & navigation actions
+    ├── theme/
+    │   ├── Color.kt                           # Gold, OLED Dark, & Clean Light colors
+    │   ├── Theme.kt                           # App theme configuration
+    │   └── Type.kt                            # Google Font Inter & Outfit typography
     └── screens/
-        ├── home/
-        ├── result/
-        ├── quran/
-        ├── hadith/
-        ├── detail/
-        └── bookmark/
+        ├── addnote/                           # Add & Edit note screen & form validation
+        ├── ai/                                # Gemini-based AI assistant for notes
+        ├── bookmark/                          # Curated dalil saved bookmarks screen
+        ├── detail/                            # Local note details view
+        ├── hadith/                            # Hadith manual list (9 perawi) & range paginator
+        ├── home/                              # Daily targets dashboard & reading streak tracker
+        ├── lens/                              # Lens chatbot conversational screen
+        ├── notes/                             # Local notes list & dynamic categories filter screen
+        ├── profile/                           # Profile editing & settings
+        ├── quran/                             # Quran surah list & search screen
+        ├── reference/                         # Curated dalil details & explanation screen
+        ├── result/                            # Curated dalil topics (Khazanah Dalil) offline screen
+        └── splash/                            # Splash logo welcoming screen
 ```
 
 ---
 
-## 📱 Planned Screens
+## 📱 Halaman Aplikasi (Screens)
 
-| Screen | Description |
+Aplikasi Hujjah memiliki halaman-halaman berikut yang terhubung melalui Compose Navigation:
+
+| Halaman | Deskripsi |
 |---|---|
-| Splash / Welcome Screen | Menampilkan logo dan tagline Hujjah |
-| Hujjah Lens Screen | Input kondisi pengguna dan kategori cepat |
-| Hujjah Result Screen | Menampilkan topik, dalil, ringkasan, dan Solusi Berdalil |
-| Al-Qur’an List Screen | Menampilkan daftar surah |
-| Al-Qur’an Detail Screen | Menampilkan daftar ayat dan terjemahan |
-| Hadis Screen | Menampilkan daftar hadis atau hadis tematik |
-| Reference Detail Screen | Menampilkan detail ayat/hadis |
-| Bookmark Screen | Menampilkan referensi tersimpan |
-| About / Disclaimer Screen | Menampilkan informasi aplikasi dan disclaimer AI |
+| **Splash Screen** | Menampilkan animasi logo dan tagline Hujjah saat membuka aplikasi. |
+| **Home Screen** | Halaman utama (dashboard) berisi target harian membaca (detik), streak harian, pengingat kutipan hari ini (*Quote of the Day*), dan tombol timer membaca. |
+| **Hujjah Lens Screen** | Obrolan interaktif dengan asisten spiritual Islam berbasis AI (Gemini) untuk berkonsultasi secara natural dan mendapatkan dalil yang disematkan langsung di obrolan dengan tombol navigasi otomatis. |
+| **Khazanah Dalil (Hujjah Result Screen)** | Menampilkan kumpulan dalil pilihan terkurasi yang dapat diakses secara luring (*offline*) berdasarkan kategori/tema yang dipilih. |
+| **Al-Qur’an Screen** | Menampilkan daftar 114 surah dengan informasi jumlah ayat dan tempat turunnya surah, dilengkapi pencarian. |
+| **Al-Qur’an Detail Screen** | Halaman membaca ayat Al-Qur'an secara penuh beserta terjemahan bahasa Indonesia, mendukung pelacakan rujukan otomatis. |
+| **Hadits Screen** | Menyediakan akses manual terhadap 9 kitab perawi hadits (Bukhari, Muslim, dst.) dengan navigasi rentang hadits dinamis. |
+| **Reference Detail Screen** | Menampilkan rincian ayat/hadits dari Khazanah Dalil lengkap dengan tafsir penjelasan singkat, serta opsi simpan bookmark. |
+| **Bookmark Screen** | Menampilkan seluruh dalil Al-Qur'an dan hadits yang disimpan oleh pengguna ke dalam database lokal. |
+| **Profile Screen** | Profil pengguna yang menampilkan target membaca harian, streak membaca aktif, serta pengaturan nama dan foto profil (base64 encoder). |
+| **Notes Screen** | Menu **Catatan Harian Saya** bertema emas dengan filter chip kategori dinamis (diambil otomatis dari data tersimpan), fitur pin, pencarian, dan tambah catatan. |
+| **Add/Edit Note Screen** | Form penulisan catatan harian dengan integrasi rujukan dalil (surah & ayat atau nomor hadits) dan asisten kecerdasan buatan (Gemini AI). |
+| **Note Detail Screen** | Tampilan detail catatan harian pengguna berserta dalil rujukan yang ditautkan. |
 
-Bottom navigation:
-
+Komponen navigasi bawah (*Bottom Navigation*):
 ```text
-Hujjah Lens | Al-Qur’an | Hadis | Tersimpan
+Hujjah Lens | Al-Qur’an | Hadis | Catatan | Profil
 ```
 
 ---
 
-## 🗃 Local Database Plan
+## 🗃 Skema Database Lokal (SQLDelight)
 
-Local database digunakan untuk menyimpan bookmark dan cache referensi.
+Database lokal digunakan sebagai *Single Source of Truth* (SSOT) untuk mendukung fitur luring (*offline-first*) dan menyimpan data pengguna. Skema tabel didefinisikan sebagai berikut:
 
-### BookmarkReferenceEntity
-
+### 1. Bookmark (com.example.hujjah.data.local.Bookmark)
+Menyimpan rujukan dalil Al-Qur'an atau hadits yang ditandai oleh pengguna:
 ```sql
-CREATE TABLE BookmarkReferenceEntity (
+CREATE TABLE BookmarkEntity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reference_id TEXT NOT NULL,
+    reference_id TEXT NOT NULL UNIQUE,
     source_type TEXT NOT NULL,
     title TEXT NOT NULL,
-    reference TEXT NOT NULL,
+    source_name TEXT NOT NULL,
     arabic_text TEXT NOT NULL,
     translation TEXT NOT NULL,
-    topic TEXT NOT NULL,
+    explanation TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    topic_title TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
     saved_at INTEGER NOT NULL
 );
 ```
 
-Fungsi utama:
+### 2. Catatan Harian (com.example.hujjah.data.local.Note)
+Menyimpan tulisan catatan Islami pengguna beserta kategori dinamis:
+```sql
+CREATE TABLE NoteEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'GENERAL',
+    color TEXT NOT NULL DEFAULT 'DEFAULT',
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+```
 
-- Menyimpan bookmark ayat.
-- Menyimpan bookmark hadis.
-- Menampilkan referensi tersimpan.
-- Menghapus bookmark.
+### 3. Cache Data & Obrolan (com.example.hujjah.data.local.Hujjah)
+Digunakan untuk cache luring data Quran/Hadits dan riwayat obrolan Hujjah Lens:
+```sql
+CREATE TABLE QuranSurahEntity (
+    number INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    numberOfVerses INTEGER NOT NULL,
+    revelation TEXT NOT NULL,
+    asma TEXT NOT NULL
+);
+
+CREATE TABLE QuranVerseEntity (
+    surahNumber INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    arabic TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    PRIMARY KEY (surahNumber, number)
+);
+
+CREATE TABLE HadithBookEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    totalHadith INTEGER NOT NULL
+);
+
+CREATE TABLE HadithEntity (
+    bookId TEXT NOT NULL,
+    number INTEGER NOT NULL,
+    arab TEXT NOT NULL,
+    translation TEXT NOT NULL,
+    PRIMARY KEY (bookId, number)
+);
+
+CREATE TABLE LensChatEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    sender TEXT NOT NULL,
+    text TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    referencesJson TEXT, 
+    solutionsJson TEXT
+);
+```
 
 ---
 
-## 🧪 Testing Plan
+## 🧪 Rencana & Implementasi Pengujian (Testing)
 
-Testing dilakukan secara bertahap.
+Pengujian dilakukan untuk menjaga kualitas kode dan alur aplikasi agar stabil serta terbebas dari regresi:
 
-### Unit Tests
+### 1. Unit & Flow Tests
+Menguji logika bisnis, manipulasi state di ViewModel, penanganan data di repository, dan transformasi data flow:
+*   **Notes & Add Note ViewModel:** Menguji inisialisasi status (*state*), penanganan form input, validasi masukan kosong, pinning catatan, serta pencarian catatan.
+*   **AI Usecases & Repository:** Memvalidasi fitur pemanggilan Gemini API (`SummarizeNoteUseCase`, `ImproveWritingUseCase`, `GenerateIdeasUseCase`) menggunakan *repository mock/fake*.
+*   **Database & Repositories:** Menguji alur CRUD pada data lokal dan respons *offline-first* dari `NoteRepository` dan `BookmarkRepository`.
 
-Target unit test:
+### 2. UI Tests (Robolectric Compose UI Test)
+Menguji interaksi antarmuka pengguna tanpa membutuhkan emulator Android fisik:
+*   **Notes Screen UI flow:** Memastikan elemen UI termuat secara konsisten dengan tema Gold, verifikasi input pencarian menyaring item, dan interaksi chip filter memunculkan konten yang sesuai.
+*   **Save Note UI flow:** Menyimulasikan pengetikan judul/konten catatan, pemilihan dalil, menekan tombol simpan, dan memverifikasi data masuk ke daftar utama.
 
-- AnalyzeUserInputUseCase
-- GenerateHujjahSolutionUseCase
-- SaveBookmarkUseCase
-- DeleteBookmarkUseCase
-- GetBookmarksUseCase
-- QuranRepository
-- HadithRepository
-- BookmarkRepository
-
-### UI Tests
-
-Target UI test:
-
-- Hujjah Lens input and result flow
-- Al-Qur’an list/detail screen
-- Bookmark screen
 
 ---
 
@@ -672,48 +733,6 @@ Hujjah membantu pengguna menemukan referensi Al-Qur’an dan hadis untuk pembela
 Untuk persoalan hukum agama yang kompleks, pengguna dianjurkan bertanya kepada ustadz, ulama, atau pihak yang berkompeten.
 
 ---
-
-## Vidio Sprint 
-
-### Sprint 2
-
-https://github.com/user-attachments/assets/8bc1e5dd-0d35-47af-b859-5827582aedf7
-
-### Sprint 3
-
-https://github.com/user-attachments/assets/3a352384-808b-4a4b-9306-eee70b3a3b75
-
-## 🧪 Testing & Laporan Cakupan Kode (Sprint 4)
-
-Kami telah menerapkan pengujian komprehensif (Unit, Flow, dan Compose UI Tests) menggunakan **Robolectric** dan melacak cakupan pengujian dengan **Kotlinx Kover**.
-
-### 📊 Ringkasan Pengujian
-- **Total Pengujian:** 37 Tes
-- **Tingkat Kelulusan:** 100% Passed
-- **Cakupan Laporan Kover (Coverage):**
-  - **Class Coverage:** 76.9%
-  - **Line Coverage:** 85.9% (Telah melampaui target minimal 50% dan target bonus 70%!)
-  - **Instruction Coverage:** 82.3%
-
-### 🚀 Cara Menjalankan Pengujian
-Untuk menjalankan seluruh unit dan UI tests, jalankan perintah berikut dari direktori root:
-
-```bash
-# Hentikan daemon Gradle lama (opsional untuk menghindari kunci berkas di Windows)
-./gradlew.bat --stop
-
-# Jalankan seluruh unit dan UI tests
-./gradlew.bat testDebugUnitTest --no-configuration-cache
-```
-
-### 📈 Cara Men-generate Laporan Cakupan (Kover Report)
-Untuk membuat laporan cakupan pengujian dalam format HTML, gunakan perintah berikut:
-
-```bash
-./gradlew.bat koverHtmlReport --no-configuration-cache
-```
-Laporan HTML yang dihasilkan dapat dibuka di peramban (browser) Anda melalui jalur berkas:
-`composeApp/build/reports/kover/html/index.html`
 
 ## 📄 License
 

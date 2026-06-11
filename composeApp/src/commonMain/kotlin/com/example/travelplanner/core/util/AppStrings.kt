@@ -308,7 +308,7 @@ val StringsID = AppStrings(
     darkMode = "Mode Gelap", language = "Bahasa", languageValue = "Indonesia (ID)",
     isEnglish = false,
     sectionNotification = "NOTIFIKASI", travelReminder = "Pengingat Perjalanan",
-    appVersion = "AI Travel Planner v1.1.0\nPowered by Google Gemini 1.5 Flash",
+    appVersion = "AI Travel Planner v1.1.0\nPowered by Gemini AI",
     switchToLanguage = "Switch to English",
 
     flightRecommendation = "Rekomendasi Penerbangan",
@@ -450,7 +450,7 @@ val StringsEN = AppStrings(
     darkMode = "Dark Mode", language = "Language", languageValue = "English (EN)",
     isEnglish = true,
     sectionNotification = "NOTIFICATIONS", travelReminder = "Travel Reminder",
-    appVersion = "AI Travel Planner v1.1.0\nPowered by Google Gemini 1.5 Flash",
+    appVersion = "AI Travel Planner v1.1.0\nPowered by Gemini AI",
     switchToLanguage = "Ganti ke Indonesia",
 
     flightRecommendation = "Flight Recommendation",

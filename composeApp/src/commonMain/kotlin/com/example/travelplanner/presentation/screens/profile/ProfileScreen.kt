@@ -31,6 +31,7 @@ fun ProfileScreen(
     onNavigateToTrips: () -> Unit = {},
     onNavigateToExpenses: () -> Unit = {},
     onNavigateToHelp: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = koinViewModel()
 ) {
@@ -237,8 +238,12 @@ fun ProfileScreen(
                         onClick = onNavigateToHelp
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f))
-                    ProfileMenuItem(icon = Icons.Default.Info, label = s.menuAbout,
-                        subtitle = s.menuAboutSub) {}
+                    ProfileMenuItem(
+                        icon = Icons.Default.Info,
+                        label = s.menuAbout,
+                        subtitle = s.menuAboutSub,
+                        onClick = onNavigateToAbout
+                    )
                 }
             }
 

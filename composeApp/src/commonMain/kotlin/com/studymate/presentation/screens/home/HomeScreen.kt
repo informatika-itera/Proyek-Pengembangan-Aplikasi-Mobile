@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,15 +33,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studymate.domain.model.Note
+import com.studymate.domain.model.UserProfile
 import com.studymate.presentation.theme.*
 import com.studymate.Res
 import com.studymate.app_logo
+import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onNavigateToNoteDetail: (Long) -> Unit
+    onNavigateToNoteDetail: (Long) -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
@@ -67,7 +72,12 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             // 1. Header with glassmorphism feel
-            HomeHeader(userName = (uiState as? HomeUiState.Success)?.userName ?: "User")
+            val successState = uiState as? HomeUiState.Success
+            HomeHeader(
+                userName = successState?.userName ?: "User",
+                userProfile = successState?.userProfile,
+                onProfileClick = onNavigateToProfile
+            )
 
             when (val state = uiState) {
                 is HomeUiState.Loading -> {
@@ -80,7 +90,10 @@ fun HomeScreen(
                     StudyStreakCard(streakDays = state.currentStreak)
 
                     // 3. Mantra Harian Widget
-                    MantraWidget(mantra = state.dailyMantra)
+                    MantraWidget(
+                        mantra = state.dailyMantra,
+                        onRollClick = viewModel::refreshMantra
+                    )
 
                     // 4. Recent Notes Section
                     RecentNotesSection(
@@ -108,7 +121,11 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeHeader(userName: String) {
+fun HomeHeader(
+    userName: String,
+    userProfile: UserProfile?,
+    onProfileClick: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -147,18 +164,29 @@ fun HomeHeader(userName: String) {
         Surface(
             modifier = Modifier
                 .size(48.dp)
+                .shadow(4.dp, CircleShape)
                 .clip(CircleShape)
-                .clickable { /* Profile */ },
-            color = PrimaryLight.copy(alpha = 0.2f),
+                .clickable { onProfileClick() },
+            color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(2.dp, PrimaryLight)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(
-                    userName.take(1).uppercase(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryLight
-                )
+                val photoUrl = userProfile?.displayPhoto
+                if (photoUrl != null) {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = "Profile",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = PrimaryLight.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
     }
@@ -205,7 +233,7 @@ fun StudyStreakCard(streakDays: Int) {
                     Box(contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                "$streakDays",
+                                text = streakDays.toString(),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -326,7 +354,10 @@ fun NoteCard(note: Note, onClick: () -> Unit) {
 }
 
 @Composable
-fun MantraWidget(mantra: String) {
+fun MantraWidget(
+    mantra: String,
+    onRollClick: () -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -360,6 +391,19 @@ fun MantraWidget(mantra: String) {
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            FilledTonalIconButton(
+                onClick = onRollClick,
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = AIColorLight.copy(alpha = 0.12f),
+                    contentColor = AIColorLight
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Roll mantra"
                 )
             }
         }

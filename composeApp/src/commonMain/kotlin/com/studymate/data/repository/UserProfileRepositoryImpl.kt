@@ -3,7 +3,6 @@ package com.studymate.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.studymate.data.local.StudyMateDatabase
-import com.studymate.data.local.UserProfileEntity
 import com.studymate.domain.model.UserProfile
 import com.studymate.domain.repository.UserProfileRepository
 import kotlinx.coroutines.Dispatchers
@@ -15,20 +14,40 @@ import kotlinx.coroutines.withContext
 class UserProfileRepositoryImpl(
     private val database: StudyMateDatabase
 ) : UserProfileRepository {
-    private val queries = database.userProfileQueries
 
     override fun getProfile(): Flow<UserProfile?> {
-        return queries.getProfile()
+        return database.userProfileQueries.getProfile()
             .asFlow()
             .mapToOneOrNull(Dispatchers.IO)
-            .map { it?.toDomain() }
+            .map { entity ->
+                entity?.let {
+                    UserProfile(
+                        id = it.id,
+                        email = it.email,
+                        googleName = it.googleName,
+                        googlePhotoUrl = it.googlePhotoUrl,
+                        localName = it.localName,
+                        localPhotoPath = it.localPhotoPath,
+                        nim = it.nim,
+                        major = it.major,
+                        currentStreak = it.currentStreak.toInt(),
+                        lastStudyDate = it.lastStudyDate,
+                        dailyMantra = it.dailyMantra
+                    )
+                }
+            }
     }
 
     override suspend fun saveProfile(profile: UserProfile) {
         withContext(Dispatchers.IO) {
-            queries.insertProfile(
-                name = profile.name,
+            database.userProfileQueries.insertProfile(
+                email = profile.email,
+                googleName = profile.googleName,
+                googlePhotoUrl = profile.googlePhotoUrl,
+                localName = profile.localName,
+                localPhotoPath = profile.localPhotoPath,
                 nim = profile.nim,
+                major = profile.major,
                 currentStreak = profile.currentStreak.toLong(),
                 lastStudyDate = profile.lastStudyDate,
                 dailyMantra = profile.dailyMantra
@@ -36,20 +55,26 @@ class UserProfileRepositoryImpl(
         }
     }
 
-    override suspend fun updateMantra(mantra: String) {
+    override suspend fun updateLocalProfile(name: String?, photoPath: String?, nim: String?, major: String?) {
         withContext(Dispatchers.IO) {
-            queries.updateMantra(mantra)
+            database.userProfileQueries.updateLocalProfile(
+                localName = name,
+                localPhotoPath = photoPath,
+                nim = nim ?: "",
+                major = major ?: ""
+            )
         }
     }
 
-    private fun UserProfileEntity.toDomain(): UserProfile {
-        return UserProfile(
-            id = id,
-            name = name,
-            nim = nim,
-            currentStreak = currentStreak.toInt(),
-            lastStudyDate = lastStudyDate,
-            dailyMantra = dailyMantra
-        )
+    override suspend fun updateStreak(streak: Int, lastStudyDate: Long?) {
+        withContext(Dispatchers.IO) {
+            database.userProfileQueries.updateStreak(streak.toLong(), lastStudyDate)
+        }
+    }
+
+    override suspend fun updateMantra(mantra: String) {
+        withContext(Dispatchers.IO) {
+            database.userProfileQueries.updateMantra(mantra)
+        }
     }
 }

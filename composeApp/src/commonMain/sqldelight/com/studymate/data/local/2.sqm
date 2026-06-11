@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS QuizHistoryEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    noteId INTEGER NOT NULL,
+    noteTitle TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    totalQuestions INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL
+);

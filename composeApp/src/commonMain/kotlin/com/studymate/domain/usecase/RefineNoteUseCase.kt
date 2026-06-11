@@ -10,7 +10,11 @@ class RefineNoteUseCase(
     private val noteRepository: NoteRepository
 ) {
     suspend operator fun invoke(note: Note): Result<Note> {
-        val result = aiRepository.refineNote(note.rawContent)
+        val result = aiRepository.refineNote(
+            subject = note.subject,
+            title = note.title,
+            content = note.rawContent
+        )
         return result.mapCatching { refinedText ->
             val updatedNote = note.copy(
                 refinedContent = refinedText,
@@ -22,7 +26,7 @@ class RefineNoteUseCase(
         }
     }
 
-    suspend fun refineRawContent(content: String): Result<String> {
-        return aiRepository.refineNote(content)
+    suspend fun refineRawContent(subject: String, title: String, content: String): Result<String> {
+        return aiRepository.refineNote(subject, title, content)
     }
 }

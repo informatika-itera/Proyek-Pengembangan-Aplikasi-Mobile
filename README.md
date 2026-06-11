@@ -246,4 +246,8 @@ composeApp/src/commonMain/kotlin/com/studymate/
 - Dokumentasi: https://ai.google.dev/docs
 
 ---
+## 📸 Screenshot
+
+<img width="1401" height="631" alt="Screenshot 2026-06-09 203442" src="https://github.com/user-attachments/assets/ac250110-b1b4-4fef-90e2-4c17d2788e36" />
+
 

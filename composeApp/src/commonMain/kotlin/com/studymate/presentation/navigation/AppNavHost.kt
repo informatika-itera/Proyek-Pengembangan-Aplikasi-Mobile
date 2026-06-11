@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
@@ -30,6 +29,8 @@ import com.studymate.presentation.screens.notes.NotesViewModel
 import com.studymate.presentation.screens.profile.ProfileScreen
 import com.studymate.presentation.screens.profile.ProfileViewModel
 import com.studymate.presentation.screens.quiz.QuizScreen
+import com.studymate.presentation.screens.quiz.QuizViewModel
+import com.studymate.presentation.screens.quiz.SelectNoteForQuizScreen
 import com.studymate.presentation.screens.splash.SplashScreen
 import com.studymate.presentation.theme.PrimaryLight
 import org.koin.compose.viewmodel.koinViewModel
@@ -43,7 +44,9 @@ fun AppNavHost(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBottomBar = currentRoute != Screen.NoteDetail.route && currentRoute != Screen.Splash.route
+    val showBottomBar = (currentRoute != Screen.NoteDetail.route && 
+                       currentRoute != Screen.Splash.route && 
+                       currentRoute != Screen.SelectNoteForQuiz.route)
 
     Scaffold(
         bottomBar = {
@@ -75,7 +78,7 @@ fun AppNavHost(
                                 onClick = {
                                     if (currentRoute != screen.route) {
                                         navController.navigate(screen.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
+                                            popUpTo(Screen.Home.route) {
                                                 saveState = true
                                             }
                                             launchSingleTop = true
@@ -112,19 +115,21 @@ fun AppNavHost(
                 }
             }
         }
-    ) { padding ->
-        Box(modifier = Modifier.padding(bottom = if (showBottomBar) 0.dp else 0.dp)) {
+    ) { _ ->
+        Box(modifier = Modifier.padding(bottom = 0.dp)) {
             NavHost(
                 navController = navController,
                 startDestination = Screen.Splash.route,
                 modifier = Modifier.padding(bottom = if (showBottomBar) 88.dp else 0.dp)
             ) {
                 composable(Screen.Splash.route) {
-                    SplashScreen(onNavigateToHome = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Splash.route) { inclusive = true }
+                    SplashScreen(
+                        onNavigateToHome = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
                         }
-                    })
+                    )
                 }
                 composable(Screen.Home.route) {
                     val viewModel: HomeViewModel = koinViewModel()
@@ -132,6 +137,15 @@ fun AppNavHost(
                         viewModel = viewModel,
                         onNavigateToNoteDetail = { noteId ->
                             navController.navigate(Screen.NoteDetail.createRoute(noteId))
+                        },
+                        onNavigateToProfile = {
+                            navController.navigate(Screen.Profile.route) {
+                                popUpTo(Screen.Home.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     )
                 }
@@ -141,14 +155,40 @@ fun AppNavHost(
                         navController.navigate(Screen.NoteDetail.createRoute(it))
                     })
                 }
-                composable(Screen.Quiz.route) { QuizScreen() }
+                composable(Screen.Quiz.route) { 
+                    val viewModel: QuizViewModel = koinViewModel()
+                    QuizScreen(
+                        viewModel = viewModel,
+                        onNavigateToSelectNote = { navController.navigate(Screen.SelectNoteForQuiz.route) }
+                    ) 
+                }
+                composable(Screen.SelectNoteForQuiz.route) {
+                    val viewModel: QuizViewModel = koinViewModel()
+                    SelectNoteForQuizScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNoteSelected = { note ->
+                            viewModel.startQuiz(note)
+                            navController.popBackStack()
+                        }
+                    )
+                }
                 composable(Screen.Calendar.route) { CalendarScreen() }
                 composable(Screen.Profile.route) {
                     val viewModel: ProfileViewModel = koinViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
                         isDarkTheme = isDarkTheme,
-                        onThemeToggle = onThemeToggle
+                        onThemeToggle = onThemeToggle,
+                        onNavigateToPlanner = {
+                            navController.navigate(Screen.Calendar.route) {
+                                popUpTo(Screen.Profile.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     )
                 }
                 composable(

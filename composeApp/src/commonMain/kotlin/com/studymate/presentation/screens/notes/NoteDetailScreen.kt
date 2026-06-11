@@ -3,6 +3,7 @@ package com.studymate.presentation.screens.notes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -44,12 +49,22 @@ fun NoteDetailScreen(
     var content by remember { mutableStateOf("") }
     var subject by remember { mutableStateOf("") }
     var currentNote by remember { mutableStateOf<Note?>(null) }
+    
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            if (event is NoteEvent.ShowMessage) {
+                snackbarHostState.showSnackbar(event.message)
+            }
+        }
+    }
 
     LaunchedEffect(uiState) {
         if (uiState is NotesUiState.Success) {
             val notes = (uiState as NotesUiState.Success).notes
             val note = notes.find { it.id == noteId }
-            if (note != null && currentNote == null) {
+            if (note != null) {
                 currentNote = note
                 title = note.title
                 content = if (note.isRefined) note.refinedContent ?: note.rawContent else note.rawContent
@@ -60,10 +75,25 @@ fun NoteDetailScreen(
 
     val isRefining = uiState is NotesUiState.Refining
 
-    // Add a summary/explain button for new notes or when text is long enough
-    val showAIAction = content.length > 20
+    // AI Refine is available if at least Subject and Title are filled
+    val showAIAction = subject.isNotBlank() && title.isNotBlank()
+    
+    // Get all unique subjects for autocomplete
+    val allSubjects = if (uiState is NotesUiState.Success) {
+        (uiState as NotesUiState.Success).notes.map { it.subject }.filter { it.isNotBlank() }.distinct().sorted()
+    } else {
+        emptyList()
+    }
+    
+    // Filter subjects based on user input
+    val filteredSubjects = if (subject.isBlank()) {
+        emptyList()
+    } else {
+        allSubjects.filter { it.contains(subject, ignoreCase = true) }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { 
@@ -78,16 +108,40 @@ fun NoteDetailScreen(
                     }
                 },
                 actions = {
+                    if (noteId != -1L) {
+                        IconButton(
+                            onClick = {
+                                viewModel.deleteNote(noteId)
+                                onBack()
+                            },
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(40.dp)
+                                .background(Color.Red.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color.Red.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Hapus",
+                                tint = Color.Red,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
                     Button(
                         onClick = {
                             if (noteId == -1L) {
-                                viewModel.addNote(title, content, subject)
+                                viewModel.addNote(title, content, subject) {
+                                    onBack()
+                                }
                             } else {
                                 currentNote?.let { note ->
-                                    viewModel.updateNote(note.copy(title = title, rawContent = content, subject = subject))
+                                    viewModel.updateNote(note.copy(title = title, rawContent = content, subject = subject)) {
+                                        onBack()
+                                    }
                                 }
                             }
-                            onBack()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryLight),
                         shape = RoundedCornerShape(12.dp),
@@ -109,9 +163,7 @@ fun NoteDetailScreen(
                 AIActionBar(
                     onRefineClick = {
                         if (noteId == -1L) {
-                            // If it's a new note, we might need to save it first or just refine the current content
-                            // For simplicity, let's allow refining the local content
-                            viewModel.refineContent(content) { refined: String ->
+                            viewModel.refineContent(subject, title, content) { refined: String ->
                                 content = refined
                             }
                         } else {
@@ -132,20 +184,47 @@ fun NoteDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
         ) {
-            // Subject Tag (Optional)
-            OutlinedTextField(
-                value = subject,
-                onValueChange = { subject = it },
-                placeholder = { Text("Mata Kuliah (opsional)") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                textStyle = MaterialTheme.typography.bodySmall,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryLight,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                ),
-                singleLine = true
-            )
+            // Subject Tag with Autocomplete Dropdown
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = subject,
+                    onValueChange = { subject = it },
+                    placeholder = { Text("Mata Kuliah (opsional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = MaterialTheme.typography.bodySmall,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryLight,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    ),
+                    singleLine = true
+                )
+                
+                // Suggestions list (tidak block input)
+                if (subject.isNotBlank() && filteredSubjects.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp)),
+                        color = MaterialTheme.colorScheme.surface,
+                        shadowElevation = 4.dp
+                    ) {
+                        Column(modifier = Modifier.padding(4.dp)) {
+                            filteredSubjects.forEach { suggestedSubject ->
+                                Text(
+                                    text = suggestedSubject,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { subject = suggestedSubject }
+                                        .padding(12.dp),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 

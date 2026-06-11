@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.auth)
             
             // Koin DI
             implementation(libs.koin.core)
@@ -97,7 +98,20 @@ kotlin {
             implementation(libs.generativeai)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.ktor.client.core)
             implementation(libs.sqldelight.android.driver)
+            
+            // Google Services
+            implementation(libs.androidx.credentials)
+            implementation(libs.androidx.credentials.play.services)
+            implementation(libs.googleid)
+            implementation(libs.google.api.client)
+            implementation(libs.google.services.calendar)
+            
+            // Notifications & Widgets
+            implementation(libs.androidx.work.runtime)
+            implementation(libs.androidx.glance)
+            implementation(libs.androidx.glance.material3)
         }
         
         iosMain.dependencies {
@@ -121,14 +135,20 @@ android {
         // Inject API key from local.properties
         buildConfigField(
             "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
+            "GROQ_API_KEY",
+            "\"${localProperties.getProperty("GROQ_API_KEY", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${localProperties.getProperty("GOOGLE_WEB_CLIENT_ID", "")}\""
         )
     }
     
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/DEPENDENCIES"
         }
     }
     

@@ -1,0 +1,19 @@
+CREATE TABLE QuizHistoryEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    noteId INTEGER NOT NULL,
+    noteTitle TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    totalQuestions INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+insertHistory:
+INSERT INTO QuizHistoryEntity(noteId, noteTitle, subject, score, totalQuestions, createdAt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAllHistory:
+SELECT * FROM QuizHistoryEntity ORDER BY createdAt DESC;
+
+deleteHistory:
+DELETE FROM QuizHistoryEntity WHERE id = :id;

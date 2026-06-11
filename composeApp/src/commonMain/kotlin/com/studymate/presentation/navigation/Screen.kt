@@ -7,6 +7,7 @@ sealed class Screen(val route: String) {
     object Quiz : Screen("quiz")
     object Calendar : Screen("calendar")
     object Profile : Screen("profile")
+    object SelectNoteForQuiz : Screen("select_note_for_quiz")
     object NoteDetail : Screen("note_detail/{noteId}") {
         fun createRoute(noteId: Long) = "note_detail/$noteId"
     }

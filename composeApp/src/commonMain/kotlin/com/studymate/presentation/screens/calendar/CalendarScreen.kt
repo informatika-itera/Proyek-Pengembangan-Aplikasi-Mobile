@@ -9,10 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -26,11 +23,62 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studymate.presentation.theme.*
+import kotlinx.datetime.*
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen() {
+fun CalendarScreen(
+    viewModel: CalendarViewModel = koinViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val reminders by viewModel.reminders.collectAsState()
     var selectedTab by remember { mutableStateOf(0) }
+    var showTypeSelection by remember { mutableStateOf(false) }
+    var showAddEventDialog by remember { mutableStateOf(false) }
+    var showAddReminderDialog by remember { mutableStateOf(false) }
+
+    if (showTypeSelection) {
+        AlertDialog(
+            onDismissRequest = { showTypeSelection = false },
+            title = { Text("Pilih Jenis Baru") },
+            text = { Text("Apa yang ingin Anda tambahkan ke planner?") },
+            confirmButton = {
+                Button(onClick = { 
+                    showAddEventDialog = true 
+                    showTypeSelection = false
+                }) { Text("Agenda") }
+            },
+            dismissButton = {
+                Button(onClick = { 
+                    showAddReminderDialog = true 
+                    showTypeSelection = false
+                }) { Text("Pengingat") }
+            }
+        )
+    }
+
+    if (showAddEventDialog) {
+        AddEventDialog(
+            selectedDate = uiState.selectedDate,
+            onDismiss = { showAddEventDialog = false },
+            onSave = { title, desc, start, end ->
+                viewModel.addEvent(title, desc, start, end)
+                showAddEventDialog = false
+            }
+        )
+    }
+
+    if (showAddReminderDialog) {
+        AddReminderDialog(
+            initialDate = uiState.selectedDate,
+            onDismiss = { showAddReminderDialog = false },
+            onSave = { title, desc, due ->
+                viewModel.addReminder(title, desc, due)
+                showAddReminderDialog = false
+            }
+        )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -43,7 +91,7 @@ fun CalendarScreen() {
                     CenterAlignedTopAppBar(
                         title = { Text("Planner", fontWeight = FontWeight.Black) },
                         actions = {
-                            IconButton(onClick = {}) {
+                            IconButton(onClick = { viewModel.loadEvents() }) {
                                 Icon(Icons.Default.Notifications, null, tint = PrimaryLight)
                             }
                         }
@@ -87,12 +135,12 @@ fun CalendarScreen() {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Add Task */ },
+                onClick = { showTypeSelection = true },
                 containerColor = ActionFABLight,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(20.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Agenda")
+                Icon(Icons.Default.Add, contentDescription = "Tambah")
             }
         }
     ) { padding ->
@@ -102,8 +150,11 @@ fun CalendarScreen() {
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            CalendarHeaderSection()
-            CalendarGridSection()
+            CalendarHeaderSection(uiState.selectedDate)
+            CalendarGridSection(
+                selectedDate = uiState.selectedDate,
+                onDateSelected = { viewModel.onDateSelected(it) }
+            )
             
             Spacer(modifier = Modifier.height(32.dp))
             
@@ -121,8 +172,12 @@ fun CalendarScreen() {
                     color = PrimaryLight.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
+                    val count = uiState.events.size + reminders.filter { 
+                        val dt = Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+                        dt == uiState.selectedDate
+                    }.size
                     Text(
-                        "3 Tugas",
+                        "$count Agenda",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
                         color = PrimaryLight,
@@ -131,13 +186,16 @@ fun CalendarScreen() {
                 }
             }
             
-            TimelineListSection()
+            TimelineListSection(uiState.events, reminders, uiState.selectedDate)
         }
     }
 }
 
 @Composable
-fun CalendarHeaderSection() {
+fun CalendarHeaderSection(selectedDate: LocalDate) {
+    val monthName = remember(selectedDate) {
+        selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }
+    }
     Row(
         modifier = Modifier.fillMaxWidth().padding(24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -145,13 +203,13 @@ fun CalendarHeaderSection() {
     ) {
         Column {
             Text(
-                "Mei 2024", 
+                "$monthName ${selectedDate.year}", 
                 fontWeight = FontWeight.Black, 
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                "4 Minggu Tersisa", 
+                "Aktivitas Terjadwal", 
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -168,15 +226,21 @@ fun CalendarHeaderSection() {
 }
 
 @Composable
-fun CalendarGridSection() {
+fun CalendarGridSection(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        val days = listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min")
-        val dates = listOf(20, 21, 22, 23, 24, 25, 26)
-        dates.forEachIndexed { index, date ->
-            val isSelected = date == 24
+        val days = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
+        val startOfWeek = selectedDate.minus(selectedDate.dayOfWeek.ordinal, DateTimeUnit.DAY)
+        
+        repeat(7) { i ->
+            val date = startOfWeek.plus(i, DateTimeUnit.DAY)
+            val isSelected = date == selectedDate
+            
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -195,97 +259,105 @@ fun CalendarGridSection() {
                             Modifier.background(Color.Transparent)
                         }
                     )
-                    .clickable { /* Select Date */ }
+                    .clickable { onDateSelected(date) }
                     .padding(vertical = 12.dp)
             ) {
                 Text(
-                    days[index], 
+                    days[i], 
                     color = if (isSelected) Color.White else Color.Gray, 
                     fontSize = 11.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    date.toString(), 
+                    date.dayOfMonth.toString(), 
                     fontWeight = FontWeight.Black, 
                     fontSize = 16.sp,
                     color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
                 )
-                
-                if (date == 22 || date == 26) {
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 6.dp)
-                            .size(5.dp)
-                            .clip(CircleShape)
-                            .background(if (isSelected) Color.White else PrimaryLight.copy(alpha = 0.5f))
-                    )
-                }
             }
         }
     }
 }
 
 @Composable
-fun TimelineListSection() {
-    val events = listOf(
-        TimelineEventData("09:00", "UTS Pemrograman Mobile", "Ruang H.201", "Ujian", Color(0xFFF72585)),
-        TimelineEventData("13:00", "Tugas Basis Data", "LMS ITERA", "Tugas", Color(0xFF4CC9F0)),
-        TimelineEventData("19:00", "AI Review Sesi 1", "Materi Minggu 4", "Belajar", AIColorLight)
-    )
+fun TimelineListSection(
+    events: List<com.studymate.domain.repository.CalendarEvent>,
+    reminders: List<com.studymate.domain.model.Reminder>,
+    selectedDate: LocalDate
+) {
+    val filteredReminders = reminders.filter { 
+        val dt = Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+        dt == selectedDate
+    }
+    
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        items(events) { event ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.width(50.dp)
-                ) {
-                    Text(event.time, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                    Text("AM", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+        items(filteredReminders) { reminder ->
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(50.dp)) {
+                    Text("Pengingat", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, color = ActionFABLight)
                 }
-                
                 Spacer(modifier = Modifier.width(16.dp))
-                
+                Surface(
+                    modifier = Modifier.weight(1f).shadow(2.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    color = ActionFABLight.copy(alpha = 0.05f),
+                    border = BorderStroke(1.dp, ActionFABLight.copy(alpha = 0.2f))
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.NotificationsActive, null, tint = ActionFABLight)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            val timeStr = remember(reminder.dueDate) {
+                                val dt = Instant.fromEpochMilliseconds(reminder.dueDate).toLocalDateTime(TimeZone.currentSystemDefault())
+                                "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
+                            }
+                            Text(reminder.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                            Text("Waktu: $timeStr", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+                    }
+                }
+            }
+        }
+        
+        items(events) { event ->
+            val startTimeStr = remember(event.startTime) {
+                val instant = Instant.fromEpochMilliseconds(event.startTime)
+                val dt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+                "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
+            }
+            val color = remember(event.color) {
+                try {
+                    Color(event.color?.removePrefix("#")?.toLong(16) ?: 0xFF4CC9F0)
+                } catch (_: Exception) {
+                    Color(0xFF4CC9F0)
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(50.dp)) {
+                    Text(startTimeStr, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                    Text("Agenda", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                }
+                Spacer(modifier = Modifier.width(16.dp))
                 Surface(
                     modifier = Modifier.weight(1f).shadow(2.dp, RoundedCornerShape(20.dp)),
                     shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, event.color.copy(alpha = 0.2f))
+                    border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
                 ) {
                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .width(4.dp)
-                                .height(40.dp)
-                                .clip(CircleShape)
-                                .background(event.color)
-                        )
+                        Box(modifier = Modifier.width(4.dp).height(40.dp).clip(CircleShape).background(color))
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Surface(
-                                    color = event.color.copy(alpha = 0.1f),
-                                    shape = RoundedCornerShape(4.dp)
-                                ) {
-                                    Text(
-                                        event.category,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = event.color,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
                             Text(event.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                            Text(event.location, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            event.location?.let {
+                                Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            }
                         }
                     }
                 }
@@ -294,10 +366,201 @@ fun TimelineListSection() {
     }
 }
 
-data class TimelineEventData(
-    val time: String, 
-    val title: String, 
-    val location: String, 
-    val category: String,
-    val color: Color
-)
+@Composable
+fun AddEventDialog(
+    selectedDate: LocalDate,
+    onDismiss: () -> Unit,
+    onSave: (String, String?, Long, Long) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var startHour by remember { mutableStateOf("09") }
+    var startMinute by remember { mutableStateOf("00") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Tambah Agenda") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Judul Agenda") },
+                    placeholder = { Text("Misal: Kuliah Pemrograman") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Deskripsi (Opsional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Jam Mulai:", style = MaterialTheme.typography.bodyMedium)
+                    OutlinedTextField(
+                        value = startHour,
+                        onValueChange = { if (it.length <= 2) startHour = it },
+                        modifier = Modifier.width(60.dp),
+                        singleLine = true
+                    )
+                    Text(":")
+                    OutlinedTextField(
+                        value = startMinute,
+                        onValueChange = { if (it.length <= 2) startMinute = it },
+                        modifier = Modifier.width(60.dp),
+                        singleLine = true
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val hour = startHour.toIntOrNull() ?: 9
+                    val minute = startMinute.toIntOrNull() ?: 0
+                    val startDateTime = LocalDateTime(selectedDate.year, selectedDate.month, selectedDate.dayOfMonth, hour, minute)
+                    val startEpoch = startDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                    onSave(title, description.ifBlank { null }, startEpoch, startEpoch + 3600000)
+                },
+                enabled = title.isNotBlank()
+            ) { Text("Simpan") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddReminderDialog(
+    initialDate: LocalDate,
+    onDismiss: () -> Unit,
+    onSave: (String, String?, Long) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(initialDate) }
+    var startHour by remember { mutableStateOf("09") }
+    var startMinute by remember { mutableStateOf("00") }
+    
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate.toInstant(LocalTime(0, 0), TimeZone.currentSystemDefault()).toEpochMilliseconds()
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        selectedDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                    }
+                    showDatePicker = false
+                }) { Text("Pilih") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Buat Pengingat") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Judul Pengingat") },
+                    placeholder = { Text("Misal: Deadline Tugas") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Keterangan") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Date Selection Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDatePicker = true }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.CalendarMonth, null, tint = PrimaryLight)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text("Tanggal:", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                        Text(
+                            "${selectedDate.dayOfMonth} ${selectedDate.month.name} ${selectedDate.year}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Time Selection Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.AccessTime, null, tint = PrimaryLight)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("Jam:", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = startHour,
+                        onValueChange = { if (it.length <= 2) startHour = it },
+                        modifier = Modifier.width(60.dp),
+                        singleLine = true
+                    )
+                    Text(":", modifier = Modifier.padding(horizontal = 4.dp))
+                    OutlinedTextField(
+                        value = startMinute,
+                        onValueChange = { if (it.length <= 2) startMinute = it },
+                        modifier = Modifier.width(60.dp),
+                        singleLine = true
+                    )
+                }
+                
+                Text(
+                    "Notifikasi akan dikirim 3 hari, 2 hari, dan 1 hari sebelum deadline.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ActionFABLight
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val hour = startHour.toIntOrNull() ?: 9
+                    val minute = startMinute.toIntOrNull() ?: 0
+                    val dueDateTime = LocalDateTime(selectedDate.year, selectedDate.month, selectedDate.dayOfMonth, hour, minute)
+                    val dueEpoch = dueDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                    onSave(title, description.ifBlank { null }, dueEpoch)
+                },
+                enabled = title.isNotBlank()
+            ) { Text("Pasang Pengingat") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } }
+    )
+}
+
+private fun LocalDate.toInstant(time: LocalTime, zone: TimeZone): Instant {
+    return LocalDateTime(this, time).toInstant(zone)
+}

@@ -1,31 +1,24 @@
 package com.studymate.core.di
 
+import com.studymate.core.network.ApiConfig
 import com.studymate.core.network.HttpClientFactory
-import com.studymate.core.util.DatabaseDriverFactory
-import com.studymate.core.util.getApiKey
 import com.studymate.data.local.StudyMateDatabase
-import com.studymate.data.remote.api.GeminiService
-import com.studymate.data.repository.AIRepositoryImpl
-import com.studymate.data.repository.NoteRepositoryImpl
-import com.studymate.data.repository.UserProfileRepositoryImpl
-import com.studymate.domain.repository.AIRepository
-import com.studymate.domain.repository.NoteRepository
-import com.studymate.domain.repository.UserProfileRepository
+import com.studymate.data.repository.*
+import com.studymate.domain.repository.*
 import com.studymate.domain.usecase.GetUserProfileUseCase
 import com.studymate.domain.usecase.RefineNoteUseCase
 import com.studymate.presentation.screens.home.HomeViewModel
 import com.studymate.presentation.screens.notes.NotesViewModel
 import com.studymate.presentation.screens.profile.ProfileViewModel
 import com.studymate.presentation.screens.quiz.QuizViewModel
+import com.studymate.presentation.screens.calendar.CalendarViewModel
 import org.koin.compose.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
-import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
 val networkModule = module {
     single { HttpClientFactory.createHttpClient() }
-    single { GeminiService(client = get(), apiKey = getApiKey()) }
 }
 
 val databaseModule = module {
@@ -33,9 +26,14 @@ val databaseModule = module {
 }
 
 val dataModule = module {
-    single<AIRepository> { AIRepositoryImpl(geminiService = get()) }
+    single<AIRepository> { AIRepositoryImpl(client = get(), apiKey = ApiConfig.groqApiKey) }
+    single<MantraRepository> { MantraRepositoryImpl(database = get()) }
     single<NoteRepository> { NoteRepositoryImpl(database = get()) }
     single<UserProfileRepository> { UserProfileRepositoryImpl(database = get()) }
+    single<QuizRepository> { QuizRepositoryImpl(database = get()) }
+    single<ActivityRepository> { ActivityRepositoryImpl(database = get()) }
+    single<ReminderRepository> { ReminderRepositoryImpl(database = get()) }
+    single<AuthRepository> { AuthRepositoryImpl(userProfileRepository = get()) }
 }
 
 val useCaseModule = module {
@@ -44,10 +42,11 @@ val useCaseModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { HomeViewModel(noteRepository = get(), profileRepository = get()) }
-    viewModel { NotesViewModel(noteRepository = get(), refineNoteUseCase = get()) }
-    viewModel { ProfileViewModel(profileRepository = get()) }
-    viewModel { QuizViewModel(aiRepository = get(), noteRepository = get()) }
+    viewModel { HomeViewModel(noteRepository = get(), profileRepository = get(), mantraRepository = get()) }
+    viewModel { NotesViewModel(noteRepository = get(), refineNoteUseCase = get(), activityRepository = get()) }
+    viewModel { ProfileViewModel(profileRepository = get(), activityRepository = get(), authRepository = get(), reminderRepository = get()) }
+    viewModel { QuizViewModel(aiRepository = get(), noteRepository = get(), quizRepository = get(), activityRepository = get()) }
+    viewModel { CalendarViewModel(calendarRepository = get(), reminderRepository = get()) }
 }
 
 val appModules = listOf(networkModule, databaseModule, dataModule, useCaseModule, viewModelModule)

@@ -15,7 +15,7 @@
 #   - Windows: sdk.dir=C\:\\Users\\<USERNAME>\\AppData\\Local\\Android\\Sdk
 #sdk.dir=
 
-# Google Gemini API Key
-# Dapatkan API key gratis di: https://aistudio.google.com/
+# Groq API Key
+# Dapatkan API key gratis di: https://console.groq.com/
 # Tanpa key ini, fitur AI tidak akan berjalan (app tetap bisa dibuka).
-GEMINI_API_KEY=your_api_key_here
+GROQ_API_KEY=your_api_key_here

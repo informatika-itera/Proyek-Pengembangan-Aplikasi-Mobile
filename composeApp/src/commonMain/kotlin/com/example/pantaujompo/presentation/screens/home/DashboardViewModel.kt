@@ -29,16 +29,32 @@ class DashboardViewModel(
 
     val riwayatList = dao.getAllRiwayat().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val totalJarak = riwayatList.map { list -> list.sumOf { it.jarak } }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
-    val totalKalori = riwayatList.map { list -> list.sumOf { it.kalori } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
-    val totalDurasi = riwayatList.map { list -> list.sumOf { it.durasi } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
-    val totalSesi = riwayatList.map { list -> list.size }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val weekStart = Calendar.getInstance(Locale("id", "ID")).apply {
+        firstDayOfWeek = Calendar.MONDAY
+        set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+    }.timeInMillis
+
+    val todayStart = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+    }.timeInMillis
+
+    val weeklyJarak = riwayatList.map { list -> list.filter { it.tanggal >= weekStart }.sumOf { it.jarak } }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
+    val weeklyKalori = riwayatList.map { list -> list.filter { it.tanggal >= weekStart }.sumOf { it.kalori } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val weeklyDurasi = riwayatList.map { list -> list.filter { it.tanggal >= weekStart }.sumOf { it.durasi } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
+
+    val dailyJarak = riwayatList.map { list -> list.filter { it.tanggal >= todayStart }.sumOf { it.jarak } }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
+    val dailyKalori = riwayatList.map { list -> list.filter { it.tanggal >= todayStart }.sumOf { it.kalori } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
     // Data Nutrisi dari MakananDao
     val makananList = makananDao.getAllMakanan().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    val totalProtein = makananList.map { list -> list.sumOf { it.protein } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
-    val totalKarbo = makananList.map { list -> list.sumOf { it.karbo } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
-    val totalLemak = makananList.map { list -> list.sumOf { it.lemak } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val dailyProtein = makananList.map { list -> list.filter { it.tanggal >= todayStart }.sumOf { it.protein } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val dailyKarbo = makananList.map { list -> list.filter { it.tanggal >= todayStart }.sumOf { it.karbo } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val dailyLemak = makananList.map { list -> list.filter { it.tanggal >= todayStart }.sumOf { it.lemak } }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
     private val geminiService = GeminiService()
     private val _aiInsight = MutableStateFlow("Sedang menganalisis data harian Anda...")

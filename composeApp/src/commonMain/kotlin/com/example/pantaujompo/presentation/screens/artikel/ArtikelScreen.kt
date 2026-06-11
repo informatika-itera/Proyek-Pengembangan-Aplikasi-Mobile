@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import com.example.pantaujompo.presentation.theme.*
+import com.example.pantaujompo.data.remote.api.NewsArticleDto
 
 @Composable
 fun ArtikelScreen(
@@ -177,12 +178,11 @@ fun ArtikelModernCard(artikel: NewsArticleDto, language: String, onCardClick: ()
                     onClick = { onCardClick() }, 
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(Icons.Default.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.MenuBook, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if(language == "en") "Read Article" else "Baca Artikel", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(if(language == "en") "Read Article" else "Baca Artikel", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
         }
@@ -207,95 +207,112 @@ fun LayarBacaDetail(artikel: NewsArticleDto, onBackClick: () -> Unit) {
     val textPrimary = MaterialTheme.colorScheme.onBackground
     val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
 
-    MeshBackground(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        // Scrollable Content
         Column(
             modifier = Modifier.fillMaxSize().verticalScroll(scrollState)
         ) {
-            // Header Gambar dengan Tombol Back Melayang
-            Box(modifier = Modifier.fillMaxWidth().height(320.dp)) {
+            // Header Image
+            Box(modifier = Modifier.fillMaxWidth().height(440.dp)) {
                 AsyncImage(
                     model = artikel.urlToImage,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(colors = listOf(Color.Transparent, Color(0xFF0D0D0D)), startY = 200f)))
-
-                // Premium transparent back button
-                Box(
-                    modifier = Modifier
-                        .padding(top = 48.dp, start = 20.dp)
-                        .size(44.dp)
-                        .glassCard(shape = CircleShape)
-                        .clickable { onBackClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    val isDarkDetail = MaterialTheme.colorScheme.background == DarkBackground
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = if (isDarkDetail) Color.White else Color.Black
-                    )
-                }
+                // Gradient fade at the bottom of the image for smooth transition
+                Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(colors = listOf(Color.Transparent, Color(0x66000000)), startY = 200f)))
             }
 
-            // Konten Teks Tulisan Artikel
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Label sumber artikel dengan warna tema
-                    Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primary.copy(0.15f)).padding(horizontal = 10.dp, vertical = 6.dp)) {
-                        Text(artikel.source.name?.uppercase() ?: "NEWS", color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
+            // Overlapping Card Content
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-40).dp)
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 24.dp, vertical = 32.dp)
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Label sumber artikel dengan warna tema
+                        Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primary.copy(0.15f)).padding(horizontal = 10.dp, vertical = 6.dp)) {
+                            Text(artikel.source.name?.uppercase() ?: "NEWS", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(tanggalFormat, color = textSecondary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(tanggalFormat, color = Color.Gray, fontSize = 13.sp)
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = artikel.title ?: "", color = textPrimary, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 32.sp)
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(text = artikel.title ?: "", color = textPrimary, fontSize = 26.sp, fontWeight = FontWeight.Black, lineHeight = 34.sp)
 
-                Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // 1. Snippet Preview Berita
-                Text(
-                    text = artikel.description ?: "",
-                    color = textSecondary,
-                    fontSize = 15.sp,
-                    lineHeight = 26.sp,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val kontenBersih = artikel.content?.substringBefore("[+") ?: ""
-                Text(
-                    text = kontenBersih,
-                    color = textSecondary,
-                    fontSize = 14.sp,
-                    lineHeight = 24.sp
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = {
-                        artikel.url?.let { uriHandler.openUri(it) }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(54.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
+                    // Snippet Preview Berita
                     Text(
-                        text = if(language == "en") "READ FULL ARTICLE ON WEBSITE" else "BACA SELENGKAPNYA DI WEBSITE",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 14.sp,
-                        letterSpacing = 0.5.sp
+                        text = artikel.description ?: "",
+                        color = textSecondary,
+                        fontSize = 16.sp,
+                        lineHeight = 26.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
-                }
 
-                Spacer(modifier = Modifier.height(120.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    val kontenBersih = artikel.content?.substringBefore("[+") ?: ""
+                    Text(
+                        text = kontenBersih,
+                        color = textPrimary.copy(alpha = 0.8f),
+                        fontSize = 15.sp,
+                        lineHeight = 26.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(140.dp)) // Extra space so content isn't hidden behind the sticky button
+                }
+            }
+        }
+
+        // Sticky Top Back Button
+        Box(
+            modifier = Modifier
+                .padding(top = 48.dp, start = 20.dp)
+                .size(44.dp)
+                .glassCard(shape = CircleShape)
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = if (isDarkDetail) Color.White else Color.Black
+            )
+        }
+
+        // Sticky Bottom Read More Button
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha = 0.8f), MaterialTheme.colorScheme.background)))
+                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 48.dp) // Added 48.dp bottom padding for Navbar
+        ) {
+            Button(
+                onClick = {
+                    artikel.url?.let { uriHandler.openUri(it) }
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = if(language == "en") "READ FULL ARTICLE ON WEBSITE" else "BACA SELENGKAPNYA DI WEBSITE",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp,
+                    letterSpacing = 0.5.sp
+                )
             }
         }
     }

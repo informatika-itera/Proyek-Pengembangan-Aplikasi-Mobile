@@ -2,38 +2,13 @@ package com.example.pantaujompo.presentation.screens.artikel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import kotlinx.serialization.Serializable
+import com.example.pantaujompo.data.remote.api.NewsService
+import com.example.pantaujompo.data.remote.api.NewsResponse
+import com.example.pantaujompo.data.remote.api.NewsArticleDto
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-@Serializable
-data class NewsResponse(
-    val status: String,
-    val totalResults: Int,
-    val articles: List<NewsArticleDto>
-)
-
-@Serializable
-data class NewsArticleDto(
-    val source: SourceDto,
-    val title: String?,
-    val description: String?, // 🔥 Tambah deskripsi buat dibaca bray
-    val content: String?,     // 🔥 Tambah isi artikel
-    val urlToImage: String?,
-    val url: String?,
-    val publishedAt: String?
-)
-
-@Serializable
-data class SourceDto(
-    val name: String?
-)
-
-class ArtikelViewModel(private val httpClient: HttpClient) : ViewModel() {
+class ArtikelViewModel(private val newsService: NewsService) : ViewModel() {
 
     // Menyimpan data asli dari internet (Kesehatan + Olahraga)
     private val _allArticles = MutableStateFlow<List<NewsArticleDto>>(emptyList())
@@ -67,12 +42,7 @@ class ArtikelViewModel(private val httpClient: HttpClient) : ViewModel() {
             _isLoading.value = true
             try {
                 // 🔥 KITA GABUNG: Kesehatan OR Olahraga biar langsung dapet dua-duanya bray!
-                val response: NewsResponse = httpClient.get("https://newsapi.org/v2/everything") {
-                    parameter("q", "kesehatan OR olahraga")
-                    parameter("language", "id")
-                    parameter("sortBy", "publishedAt")
-                    parameter("apiKey", "b73cac97bf0b4e1dbaef1a365a46acea")
-                }.body()
+                val response: NewsResponse = newsService.fetchNews("kesehatan OR olahraga")
 
                 _allArticles.value = response.articles.filter {
                     !it.title.isNullOrBlank() && !it.urlToImage.isNullOrBlank()

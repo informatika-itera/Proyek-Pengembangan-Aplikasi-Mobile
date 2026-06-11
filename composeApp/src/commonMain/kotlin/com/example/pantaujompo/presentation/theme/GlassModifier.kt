@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -34,7 +35,7 @@ fun Modifier.glassCard(
         )
     } else {
         Brush.verticalGradient(
-            listOf(Color.White.copy(alpha = 0.95f), Color(0xFFF5F7FA).copy(alpha = 0.90f))
+            listOf(Color.White, Color.White) // Solid white for visibility
         )
     }
 
@@ -48,18 +49,21 @@ fun Modifier.glassCard(
         )
     } else {
         Brush.linearGradient(
-            listOf(
-                Color(0xFFBDBDBD).copy(alpha = 0.6f),
-                neonColor.copy(alpha = 0.25f),
-                Color(0xFFBDBDBD).copy(alpha = 0.3f)
-            )
+            listOf(Color(0xFFD1D5DB), Color(0xFFE5E7EB)) // Solid visible border
         )
     }
 
-    this
-        .clip(shape)
-        .background(brush = bgGradient)
-        .border(width = borderWidth, brush = borderColor, shape = shape)
+    if (isDark) {
+        this
+            .clip(shape)
+            .background(brush = bgGradient)
+            .border(width = borderWidth, brush = borderColor, shape = shape)
+    } else {
+        this
+            .shadow(elevation = 6.dp, shape = shape, spotColor = Color.Black.copy(0.1f), ambientColor = Color.Black.copy(0.05f))
+            .clip(shape)
+            .background(Color.White)
+    }
 }
 
 /**
@@ -113,25 +117,7 @@ fun MeshBackground(
                             center = Offset(size.width, size.height * 0.4f)
                         )
                     } else {
-                        // Light mode: soft teal blobs (very subtle)
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                colors = listOf(Color(0xFF00897B).copy(alpha = 0.07f), Color.Transparent),
-                                center = Offset(0f, 0f),
-                                radius = size.width * 0.8f
-                            ),
-                            radius = size.width * 0.8f,
-                            center = Offset(0f, 0f)
-                        )
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                colors = listOf(Color(0xFF0097A7).copy(alpha = 0.05f), Color.Transparent),
-                                center = Offset(size.width, size.height),
-                                radius = size.width * 0.9f
-                            ),
-                            radius = size.width * 0.9f,
-                            center = Offset(size.width, size.height)
-                        )
+                        // Light mode: No blobs, just a clean solid background for maximum contrast
                     }
                 }
         )

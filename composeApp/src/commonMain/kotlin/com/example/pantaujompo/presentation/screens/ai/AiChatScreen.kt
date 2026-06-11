@@ -86,16 +86,16 @@ fun AiChatScreen(
                         .clickable { onNavigateBack() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, null, tint = textPrimary, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.ArrowBack, null, tint = textPrimary, modifier = Modifier.size(24.dp))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Box(
                     modifier = Modifier.size(44.dp).clip(CircleShape).background(accentColor),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(24.dp))
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(str("ai_assistant"), color = textPrimary, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                     Text(str("gaya_hidup_sehat"), color = accentColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -113,7 +113,7 @@ fun AiChatScreen(
             ) {
                 items(messages.reversed()) { msg ->
                     ChatBubble(msg = msg, isDark = isDark, accentColor = accentColor)
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 
@@ -148,7 +148,7 @@ fun AiChatScreen(
                     ),
                     maxLines = 3
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
                 Box(
                     modifier = Modifier.size(52.dp).clip(CircleShape).background(if (inputText.isNotBlank()) accentColor else Color.Gray)
                         .clickable(enabled = inputText.isNotBlank() && !isTyping) {
@@ -191,22 +191,27 @@ fun ChatBubble(msg: ChatMessage, isDark: Boolean, accentColor: Color) {
             Spacer(modifier = Modifier.width(8.dp))
         }
 
-        Box(
-            modifier = Modifier
+        val bubbleShape = RoundedCornerShape(
+            topStart = 24.dp,
+            topEnd = 24.dp,
+            bottomStart = if (msg.isUser) 24.dp else 4.dp,
+            bottomEnd = if (msg.isUser) 4.dp else 24.dp
+        )
+
+        val finalModifier = if (msg.isUser) {
+            Modifier
                 .fillMaxWidth(0.8f)
-                .clip(RoundedCornerShape(
-                    topStart = 20.dp,
-                    topEnd = 20.dp,
-                    bottomStart = if (msg.isUser) 20.dp else 4.dp,
-                    bottomEnd = if (msg.isUser) 4.dp else 20.dp
-                ))
-                .glassCard(shape = RoundedCornerShape(
-                    topStart = 20.dp,
-                    topEnd = 20.dp,
-                    bottomStart = if (msg.isUser) 20.dp else 4.dp,
-                    bottomEnd = if (msg.isUser) 4.dp else 20.dp
-                ), neonColor = if(msg.isUser) accentColor else Color(0xFF00BCD4))
-                .padding(16.dp)
+                .clip(bubbleShape)
+                .background(accentColor)
+        } else {
+            Modifier
+                .fillMaxWidth(0.8f)
+                .clip(bubbleShape)
+                .glassCard(shape = bubbleShape, neonColor = Color(0xFF00BCD4))
+        }
+
+        Box(
+            modifier = finalModifier.padding(16.dp)
         ) {
             Text(
                 text = msg.text,

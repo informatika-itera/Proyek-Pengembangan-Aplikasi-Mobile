@@ -234,9 +234,10 @@ fun SaveActivityScreen(
                                     setBuiltInZoomControls(false)
                                     
                                     // Use Google Maps Standard tile source for modern look
-                                    setTileSource(object : org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase("GoogleMaps", 1, 20, 256, ".png", arrayOf("https://mt0.google.com/vt/lyrs=m&hl=id&z=", "https://mt1.google.com/vt/lyrs=m&hl=id&z=", "https://mt2.google.com/vt/lyrs=m&hl=id&z=", "https://mt3.google.com/vt/lyrs=m&hl=id&z=")) {
+                                    setTileSource(object : org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase("GoogleMaps", 1, 20, 256, ".png", arrayOf("https://mt0.google.com/vt/lyrs=p&hl=id&scale=2&z=", "https://mt1.google.com/vt/lyrs=p&hl=id&scale=2&z=", "https://mt2.google.com/vt/lyrs=p&hl=id&scale=2&z=", "https://mt3.google.com/vt/lyrs=p&hl=id&scale=2&z=")) {
                                         override fun getTileURLString(pMapTileIndex: Long): String = baseUrl + org.osmdroid.util.MapTileIndex.getZoom(pMapTileIndex) + "&x=" + org.osmdroid.util.MapTileIndex.getX(pMapTileIndex) + "&y=" + org.osmdroid.util.MapTileIndex.getY(pMapTileIndex)
                                     })
+                                    isTilesScaledToDpi = false
                                     
                                     // Disable interaction for preview
                                     setOnTouchListener { _, _ -> true }

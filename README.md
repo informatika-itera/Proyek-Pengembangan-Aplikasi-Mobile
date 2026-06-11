@@ -1,236 +1,255 @@
-# Pantau Jompo
-![CI](https://github.com/EL-graha26/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=projeck/123140063-123140200-PantauJompo)
+<img width="90" align="left" style="margin-right: 20px; margin-bottom: 10px;" src="https://github.com/user-attachments/assets/59abbfe7-2157-4460-9e5f-b55f5d52ae5c" />
 
-**Aplikasi Tracking olahraga lari jalan dan Nutrisis harian mobile**
+
+# Pantau Jompo
+### Aplikasi Pelacakan Olahraga dan Nutrisi Harian
+
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-000000?style=for-the-badge&logo=android&logoColor=white)
+![CI](https://github.com/EL-graha26/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=projeck/123140063-123140200-PantauJompo)
 
 ---
 
-## 📖 Tentang Proyek
-
-**Pantau Jompo** adalah aplikasi kesehatan Android yang menggabungkan pelacakan aktivitas berbasis GPS, analisis nutrisi bertenaga AI, dan portal berita kesehatan dalam satu platform terpadu.
-
-Aplikasi ini dirancang untuk memudahkan pengguna mengelola gaya hidup sehat secara efisien — mulai dari mencatat olahraga harian, memindai kandungan gizi makanan lewat kamera, hingga mendapatkan rekomendasi kalori personal dari AI assistant.
+**Pantau Jompo** adalah aplikasi Android berbasis Kotlin Multiplatform yang dirancang untuk membantu pengguna melacak aktivitas olahraga dan mengatur asupan nutrisi. Aplikasi ini dilengkapi dengan integrasi GPS untuk pencatatan rute serta fitur *scanner* makanan berbasis Gemini AI untuk menghitung estimasi kalori secara otomatis.
 
 ---
 
 ## 👥 Tim Pengembang
 
-Proyek ini dikembangkan sebagai bagian dari tugas perkuliahan oleh:
+Proyek ini dikerjakan oleh mahasiswa Institut Teknologi Sumatera:
 
-| Nama | NIM | Peran |
-|------|-----|-------|
-| **Pradana Figo Ariasyah** | 123140063 | Android Developer |
-| **Muhammad Piela Nugraha** | 123140200 | Android Developer |
-
----
-
-## 🚀 Fitur Utama
-
-### 📍 Smart Activity Tracking
-Pelacakan aktivitas fisik luar ruangan secara *real-time* menggunakan GPS.
-- **Auto-Logging** — Rute, jarak tempuh, dan durasi tercatat otomatis (lari, jalan kaki, bersepeda)
-- **Calorie Analytics** — Estimasi kalori terbakar dihitung berdasarkan jenis dan intensitas aktivitas
-- **Persistent Storage** — Semua rekam jejak disimpan permanen via Room Database
-
-### 📸 AI Nutrition Scanner
-Gantikan pencatatan nutrisi manual dengan analisis gambar berbasis Vision AI.
-- **Camera Recognition** — Foto makanan → AI identifikasi jenis dan kandungan gizi secara instan
-- **Dual Input** — Mendukung input manual via teks atau analisis gambar dari kamera
-- **Detail Nutrisi** — Kalori, karbohidrat, protein, lemak, dan serat ditampilkan langsung
-
-### 📝 Fitness History — Full CRUD
-Logbook terpadu untuk seluruh data kesehatan pengguna.
-- **Create & Read** — Catat riwayat olahraga, asupan gizi, dan keluhan fisik
-- **Update & Delete** — Edit atau hapus data kapan saja
-- **Search & Filter** — Telusuri data berdasarkan rentang tanggal atau kategori
-
-### 📰 Health News Portal + AI Summarizer
-Pusat literasi kesehatan yang aktual dan ringkas.
-- **News API Integration** — Berita kesehatan terkini dari sumber terpercaya secara *real-time*
-- **AI Summarizer** — Artikel panjang diringkas menjadi poin-poin utama *(TL;DR)*
-
-### 👤 Personal Dashboard & Metrics
-Semua data kesehatan pengguna tersaji dalam satu halaman.
-- **BMI Calculator** — Perbarui berat dan tinggi badan untuk skor *Body Mass Index* instan
-- **AI Recommendation** — Target kalori harian yang dipersonalisasi sesuai profil pengguna
-
-### 🌙 Modern UI + Dark Mode
-- Desain responsif optimal untuk berbagai ukuran layar Android
-- Dukungan tema gelap penuh — efisiensi baterai AMOLED dan nyaman di mata
+| Foto | Nama | NIM | Peran |
+| :---: | :--- | :---: | :--- |
+| 🧑‍💻 | **Pradana Figo Ariasya** | `123140063` | Android Developer |
+| 🧑‍💻 | **Muhammad Piela Nugraha** | `123140200` | Android Developer |
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Fitur Utama
 
-| Layer | Teknologi |
-|-------|-----------|
-| **Language** | Kotlin |
-| **UI** | Compose Multiplatform (Material Design 3) |
-| **Architecture** | MVVM + Repository Pattern |
-| **Local Database** | Room (SQLite) / SQLDelight |
-| **Async** | Kotlin Coroutines + Flow |
-| **HTTP Client** | Ktor Client |
-| **Image Loading** | Coil |
-| **AI / Vision** | Gemini API |
-| **Maps & GPS** | Google Maps SDK, FusedLocationProvider |
-| **DI** | Koin |
+- 📍 **Pelacakan Olahraga (GPS)** — Mencatat rute lari, jalan kaki, atau bersepeda menggunakan Google Maps API. Menghitung jarak tempuh, durasi, dan kalori yang terbakar.
+- 📸 **Scanner Nutrisi AI** — Mengidentifikasi makanan dari foto kamera dan menghitung estimasi kalori beserta kandungan gizinya melalui integrasi Gemini AI.
+- 📝 **Pencatatan Riwayat Kesehatan** — Sistem CRUD (*Create, Read, Update, Delete*) untuk mencatat riwayat olahraga, asupan makanan harian, dan kondisi kesehatan.
+- 📰 **Portal Berita Kesehatan** — Menampilkan artikel kesehatan terkini dengan fitur ringkasan otomatis (*AI Summarizer*) agar lebih mudah dibaca.
+- 👤 **Kalkulator BMI** — Menghitung Indeks Massa Tubuh dan memberikan rekomendasi target asupan kalori harian.
+- 🌗 **Tema Gelap (Dark Mode)** — Tampilan antarmuka modern dengan dukungan *dark mode* penuh untuk kenyamanan mata.
 
 ---
 
-## 🏛️ Arsitektur
+## 📱 Tampilan Aplikasi
 
-Aplikasi ini mengikuti pola **MVVM (Model-View-ViewModel)** yang direkomendasikan Google, dikombinasikan dengan **Repository Pattern** untuk abstraksi sumber data.
-
-```text
-┌─────────────────────────────────────────────────┐
-│                    UI Layer                     │
-│         Activity / Fragment / Composable        │
-└──────────────────────┬──────────────────────────┘
-                       │ observes
-┌──────────────────────▼──────────────────────────┐
-│                 ViewModel Layer                 │
-│        StateFlow / LiveData / UI State          │
-└──────────────────────┬──────────────────────────┘
-                       │ calls
-┌──────────────────────▼──────────────────────────┐
-│               Repository Layer                  │
-│       Menentukan sumber data (local/remote)     │
-└────────┬─────────────────────────────┬──────────┘
-         │                             │
-┌────────▼────────┐         ┌──────────▼──────────┐
-│   Local Source  │         │    Remote Source    │
-│  Room Database  │         │   Ktor Client API   │
-│   (SQLite)      │         │  Gemini, News, Maps │
-└─────────────────┘         └─────────────────────┘
-```
-
-**Alur Data:**
-1. UI mengobservasi `StateFlow`/`LiveData` dari ViewModel
-2. ViewModel memanggil Repository untuk data atau aksi
-3. Repository memilih antara sumber **Local** (cache/offline) atau **Remote** (API)
-4. Data dikembalikan sebagai Kotlin Flow dan di-*collect* oleh ViewModel
+| Beranda (Dashboard) | Tracking Aktivitas | Scanner Nutrisi | Baca Artikel |
+| :---: | :---: | :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/320bc1d2-0f43-46e9-ac9c-9996c9f21733" width="200" /> | <img src="https://github.com/user-attachments/assets/e3d1b9d3-3fe2-42ef-9eb3-c974fcbdd5c2" width="200" /> | <img src="https://github.com/user-attachments/assets/6756c232-9863-4ed7-82b4-b8dd5738fb65" width="200" /> | <img src="https://github.com/user-attachments/assets/449f53f5-f335-401b-896a-9d598aeef83e" width="200" /> |
+| Ringkasan kalori, dan akses cepat ke semua fitur utama. | Peta rute olahraga *real-time* beserta statistik durasi dan jarak. | Kamera untuk memindai makanan dan melihat rincian gizi. | Tampilan artikel kesehatan dengan ringkasan poin-poin penting. |
 
 ---
 
-## 📁 Struktur Proyek
+## 🎬 Video Presentasi Aplikasi
+
+Klik gambar di bawah untuk menonton demonstrasi lengkap aplikasi Pantau Jompo di YouTube:
+
+[![Video Presentasi Pantau Jompo](https://img.youtube.com/vi/uyYoP1yeyZM/maxresdefault.jpg)](https://youtu.be/uyYoP1yeyZM)
+
+---
+
+## ⚙️ Tech Stack
+
+<details>
+<summary><b>Lihat daftar teknologi lengkap</b></summary>
+<br>
+
+| Komponen | Teknologi yang Digunakan |
+|----------|--------------------------|
+| **Bahasa Utama** | Kotlin |
+| **UI Framework** | Compose Multiplatform (Material Design 3) |
+| **Pola Arsitektur** | MVVM (Model-View-ViewModel) + Repository |
+| **Database Lokal** | Room (SQLite) / SQLDelight |
+| **Asynchronous** | Kotlin Coroutines & Flow |
+| **Network Client** | Ktor Client |
+| **Image Loader** | Coil |
+| **Integrasi AI** | Gemini API |
+| **Lokasi & Maps** | Google Maps SDK & FusedLocationProvider |
+| **Injection (DI)** | Koin |
+
+</details>
+
+---
+
+## 🧬 Arsitektur & Struktur Direktori
+
+Proyek ini disusun menggunakan prinsip **Clean Architecture** berlapis untuk memudahkan pengembangan, perbaikan *bug*, dan keterbacaan kode.
+
+### 1. Pola Arsitektur
+
+Proyek ini mengadopsi pola **MVVM (Model-View-ViewModel)** yang dikombinasikan dengan **Repository Pattern** untuk memisahkan antara tampilan (UI), logika bisnis, dan mekanisme pengambilan data.
+
+- **UI (View)** — Hanya bertugas merender tampilan dan menangkap input dari pengguna.
+- **ViewModel** — Menyimpan *state* sementara dan menjadi jembatan antara UI dengan logika aplikasi.
+- **Repository** — Menentukan sumber data, apakah dari penyimpanan lokal atau dari Remote API.
+
+### 2. Struktur Folder Utama
 
 ```text
 composeApp/src/
-├── androidMain/        # Implementasi spesifik platform Android (GPS, dsb)
-├── commonMain/         # Kode inti yang dibagikan (UI, ViewModel, Repository)
-│   └── kotlin/com/example/pantaujompo/
-│       ├── core/       # Utilitas dasar, DI, Network Config
-│       ├── data/       # Implementasi Local, Remote, Repository
-│       ├── domain/     # Model dan Use Cases murni Kotlin
-│       └── presentation/ # UI Composables, ViewModels, Navigation
-└── iosMain/            # Implementasi spesifik platform iOS
+├── androidMain/               # 🤖 Kode khusus ekosistem Android
+│   ├── MainActivity.kt        # Entry Point aplikasi
+│   └── permissions/           # Penanganan izin sistem (Lokasi, Kamera)
+│
+├── commonMain/.../pantaujompo/# 🧬 Kode utama lintas platform
+│   ├── core/                  # Konfigurasi pondasi (Koin DI, Ktor, Tema UI)
+│   ├── data/                  # Remote API & Database Lokal (Room)
+│   ├── domain/                # Model data murni & Use Cases
+│   ├── presentation/          # Komponen UI, Layar Utama, dan ViewModels
+│   └── utils/                 # Fungsi pembantu (Format waktu, teks, dll)
+│
+└── iosMain/                   # 🍏 Persiapan struktur dasar untuk iOS
 ```
 
 ---
 
-## 🏁 Memulai
+## 🚀 Cara Menjalankan Proyek
 
-### Prasyarat
-- Android Studio Hedgehog (2023.1.1) atau lebih baru
-- JDK 17
-- Android SDK API 26+
-- Gradle 8.x
+### 1. Prasyarat Sistem
 
-### Instalasi
+- **Android Studio** (Disarankan versi Hedgehog 2023.1.1 atau terbaru)
+- **JDK 17**
+- **Android SDK** API 26+
+
+### 2. Instalasi
+
+*Clone* repositori ini, lalu buka foldernya di Android Studio:
 
 ```bash
-# 1. Clone repositori
 git clone https://github.com/EL-graha26/Proyek-Pengembangan-Aplikasi-Mobile.git
-
-# 2. Buka di Android Studio
-# File > Open > pilih folder Pantau_jompo
-
-# 3. Tambahkan API keys (lihat bagian Konfigurasi API)
-
-# 4. Build dan jalankan
-# Run > Run 'composeApp' atau Shift+F10
 ```
 
----
+Tunggu hingga proses *Gradle Sync* selesai.
 
-## 🔑 Konfigurasi API
+### 3. Konfigurasi API Key ⚠️
 
-Buat file `local.properties` di root proyek dan tambahkan key berikut:
+Aplikasi ini membutuhkan akses **Gemini API** agar fitur *scanner* makanan dan ringkasan berita bisa berjalan.
+
+1. Buat file baru bernama `local.properties` di folder paling luar proyek (sejajar dengan `build.gradle.kts`).
+2. Tambahkan baris berikut:
 
 ```properties
-# local.properties — jangan di-commit ke Git!
-GEMINI_API_KEY=your_gemini_api_key_here
+# Dapatkan key dari https://aistudio.google.com/
+GEMINI_API_KEY=masukkan_api_key_gemini_anda_di_sini
 ```
 
-Daftarkan API key di:
-- **Gemini API** → [Google AI Studio](https://aistudio.google.com/)
+### 4. Build dan Jalankan
 
-> ⚠️ **Penting:** Pastikan `local.properties` sudah masuk ke `.gitignore` agar API key tidak ter-expose di repositori publik.
+Pilih emulator atau *device* Android fisik yang terhubung, lalu klik tombol **▶ Run** di Android Studio.
 
 ---
 
-## 🎯 Target & Status Sprints (Timeline Proyek)
+## 🎯 Status Timeline Pengembangan (Sprints)
 
-Proyek ini dibangun secara bertahap melalui 4 Sprint.
+### 🏁 SPRINT 1 — Planning & Setup ✅
 
-### ✅ SPRINT 1: PLANNING & SETUP (Selesai)
-Fase inisialisasi arsitektur dan dokumentasi proyek.
+Fase inisialisasi arsitektur dan penyusunan dokumen manajemen proyek.
 
-- [x] Form kelompok 2-3 orang, tentukan role (lead, dev, QA)
+- [x] Form kelompok, tentukan role (lead, dev, QA)
 - [x] Pilih project idea, approval dosen
-- [x] Define requirements (List fitur minimum dan bonus)
-- [x] Design architecture (Gambar diagram, tentukan struktur folder)
-- [x] Create repository (GitHub repo, add collaborators)
-- [x] Setup project (Clone, create KMP project, push)
+- [x] Define requirements (fitur minimum dan bonus)
+- [x] Design architecture (diagram & struktur folder)
+- [x] Create & setup repository (GitHub + collaborators)
 - [x] Setup CI/CD (GitHub Actions workflow)
 - [x] Create project doc (README dengan requirements dan timeline)
 
-### ✅ SPRINT 2: CORE UI & DATA LAYER (Selesai)
-
-- [x] Minimal 3 working screens (Home, Detail, Add/Edit)
-- [x] Navigation between screens dengan arguments passing
-- [x] Data layer dengan Repository pattern terintegrasi
-- [x] Local storage diimplementasikan (Room / SQLDelight / DataStore)
-- [x] Basic CRUD operations (Create, Read, Update, Delete) working sepenuhnya
-- [x] UI States (Loading, Success, Error) tertangani dengan baik
-- [x] All features accessible dari app (tidak ada dead ends)
-
-### ✅ SPRINT 3: ADVANCED FEATURES & API (Selesai)
-
-- [x] **P0** - Search/Filter: Search functionality dalam app (Pencarian histori, dsb)
-- [x] **P0** - API Integration: Implementasi REST API Gemini (Scanner Nutrisi & AI Chat)
-- [x] **P1** - Offline Support: App tetap usable tanpa internet (Cached Database)
-- [x] **P1** - Additional Screen: Settings/Profile screen fungsional (Ganti bahasa, Setup Profil BMI)
-- [x] **P2** - UI Polish: Consistent styling (Modern Futuristic Glassmorphism), better UX
-- [x] **P2** - 1+ Bonus Feature: Dukungan Dark Mode, Animations, Multi-language (Lokalisasi)
-
-### 🚀 SPRINT 4: POLISH & TESTING (Minggu Depan)
-Fase akhir untuk penyempurnaan aplikasi sebelum rilis/penilaian.
-
-- [ ] Bug Fixes: Fix all known bugs dan edge cases
-- [ ] UI Polish: Consistent styling, spacing, typography (Final review)
-- [ ] Testing: Unit tests, UI tests, mencapai target coverage
-- [ ] Performance: Optimize slow screens, reduce lag & memory leaks
-
 ---
 
-## 🎥 Demonstrasi Aplikasi (Per Sprint)
+### 🧱 SPRINT 2 — Core UI & Data Layer ✅
 
-### Demo Sprint 3 (Advanced Features & API)
-Video demo yang menunjukkan fitur pencarian/filter data, integrasi Gemini API (Nutrisi & Chat), dukungan UI Glassmorphism, dan Offline Support.
+Fokus pada struktur antarmuka utama, navigasi, dan fungsi simpan-baca data lokal.
 
+- [x] Minimal 3 working screens (Home, Detail, Add/Edit)
+- [x] Navigation dengan argument passing antar layar
+- [x] Data layer dengan Repository pattern
+- [x] Local storage (Room / SQLDelight / DataStore)
+- [x] Basic CRUD operations berjalan penuh
+- [x] UI States (Loading, Success, Error) tertangani
+- [x] Semua fitur accessible dari app
 
-https://github.com/user-attachments/assets/dfc5d28c-9206-48f2-a532-eb81cb95ffdc
-
-
-
-### Demo Sprint 2 (Core UI & Data Layer)
-Demo aplikasi yang menunjukkan fitur Navigasi, tampilan antarmuka dasar, dan operasi CRUD lokal.
+> **🎥 Demo Sprint 1 & 2:**
 
 https://github.com/user-attachments/assets/7df9fc3a-b7a5-49a0-a2ce-75d2969fba29
 
 ---
 
+### 🚀 SPRINT 3 — Advanced Features & API ✅
+
+Fokus pada integrasi Gemini API, mode *offline*, dan polesan estetika *Glassmorphism*.
+
+- [x] **P0** — Search/Filter: Pencarian fungsional dalam app
+- [x] **P0** — API Integration: Gemini REST API (Scanner Nutrisi & AI Chat)
+- [x] **P1** — Offline Support: App tetap usable tanpa internet (Cached DB)
+- [x] **P1** — Additional Screen: Settings/Profile fungsional (BMI Setup, ganti bahasa)
+- [x] **P2** — UI Polish: Modern Futuristic Glassmorphism styling
+- [x] **P2** — Bonus Features: Dark Mode, Animasi, Multi-language
+
+> **🎥 Demo Sprint 3:**
+
+https://github.com/user-attachments/assets/dfc5d28c-9206-48f2-a532-eb81cb95ffdc
+
+---
+
+### 🧪 SPRINT 4 — Polish, Testing & Bug Fixing ✅
+
+Fokus pada kestabilan aplikasi, Unit Test, UI Test, dan resolusi semua kendala.
+
+- [x] **P0** — Fix All Known Bugs: No crash, no broken features
+- [x] **P0** — UI Polish: Consistent spacing, typography, colors
+- [x] **P0** — Unit Tests: Repository + ViewModel tests (10+ total)
+- [x] **P1** — UI Tests: Critical user journeys (3+)
+- [x] **P1** — Edge Cases: Empty states, errors, loading tertangani
+- [x] **P2** — Performance: No visible lag or jank
+
+> **🎥 Demo Sprint 4:**
+
+https://github.com/user-attachments/assets/d7a326fa-a017-42d5-87df-d0e6f33a7960
+
+---
+
+## 🔍 Panduan Pengujian Otomatis
+
+### 1. ⚙️ Unit Test
+
+Mengecek kebenaran logika fungsi komputasi di dalam layer `ViewModel` dan `Repository`.
+
+```bash
+./gradlew :composeApp:testDebugUnitTest
+```
+
+Atau buka file `*Test.kt` di direktori `androidUnitTest` di Android Studio, lalu klik **▶** di margin kiri.
+
+### 2. 📱 UI Test
+
+Menjalankan simulasi interaksi pengguna. Membutuhkan Emulator Android yang aktif.
+
+```bash
+./gradlew :composeApp:connectedDebugAndroidTest
+```
+
+Atau buka skrip uji di `androidInstrumentedTest` dan klik **▶** untuk menjalankan robot di Emulator.
+
+---
+
+## 🐛 Riwayat Bug & Perbaikan
+
+### 🚨 Issue #1 — *Crash* saat Eksekusi UI Test
+
+| | Detail |
+|---|---|
+| **Deskripsi** | Test Runner langsung berhenti dengan `RuntimeException` pada emulator Android 11+. Logcat: `Intent in process com.example.pantaujompo resolved to different process...` |
+| **Root Cause** | Modul `ui-test-manifest` terdeklar di *scope* yang keliru pada Gradle, menyebabkan *Process Mismatch* di OS Android. |
+| **Solusi ✅** | Memindahkan deklarasi `androidx.compose.ui:ui-test-manifest` ke scope `debugImplementation` pada *build script*, sehingga lapisan testing terintegrasi dengan benar. |
+
+---
+
 <div align="center">
-  Pengembangan Aplikasi Mobile_RB &nbsp;·&nbsp; Institut Teknologi Sumatera &nbsp;·&nbsp; 2026
+  <b>Tugas Besar Pengembangan Aplikasi Mobile — RB</b><br>
+  Institut Teknologi Sumatera · 2026
 </div>

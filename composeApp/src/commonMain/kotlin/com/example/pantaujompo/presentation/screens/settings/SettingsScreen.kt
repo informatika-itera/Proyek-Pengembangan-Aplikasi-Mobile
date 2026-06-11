@@ -75,7 +75,7 @@ fun SettingsScreen(
                         .clickable { onNavigateBack() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, null, tint = textPrimary, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.ArrowBack, null, tint = textPrimary, modifier = Modifier.size(24.dp))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
@@ -88,7 +88,7 @@ fun SettingsScreen(
 
             // ======== SEKSI TAMPILAN ========
             SettingsGroupHeader(str("tampilan"), Icons.Default.Palette, accentColor, textSecondary)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Toggle Mode Gelap/Terang
             SettingsSwitchItem(
@@ -102,7 +102,7 @@ fun SettingsScreen(
                 textPrimary = textPrimary, textSecondary = textSecondary
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Toggle Ukuran Teks Besar/Normal
             SettingsSwitchItem(
@@ -122,7 +122,7 @@ fun SettingsScreen(
 
             // ======== SEKSI BAHASA & SATUAN ========
             SettingsGroupHeader(str("bahasa_satuan"), Icons.Default.Language, Color(0xFF9C27B0), textSecondary)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Toggle Bahasa Indonesia/English — benar-benar merubah seluruh aplikasi
             SettingsSwitchItem(
@@ -141,7 +141,7 @@ fun SettingsScreen(
 
             // ======== SEKSI PRIVASI & KEAMANAN ========
             SettingsGroupHeader(str("privasi_keamanan"), Icons.Default.Security, Color(0xFFE91E63), textSecondary)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Hapus semua data
             SettingsActionItem(
@@ -153,7 +153,7 @@ fun SettingsScreen(
                 textPrimary = textPrimary, textSecondary = textSecondary
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Kebijakan Privasi
             SettingsActionItem(
@@ -172,7 +172,7 @@ fun SettingsScreen(
 
             // ======== SEKSI TENTANG APLIKASI ========
             SettingsGroupHeader(str("tentang_aplikasi"), Icons.Default.Info, textSecondary, textSecondary)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Tombol tentang aplikasi
             SettingsActionItem(
@@ -302,7 +302,7 @@ fun SettingsActionItem(
                 Text(title, color = textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                 Text(subtitle, color = textSecondary, fontSize = 12.sp)
             }
-            Icon(Icons.Default.ChevronRight, null, tint = textSecondary, modifier = Modifier.size(20.dp))
+            Icon(Icons.Default.ChevronRight, null, tint = textSecondary, modifier = Modifier.size(24.dp))
         }
     }
 }

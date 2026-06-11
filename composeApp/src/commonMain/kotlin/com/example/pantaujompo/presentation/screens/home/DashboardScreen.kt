@@ -1,21 +1,28 @@
 package com.example.pantaujompo.presentation.screens.home
 
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import android.location.Geocoder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -29,22 +36,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil3.compose.AsyncImage
+import com.example.pantaujompo.core.util.AppStrings
+import com.example.pantaujompo.data.local.datastore.UserPreferences
+import com.example.pantaujompo.data.remote.model.WeatherInfo
+import com.example.pantaujompo.domain.TrackingManager
+import com.example.pantaujompo.presentation.theme.*
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-import com.example.pantaujompo.presentation.theme.*
-import com.example.pantaujompo.core.util.AppStrings
-import com.example.pantaujompo.data.local.datastore.UserPreferences
-import org.koin.compose.koinInject
-import kotlinx.coroutines.launch
-import androidx.compose.ui.draw.rotate
-import com.example.pantaujompo.domain.TrackingManager
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,66 +64,52 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = koinViewModel(),
     userPreferences: UserPreferences = koinInject()
 ) {
+    val context = LocalContext.current
     val language by userPreferences.language.collectAsState(initial = "id")
     fun str(key: String): String = AppStrings.get(key, language)
     
     val userName by viewModel.userName.collectAsState()
     val profileImageUri by viewModel.profileImageUri.collectAsState()
-    val totalJarak by viewModel.totalJarak.collectAsState(initial = 0.0)
-    val totalKalori by viewModel.totalKalori.collectAsState(initial = 0)
-    val totalDurasi by viewModel.totalDurasi.collectAsState(initial = 0)
-    val totalSesi by viewModel.totalSesi.collectAsState(initial = 0)
+    val weeklyJarak by viewModel.weeklyJarak.collectAsState(initial = 0.0)
+    val weeklyKalori by viewModel.weeklyKalori.collectAsState(initial = 0)
+    val weeklyDurasi by viewModel.weeklyDurasi.collectAsState(initial = 0)
     
-    val totalKarbo by viewModel.totalKarbo.collectAsState(initial = 0)
-    val totalProtein by viewModel.totalProtein.collectAsState(initial = 0)
-    val totalLemak by viewModel.totalLemak.collectAsState(initial = 0)
+    val dailyJarak by viewModel.dailyJarak.collectAsState(initial = 0.0)
+    val dailyKalori by viewModel.dailyKalori.collectAsState(initial = 0)
     
-    val avgPace = viewModel.getRataRataPace(totalJarak, totalDurasi)
+    val dailyKarbo by viewModel.dailyKarbo.collectAsState(initial = 0)
+    val dailyProtein by viewModel.dailyProtein.collectAsState(initial = 0)
+    val dailyLemak by viewModel.dailyLemak.collectAsState(initial = 0)
 
     val isDark by userPreferences.isDarkMode.collectAsState(initial = true)
     val textPrimary = MaterialTheme.colorScheme.onBackground
     val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
     val accentColor = MaterialTheme.colorScheme.primary
     val surfaceColor = if (isDark) Color(0xFF151515) else MaterialTheme.colorScheme.surface
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     var showActivityMenu by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     val greeting = when (hour) {
-        in 0..4 -> str("selamat_malam") // dini hari
+        in 0..4 -> str("selamat_malam")
         in 5..10 -> str("selamat_pagi")
         in 11..14 -> str("selamat_siang")
         in 15..17 -> str("selamat_sore")
         else -> str("selamat_malam")
     }
 
-    val aiSuggestion by viewModel.aiInsight.collectAsState()
-
     // Tracking state
     val isTrackingStarted by TrackingManager.hasStarted.collectAsState()
     val trackingSeconds by TrackingManager.seconds.collectAsState()
-    val trackingDistance by TrackingManager.totalDistanceMeters.collectAsState()
-    val currentJenis = TrackingManager.jenisOlahraga.collectAsState().value
+    val weatherService = koinInject<com.example.pantaujompo.data.remote.api.WeatherService>()
+    var weatherInfo by remember { mutableStateOf<WeatherInfo?>(null) }
+    var locationName by remember { mutableStateOf("Lokasi Anda") }
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var locationFetched by remember { mutableStateOf(false) }
 
     val appLocale = if (language == "en") Locale("en", "US") else Locale("id", "ID")
-
-    // Request Permissions
-    val permissionsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { permissions: Map<String, Boolean> -> }
-    )
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchDailyInsight()
-        permissionsLauncher.launch(
-            arrayOf(
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.CAMERA
-            )
-        )
-    }
 
     // Calendar week
     val calendar = Calendar.getInstance(appLocale).apply {
@@ -144,6 +138,80 @@ fun DashboardScreen(
         }
     }
 
+    val trackingDistance by TrackingManager.totalDistanceMeters.collectAsState()
+    val currentJenis = TrackingManager.jenisOlahraga.collectAsState().value
+
+    @SuppressLint("MissingPermission")
+    fun fetchWeather() {
+        if (!locationFetched) {
+            try {
+                // Menggunakan BALANCED_POWER_ACCURACY (Sinyal WiFi/BTS) agar super cepat dan tidak menunggu satelit GPS
+                fusedLocationClient.getCurrentLocation(com.google.android.gms.location.Priority.PRIORITY_BALANCED_POWER_ACCURACY, null).addOnCompleteListener { task ->
+                    val loc = if (task.isSuccessful) task.result else null
+                    coroutineScope.launch {
+                        try {
+                            val lat = loc?.latitude ?: -6.2088
+                            val lon = loc?.longitude ?: 106.8456
+                            
+                            weatherInfo = weatherService.getWeatherAndAqi(lat, lon)
+                            
+                            if (loc != null) {
+                                withContext(Dispatchers.IO) {
+                                    try {
+                                        val geocoder = Geocoder(context, Locale.getDefault())
+                                        val addresses = geocoder.getFromLocation(lat, lon, 1)
+                                        if (!addresses.isNullOrEmpty()) {
+                                            val address = addresses[0]
+                                            val city = address.locality ?: address.subAdminArea ?: address.adminArea
+                                            if (city != null) locationName = city
+                                        }
+                                    } catch (e: Exception) {
+                                        // Ignore geocoding errors
+                                    }
+                                }
+                            } else {
+                                locationName = "Jakarta (Default)"
+                            }
+                        } catch (e: Exception) {
+                            // If it fails, we will show "Gagal"
+                            locationName = "Gagal memuat"
+                        } finally {
+                            locationFetched = true
+                        }
+                    }
+                }
+            } catch (e: SecurityException) {
+                locationFetched = true
+            }
+        }
+    }
+
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { permissions -> 
+            val fine = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true
+            val coarse = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (fine || coarse) fetchWeather()
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchDailyInsight()
+        
+        val hasFine = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (hasFine || hasCoarse) {
+            fetchWeather()
+        } else {
+            permissionsLauncher.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
     MeshBackground(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -157,7 +225,6 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar with Glass Effect
                 Box(
                     modifier = Modifier
                         .size(54.dp)
@@ -186,15 +253,22 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(greeting, color = textSecondary, fontSize = 13.sp)
+                    
                     Text(
                         if (userName.isNotBlank()) userName else str("pengguna"),
                         color = textPrimary,
                         fontWeight = FontWeight.ExtraBold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
+                    
+                    if (weatherInfo != null) {
+                        val iconWeather = if (weatherInfo!!.weatherCode <= 3) "☀️" else if (weatherInfo!!.weatherCode <= 69) "🌧️" else "☁️"
+                        Text("$iconWeather ${weatherInfo!!.temperature}°C", color = textSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    }
                 }
                 
-                // Theme Toggle
                 Box(
                     modifier = Modifier.size(44.dp).clip(CircleShape)
                         .background(if (isDark) Color(0xFF222222) else Color(0xFFE0E0E0))
@@ -208,18 +282,14 @@ fun DashboardScreen(
                         modifier = Modifier.size(22.dp)
                     )
                 }
-                
-                Spacer(modifier = Modifier.width(12.dp))
+
+                Spacer(modifier = Modifier.width(16.dp))
                 
                 // AI Button (Magic Glowing)
                 val infiniteTransition = rememberInfiniteTransition()
                 val pulseScale by infiniteTransition.animateFloat(
                     initialValue = 0.9f, targetValue = 1.1f,
                     animationSpec = infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Reverse)
-                )
-                val rotateBorder by infiniteTransition.animateFloat(
-                    initialValue = 0f, targetValue = 360f,
-                    animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart)
                 )
                 
                 val sweepGradient = if (isDark) {
@@ -240,18 +310,18 @@ fun DashboardScreen(
                         .clickable { onNavigateToAiChat() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.AutoAwesome, null, tint = accentColor, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.AutoAwesome, null, tint = accentColor, modifier = Modifier.size(24.dp))
                 }
             }
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // ==================== WEEK CALENDAR (Auto Scroll & Glassmorphism) ====================
+            // ==================== CALENDAR DAYS ====================
             LazyRow(
                 state = listState,
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(weekDays) { (day, date, isToday) ->
                     Box(
@@ -293,7 +363,7 @@ fun DashboardScreen(
                                 Text(
                                     date, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp,
                                     color = if (isToday) Color.Black
-                                    else if (isDark) Color.White else LightOnSurface
+                                    else if (isDark) Color.White else Color(0xFF001524)
                                 )
                             }
                         }
@@ -303,7 +373,9 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // ==================== STATS ROW (Total Minggu Ini dipindah ke bawah Kalender) ====================
+            // Widget Cuaca telah dihapus dan dipindahkan ke Header (Minimalist View)
+
+            // ==================== STATS ROW ====================
             Text(
                 str("total_minggu_ini"), 
                 color = textPrimary, 
@@ -312,15 +384,15 @@ fun DashboardScreen(
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).height(IntrinsicSize.Max),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                HomeStatCard(Modifier.weight(1f), Icons.Default.DirectionsRun, str("total_jarak"),
-                    String.format(Locale.US, "%.1f", totalJarak), "km", Color(0xFF00E676), isDark)
-                HomeStatCard(Modifier.weight(1f), Icons.Default.LocalFireDepartment, str("kalori"),
-                    "$totalKalori", "kcal", Color(0xFFFF9100), isDark)
-                HomeStatCard(Modifier.weight(1f), Icons.Default.Timer, str("durasi"),
-                    "$totalDurasi", "min", Color(0xFF00BCD4), isDark)
+                HomeStatCard(Modifier.weight(1f).fillMaxHeight(), Icons.Default.DirectionsRun, str("total_jarak"),
+                    String.format(Locale.US, "%.1f", weeklyJarak), "km", Color(0xFF00E676), isDark)
+                HomeStatCard(Modifier.weight(1f).fillMaxHeight(), Icons.Default.LocalFireDepartment, str("kalori"),
+                    "$weeklyKalori", "kcal", Color(0xFFFF9100), isDark)
+                HomeStatCard(Modifier.weight(1f).fillMaxHeight(), Icons.Default.Timer, str("durasi"),
+                    "$weeklyDurasi", "min", Color(0xFF00BCD4), isDark)
             }
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -375,8 +447,8 @@ fun DashboardScreen(
                         .padding(horizontal = 24.dp)
                         .scale(buttonScale)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Brush.linearGradient(listOf(Color(0xFF00E676).copy(alpha = 0.8f), Color(0xFF00BCD4).copy(alpha = 0.6f)))) // Green & Cyan accent glass
-                        .border(1.dp, Color.White.copy(alpha=0.5f), RoundedCornerShape(24.dp))
+                        .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))) // Use theme primary/secondary
+                        .border(1.dp, Color.White.copy(alpha=0.3f), RoundedCornerShape(24.dp))
                         .clickable(interactionSource = interactionSource, indication = null) { showActivityMenu = true }
                         .padding(16.dp)
                 ) {
@@ -433,22 +505,22 @@ fun DashboardScreen(
                 ActivityCard(
                     modifier = Modifier.weight(1f),
                     title = str("kalori_aktif"),
-                    value = "$totalKalori",
+                    value = "$dailyKalori",
                     unit = "kcal",
                     icon = Icons.Default.LocalFireDepartment,
                     color = Color(0xFFFF9100),
-                    progress = if (totalKalori > 0) (totalKalori / 500f).coerceAtMost(1f) else 0f,
+                    progress = if (dailyKalori > 0) (dailyKalori / 500f).coerceAtMost(1f) else 0f,
                     isDark = isDark,
                     onClick = onNavigateToRiwayat
                 )
                 ActivityCard(
                     modifier = Modifier.weight(1f),
                     title = str("jarak_tempuh"),
-                    value = String.format(Locale.US, "%.1f", totalJarak),
+                    value = String.format(Locale.US, "%.1f", dailyJarak),
                     unit = "km",
                     icon = Icons.Default.Place,
                     color = Color(0xFF00E676),
-                    progress = if (totalJarak > 0) (totalJarak / 5.0).toFloat().coerceAtMost(1f) else 0f,
+                    progress = if (dailyJarak > 0) (dailyJarak / 5.0).toFloat().coerceAtMost(1f) else 0f,
                     isDark = isDark,
                     onClick = onNavigateToRiwayat
                 )
@@ -463,7 +535,7 @@ fun DashboardScreen(
                     .padding(horizontal = 24.dp)
                     .glassCard(shape = RoundedCornerShape(22.dp), neonColor = Color(0xFF00BCD4))
                     .clickable { onNavigateToRiwayat() }
-                    .padding(20.dp)
+                    .padding(24.dp)
             ) {
                 Column {
                     Row(
@@ -476,9 +548,9 @@ fun DashboardScreen(
                     }
                     Spacer(modifier = Modifier.height(14.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        NutritionBarItem(str("karbo"), "${totalKarbo}g", Color(0xFF00BCD4), isDark)
-                        NutritionBarItem(str("protein"), "${totalProtein}g", Color(0xFF00E676), isDark)
-                        NutritionBarItem(str("lemak"), "${totalLemak}g", Color(0xFFFF5252), isDark)
+                        NutritionBarItem(str("karbo"), "${dailyKarbo}g", Color(0xFF00BCD4), if (dailyKarbo > 0) (dailyKarbo / 300f).coerceAtMost(1f) else 0f, isDark)
+                        NutritionBarItem(str("protein"), "${dailyProtein}g", Color(0xFF00E676), if (dailyProtein > 0) (dailyProtein / 100f).coerceAtMost(1f) else 0f, isDark)
+                        NutritionBarItem(str("lemak"), "${dailyLemak}g", Color(0xFFFF5252), if (dailyLemak > 0) (dailyLemak / 70f).coerceAtMost(1f) else 0f, isDark)
                     }
                 }
             }
@@ -491,7 +563,7 @@ fun DashboardScreen(
                 color = textPrimary, 
                 fontWeight = FontWeight.ExtraBold, 
                 fontSize = 18.sp,
-                modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 12.dp)
+                modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 16.dp)
             )
             
             val tips = listOf(
@@ -514,7 +586,7 @@ fun DashboardScreen(
             
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth().height(120.dp),
+                modifier = Modifier.fillMaxWidth().height(124.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 pageSpacing = 16.dp
             ) { page ->
@@ -529,7 +601,7 @@ fun DashboardScreen(
             
             // Pager Indicator
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 repeat(tips.size) { index ->
@@ -565,7 +637,7 @@ fun DashboardScreen(
                     showActivityMenu = false
                     onNavigateToTracking("Jalan")
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 ActivityMenuItem(
                     str("lari_jogging"), 
                     Icons.Default.DirectionsRun, 
@@ -575,7 +647,7 @@ fun DashboardScreen(
                     showActivityMenu = false
                     onNavigateToTracking("Lari")
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 ActivityMenuItem(
                     str("bersepeda"), 
                     Icons.Default.DirectionsBike, 
@@ -625,12 +697,13 @@ fun HomeStatCard(modifier: Modifier, icon: ImageVector, title: String, value: St
 
     Box(
         modifier = modifier
-            .height(100.dp)
-            .background(surfaceColor, RoundedCornerShape(20.dp))
-            .border(1.dp, color.copy(0.25f), RoundedCornerShape(20.dp))
+            .background(surfaceColor, RoundedCornerShape(24.dp))
+            .border(1.dp, color.copy(0.25f), RoundedCornerShape(24.dp))
     ) {
-        Column(modifier = Modifier.padding(12.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-            Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
+        Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+            Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(12.dp))
             Column {
                 Text(title, color = textSecondaryColor, fontSize = 10.sp, fontWeight = FontWeight.Medium)
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -666,7 +739,7 @@ fun ActivityCard(
                     modifier = Modifier.size(40.dp).clip(CircleShape).background(color.copy(0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
+                    Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
                 }
                 Icon(Icons.Default.ArrowOutward, null, tint = textSecondaryColor, modifier = Modifier.size(16.dp))
             }
@@ -679,7 +752,7 @@ fun ActivityCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(unit, color = textSecondaryColor, fontSize = 12.sp, modifier = Modifier.padding(bottom = 4.dp))
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Box(modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(bgColor)) {
                     val safeProgress = progress.coerceIn(0.01f, 1f)
                     if (progress > 0f) {
@@ -692,13 +765,19 @@ fun ActivityCard(
 }
 
 @Composable
-fun NutritionBarItem(label: String, value: String, color: Color, isDark: Boolean) {
+fun NutritionBarItem(label: String, value: String, color: Color, progress: Float, isDark: Boolean) {
+    val bgColor = if (isDark) Color(0xFF222222) else Color(0xFFE8ECF0)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         Spacer(modifier = Modifier.height(6.dp))
         Text(value, color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(6.dp))
-        Box(modifier = Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(color))
+        Box(modifier = Modifier.width(42.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(bgColor)) {
+            val safeProgress = progress.coerceIn(0.01f, 1f)
+            if (progress > 0f) {
+                Box(modifier = Modifier.fillMaxWidth(safeProgress).height(6.dp).clip(RoundedCornerShape(3.dp)).background(color))
+            }
+        }
     }
 }
 
@@ -711,9 +790,9 @@ fun LifestyleCard(icon: ImageVector, title: String, desc: String, color: Color, 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(24.dp))
             .background(surfaceColor)
-            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

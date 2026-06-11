@@ -70,6 +70,13 @@ class RiwayatViewModel(
         val startTs = getStartTimestamp(filter)
         makananList.filter { it.tanggal >= startTs }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // 2.1 Ambil data Makanan HANYA hari ini (untuk halaman Pemindai)
+    val makananHariIniState: StateFlow<List<MakananEntity>> = makananDao.getAllMakanan()
+        .map { makananList ->
+            val startTs = getStartTimestamp(TimeFilter.HARIAN)
+            makananList.filter { it.tanggal >= startTs }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
         
     // 3. Target Kalori
     val targetKalori = userPreferences.targetKalori

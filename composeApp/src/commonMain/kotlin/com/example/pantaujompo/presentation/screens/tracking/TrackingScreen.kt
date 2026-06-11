@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.core.*
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -96,12 +97,12 @@ fun TrackingScreen(
     var useSatellite by remember { mutableStateOf(false) }
 
     val standardTileSource = remember {
-        object : OnlineTileSourceBase("GoogleMaps", 1, 20, 256, ".png", arrayOf("https://mt0.google.com/vt/lyrs=m&hl=id&z=", "https://mt1.google.com/vt/lyrs=m&hl=id&z=", "https://mt2.google.com/vt/lyrs=m&hl=id&z=", "https://mt3.google.com/vt/lyrs=m&hl=id&z=")) {
+        object : OnlineTileSourceBase("GoogleMaps", 1, 20, 256, ".png", arrayOf("https://mt0.google.com/vt/lyrs=p&hl=id&scale=2&z=", "https://mt1.google.com/vt/lyrs=p&hl=id&scale=2&z=", "https://mt2.google.com/vt/lyrs=p&hl=id&scale=2&z=", "https://mt3.google.com/vt/lyrs=p&hl=id&scale=2&z=")) {
             override fun getTileURLString(pMapTileIndex: Long): String = baseUrl + MapTileIndex.getZoom(pMapTileIndex) + "&x=" + MapTileIndex.getX(pMapTileIndex) + "&y=" + MapTileIndex.getY(pMapTileIndex)
         }
     }
     val satelliteTileSource = remember {
-        object : OnlineTileSourceBase("GoogleSatellite", 1, 20, 256, ".png", arrayOf("https://mt0.google.com/vt/lyrs=s&hl=id&z=", "https://mt1.google.com/vt/lyrs=s&hl=id&z=", "https://mt2.google.com/vt/lyrs=s&hl=id&z=", "https://mt3.google.com/vt/lyrs=s&hl=id&z=")) {
+        object : OnlineTileSourceBase("GoogleSatellite", 1, 20, 256, ".png", arrayOf("https://mt0.google.com/vt/lyrs=s&hl=id&scale=2&z=", "https://mt1.google.com/vt/lyrs=s&hl=id&scale=2&z=", "https://mt2.google.com/vt/lyrs=s&hl=id&scale=2&z=", "https://mt3.google.com/vt/lyrs=s&hl=id&scale=2&z=")) {
             override fun getTileURLString(pMapTileIndex: Long): String = baseUrl + MapTileIndex.getZoom(pMapTileIndex) + "&x=" + MapTileIndex.getX(pMapTileIndex) + "&y=" + MapTileIndex.getY(pMapTileIndex)
         }
     }
@@ -180,6 +181,15 @@ fun TrackingScreen(
                     for (location in result.locations) {
                         val geoPoint = GeoPoint(location.latitude, location.longitude)
                         lastKnownGeoPoint = geoPoint
+                        
+                        if (location.hasBearing()) {
+                            userMarker?.rotation = -location.bearing // OSMDroid rotates clockwise, bearing is East of North, so we might need positive rotation. Let's use location.bearing.
+                            // Actually, standard OSMDroid rotation is clockwise. Android bearing is also clockwise from North.
+                            userMarker?.rotation = -location.bearing // wait, if standard is clockwise, rotation should be positive. Let's just use location.bearing
+                            // Wait! In OSMDroid, MapView rotation is counter-clockwise, Marker rotation is clockwise? 
+                            // Standard OSMDroid: positive rotation means clockwise. Bearing is also clockwise.
+                            userMarker?.rotation = location.bearing
+                        }
                         
                         if (isRunning) { 
                             val currentRoute = TrackingManager.routePoints.value
@@ -279,6 +289,8 @@ fun TrackingScreen(
                         if (userMarker == null) {
                             userMarker = Marker(map)
                             userMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                            // Allow marker to be rotated smoothly
+                            userMarker?.isFlat = true
                             userMarker?.icon = com.example.pantaujompo.core.util.MapUtils.createCustomMarkerDrawable(context)
                         }
                         userMarker?.position = lastKnownGeoPoint
@@ -488,6 +500,11 @@ fun TrackingScreen(
                         onClick = {
                             TrackingManager.startTracking(jenis)
                             LocationServiceController.start(context)
+                            lastKnownGeoPoint?.let {
+                                mapView.controller.animateTo(it)
+                                mapView.controller.setZoom(20.0) // Zoom super dekat (mengerecut)
+                            }
+                            isMapCenteredOnUser = true
                         },
                         modifier = Modifier.fillMaxWidth().height(64.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = jenisColor),
@@ -495,55 +512,45 @@ fun TrackingScreen(
                     ) {
                         Text("MULAI", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, letterSpacing = 2.sp)
                     }
-                } else if (isRunning) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // Pause Button (Rounded Rectangle)
-                        OutlinedButton(
-                            onClick = { TrackingManager.pauseTracking() },
-                            modifier = Modifier.weight(1f).height(64.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFB300).copy(alpha = 0.5f)),
-                            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color(0xFFFFB300).copy(alpha = 0.2f), contentColor = Color(0xFFFF9100)),
-                        ) {
-                            Icon(Icons.Default.Pause, contentDescription = "Pause", tint = Color(0xFFFF9100), modifier = Modifier.size(32.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("PAUSE", color = Color(0xFFFF9100), fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-                        }
-                        
-                        // Finish Button
-                        OutlinedButton(
-                            onClick = {
-                                LocationServiceController.stop(context)
-                                val durasiMenit = (seconds / 60).coerceAtLeast(1)
-                                onNavigateToSave(jenis, distanceInKm, calculatedKcal, durasiMenit, formatPace)
-                            },
-                            modifier = Modifier.weight(1f).height(64.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE53935).copy(alpha = 0.5f)),
-                            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color(0xFFE53935).copy(alpha = 0.2f), contentColor = Color(0xFFE53935)),
-                        ) {
-                            Icon(Icons.Default.Flag, contentDescription = "Selesai", tint = Color(0xFFE53935), modifier = Modifier.size(24.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("SELESAI", color = Color(0xFFE53935), fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-                        }
-                    }
                 } else {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // Resume Button
-                        OutlinedButton(
-                            onClick = { TrackingManager.resumeTracking() },
-                            modifier = Modifier.weight(1f).height(64.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E676).copy(alpha = 0.5f)),
-                            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color(0xFF00E676).copy(alpha = 0.2f), contentColor = Color(0xFF00E676)),
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = "Lanjut", tint = Color(0xFF00E676), modifier = Modifier.size(32.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("LANJUT", color = Color(0xFF00E676), fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateContentSize(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (isRunning) {
+                            // Pause Button (Circular)
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .border(2.dp, Color(0xFFFF9100), CircleShape)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF2C2C2E))
+                                    .clickable { TrackingManager.pauseTracking() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Pause, contentDescription = "Pause", tint = Color(0xFFFF9100), modifier = Modifier.size(32.dp))
+                            }
+                        } else {
+                            // Resume Button (Circular, Solid Green or Outline Green)
+                            // The user asked for "tetep bulet saja tapi berubah hijau dan simbolnya kek mau lanjut gitu"
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .border(2.dp, Color(0xFF00E676), CircleShape)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF2C2C2E))
+                                    .clickable { TrackingManager.resumeTracking() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.PlayArrow, contentDescription = "Lanjut", tint = Color(0xFF00E676), modifier = Modifier.size(36.dp))
+                            }
                         }
-                        
-                        // Finish Button
-                        OutlinedButton(
+
+                        // Finish Button (Solid Red Wide)
+                        Button(
                             onClick = {
                                 LocationServiceController.stop(context)
                                 val durasiMenit = (seconds / 60).coerceAtLeast(1)
@@ -551,12 +558,9 @@ fun TrackingScreen(
                             },
                             modifier = Modifier.weight(1f).height(64.dp),
                             shape = RoundedCornerShape(24.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE53935).copy(alpha = 0.5f)),
-                            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color(0xFFE53935).copy(alpha = 0.2f), contentColor = Color(0xFFE53935)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3B30))
                         ) {
-                            Icon(Icons.Default.Flag, contentDescription = "Selesai", tint = Color(0xFFE53935), modifier = Modifier.size(24.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("SELESAI", color = Color(0xFFE53935), fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                            Text(if (language == "en") "FINISH WORKOUT" else "SELESAI LATIHAN", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, letterSpacing = 1.sp)
                         }
                     }
                 }

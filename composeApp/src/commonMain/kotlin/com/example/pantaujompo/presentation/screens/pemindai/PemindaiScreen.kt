@@ -51,7 +51,7 @@ fun PemindaiScreen(
     viewModel: RiwayatViewModel,
     onSimpanClick: (MakananEntity) -> Unit
 ) {
-    val makananList by viewModel.makananState.collectAsState()
+    val makananList by viewModel.makananHariIniState.collectAsState()
     val targetKalori by viewModel.targetKalori.collectAsState()
     
     var showScanner by remember { mutableStateOf(false) }
@@ -106,7 +106,7 @@ fun PemindaiScreen(
                         .background(surfaceColor)
                         .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(24.dp))
                         .clickable { showTargetDialog = true }
-                        .padding(20.dp)
+                        .padding(24.dp)
                 ) {
                     Column {
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -136,7 +136,7 @@ fun PemindaiScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             MacroProgressItem(str("protein"), totalProtein, 80, Color(0xFF00E676), Modifier.weight(1f))
                             MacroProgressItem(str("karbo"), totalKarbo, 200, Color(0xFF00BCD4), Modifier.weight(1f))
                             MacroProgressItem(str("lemak"), makananList.sumOf { it.lemak }, 65, Color(0xFFFF9100), Modifier.weight(1f))
@@ -187,7 +187,7 @@ fun PemindaiScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             if (makananList.isEmpty()) {
@@ -290,7 +290,7 @@ fun PemindaiScreen(
                 }
                 Text(mkn.namaMakanan, color = textPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     NutrientResultChip(str("protein"), mkn.protein, "g", Color(0xFF00E676), Modifier.weight(1f))
                     NutrientResultChip(str("karbo"), mkn.karbo, "g", Color(0xFF00BCD4), Modifier.weight(1f))
                     NutrientResultChip(str("lemak"), mkn.lemak, "g", Color(0xFFFF9100), Modifier.weight(1f))
@@ -333,8 +333,8 @@ fun NutritionStatCard(label: String, value: String, icon: androidx.compose.ui.gr
             .background(surfaceColor, RoundedCornerShape(18.dp))
             .border(1.dp, color.copy(0.2f), RoundedCornerShape(18.dp))
     ) {
-        Column(modifier = Modifier.padding(12.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-            Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
+        Column(modifier = Modifier.padding(16.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+            Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
             Column {
                 Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                 Text(value, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
@@ -365,8 +365,8 @@ fun DailyMealCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 5.dp)
-            .background(surfaceColor, RoundedCornerShape(20.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha=0.3f), RoundedCornerShape(20.dp))
+            .background(surfaceColor, RoundedCornerShape(24.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha=0.3f), RoundedCornerShape(24.dp))
             .clickable { onClick() }
     ) {
         Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -528,23 +528,23 @@ fun ScannerBottomSheet(
         ) {
             Text(str("ai_nutrition_scanner"), color = textPrimary, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp)
             Text(str("foto_atau_ketik"), color = textSecondary, fontSize = 14.sp)
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Jika ada teks, sembunyikan kotak kamera (dan sebaliknya)
             if (inputText.isBlank()) {
                 // Camera preview box
                 Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp)
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(24.dp))
                         .background(if (isDark) Color(0xFF181818) else Color(0xFFF0F0F0))
-                        .border(1.dp, accentColor.copy(0.4f), RoundedCornerShape(20.dp))
+                        .border(1.dp, accentColor.copy(0.4f), RoundedCornerShape(24.dp))
                 ) {
                     if (capturedImage != null) {
                         Image(
                             capturedImage!!.asImageBitmap(),
                             null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp))
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp))
                         )
                         Box(
                             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
@@ -562,7 +562,7 @@ fun ScannerBottomSheet(
                             model = savedUri,
                             contentDescription = "Food",
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp))
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp))
                         )
                         Box(
                             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
@@ -585,14 +585,14 @@ fun ScannerBottomSheet(
                                 Box(modifier = Modifier.size(60.dp).clip(CircleShape).background(accentColor.copy(0.15f)), contentAlignment = Alignment.Center) {
                                     Icon(Icons.Default.CameraAlt, null, tint = accentColor, modifier = Modifier.size(30.dp))
                                 }
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(str("kamera"), color = accentColor, fontWeight = FontWeight.Bold)
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { galleryLauncher.launch("image/*") }) {
                                 Box(modifier = Modifier.size(60.dp).clip(CircleShape).background(Color(0xFF00BCD4).copy(0.15f)), contentAlignment = Alignment.Center) {
                                     Icon(Icons.Default.Photo, null, tint = Color(0xFF00BCD4), modifier = Modifier.size(30.dp))
                                 }
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(str("galeri"), color = Color(0xFF00BCD4), fontWeight = FontWeight.Bold)
                             }
                         }
@@ -633,44 +633,44 @@ fun ScannerBottomSheet(
             ) {
                 if (isAnalyzing) {
                     CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(str("menganalisis"), color = Color.Black, fontWeight = FontWeight.Bold)
                 } else {
-                    Icon(Icons.Default.AutoAwesome, null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.AutoAwesome, null, tint = Color.Black, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(str("analisis_dengan_ai"), color = Color.Black, fontWeight = FontWeight.ExtraBold)
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             if (hasResult) {
                 Box(
                     modifier = Modifier.fillMaxWidth()
                         .background(
                             if (isDark) Color(0xFF0A1A0A) else Color(0xFFE8F5E9),
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(24.dp)
                         )
-                        .border(1.dp, accentColor.copy(0.4f), RoundedCornerShape(20.dp))
-                        .padding(20.dp)
+                        .border(1.dp, accentColor.copy(0.4f), RoundedCornerShape(24.dp))
+                        .padding(24.dp)
                 ) {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.AutoAwesome, null, tint = accentColor, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.AutoAwesome, null, tint = accentColor, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(namaMakanan, color = textPrimary, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
                         }
                         Spacer(modifier = Modifier.height(14.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             NutrientResultChip(str("protein"), protein, "g", Color(0xFF00E676), Modifier.weight(1f))
                             NutrientResultChip(str("karbo"), karbo, "g", Color(0xFF00BCD4), Modifier.weight(1f))
                             NutrientResultChip(str("lemak"), lemak, "g", Color(0xFFFF9100), Modifier.weight(1f))
                             NutrientResultChip(str("kalori"), protein * 4 + karbo * 4 + lemak * 9, "kcal", Color(0xFFFF5252), Modifier.weight(1.3f))
                         }
                         if (kesimpulan.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(str("insight_ai"), color = accentColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Text(kesimpulan, color = textPrimary, fontSize = 13.sp, lineHeight = 18.sp)
                         }
@@ -687,9 +687,9 @@ fun ScannerBottomSheet(
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .clip(RoundedCornerShape(8.dp))
                                         .background(if (isSelected) accentColor else Color.Transparent)
-                                        .border(1.dp, if (isSelected) accentColor else MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
+                                        .border(1.dp, if (isSelected) accentColor else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
                                         .clickable { selectedKategori = kat }
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
@@ -734,7 +734,7 @@ fun ScannerBottomSheet(
                             colors = ButtonDefaults.buttonColors(containerColor = accentColor),
                             shape = RoundedCornerShape(14.dp)
                         ) {
-                            Icon(Icons.Default.Save, null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Save, null, tint = Color.Black, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(str("simpan_ke_riwayat"), color = Color.Black, fontWeight = FontWeight.ExtraBold)
                         }
@@ -782,7 +782,7 @@ fun NutrientResultChip(label: String, value: Int, unit: String, color: Color, mo
         }
     }
     Box(
-        modifier = modifier.background(adjustedColor.copy(0.12f), RoundedCornerShape(12.dp)).padding(10.dp),
+        modifier = modifier.background(adjustedColor.copy(0.12f), RoundedCornerShape(16.dp)).padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

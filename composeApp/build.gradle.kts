@@ -75,9 +75,27 @@ kotlin {
         }
 
         commonTest.dependencies {
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+        }
+
+        androidUnitTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.mockk)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                implementation(compose.uiTest)
+                implementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+                implementation("androidx.test.ext:junit:1.1.5")
+            }
         }
 
         androidMain.dependencies {
@@ -118,6 +136,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Narik DUA API Key dari local.properties biar aman
         buildConfigField(
@@ -164,4 +183,8 @@ sqldelight {
             packageName.set("com.example.pantaujompo.data.local")
         }
     }
+}
+
+dependencies {
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
 }

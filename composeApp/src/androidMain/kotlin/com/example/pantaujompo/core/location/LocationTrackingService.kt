@@ -63,8 +63,8 @@ class LocationTrackingService : Service() {
                         val timeDelta = (location.time - lastLoc.time) / 1000.0
                         val speed = if (timeDelta > 0) distanceDelta / timeDelta else 0.0
                         
-                        // Filter noise
-                        if (distanceDelta > 2.0 && speed < 12.0) {
+                        // Filter noise (Jarak > 1.0 meter, kecepatan < 15 m/s)
+                        if (distanceDelta > 1.0 && speed < 15.0) {
                             TrackingManager.addLocationPoint(currentGeoPoint, distanceDelta)
                             previousLocation = location
                         }

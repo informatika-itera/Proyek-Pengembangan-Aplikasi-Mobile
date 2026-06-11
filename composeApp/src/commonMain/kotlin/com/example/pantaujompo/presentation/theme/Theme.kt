@@ -17,15 +17,15 @@ val TextPrimary = Color(0xFFFFFFFF)
 val TextSecondary = Color(0xFFA0A0A0)
 val ErrorRed = Color(0xFFFF5252)
 
-// ===== LIGHT MODE PALETTE =====
-val LightBackground = Color(0xFFF0F2F5)
-val LightSurface = Color(0xFFFFFFFF)
-val LightPrimary = Color(0xFF00897B)       // Teal - good contrast on white
-val LightSecondary = Color(0xFF0097A7)
-val LightOnBackground = Color(0xFF0D0D0D)  // Near-black for max readability
-val LightOnSurface = Color(0xFF1A1A1A)
-val LightSecondaryText = Color(0xFF4A4A4A)
-val LightOutline = Color(0xFFBDBDBD)
+// ===== LIGHT MODE PALETTE (Broken White & Strava Orange with Navy) =====
+val LightBackground = Color(0xFFFAF9F6)    // Broken White (Off-white yang hangat)
+val LightSurface = Color(0xFFFFFFFF)       // Putih bersih untuk Card
+val LightPrimary = Color(0xFFFC4C02)       // Orange Strava khas olahraga
+val LightSecondary = Color(0xFF003049)     // Navy Biru Gelap (Cocok dengan Oranye)
+val LightOnBackground = Color(0xFF001524)  // Biru Navy sangat gelap pekat untuk Teks utama
+val LightOnSurface = Color(0xFF001524)
+val LightSecondaryText = Color(0xFF4A6071) // Biru keabu-abuan untuk teks sekunder
+val LightOutline = Color(0xFFD1DDE6)       // Garis batas kebiruan halus
 
 private val DarkColorScheme = darkColorScheme(
     primary = NeonGreen,
@@ -49,14 +49,14 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = Color.White,
     secondary = LightSecondary,
     onSecondary = Color.White,
-    tertiary = Color(0xFF7B1FA2),
+    tertiary = Color(0xFF0EA5E9), // Biru langit lembut sebagai aksen
     background = LightBackground,
     onBackground = LightOnBackground,
     surface = LightSurface,
     onSurface = LightOnSurface,
-    surfaceVariant = Color(0xFFE8ECF0),
+    surfaceVariant = Color(0xFFE9F0F5), // Card background alternatif bernuansa biru muda
     onSurfaceVariant = LightSecondaryText,
-    error = Color(0xFFD32F2F),
+    error = Color(0xFFEF4444),
     onError = Color.White,
     outline = LightOutline
 )

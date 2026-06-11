@@ -69,6 +69,7 @@ val viewModelModule = module {
     factory { com.example.travelplanner.presentation.screens.result.TripResultViewModel(get(), get(), get(), get()) }
     factory { com.example.travelplanner.presentation.screens.expenses.ExpenseViewModel(get(), get(), get()) }
     factory { com.example.travelplanner.presentation.screens.trips.MyTripsViewModel(get(), get()) }
+    factory { com.example.travelplanner.presentation.screens.summary.FinanceSummaryViewModel(get()) }
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

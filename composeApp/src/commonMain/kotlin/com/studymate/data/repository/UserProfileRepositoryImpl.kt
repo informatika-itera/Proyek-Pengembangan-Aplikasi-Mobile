@@ -77,4 +77,10 @@ class UserProfileRepositoryImpl(
             database.userProfileQueries.updateMantra(mantra)
         }
     }
+
+    override suspend fun clearProfile() {
+        withContext(Dispatchers.IO) {
+            database.userProfileQueries.clearProfile()
+        }
+    }
 }

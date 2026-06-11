@@ -8,8 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -31,6 +30,7 @@ import com.studymate.presentation.screens.profile.ProfileViewModel
 import com.studymate.presentation.screens.quiz.QuizScreen
 import com.studymate.presentation.screens.quiz.QuizViewModel
 import com.studymate.presentation.screens.quiz.SelectNoteForQuizScreen
+import com.studymate.presentation.screens.quiz.AdvancedQuizScreen
 import com.studymate.presentation.screens.splash.SplashScreen
 import com.studymate.presentation.theme.PrimaryLight
 import org.koin.compose.viewmodel.koinViewModel
@@ -155,24 +155,44 @@ fun AppNavHost(
                         navController.navigate(Screen.NoteDetail.createRoute(it))
                     })
                 }
-                composable(Screen.Quiz.route) { 
+                
+                composable(Screen.Quiz.route) {
                     val viewModel: QuizViewModel = koinViewModel()
                     QuizScreen(
                         viewModel = viewModel,
                         onNavigateToSelectNote = { navController.navigate(Screen.SelectNoteForQuiz.route) }
-                    ) 
+                    )
                 }
                 composable(Screen.SelectNoteForQuiz.route) {
-                    val viewModel: QuizViewModel = koinViewModel()
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(Screen.Quiz.route)
+                    }
+                    val viewModel: QuizViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
                     SelectNoteForQuizScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navController.popBackStack() },
-                        onNoteSelected = { note ->
-                            viewModel.startQuiz(note)
+                        onNavigateToAdvanced = { navController.navigate(Screen.AdvancedQuiz.route) },
+                        onNoteSelected = { note, count ->
+                            viewModel.startQuiz(note, count)
                             navController.popBackStack()
                         }
                     )
                 }
+                composable(Screen.AdvancedQuiz.route) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(Screen.Quiz.route)
+                    }
+                    val viewModel: QuizViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
+                    AdvancedQuizScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.popBackStack() },
+                        onStartQuiz = { subject, notes, count ->
+                            viewModel.startAdvancedQuiz(subject, notes, count)
+                            navController.popBackStack(Screen.Quiz.route, false)
+                        }
+                    )
+                }
+
                 composable(Screen.Calendar.route) { CalendarScreen() }
                 composable(Screen.Profile.route) {
                     val viewModel: ProfileViewModel = koinViewModel()

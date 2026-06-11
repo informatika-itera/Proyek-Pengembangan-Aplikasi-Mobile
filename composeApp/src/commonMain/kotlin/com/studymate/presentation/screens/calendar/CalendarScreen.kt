@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,8 +23,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.studymate.domain.model.Reminder
+import com.studymate.domain.repository.CalendarEvent
 import com.studymate.presentation.theme.*
 import kotlinx.datetime.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -37,6 +44,8 @@ fun CalendarScreen(
     var showTypeSelection by remember { mutableStateOf(false) }
     var showAddEventDialog by remember { mutableStateOf(false) }
     var showAddReminderDialog by remember { mutableStateOf(false) }
+
+    var selectedDetailItem by remember { mutableStateOf<Any?>(null) }
 
     if (showTypeSelection) {
         AlertDialog(
@@ -80,6 +89,20 @@ fun CalendarScreen(
         )
     }
 
+    if (selectedDetailItem != null) {
+        DetailDialog(
+            item = selectedDetailItem!!,
+            onDismiss = { selectedDetailItem = null },
+            onDelete = {
+                when (selectedDetailItem) {
+                    is CalendarEvent -> (selectedDetailItem as CalendarEvent).id?.let { viewModel.deleteEvent(it) }
+                    is Reminder -> viewModel.deleteReminder((selectedDetailItem as Reminder).id)
+                }
+                selectedDetailItem = null
+            }
+        )
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -89,12 +112,7 @@ fun CalendarScreen(
             ) {
                 Column {
                     CenterAlignedTopAppBar(
-                        title = { Text("Planner", fontWeight = FontWeight.Black) },
-                        actions = {
-                            IconButton(onClick = { viewModel.loadEvents() }) {
-                                Icon(Icons.Default.Notifications, null, tint = PrimaryLight)
-                            }
-                        }
+                        title = { Text("Planner", fontWeight = FontWeight.Black) }
                     )
                     TabRow(
                         selectedTabIndex = selectedTab,
@@ -119,7 +137,7 @@ fun CalendarScreen(
                             selectedContentColor = PrimaryLight,
                             unselectedContentColor = Color.Gray
                         ) {
-                            Text("Bulan", modifier = Modifier.padding(14.dp), fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Medium)
+                            Text("Weekly", modifier = Modifier.padding(14.dp), fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Medium)
                         }
                         Tab(
                             selected = selectedTab == 1,
@@ -127,7 +145,7 @@ fun CalendarScreen(
                             selectedContentColor = PrimaryLight,
                             unselectedContentColor = Color.Gray
                         ) {
-                            Text("Minggu", modifier = Modifier.padding(14.dp), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium)
+                            Text("Monthly", modifier = Modifier.padding(14.dp), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium)
                         }
                     }
                 }
@@ -150,14 +168,37 @@ fun CalendarScreen(
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            CalendarHeaderSection(uiState.selectedDate)
-            CalendarGridSection(
+            CalendarHeaderSection(
                 selectedDate = uiState.selectedDate,
-                onDateSelected = { viewModel.onDateSelected(it) }
+                onPrev = { viewModel.navigatePrev(selectedTab == 1) },
+                onNext = { viewModel.navigateNext(selectedTab == 1) }
             )
             
-            Spacer(modifier = Modifier.height(32.dp))
+            if (selectedTab == 0) {
+                CalendarGridSection(
+                    selectedDate = uiState.selectedDate,
+                    reminders = reminders,
+                    events = uiState.events,
+                    onDateSelected = { viewModel.onDateSelected(it) }
+                )
+            } else {
+                MonthlyGridSection(
+                    selectedDate = uiState.selectedDate,
+                    reminders = reminders,
+                    events = uiState.events,
+                    onDateSelected = { viewModel.onDateSelected(it) }
+                )
+            }
             
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            val dailyEvents = uiState.events.filter { 
+                Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
+            }
+            val dailyReminders = reminders.filter { 
+                Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -172,10 +213,7 @@ fun CalendarScreen(
                     color = PrimaryLight.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    val count = uiState.events.size + reminders.filter { 
-                        val dt = Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
-                        dt == uiState.selectedDate
-                    }.size
+                    val count = dailyEvents.size + dailyReminders.size
                     Text(
                         "$count Agenda",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -186,13 +224,21 @@ fun CalendarScreen(
                 }
             }
             
-            TimelineListSection(uiState.events, reminders, uiState.selectedDate)
+            TimelineListSection(
+                events = dailyEvents,
+                reminders = dailyReminders,
+                onItemClick = { selectedDetailItem = it }
+            )
         }
     }
 }
 
 @Composable
-fun CalendarHeaderSection(selectedDate: LocalDate) {
+fun CalendarHeaderSection(
+    selectedDate: LocalDate,
+    onPrev: () -> Unit,
+    onNext: () -> Unit
+) {
     val monthName = remember(selectedDate) {
         selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }
     }
@@ -219,8 +265,8 @@ fun CalendarHeaderSection(selectedDate: LocalDate) {
                 .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         ) {
-            IconButton(onClick = {}) { Icon(Icons.Default.ChevronLeft, null, modifier = Modifier.size(20.dp)) }
-            IconButton(onClick = {}) { Icon(Icons.Default.ChevronRight, null, modifier = Modifier.size(20.dp)) }
+            IconButton(onClick = onPrev) { Icon(Icons.Default.ChevronLeft, null, modifier = Modifier.size(20.dp)) }
+            IconButton(onClick = onNext) { Icon(Icons.Default.ChevronRight, null, modifier = Modifier.size(20.dp)) }
         }
     }
 }
@@ -228,6 +274,8 @@ fun CalendarHeaderSection(selectedDate: LocalDate) {
 @Composable
 fun CalendarGridSection(
     selectedDate: LocalDate,
+    reminders: List<Reminder>,
+    events: List<CalendarEvent>,
     onDateSelected: (LocalDate) -> Unit
 ) {
     Row(
@@ -235,12 +283,21 @@ fun CalendarGridSection(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         val days = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
-        val startOfWeek = selectedDate.minus(selectedDate.dayOfWeek.ordinal, DateTimeUnit.DAY)
+        // Start week with Sunday on the left
+        val startOfWeek = selectedDate.minus((selectedDate.dayOfWeek.ordinal + 1) % 7, DateTimeUnit.DAY)
         
         repeat(7) { i ->
             val date = startOfWeek.plus(i, DateTimeUnit.DAY)
             val isSelected = date == selectedDate
+            val isToday = date == Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             
+            val hasReminder = reminders.any { 
+                Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
+            }
+            val hasHoliday = events.any { 
+                it.isHoliday && Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
+            }
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -248,13 +305,11 @@ fun CalendarGridSection(
                     .clip(RoundedCornerShape(16.dp))
                     .then(
                         if (isSelected) {
-                            Modifier
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(PrimaryLight, SecondaryLight)
-                                    )
-                                )
-                                .shadow(8.dp, RoundedCornerShape(16.dp))
+                            Modifier.background(
+                                brush = Brush.verticalGradient(colors = listOf(PrimaryLight, SecondaryLight))
+                            ).shadow(8.dp, RoundedCornerShape(16.dp))
+                        } else if (isToday) {
+                            Modifier.background(PrimaryLight.copy(alpha = 0.1f))
                         } else {
                             Modifier.background(Color.Transparent)
                         }
@@ -264,17 +319,118 @@ fun CalendarGridSection(
             ) {
                 Text(
                     days[i], 
-                    color = if (isSelected) Color.White else Color.Gray, 
+                    color = if (isSelected) Color.White else if (hasHoliday) Color(0xFF4CAF50) else Color.Gray, 
                     fontSize = 11.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    date.dayOfMonth.toString(), 
-                    fontWeight = FontWeight.Black, 
-                    fontSize = 16.sp,
-                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        date.dayOfMonth.toString(), 
+                        fontWeight = FontWeight.Black, 
+                        fontSize = 16.sp,
+                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                    )
+                    if (hasReminder && !isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .offset(y = 8.dp)
+                                .size(4.dp)
+                                .clip(CircleShape)
+                                .background(ActionFABLight)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MonthlyGridSection(
+    selectedDate: LocalDate,
+    reminders: List<Reminder>,
+    events: List<CalendarEvent>,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    val firstDayOfMonth = LocalDate(selectedDate.year, selectedDate.month, 1)
+    val daysInMonth = selectedDate.month.number.let { month ->
+        if (month == 2) {
+            if (selectedDate.year % 4 == 0 && (selectedDate.year % 100 != 0 || selectedDate.year % 400 == 0)) 29 else 28
+        } else if (month in listOf(4, 6, 9, 11)) 30 else 31
+    }
+    
+    val startPadding = (firstDayOfMonth.dayOfWeek.ordinal + 1) % 7
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            listOf("M", "S", "S", "R", "K", "J", "S").forEach { 
+                Text(it, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
+            modifier = Modifier.height(240.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(List(startPadding) { null } + List(daysInMonth) { it + 1 }) { day ->
+                if (day != null) {
+                    val date = LocalDate(selectedDate.year, selectedDate.month, day)
+                    val isSelected = date == selectedDate
+                    val isToday = date == today
+                    
+                    val hasReminder = reminders.any { 
+                        Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
+                    }
+                    val hasHoliday = events.any { 
+                        it.isHoliday && Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                when {
+                                    isSelected -> PrimaryLight
+                                    isToday -> PrimaryLight.copy(alpha = 0.1f)
+                                    else -> Color.Transparent
+                                }
+                            )
+                            .clickable { onDateSelected(date) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            day.toString(),
+                            fontSize = 14.sp,
+                            fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
+                            color = when {
+                                isSelected -> Color.White
+                                hasHoliday -> Color(0xFF4CAF50)
+                                isToday -> PrimaryLight
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
+                        )
+                        if (hasReminder && !isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 2.dp)
+                                    .size(4.dp)
+                                    .clip(CircleShape)
+                                    .background(ActionFABLight)
+                            )
+                        }
+                    }
+                } else {
+                    Box(modifier = Modifier.aspectRatio(1f))
+                }
             }
         }
     }
@@ -282,22 +438,17 @@ fun CalendarGridSection(
 
 @Composable
 fun TimelineListSection(
-    events: List<com.studymate.domain.repository.CalendarEvent>,
-    reminders: List<com.studymate.domain.model.Reminder>,
-    selectedDate: LocalDate
+    events: List<CalendarEvent>,
+    reminders: List<Reminder>,
+    onItemClick: (Any) -> Unit
 ) {
-    val filteredReminders = reminders.filter { 
-        val dt = Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
-        dt == selectedDate
-    }
-    
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        items(filteredReminders) { reminder ->
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        items(reminders) { reminder ->
+            Row(modifier = Modifier.fillMaxWidth().clickable { onItemClick(reminder) }, verticalAlignment = Alignment.Top) {
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(50.dp)) {
                     Text("Pengingat", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, color = ActionFABLight)
                 }
@@ -330,18 +481,19 @@ fun TimelineListSection(
                 val dt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
                 "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
             }
-            val color = remember(event.color) {
-                try {
+            val color = remember(event.color, event.isHoliday) {
+                if (event.isHoliday) Color(0xFF4CAF50)
+                else try {
                     Color(event.color?.removePrefix("#")?.toLong(16) ?: 0xFF4CC9F0)
                 } catch (_: Exception) {
                     Color(0xFF4CC9F0)
                 }
             }
 
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Row(modifier = Modifier.fillMaxWidth().clickable { onItemClick(event) }, verticalAlignment = Alignment.Top) {
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(50.dp)) {
                     Text(startTimeStr, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                    Text("Agenda", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text(if (event.isHoliday) "Libur" else "Agenda", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Surface(
@@ -355,8 +507,8 @@ fun TimelineListSection(
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
                             Text(event.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                            event.location?.let {
-                                Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            event.description?.let {
+                                Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }
@@ -364,6 +516,55 @@ fun TimelineListSection(
             }
         }
     }
+}
+
+@Composable
+fun DetailDialog(
+    item: Any,
+    onDismiss: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val title = when (item) {
+        is CalendarEvent -> item.title
+        is Reminder -> item.title
+        else -> ""
+    }
+    val description = when (item) {
+        is CalendarEvent -> item.description ?: "Tidak ada keterangan"
+        is Reminder -> item.description ?: "Tidak ada keterangan"
+        else -> ""
+    }
+    val timeStr = when (item) {
+        is CalendarEvent -> {
+            val dt = Instant.fromEpochMilliseconds(item.startTime).toLocalDateTime(TimeZone.currentSystemDefault())
+            "${dt.dayOfMonth} ${dt.month.name} ${dt.year}, ${dt.hour}:${dt.minute.toString().padStart(2, '0')}"
+        }
+        is Reminder -> {
+            val dt = Instant.fromEpochMilliseconds(item.dueDate).toLocalDateTime(TimeZone.currentSystemDefault())
+            "${dt.dayOfMonth} ${dt.month.name} ${dt.year}, ${dt.hour}:${dt.minute.toString().padStart(2, '0')}"
+        }
+        else -> ""
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title, fontWeight = FontWeight.Black) },
+        text = {
+            Column {
+                Text(timeStr, style = MaterialTheme.typography.labelMedium, color = PrimaryLight)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(description)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Tutup") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)) {
+                Text("Hapus")
+            }
+        }
+    )
 }
 
 @Composable
@@ -494,7 +695,6 @@ fun AddReminderDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Date Selection Row
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -514,7 +714,6 @@ fun AddReminderDialog(
                     }
                 }
 
-                // Time Selection Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically

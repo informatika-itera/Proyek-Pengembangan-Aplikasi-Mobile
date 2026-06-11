@@ -74,4 +74,38 @@ class CalendarViewModel(
             reminderRepository.insertReminder(reminder)
         }
     }
+
+    fun deleteEvent(eventId: String) {
+        viewModelScope.launch {
+            calendarRepository.deleteEvent(eventId).onSuccess {
+                loadEvents()
+            }
+        }
+    }
+
+    fun deleteReminder(id: Long) {
+        viewModelScope.launch {
+            reminderRepository.deleteReminder(id)
+        }
+    }
+
+    fun navigatePrev(isMonthly: Boolean) {
+        val current = _uiState.value.selectedDate
+        val next = if (isMonthly) {
+            current.minus(1, DateTimeUnit.MONTH)
+        } else {
+            current.minus(7, DateTimeUnit.DAY)
+        }
+        _uiState.update { it.copy(selectedDate = next) }
+    }
+
+    fun navigateNext(isMonthly: Boolean) {
+        val current = _uiState.value.selectedDate
+        val next = if (isMonthly) {
+            current.plus(1, DateTimeUnit.MONTH)
+        } else {
+            current.plus(7, DateTimeUnit.DAY)
+        }
+        _uiState.update { it.copy(selectedDate = next) }
+    }
 }

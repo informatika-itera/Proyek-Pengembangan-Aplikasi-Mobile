@@ -43,6 +43,7 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun signOut() {
+        userProfileRepository.clearProfile()
         _currentUser.value = null
     }
 }

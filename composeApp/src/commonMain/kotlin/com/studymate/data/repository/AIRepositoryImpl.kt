@@ -22,8 +22,8 @@ class AIRepositoryImpl(
         return queryGroq(prompt)
     }
 
-    override suspend fun generateQuiz(subject: String, title: String, noteContent: String): Result<String> {
-        val prompt = ApiConstants.Prompts.generateQuiz(subject, title, noteContent)
+    override suspend fun generateQuiz(subject: String, title: String, noteContent: String, questionCount: Int): Result<String> {
+        val prompt = ApiConstants.Prompts.generateQuiz(subject, title, noteContent, questionCount)
         return queryGroq(prompt)
     }
 
@@ -41,11 +41,15 @@ class AIRepositoryImpl(
             }
 
             if (!response.status.isSuccess()) {
+                val errorMsg = response.bodyAsText()
+                println("Groq API Error Detail: $errorMsg")
                 return Result.failure(Exception("Groq Error: ${response.status.value}"))
             }
 
             val groqResponse: GroqResponse = response.body()
             val text = groqResponse.choices.firstOrNull()?.message?.content
+            
+            println("Groq Response Text: $text") // Debug log
             
             if (text != null) Result.success(text)
             else Result.failure(Exception("AI tidak memberikan respon."))

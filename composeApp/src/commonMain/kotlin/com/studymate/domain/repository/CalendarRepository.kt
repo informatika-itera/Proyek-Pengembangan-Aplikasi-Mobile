@@ -15,5 +15,6 @@ data class CalendarEvent(
     val startTime: Long,
     val endTime: Long,
     val color: String? = null,
-    val isGoogleEvent: Boolean = false
+    val isGoogleEvent: Boolean = false,
+    val isHoliday: Boolean = false
 )

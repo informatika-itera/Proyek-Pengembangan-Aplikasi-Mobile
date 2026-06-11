@@ -21,7 +21,8 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
                 CalendarContract.Events.EVENT_LOCATION,
                 CalendarContract.Events.DTSTART,
                 CalendarContract.Events.DTEND,
-                CalendarContract.Events.DISPLAY_COLOR
+                CalendarContract.Events.DISPLAY_COLOR,
+                CalendarContract.Events.CALENDAR_DISPLAY_NAME
             )
 
             val cursor = context.contentResolver.query(
@@ -34,6 +35,10 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
 
             cursor?.use {
                 while (it.moveToNext()) {
+                    val calName = it.getString(7) ?: ""
+                    val isHoliday = calName.contains("Holiday", ignoreCase = true) || 
+                                   calName.contains("Libur", ignoreCase = true)
+                    
                     events.add(
                         CalendarEvent(
                             id = it.getLong(0).toString(),
@@ -43,7 +48,8 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
                             startTime = it.getLong(4),
                             endTime = it.getLong(5),
                             color = String.format("#%06X", 0xFFFFFF and it.getInt(6)),
-                            isGoogleEvent = true
+                            isGoogleEvent = true,
+                            isHoliday = isHoliday
                         )
                     )
                 }

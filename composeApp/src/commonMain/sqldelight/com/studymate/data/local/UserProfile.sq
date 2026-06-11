@@ -27,3 +27,6 @@ UPDATE UserProfileEntity SET currentStreak = ?, lastStudyDate = ? WHERE id = 1;
 
 updateMantra:
 UPDATE UserProfileEntity SET dailyMantra = ? WHERE id = 1;
+
+clearProfile:
+DELETE FROM UserProfileEntity WHERE id = 1;

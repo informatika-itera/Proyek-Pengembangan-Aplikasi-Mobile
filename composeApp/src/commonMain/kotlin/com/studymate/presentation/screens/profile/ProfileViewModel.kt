@@ -13,14 +13,13 @@ import com.studymate.domain.repository.ReminderRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlin.math.ceil
 
 data class ProfileState(
     val user: UserProfile? = null,
     val heatmap: List<ActivityDay> = emptyList(),
     val monthlyQuizCount: Int = 0,
     val isLoading: Boolean = false,
-    val closestReminder: Reminder? = null
+    val closestReminder: Reminder? = null,
 ) {
     val achievementTier: AchievementTier
         get() = when {
@@ -40,6 +39,10 @@ class ProfileViewModel(
 
     private val _uiState = MutableStateFlow(ProfileState())
     val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
+
+    // Observe reminders via a StateFlow to ensure updates are received reliably
+    private val remindersFlow: StateFlow<List<Reminder>> = reminderRepository.getAllReminders()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         loadProfile()
@@ -72,18 +75,12 @@ class ProfileViewModel(
         }
     }
 
-    // Observe reminders via a StateFlow to ensure updates are received reliably
-    private val remindersFlow: StateFlow<List<Reminder>> by lazy {
-        reminderRepository.getAllReminders()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    }
-
     private fun observeReminders() {
         remindersFlow
             .onEach { reminders ->
                 val now = Clock.System.now().toEpochMilliseconds()
                 val closestReminder = reminders
-                    .filter { !it.isCompleted && it.dueDate > now }
+                    .filter { (!it.isCompleted) && (it.dueDate > now) }
                     .minByOrNull { it.dueDate }
                 _uiState.update { it.copy(closestReminder = closestReminder) }
             }
@@ -106,6 +103,12 @@ class ProfileViewModel(
                 .onFailure {
                     _uiState.update { it.copy(isLoading = false) }
                 }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.signOut()
         }
     }
 }

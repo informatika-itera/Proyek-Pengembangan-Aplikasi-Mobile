@@ -9,4 +9,5 @@ interface UserProfileRepository {
     suspend fun updateLocalProfile(name: String?, photoPath: String?, nim: String?, major: String?)
     suspend fun updateStreak(streak: Int, lastStudyDate: Long?)
     suspend fun updateMantra(mantra: String)
+    suspend fun clearProfile()
 }

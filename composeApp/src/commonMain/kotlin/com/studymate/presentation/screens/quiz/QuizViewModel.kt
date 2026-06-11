@@ -26,6 +26,9 @@ sealed interface QuizUiState {
         val answers: Map<Int, Int> = emptyMap(),
         val isFinished: Boolean = false
     ) : QuizUiState
+    data class Review(
+        val history: QuizHistory
+    ) : QuizUiState
     data class Error(val message: String) : QuizUiState
 }
 
@@ -48,44 +51,82 @@ class QuizViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val notes: StateFlow<List<Note>> = noteRepository.getAllNotes()
+        .map { allNotes -> allNotes.filter { it.refinedContent != null } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun startQuiz(note: Note) {
+    val allSubjects: StateFlow<List<String>> = noteRepository.getAllNotes()
+        .map { all -> all.map { it.subject }.filter { it.isNotBlank() }.distinct().sorted() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun startQuiz(note: Note, questionCount: Int) {
         viewModelScope.launch {
             _uiState.value = QuizUiState.Loading
             
             val result = aiRepository.generateQuiz(
                 subject = note.subject,
                 title = note.title,
-                noteContent = note.refinedContent ?: note.rawContent
+                noteContent = note.refinedContent ?: note.rawContent,
+                questionCount = questionCount
             )
-            result.onSuccess { jsonString ->
-                try {
-                    val cleanedJson = jsonString.trim()
-                        .removePrefix("```json")
-                        .removeSuffix("```")
-                        .trim()
+            handleQuizResult(result, note)
+        }
+    }
 
-                    val quizResponse = json.decodeFromString<QuizResponseDto>(cleanedJson)
-                    val questions = quizResponse.questions.map { dto ->
-                        QuizQuestion(
-                            question = dto.question,
-                            options = dto.options,
-                            correctAnswerIndex = dto.correct,
-                            explanation = dto.explanation
-                        )
-                    }
-                    
-                    _uiState.value = QuizUiState.ActiveSession(
-                        note = note,
-                        questions = questions
-                    )
-                } catch (e: Exception) {
-                    _uiState.value = QuizUiState.Error("Gagal memproses soal: ${e.message}")
-                }
-            }.onFailure {
-                _uiState.value = QuizUiState.Error(it.message ?: "Gagal membuat kuis.")
+    fun startAdvancedQuiz(subject: String, selectedNotes: List<Note>, questionCount: Int) {
+        viewModelScope.launch {
+            _uiState.value = QuizUiState.Loading
+            
+            val combinedContent = selectedNotes.joinToString("\n\n---\n\n") { 
+                "Materi: ${it.title}\n${it.refinedContent ?: it.rawContent}"
             }
+            
+            val result = aiRepository.generateQuiz(
+                subject = subject,
+                title = "Gabungan ${selectedNotes.size} Materi",
+                noteContent = combinedContent,
+                questionCount = questionCount
+            )
+            
+            // For advanced quiz, we use a placeholder note title
+            val placeholderNote = selectedNotes.first().copy(
+                title = "Advanced Quiz: $subject",
+                subject = subject
+            )
+            handleQuizResult(result, placeholderNote)
+        }
+    }
+
+    private fun handleQuizResult(result: Result<String>, note: Note) {
+        result.onSuccess { jsonString ->
+            try {
+                val startIndex = jsonString.indexOf('{')
+                val endIndex = jsonString.lastIndexOf('}')
+                
+                if (startIndex == -1 || endIndex == -1 || endIndex < startIndex) {
+                    throw Exception("AI tidak mengembalikan format data yang benar.")
+                }
+                
+                val cleanedJson = jsonString.substring(startIndex, endIndex + 1)
+
+                val quizResponse = json.decodeFromString<QuizResponseDto>(cleanedJson)
+                val questions = quizResponse.questions.map { dto ->
+                    QuizQuestion(
+                        question = dto.question,
+                        options = dto.options,
+                        correctAnswerIndex = dto.correct,
+                        explanation = dto.explanation
+                    )
+                }
+                
+                _uiState.value = QuizUiState.ActiveSession(
+                    note = note,
+                    questions = questions
+                )
+            } catch (e: Exception) {
+                _uiState.value = QuizUiState.Error("Gagal memproses soal: ${e.message}")
+            }
+        }.onFailure {
+            _uiState.value = QuizUiState.Error(it.message ?: "Gagal membuat kuis.")
         }
     }
 
@@ -111,20 +152,26 @@ class QuizViewModel(
             session.questions[idx].correctAnswerIndex == answer
         }.size
         
-        val history = QuizHistory(
+        val historyItem = QuizHistory(
             noteId = session.note.id,
             noteTitle = session.note.title,
             subject = session.note.subject,
             score = correctCount,
             totalQuestions = session.questions.size,
-            createdAt = Clock.System.now().toEpochMilliseconds()
+            createdAt = Clock.System.now().toEpochMilliseconds(),
+            questions = session.questions,
+            userAnswers = session.answers
         )
         
         viewModelScope.launch {
-            quizRepository.insertHistory(history)
+            quizRepository.insertHistory(historyItem)
             activityRepository.recordQuizCompletion()
             _uiState.value = session.copy(isFinished = true)
         }
+    }
+
+    fun startReview(history: QuizHistory) {
+        _uiState.value = QuizUiState.Review(history)
     }
 
     fun backToHistory() {

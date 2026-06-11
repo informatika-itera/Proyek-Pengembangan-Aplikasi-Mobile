@@ -42,22 +42,29 @@ object ApiConstants {
             """.trimIndent()
         }
 
-        fun generateQuiz(subject: String, title: String, noteContent: String): String {
+        fun generateQuiz(subject: String, title: String, noteContent: String, questionCount: Int): String {
             return """
-                Buatlah 5 soal pilihan ganda (soal HOTS - Higher Order Thinking Skills) berdasarkan materi berikut.
+                Create $questionCount multiple choice questions in Indonesian about $subject.
+                Topic: $title
+                Content: $noteContent
                 
-                PRIORITAS SUMBER (Urutan Kepentingan):
-                1. Mata Kuliah: $subject
-                2. Judul Materi: $title
-                3. Isi Catatan: $noteContent
+                Mandatory Rules:
+                1. Focus strictly on the subject: $subject.
+                2. Every question must have exactly 4 options.
+                3. ALL 4 options for each question MUST be unique and different from each other. Do NOT repeat the same text in options.
+                4. Output JSON only. No extra text.
                 
-                Instruksi Penting:
-                - Soal harus menantang dan menguji pemahaman konsep, bukan sekadar hafalan.
-                - Output harus dalam format JSON murni.
-                - Struktur JSON: { "questions": [{ "question": "", "options": ["", "", "", ""], "correct": 0, "explanation": "" }] }
-                - Field "correct" adalah index (0-3) dari jawaban yang benar.
-                - Field "explanation" menjelaskan kenapa jawaban tersebut benar.
-                - Kembalikan HANYA JSON tanpa teks penjelasan lain di awal atau akhir.
+                JSON Structure:
+                {
+                  "questions": [
+                    {
+                      "question": "text",
+                      "options": ["opt1", "opt2", "opt3", "opt4"],
+                      "correct": 0,
+                      "explanation": "why"
+                    }
+                  ]
+                }
             """.trimIndent()
         }
     }

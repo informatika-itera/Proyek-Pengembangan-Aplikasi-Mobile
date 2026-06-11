@@ -202,12 +202,6 @@ fun RecommendationScreen(
                         onReset = { viewModel.reset() }
                     )
                 }
-                is RecommendationState.Error -> {
-                    ErrorCard(
-                        message = currentState.message,
-                        onRetry = { viewModel.generateRecommendation(kosts) }
-                    )
-                }
             }
         }
     }
@@ -428,41 +422,7 @@ private fun RecommendationItemCard(index: Int, rec: ParsedRecommendation) {
     }
 }
 
-@Composable
-private fun ErrorCard(message: String, onRetry: () -> Unit) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
-        ),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Terjadi Kesalahan",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onErrorContainer
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = onRetry,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(text = "Coba Lagi")
-            }
-        }
-    }
-}
+
 
 private data class ParsedRecommendation(
     val nama: String,

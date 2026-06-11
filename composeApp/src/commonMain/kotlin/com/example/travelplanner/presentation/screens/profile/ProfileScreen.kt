@@ -189,9 +189,6 @@ fun ProfileScreen(
                                 color = MaterialTheme.colorScheme.secondary,
                                 fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp)
                         }
-                        Spacer(Modifier.height(2.dp))
-                        Text(uiState.userProfile.email, style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

@@ -111,7 +111,9 @@ class HomeViewModel(
 
     fun updateProfile(name: String, email: String = "taufik@traveler.com") {
         viewModelScope.launch {
-            tripRepository.saveProfile(UserProfile(name, email))
+            val updated = UserProfile(name, email)
+            _uiState.update { it.copy(userProfile = updated) }
+            tripRepository.saveProfile(updated)
         }
     }
 }

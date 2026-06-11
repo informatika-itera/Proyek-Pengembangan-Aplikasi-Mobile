@@ -10,7 +10,9 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
@@ -97,14 +99,24 @@ class TripRepositoryImpl(
                     )
                 }
             }
+            .catch { e ->
+                println("getProfile Flow Error: ${e.message}")
+                e.printStackTrace()
+                emit(null)
+            }
     }
 
-    override suspend fun saveProfile(profile: UserProfile) {
-        queries.insertOrUpdateProfile(
-            id = "user_profile",
-            name = profile.name,
-            email = profile.email
-        )
+    override suspend fun saveProfile(profile: UserProfile) = withContext(Dispatchers.IO) {
+        try {
+            queries.insertOrUpdateProfile(
+                id = "user_profile",
+                name = profile.name,
+                email = profile.email
+            )
+        } catch (e: Exception) {
+            println("saveProfile Error: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     private fun extractEndDate(startDate: String, duration: String): String {

@@ -36,7 +36,18 @@ val networkModule = module {
 val databaseModule = module {
     single {
         val driverFactory: com.example.travelplanner.core.util.DatabaseDriverFactory = get()
-        com.example.travelplanner.data.local.TravelPlannerDatabase(driverFactory.createDriver())
+        val driver = driverFactory.createDriver()
+        try {
+            driver.execute(
+                identifier = null,
+                sql = "CREATE TABLE IF NOT EXISTS profileEntity (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL);",
+                parameters = 0
+            )
+        } catch (e: Exception) {
+            println("AppModule: profileEntity table creation fallback error: ${e.message}")
+            e.printStackTrace()
+        }
+        com.example.travelplanner.data.local.TravelPlannerDatabase(driver)
     }
 }
 

@@ -118,3 +118,29 @@ Pengujian antarmuka untuk komponen-komponen kritis dilakukan pada emulator atau 
 ./gradlew connectedAndroidTest
 ```
 
+---
+
+## 🚀 Versi Rilis & Pembuatan APK (Release Build)
+
+Proyek ini menggunakan Semantic Versioning (versi saat ini: **1.1.0**). Rilis APK dikonfigurasi untuk ditandatangani secara aman menggunakan keystore lokal tanpa mengekspos kata sandi atau file keystore ke repositori Git.
+
+### 1. Prasyarat Konfigurasi Lokal
+Sebelum melakukan pembuatan APK Rilis, tambahkan konfigurasi keystore berikut ke dalam file [local.properties](file:///d:/temp/Proyek-Pengembangan-Aplikasi-Mobile/local.properties) Anda (file ini diabaikan oleh Git secara otomatis):
+```properties
+RELEASE_KEYSTORE_FILE=release.keystore
+RELEASE_KEYSTORE_PASSWORD=travelplanner123
+RELEASE_KEY_ALIAS=travelplanner
+RELEASE_KEY_PASSWORD=travelplanner123
+```
+
+### 2. Membuat APK Rilis Terarah (Signed APK)
+Jalankan perintah Gradle berikut untuk mengompilasi dan menandatangani aplikasi dalam mode Rilis:
+```powershell
+./gradlew assembleRelease
+```
+Setelah proses kompilasi selesai, APK rilis yang telah ditandatangani (*Signed Release APK*) akan tersedia di folder:
+`composeApp/build/outputs/apk/release/composeApp-release.apk`
+
+> [!NOTE]
+> Gradle dikonfigurasi secara kondisional. Jika parameter keystore tidak ditemukan di `local.properties` (misalnya pada server CI/CD), build rilis akan tetap berjalan dengan sukses tetapi menghasilkan APK yang tidak ditandatangani (*Unsigned Release APK*) untuk mencegah error build pada proses CI/CD.
+

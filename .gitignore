@@ -45,3 +45,7 @@ DerivedData/
 # caches/  <-- careful with these broad ignores
 # daemon/
 # native/
+
+# Keystores / Signing secrets
+*.keystore
+*.jks

@@ -135,6 +135,7 @@ class CookFromStockViewModelTest {
         
         val state = viewModel.state.value.recommendationState
         assertTrue(state is RecommendationUiState.Error)
-        assertEquals("Network Error", (state as RecommendationUiState.Error).message)
+        // ViewModel maps repository errors to user-friendly messages
+        assertEquals("Resep belum ditemukan. Coba kombinasi bahan lain.", (state as RecommendationUiState.Error).message)
     }
 }

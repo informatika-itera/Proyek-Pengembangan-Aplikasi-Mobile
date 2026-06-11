@@ -16,6 +16,7 @@ import com.example.travelplanner.presentation.screens.expenses.ExpenseTrackerScr
 import com.example.travelplanner.presentation.screens.settings.SettingsScreen
 import com.example.travelplanner.presentation.screens.profile.ProfileScreen
 import com.example.travelplanner.presentation.screens.splash.SplashScreen
+import com.example.travelplanner.presentation.screens.help.HelpScreen
 import com.example.travelplanner.presentation.screens.summary.FinanceSummaryScreen
 import com.example.travelplanner.presentation.screens.summary.TripSummaryScreen
 
@@ -30,6 +31,7 @@ sealed class Route {
     @Serializable data object Settings : Route()
     @Serializable data object FinanceSummary : Route()
     @Serializable data class  TripSummary(val tripId: String) : Route()
+    @Serializable data object Help : Route()
 }
 
 @Composable
@@ -122,7 +124,8 @@ fun AppNavHost(
                         launchSingleTop = true
                         restoreState = true
                     }
-                }
+                },
+                onNavigateToHelp     = { navController.navigate(Route.Help) }
             )
         }
 
@@ -158,6 +161,12 @@ fun AppNavHost(
                 isEnglish        = isEnglish,
                 onToggleLanguage = onToggleLanguage,
                 onNavigateBack   = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.Help> {
+            HelpScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

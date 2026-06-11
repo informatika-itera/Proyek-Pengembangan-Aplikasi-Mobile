@@ -27,6 +27,12 @@ Thumbs.db
 # Logs
 *.log
 
+# Keystores & Secrets
+*.jks
+*.keystore
+*.p12
+google-services.json
+
 # iOS / Xcode
 xcuserdata/
 *.xcuserstate

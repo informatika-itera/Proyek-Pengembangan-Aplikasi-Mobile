@@ -1,0 +1,102 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > ItemRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.domain.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemRepository (id.pusakakata.domain.repository)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemRepository</td>
+    <td class="coverageStat"/>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.domain.repository
+&nbsp;
+&nbsp;import id.pusakakata.domain.model.Word
+&nbsp;import kotlinx.coroutines.flow.Flow
+&nbsp;
+&nbsp;interface ItemRepository {
+&nbsp;    fun getAllWords(): Flow&lt;List&lt;Word&gt;&gt;
+&nbsp;    fun getFavoriteWords(): Flow&lt;List&lt;Word&gt;&gt;
+&nbsp;    suspend fun getWordById(id: String): Word?
+&nbsp;    suspend fun insertWord(word: Word)
+&nbsp;    suspend fun updateWord(word: Word)
+&nbsp;    suspend fun updateSrs(wordId: String, quality: Int)
+&nbsp;    suspend fun toggleFavorite(wordId: String)
+&nbsp;    suspend fun deleteWord(id: String)
+&nbsp;    suspend fun searchAndSave(word: String): Result&lt;Word&gt;
+&nbsp;    suspend fun getAiDefinition(word: String): Result&lt;String&gt;
+&nbsp;    
+&nbsp;    // Token Logic
+&nbsp;    fun getTokens(): Flow&lt;Long&gt;
+&nbsp;    suspend fun addTokens(amount: Long)
+&nbsp;    suspend fun useToken(): Boolean
+&nbsp;    
+&nbsp;    // Quiz logic
+&nbsp;    suspend fun getRandomWords(limit: Long): List&lt;Word&gt;
+&nbsp;    
+&nbsp;    // Collection logic
+&nbsp;    fun getCollectedCardIds(): Flow&lt;List&lt;String&gt;&gt;
+&nbsp;    suspend fun saveCollectedCard(cardId: String)
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 15:33</div>
+</div>
+</body>
+</html>

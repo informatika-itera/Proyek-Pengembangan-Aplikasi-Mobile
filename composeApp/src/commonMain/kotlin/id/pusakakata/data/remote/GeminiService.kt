@@ -57,23 +57,12 @@ data class GeminiPromptFeedback(
 )
 
 class GeminiService(
+    private val client: HttpClient,
     private val apiKey: String
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
-    }
-
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            json(json)
-        }
-
-        install(HttpTimeout) {
-            requestTimeoutMillis = 30_000
-            connectTimeoutMillis = 15_000
-            socketTimeoutMillis = 30_000
-        }
     }
 
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta"

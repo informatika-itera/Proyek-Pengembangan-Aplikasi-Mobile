@@ -1,0 +1,364 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > GeminiRequest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.data.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: GeminiRequest (id.pusakakata.data.remote)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">GeminiRequest</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.3%
+  </span>
+  <span class="absValue">
+    (81/109)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GeminiRequest$Companion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+    <td class="coverageStat"/>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.8%
+  </span>
+  <span class="absValue">
+    (83/111)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.data.remote
+&nbsp;
+&nbsp;import io.ktor.client.HttpClient
+&nbsp;import io.ktor.client.plugins.HttpRequestTimeoutException
+&nbsp;import io.ktor.client.plugins.HttpTimeout
+&nbsp;import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+&nbsp;import io.ktor.client.request.parameter
+&nbsp;import io.ktor.client.request.post
+&nbsp;import io.ktor.client.request.setBody
+&nbsp;import io.ktor.client.statement.bodyAsText
+&nbsp;import io.ktor.http.ContentType
+&nbsp;import io.ktor.http.contentType
+&nbsp;import io.ktor.serialization.kotlinx.json.json
+&nbsp;import kotlinx.serialization.Serializable
+&nbsp;import kotlinx.serialization.decodeFromString
+&nbsp;import kotlinx.serialization.json.Json
+&nbsp;
+<b class="pc">&nbsp;@Serializable</b>
+&nbsp;data class GeminiRequest(
+<b class="fc">&nbsp;    val contents: List&lt;GeminiContent&gt;,</b>
+<b class="fc">&nbsp;    val generationConfig: GeminiGenerationConfig = GeminiGenerationConfig()</b>
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiContent(
+&nbsp;    val parts: List&lt;GeminiPart&gt;,
+&nbsp;    val role: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiPart(
+&nbsp;    val text: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiGenerationConfig(
+&nbsp;    val temperature: Double = 0.7,
+&nbsp;    val maxOutputTokens: Int = 1000,
+&nbsp;    val topP: Double = 0.95
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiResponse(
+&nbsp;    val candidates: List&lt;GeminiCandidate&gt; = emptyList(),
+&nbsp;    val promptFeedback: GeminiPromptFeedback? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiCandidate(
+&nbsp;    val content: GeminiContent? = null,
+&nbsp;    val finishReason: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiPromptFeedback(
+&nbsp;    val blockReason: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;class GeminiService(
+&nbsp;    private val client: HttpClient,
+&nbsp;    private val apiKey: String
+&nbsp;) {
+&nbsp;    private val json = Json {
+&nbsp;        ignoreUnknownKeys = true
+&nbsp;        isLenient = true
+&nbsp;    }
+&nbsp;
+&nbsp;    private val baseUrl = &quot;https://generativelanguage.googleapis.com/v1beta&quot;
+&nbsp;    private val model = &quot;gemini-2.5-flash&quot;
+&nbsp;
+&nbsp;    suspend fun generateDefinition(word: String): String {
+&nbsp;        val prompt = &quot;&quot;&quot;
+&nbsp;            Berikan definisi singkat satu paragraf dalam bahasa Indonesia untuk kosa kata: $word. 
+&nbsp;            Tentukan juga kategorinya dari pilihan berikut: Umum, Sastra, Arkais.
+&nbsp;            Berikan juga satu contoh kalimat penggunaan kata tersebut yang formal atau edukatif.
+&nbsp;            Format jawaban harus JSON seperti ini: {&quot;definition&quot;: &quot;isi definisi&quot;, &quot;category&quot;: &quot;Umum/Sastra/Arkais&quot;, &quot;example&quot;: &quot;contoh kalimat&quot;}.
+&nbsp;            Jangan gunakan markdown atau teks lain.
+&nbsp;        &quot;&quot;&quot;.trimIndent()
+&nbsp;        return generateContent(prompt).getOrElse { throw it }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun generateContent(prompt: String): Result&lt;String&gt; {
+&nbsp;        return try {
+&nbsp;            val trimmedKey = apiKey.trim()
+&nbsp;            if (trimmedKey.isBlank()) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Gemini API key tidak boleh kosong.&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            if (prompt.isBlank()) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Prompt tidak boleh kosong.&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            val request = GeminiRequest(
+&nbsp;                contents = listOf(
+&nbsp;                    GeminiContent(
+&nbsp;                        role = &quot;user&quot;,
+&nbsp;                        parts = listOf(
+&nbsp;                            GeminiPart(text = prompt)
+&nbsp;                        )
+&nbsp;                    )
+&nbsp;                )
+&nbsp;            )
+&nbsp;
+&nbsp;            val httpResponse = client.post(
+&nbsp;                &quot;$baseUrl/models/$model:generateContent&quot;
+&nbsp;            ) {
+&nbsp;                contentType(ContentType.Application.Json)
+&nbsp;                parameter(&quot;key&quot;, trimmedKey)
+&nbsp;                setBody(request)
+&nbsp;            }
+&nbsp;
+&nbsp;            val rawResponse = httpResponse.bodyAsText()
+&nbsp;            val statusCode = httpResponse.status.value
+&nbsp;
+&nbsp;            println(&quot;GEMINI_HTTP_STATUS: $statusCode&quot;)
+&nbsp;            println(&quot;GEMINI_RAW_RESPONSE: $rawResponse&quot;)
+&nbsp;
+&nbsp;            if (statusCode == 400) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Request Gemini tidak valid. Detail: $rawResponse&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            if (statusCode == 404) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Model &#39;$model&#39; tidak ditemukan. Detail: $rawResponse&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            if (statusCode == 429) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Quota Gemini API tercapai (Error 429).&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            if (statusCode !in 200..299) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Gemini API error $statusCode: $rawResponse&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            val response = json.decodeFromString&lt;GeminiResponse&gt;(rawResponse)
+&nbsp;
+&nbsp;            val blockReason = response.promptFeedback?.blockReason
+&nbsp;            if (!blockReason.isNullOrBlank()) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Prompt diblokir oleh Gemini. Alasan: $blockReason&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            val candidate = response.candidates.firstOrNull()
+&nbsp;            if (candidate == null) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Gemini tidak mengembalikan kandidat jawaban.&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            if (!candidate.finishReason.isNullOrBlank() &amp;&amp; candidate.finishReason != &quot;STOP&quot;) {
+&nbsp;                return Result.failure(
+&nbsp;                    Exception(&quot;Gemini menghentikan respons. Alasan: ${candidate.finishReason}&quot;)
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            val resultText = candidate.content
+&nbsp;                ?.parts
+&nbsp;                ?.mapNotNull { it.text }
+&nbsp;                ?.joinToString(separator = &quot;\n&quot;)
+&nbsp;                ?.trim()
+&nbsp;
+&nbsp;            if (resultText.isNullOrBlank()) {
+&nbsp;                Result.failure(Exception(&quot;Gemini tidak memberikan teks respons.&quot;))
+&nbsp;            } else {
+&nbsp;                Result.success(resultText)
+&nbsp;            }
+&nbsp;        } catch (e: HttpRequestTimeoutException) {
+&nbsp;            Result.failure(Exception(&quot;Request timeout (Error 504). Periksa koneksi internet.&quot;))
+&nbsp;        } catch (e: Exception) {
+&nbsp;            Result.failure(Exception(e.message ?: &quot;Terjadi kesalahan tidak diketahui.&quot;))
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 19:27</div>
+</div>
+</body>
+</html>

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.map
 class FakeItemRepository : ItemRepository {
     private val _words = MutableStateFlow<List<Word>>(emptyList())
     private val _tokens = MutableStateFlow(0L)
+    private val _collectedCardIds = MutableStateFlow<List<String>>(emptyList())
 
     override fun getAllWords(): Flow<List<Word>> = _words.asStateFlow()
 
@@ -29,8 +30,7 @@ class FakeItemRepository : ItemRepository {
 
     override suspend fun updateSrs(wordId: String, quality: Int) {
         val word = getWordById(wordId) ?: return
-        // Minimal logic for test
-        updateWord(word.copy(srsData = word.srsData.copy(level = word.srsData.level + 1)))
+        updateWord(word.copy(srsData = word.srsData.calculateNextReview(quality, kotlinx.datetime.Clock.System.now())))
     }
 
     override suspend fun toggleFavorite(wordId: String) {
@@ -68,5 +68,13 @@ class FakeItemRepository : ItemRepository {
 
     override suspend fun getRandomWords(limit: Long): List<Word> {
         return _words.value.shuffled().take(limit.toInt())
+    }
+
+    override fun getCollectedCardIds(): Flow<List<String>> = _collectedCardIds.asStateFlow()
+
+    override suspend fun saveCollectedCard(cardId: String) {
+        if (!_collectedCardIds.value.contains(cardId)) {
+            _collectedCardIds.value = _collectedCardIds.value + cardId
+        }
     }
 }

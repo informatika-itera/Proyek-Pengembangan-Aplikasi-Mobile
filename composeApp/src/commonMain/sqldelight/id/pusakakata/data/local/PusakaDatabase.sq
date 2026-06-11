@@ -72,6 +72,9 @@ UPDATE UserStats SET tokens = tokens + ? WHERE id = 1;
 useToken:
 UPDATE UserStats SET tokens = tokens - 1 WHERE id = 1;
 
+resetTokens:
+UPDATE UserStats SET tokens = 0 WHERE id = 1;
+
 -- Collection Queries
 getCollectedCardIds:
 SELECT cardId FROM CollectedCardEntity;

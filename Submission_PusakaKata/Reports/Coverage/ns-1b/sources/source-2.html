@@ -1,0 +1,179 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > ThemeKt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.presentation.theme</a>
+</div>
+
+<h1>Coverage Summary for Class: ThemeKt (id.pusakakata.presentation.theme)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">ThemeKt</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/292)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.presentation.theme
+&nbsp;
+&nbsp;import androidx.compose.foundation.isSystemInDarkTheme
+&nbsp;import androidx.compose.material3.MaterialTheme
+&nbsp;import androidx.compose.material3.darkColorScheme
+&nbsp;import androidx.compose.material3.lightColorScheme
+&nbsp;import androidx.compose.runtime.Composable
+&nbsp;import androidx.compose.ui.graphics.Color
+&nbsp;
+<b class="nc">&nbsp;private val LightColorScheme = lightColorScheme(</b>
+<b class="nc">&nbsp;    primary = PrimaryFixed,</b>
+<b class="nc">&nbsp;    onPrimary = Color.White,</b>
+<b class="nc">&nbsp;    primaryContainer = PrimaryLight.copy(alpha = 0.2f),</b>
+<b class="nc">&nbsp;    onPrimaryContainer = PrimaryFixed,</b>
+<b class="nc">&nbsp;    secondary = SecondaryGold,</b>
+<b class="nc">&nbsp;    onSecondary = Color.White,</b>
+<b class="nc">&nbsp;    secondaryContainer = SecondaryGold.copy(alpha = 0.1f),</b>
+<b class="nc">&nbsp;    onSecondaryContainer = PrimaryFixed,</b>
+<b class="nc">&nbsp;    tertiary = AccentTeal,</b>
+<b class="nc">&nbsp;    onTertiary = Color.White,</b>
+<b class="nc">&nbsp;    surface = SurfaceCard,</b>
+<b class="nc">&nbsp;    onSurface = PrimaryFixed,</b>
+<b class="nc">&nbsp;    background = WarmBackground,</b>
+<b class="nc">&nbsp;    onBackground = PrimaryFixed,</b>
+<b class="nc">&nbsp;    outline = PrimaryLight.copy(alpha = 0.5f),</b>
+<b class="nc">&nbsp;    surfaceVariant = Color(0xFFF5F0E6)</b>
+&nbsp;)
+&nbsp;
+<b class="nc">&nbsp;private val DarkColorScheme = darkColorScheme(</b>
+<b class="nc">&nbsp;    primary = Color(0xFFD7CCC8),</b>
+<b class="nc">&nbsp;    onPrimary = PrimaryFixed,</b>
+<b class="nc">&nbsp;    secondary = SecondaryGold,</b>
+<b class="nc">&nbsp;    background = Color(0xFF212121),</b>
+<b class="nc">&nbsp;    surface = Color(0xFF2D2D21),</b>
+<b class="nc">&nbsp;    onBackground = Color.White,</b>
+<b class="nc">&nbsp;    onSurface = Color.White</b>
+&nbsp;)
+&nbsp;
+&nbsp;@Composable
+&nbsp;fun PusakaKataTheme(
+<b class="nc">&nbsp;    darkTheme: Boolean = isSystemInDarkTheme(),</b>
+&nbsp;    content: @Composable () -&gt; Unit
+<b class="nc">&nbsp;) {</b>
+<b class="nc">&nbsp;    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme</b>
+&nbsp;
+<b class="nc">&nbsp;    MaterialTheme(</b>
+<b class="nc">&nbsp;        colorScheme = colorScheme,</b>
+<b class="nc">&nbsp;        typography = Typography,</b>
+<b class="nc">&nbsp;        content = content</b>
+&nbsp;    )
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 15:33</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > SettingsScreenKt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.presentation.screens.settings</a>
+</div>
+
+<h1>Coverage Summary for Class: SettingsScreenKt (id.pusakakata.presentation.screens.settings)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">SettingsScreenKt</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/98)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SettingsScreenKt$SettingsScreen$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+    <td class="coverageStat"/>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/42)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">SettingsScreenKt$SettingsScreen$1$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+    <td class="coverageStat"/>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/31)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">SettingsScreenKt$SettingsScreen$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+    <td class="coverageStat"/>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/193)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/364)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.presentation.screens.settings
+&nbsp;
+&nbsp;import androidx.compose.foundation.clickable
+&nbsp;import androidx.compose.foundation.layout.*
+&nbsp;import androidx.compose.material.icons.Icons
+&nbsp;import androidx.compose.material.icons.filled.ArrowBack
+&nbsp;import androidx.compose.material.icons.filled.Info
+&nbsp;import androidx.compose.material3.*
+&nbsp;import androidx.compose.runtime.Composable
+&nbsp;import androidx.compose.ui.Modifier
+&nbsp;import androidx.compose.ui.unit.dp
+&nbsp;
+&nbsp;@OptIn(ExperimentalMaterial3Api::class)
+&nbsp;@Composable
+&nbsp;fun SettingsScreen(
+&nbsp;    onBack: () -&gt; Unit,
+&nbsp;    onNavigateToAbout: () -&gt; Unit
+<b class="nc">&nbsp;) {</b>
+<b class="nc">&nbsp;    Scaffold(</b>
+<b class="nc">&nbsp;        topBar = {</b>
+<b class="nc">&nbsp;            TopAppBar(</b>
+&nbsp;                title = { Text(&quot;Pengaturan&quot;) },
+<b class="nc">&nbsp;                navigationIcon = {</b>
+<b class="nc">&nbsp;                    IconButton(onClick = onBack) {</b>
+&nbsp;                        Icon(Icons.Default.ArrowBack, contentDescription = &quot;Kembali&quot;)
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            )
+&nbsp;        }
+<b class="nc">&nbsp;    ) { padding -&gt;</b>
+<b class="nc">&nbsp;        Column(</b>
+<b class="nc">&nbsp;            modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp),</b>
+<b class="nc">&nbsp;            verticalArrangement = Arrangement.spacedBy(8.dp)</b>
+&nbsp;        ) {
+<b class="nc">&nbsp;            Text(&quot;Aplikasi&quot;, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)</b>
+&nbsp;            
+<b class="nc">&nbsp;            ListItem(</b>
+&nbsp;                headlineContent = { Text(&quot;Tentang Pusaka Kata&quot;) },
+&nbsp;                supportingContent = { Text(&quot;Informasi versi dan pengembang&quot;) },
+&nbsp;                leadingContent = { Icon(Icons.Default.Info, contentDescription = null) },
+<b class="nc">&nbsp;                modifier = Modifier.clickable { onNavigateToAbout() }</b>
+&nbsp;            )
+&nbsp;
+<b class="nc">&nbsp;            HorizontalDivider()</b>
+&nbsp;            
+<b class="nc">&nbsp;            Text(&quot;Preferensi (Segera Hadir)&quot;, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)</b>
+&nbsp;            
+<b class="nc">&nbsp;            ListItem(</b>
+&nbsp;                headlineContent = { Text(&quot;Tema Gelap&quot;) },
+&nbsp;                trailingContent = { Switch(checked = false, onCheckedChange = {}) }
+&nbsp;            )
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 15:33</div>
+</div>
+</body>
+</html>

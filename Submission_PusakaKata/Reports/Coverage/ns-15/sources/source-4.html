@@ -1,0 +1,293 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > FlashcardViewModel</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.presentation.screens.flashcard</a>
+</div>
+
+<h1>Coverage Summary for Class: FlashcardViewModel (id.pusakakata.presentation.screens.flashcard)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">FlashcardViewModel</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.9%
+  </span>
+  <span class="absValue">
+    (10/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.9%
+  </span>
+  <span class="absValue">
+    (58/83)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FlashcardViewModel$loadFlashcards$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.9%
+  </span>
+  <span class="absValue">
+    (56/59)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">FlashcardViewModel$nextCard$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/72)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.7%
+  </span>
+  <span class="absValue">
+    (5/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.5%
+  </span>
+  <span class="absValue">
+    (16/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.3%
+  </span>
+  <span class="absValue">
+    (114/214)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.presentation.screens.flashcard
+&nbsp;
+&nbsp;import androidx.lifecycle.ViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import id.pusakakata.domain.model.Word
+&nbsp;import id.pusakakata.domain.repository.ItemRepository
+&nbsp;import kotlinx.coroutines.flow.MutableStateFlow
+&nbsp;import kotlinx.coroutines.flow.StateFlow
+&nbsp;import kotlinx.coroutines.flow.first
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;import kotlinx.datetime.Clock
+&nbsp;
+&nbsp;sealed interface FlashcardUiState {
+&nbsp;    object Loading : FlashcardUiState
+&nbsp;    data class Success(
+&nbsp;        val words: List&lt;Word&gt;,
+&nbsp;        val currentIndex: Int = 0,
+&nbsp;        val isFlipped: Boolean = false,
+&nbsp;        val isFinished: Boolean = false
+&nbsp;    ) : FlashcardUiState {
+&nbsp;        val currentWord: Word? get() = if (words.isNotEmpty() &amp;&amp; currentIndex &lt; words.size) words[currentIndex] else null
+&nbsp;    }
+&nbsp;    object Empty : FlashcardUiState
+&nbsp;}
+&nbsp;
+<b class="fc">&nbsp;class FlashcardViewModel(private val repository: ItemRepository) : ViewModel() {</b>
+<b class="fc">&nbsp;    private val _uiState = MutableStateFlow&lt;FlashcardUiState&gt;(FlashcardUiState.Loading)</b>
+<b class="fc">&nbsp;    val uiState: StateFlow&lt;FlashcardUiState&gt; = _uiState</b>
+&nbsp;
+<b class="fc">&nbsp;    init {</b>
+<b class="fc">&nbsp;        loadFlashcards()</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private fun loadFlashcards() {
+<b class="fc">&nbsp;        viewModelScope.launch {</b>
+<b class="fc">&nbsp;            val allWords = repository.getAllWords().first()</b>
+<b class="fc">&nbsp;            val dueWords = allWords.filter { </b>
+<b class="pc">&nbsp;                val nextReview = it.srsData.nextReview?.toEpochMilliseconds() ?: 0L</b>
+<b class="pc">&nbsp;                nextReview &lt;= Clock.System.now().toEpochMilliseconds()</b>
+<b class="fc">&nbsp;            }.shuffled()</b>
+&nbsp;
+<b class="fc">&nbsp;            _uiState.value = if (dueWords.isEmpty()) FlashcardUiState.Empty else FlashcardUiState.Success(dueWords)</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun flipCard() {
+<b class="fc">&nbsp;        val state = _uiState.value</b>
+<b class="pc">&nbsp;        if (state is FlashcardUiState.Success) {</b>
+<b class="fc">&nbsp;            _uiState.value = state.copy(isFlipped = !state.isFlipped)</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun nextCard(quality: Int) {
+<b class="nc">&nbsp;        val state = _uiState.value</b>
+<b class="nc">&nbsp;        if (state is FlashcardUiState.Success) {</b>
+<b class="nc">&nbsp;            viewModelScope.launch {</b>
+<b class="nc">&nbsp;                val currentWord = state.currentWord ?: return@launch</b>
+&nbsp;                // Implementasi SM-2 Algorithm via Repository
+<b class="nc">&nbsp;                repository.updateSrs(currentWord.id, quality)</b>
+&nbsp;                
+<b class="nc">&nbsp;                if (state.currentIndex + 1 &lt; state.words.size) {</b>
+<b class="nc">&nbsp;                    _uiState.value = state.copy(</b>
+<b class="nc">&nbsp;                        currentIndex = state.currentIndex + 1,</b>
+<b class="nc">&nbsp;                        isFlipped = false</b>
+&nbsp;                    )
+&nbsp;                } else {
+<b class="nc">&nbsp;                    _uiState.value = state.copy(isFinished = true)</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 15:33</div>
+</div>
+</body>
+</html>

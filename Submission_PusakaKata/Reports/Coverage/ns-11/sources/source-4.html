@@ -1,0 +1,305 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > AiResponse</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.presentation.screens.addedit</a>
+</div>
+
+<h1>Coverage Summary for Class: AiResponse (id.pusakakata.presentation.screens.addedit)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">AiResponse</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/88)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AiResponse$Companion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+    <td class="coverageStat"/>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.2%
+  </span>
+  <span class="absValue">
+    (2/90)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.presentation.screens.addedit
+&nbsp;
+&nbsp;import androidx.lifecycle.ViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import id.pusakakata.domain.model.Word
+&nbsp;import id.pusakakata.domain.repository.ItemRepository
+&nbsp;import kotlinx.coroutines.flow.MutableStateFlow
+&nbsp;import kotlinx.coroutines.flow.StateFlow
+&nbsp;import kotlinx.coroutines.flow.asStateFlow
+&nbsp;import kotlinx.coroutines.flow.update
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;import kotlin.uuid.ExperimentalUuidApi
+&nbsp;import kotlin.uuid.Uuid
+&nbsp;
+&nbsp;import kotlinx.serialization.json.Json
+&nbsp;import kotlinx.serialization.Serializable
+&nbsp;
+<b class="pc">&nbsp;@Serializable</b>
+<b class="nc">&nbsp;data class AiResponse(val definition: String, val category: String, val example: String = &quot;&quot;)</b>
+&nbsp;
+&nbsp;class AddEditViewModel(
+&nbsp;    private val repository: ItemRepository,
+&nbsp;    private val wordId: String?
+&nbsp;) : ViewModel() {
+&nbsp;
+&nbsp;    private val _uiState = MutableStateFlow(AddEditUiState())
+&nbsp;    val uiState: StateFlow&lt;AddEditUiState&gt; = _uiState.asStateFlow()
+&nbsp;
+&nbsp;    init {
+&nbsp;        if (wordId != null) {
+&nbsp;            loadWord(wordId)
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private fun loadWord(id: String) {
+&nbsp;        viewModelScope.launch {
+&nbsp;            _uiState.update { it.copy(isLoading = true, wordId = id) }
+&nbsp;            repository.getWordById(id)?.let { word -&gt;
+&nbsp;                _uiState.update { 
+&nbsp;                    it.copy(
+&nbsp;                        term = word.term,
+&nbsp;                        definition = word.definition,
+&nbsp;                        category = word.category,
+&nbsp;                        example = word.example,
+&nbsp;                        isLoading = false
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            } ?: _uiState.update { it.copy(isLoading = false, error = &quot;Kata tidak ditemukan&quot;) }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun onTermChange(newTerm: String) {
+&nbsp;        _uiState.update { it.copy(term = newTerm) }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun onDefinitionChange(newDef: String) {
+&nbsp;        _uiState.update { it.copy(definition = newDef) }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun onExampleChange(newExample: String) {
+&nbsp;        _uiState.update { it.copy(example = newExample) }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun onCategoryChange(newCat: String) {
+&nbsp;        _uiState.update { it.copy(category = newCat) }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun searchOnline() {
+&nbsp;        val term = _uiState.value.term
+&nbsp;        if (term.isBlank()) return
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            _uiState.update { it.copy(isLoading = true, error = null) }
+&nbsp;            repository.getAiDefinition(term)
+&nbsp;                .onSuccess { rawResponse -&gt;
+&nbsp;                    try {
+&nbsp;                        val parsed = Json { ignoreUnknownKeys = true }.decodeFromString&lt;AiResponse&gt;(rawResponse)
+&nbsp;                        _uiState.update { 
+&nbsp;                            it.copy(
+&nbsp;                                definition = parsed.definition,
+&nbsp;                                category = if (parsed.category in listOf(&quot;Umum&quot;, &quot;Sastra&quot;, &quot;Arkais&quot;)) parsed.category else &quot;Umum&quot;,
+&nbsp;                                example = parsed.example,
+&nbsp;                                isLoading = false
+&nbsp;                            )
+&nbsp;                        }
+&nbsp;                    } catch (e: Exception) {
+&nbsp;                        _uiState.update { 
+&nbsp;                            it.copy(
+&nbsp;                                definition = rawResponse,
+&nbsp;                                isLoading = false
+&nbsp;                            )
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;                .onFailure { e -&gt;
+&nbsp;                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+&nbsp;                }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @OptIn(ExperimentalUuidApi::class)
+&nbsp;    fun saveWord() {
+&nbsp;        if (!_uiState.value.canSave) return
+&nbsp;        
+&nbsp;        viewModelScope.launch {
+&nbsp;            val currentState = _uiState.value
+&nbsp;            val word = Word(
+&nbsp;                id = wordId ?: Uuid.random().toString(),
+&nbsp;                term = currentState.term.trim(),
+&nbsp;                definition = currentState.definition.trim(),
+&nbsp;                category = currentState.category.trim(),
+&nbsp;                example = currentState.example.trim()
+&nbsp;            )
+&nbsp;            try {
+&nbsp;                if (wordId == null) {
+&nbsp;                    repository.insertWord(word)
+&nbsp;                } else {
+&nbsp;                    repository.updateWord(word)
+&nbsp;                }
+&nbsp;                _uiState.update { it.copy(isSuccess = true) }
+&nbsp;            } catch (e: Exception) {
+&nbsp;                _uiState.update { it.copy(error = e.message) }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 15:33</div>
+</div>
+</body>
+</html>

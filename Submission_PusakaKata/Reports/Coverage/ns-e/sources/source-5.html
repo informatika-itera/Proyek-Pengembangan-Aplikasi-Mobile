@@ -1,0 +1,333 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > ItemCardKt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.presentation.components</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemCardKt (id.pusakakata.presentation.components)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">ItemCardKt</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/236)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ItemCardKt$ItemCard$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/360)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ItemCardKt$ItemCard$2$1$2$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/77)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/673)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.presentation.components
+&nbsp;
+&nbsp;import androidx.compose.foundation.background
+&nbsp;import androidx.compose.foundation.layout.*
+&nbsp;import androidx.compose.foundation.shape.RoundedCornerShape
+&nbsp;import androidx.compose.material.icons.Icons
+&nbsp;import androidx.compose.material.icons.filled.Delete
+&nbsp;import androidx.compose.material.icons.filled.Favorite
+&nbsp;import androidx.compose.material.icons.filled.FavoriteBorder
+&nbsp;import androidx.compose.material3.*
+&nbsp;import androidx.compose.runtime.Composable
+&nbsp;import androidx.compose.ui.Alignment
+&nbsp;import androidx.compose.ui.Modifier
+&nbsp;import androidx.compose.ui.draw.clip
+&nbsp;import androidx.compose.ui.graphics.Brush
+&nbsp;import androidx.compose.ui.graphics.Color
+&nbsp;import androidx.compose.ui.text.font.FontWeight
+&nbsp;import androidx.compose.ui.text.style.TextOverflow
+&nbsp;import androidx.compose.ui.unit.dp
+&nbsp;import androidx.compose.ui.unit.sp
+&nbsp;import id.pusakakata.domain.model.Word
+&nbsp;
+&nbsp;@Composable
+&nbsp;fun ItemCard(
+&nbsp;    word: Word,
+&nbsp;    onClick: () -&gt; Unit,
+&nbsp;    onDelete: () -&gt; Unit,
+<b class="nc">&nbsp;    onToggleFavorite: () -&gt; Unit = {}</b>
+<b class="nc">&nbsp;) {</b>
+<b class="nc">&nbsp;    Card(</b>
+<b class="nc">&nbsp;        modifier = Modifier</b>
+<b class="nc">&nbsp;            .fillMaxWidth()</b>
+<b class="nc">&nbsp;            .clip(RoundedCornerShape(24.dp))</b>
+<b class="nc">&nbsp;            .background(MaterialTheme.colorScheme.surface),</b>
+<b class="nc">&nbsp;        shape = RoundedCornerShape(24.dp),</b>
+<b class="nc">&nbsp;        onClick = onClick,</b>
+<b class="nc">&nbsp;        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),</b>
+<b class="nc">&nbsp;        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)</b>
+<b class="nc">&nbsp;    ) {</b>
+<b class="nc">&nbsp;        Row(</b>
+<b class="nc">&nbsp;            modifier = Modifier</b>
+<b class="nc">&nbsp;                .padding(20.dp)</b>
+<b class="nc">&nbsp;                .fillMaxWidth(),</b>
+<b class="nc">&nbsp;            verticalAlignment = Alignment.CenterVertically</b>
+&nbsp;        ) {
+<b class="nc">&nbsp;            Column(modifier = Modifier.weight(1f)) {</b>
+<b class="nc">&nbsp;                Row(verticalAlignment = Alignment.CenterVertically) {</b>
+<b class="nc">&nbsp;                    Box(</b>
+<b class="nc">&nbsp;                        modifier = Modifier</b>
+<b class="nc">&nbsp;                            .clip(RoundedCornerShape(6.dp))</b>
+<b class="nc">&nbsp;                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))</b>
+<b class="nc">&nbsp;                            .padding(horizontal = 8.dp, vertical = 2.dp)</b>
+&nbsp;                    ) {
+<b class="nc">&nbsp;                        Text(</b>
+<b class="nc">&nbsp;                            text = word.category.uppercase(),</b>
+<b class="nc">&nbsp;                            style = MaterialTheme.typography.labelSmall,</b>
+<b class="nc">&nbsp;                            color = MaterialTheme.colorScheme.primary,</b>
+<b class="nc">&nbsp;                            fontSize = 9.sp</b>
+&nbsp;                        )
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;                
+<b class="nc">&nbsp;                Spacer(modifier = Modifier.height(8.dp))</b>
+&nbsp;                
+<b class="nc">&nbsp;                Text(</b>
+<b class="nc">&nbsp;                    text = word.term,</b>
+<b class="nc">&nbsp;                    style = MaterialTheme.typography.titleLarge.copy(</b>
+<b class="nc">&nbsp;                        fontWeight = FontWeight.Bold,</b>
+<b class="nc">&nbsp;                        color = MaterialTheme.colorScheme.primary</b>
+&nbsp;                    )
+&nbsp;                )
+&nbsp;                
+<b class="nc">&nbsp;                Text(</b>
+<b class="nc">&nbsp;                    text = word.definition,</b>
+<b class="nc">&nbsp;                    style = MaterialTheme.typography.bodyMedium,</b>
+<b class="nc">&nbsp;                    color = MaterialTheme.colorScheme.onSurfaceVariant,</b>
+<b class="nc">&nbsp;                    maxLines = 2,</b>
+<b class="nc">&nbsp;                    overflow = TextOverflow.Ellipsis,</b>
+<b class="nc">&nbsp;                    lineHeight = 20.sp</b>
+&nbsp;                )
+<b class="nc">&nbsp;            }</b>
+&nbsp;            
+<b class="nc">&nbsp;            Column(</b>
+<b class="nc">&nbsp;                horizontalAlignment = Alignment.CenterHorizontally,</b>
+<b class="nc">&nbsp;                verticalArrangement = Arrangement.spacedBy(8.dp)</b>
+&nbsp;            ) {
+<b class="nc">&nbsp;                IconButton(</b>
+<b class="nc">&nbsp;                    onClick = onToggleFavorite,</b>
+<b class="nc">&nbsp;                    colors = IconButtonDefaults.iconButtonColors(</b>
+<b class="nc">&nbsp;                        containerColor = if (word.isFavorite) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent</b>
+&nbsp;                    )
+<b class="nc">&nbsp;                ) {</b>
+<b class="nc">&nbsp;                    Icon(</b>
+<b class="nc">&nbsp;                        imageVector = if (word.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,</b>
+<b class="nc">&nbsp;                        contentDescription = &quot;Favorit&quot;,</b>
+<b class="nc">&nbsp;                        tint = if (word.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline,</b>
+<b class="nc">&nbsp;                        modifier = Modifier.size(20.dp)</b>
+&nbsp;                    )
+&nbsp;                }
+&nbsp;                
+<b class="nc">&nbsp;                IconButton(onClick = onDelete) {</b>
+&nbsp;                    Icon(
+&nbsp;                        imageVector = Icons.Default.Delete,
+&nbsp;                        contentDescription = &quot;Hapus&quot;,
+&nbsp;                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+&nbsp;                        modifier = Modifier.size(20.dp)
+&nbsp;                    )
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 15:33</div>
+</div>
+</body>
+</html>

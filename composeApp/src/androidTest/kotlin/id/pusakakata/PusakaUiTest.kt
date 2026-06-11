@@ -3,11 +3,11 @@ package id.pusakakata
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import id.pusakakata.ui.navigation.AppNavHost
+import id.pusakakata.presentation.navigation.AppNavHost
 import androidx.navigation.compose.rememberNavController
 import org.junit.Rule
 import org.junit.Test
-import id.pusakakata.ui.theme.PusakaKataTheme
+import id.pusakakata.presentation.theme.PusakaKataTheme
 
 class PusakaUiTest {
 

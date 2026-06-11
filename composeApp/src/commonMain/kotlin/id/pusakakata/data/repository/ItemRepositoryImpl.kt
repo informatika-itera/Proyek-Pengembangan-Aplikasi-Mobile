@@ -34,6 +34,7 @@ class ItemRepositoryImpl(
     init {
         // Pre-populate database with 15 sample words if empty
         repositoryScope.launch {
+            queries.resetTokens()
             val currentCount = queries.getAllWords().executeAsList().size.toLong()
             if (currentCount == 0L) {
                 getInitialWords().forEach { word ->
@@ -51,7 +52,7 @@ class ItemRepositoryImpl(
                         isFavorite = 0
                     )
                 }
-                queries.addTokens(50) // Give some initial tokens
+                queries.addTokens(0) // Give some initial tokens
             }
         }
     }
@@ -131,28 +132,8 @@ class ItemRepositoryImpl(
 
     override suspend fun updateSrs(wordId: String, quality: Int) {
         val word = getWordById(wordId) ?: return
-        val srs = word.srsData
-        
-        // SM-2 Algorithm logic
-        val newEaseFactor = (srs.easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
-            .coerceAtLeast(1.3)
-        
-        val newInterval = when {
-            quality < 3 -> 1
-            srs.intervalDays == 0 -> 1
-            srs.intervalDays == 1 -> 6
-            else -> (srs.intervalDays * newEaseFactor).toInt()
-        }
-        
-        val nextReview = Clock.System.now().plus(newInterval, DateTimeUnit.DAY, kotlinx.datetime.TimeZone.currentSystemDefault())
-        
         val updatedWord = word.copy(
-            srsData = srs.copy(
-                intervalDays = newInterval,
-                easeFactor = newEaseFactor,
-                nextReview = nextReview,
-                level = if (quality >= 3) srs.level + 1 else 0
-            )
+            srsData = word.srsData.calculateNextReview(quality, Clock.System.now())
         )
         updateWord(updatedWord)
     }
@@ -167,7 +148,7 @@ class ItemRepositoryImpl(
             var example = ""
 
             try {
-                val parsed = Json { ignoreUnknownKeys = true }.decodeFromString<id.pusakakata.ui.screens.addedit.AiResponse>(rawResponse)
+                val parsed = Json { ignoreUnknownKeys = true }.decodeFromString<id.pusakakata.presentation.screens.addedit.AiResponse>(rawResponse)
                 definition = parsed.definition
                 val cat = parsed.category
                 category = if (cat == "Umum" || cat == "Sastra" || cat == "Arkais") cat else "Umum"

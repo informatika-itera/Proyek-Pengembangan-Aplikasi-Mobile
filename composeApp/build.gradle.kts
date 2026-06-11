@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kover)
 }
 
 // Load local.properties for API keys
@@ -89,6 +90,8 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.sqldelight.sqlite.driver)
         }
         
         androidMain.dependencies {
@@ -154,6 +157,32 @@ sqldelight {
     databases {
         create("PusakaDatabase") {
             packageName.set("id.pusakakata.data.local")
+        }
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "*ScreenKt",
+                    "*Composable*",
+                    "id.pusakakata.presentation.theme.*",
+                    "id.pusakakata.presentation.components.*",
+                    "id.pusakakata.di.*",
+                    "id.pusakakata.data.local.*",
+                    "id.pusakakata.core.di.*",
+                    "id.pusakakata.core.util.*",
+                    "id.pusakakata.presentation.navigation.*",
+                    "id.pusakakata.presentation.screens.*.*UiState*",
+                    "id.pusakakata.presentation.screens.*.*Kt*",
+                    "id.pusakakata.presentation.screens.addedit.AiResponse",
+                    "id.pusakakata.MainActivity*",
+                    "id.pusakakata.PusakaApp*",
+                    "id.pusakakata.PusakaApplication*"
+                )
+            }
         }
     }
 }

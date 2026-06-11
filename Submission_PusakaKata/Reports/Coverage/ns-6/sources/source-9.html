@@ -1,0 +1,355 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>composeApp Coverage Report > GeminiService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope: composeApp<span class="separator">|</span>    <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">id.pusakakata.data.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: GeminiService (id.pusakakata.data.remote)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+<th class="coverageStat 
+">
+  Instruction, %
+</th>
+</tr>
+<tr>
+  <td class="name">GeminiService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/75)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/432)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GeminiService$generateContent$1</td>
+    <td class="coverageStat"/>
+  </tr>
+  <tr>
+    <td class="name">GeminiService$generateDefinition$1</td>
+    <td class="coverageStat"/>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/75)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/432)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package id.pusakakata.data.remote
+&nbsp;
+&nbsp;import io.ktor.client.HttpClient
+&nbsp;import io.ktor.client.plugins.HttpRequestTimeoutException
+&nbsp;import io.ktor.client.plugins.HttpTimeout
+&nbsp;import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+&nbsp;import io.ktor.client.request.parameter
+&nbsp;import io.ktor.client.request.post
+&nbsp;import io.ktor.client.request.setBody
+&nbsp;import io.ktor.client.statement.bodyAsText
+&nbsp;import io.ktor.http.ContentType
+&nbsp;import io.ktor.http.contentType
+&nbsp;import io.ktor.serialization.kotlinx.json.json
+&nbsp;import kotlinx.serialization.Serializable
+&nbsp;import kotlinx.serialization.decodeFromString
+&nbsp;import kotlinx.serialization.json.Json
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiRequest(
+&nbsp;    val contents: List&lt;GeminiContent&gt;,
+&nbsp;    val generationConfig: GeminiGenerationConfig = GeminiGenerationConfig()
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiContent(
+&nbsp;    val parts: List&lt;GeminiPart&gt;,
+&nbsp;    val role: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiPart(
+&nbsp;    val text: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiGenerationConfig(
+&nbsp;    val temperature: Double = 0.7,
+&nbsp;    val maxOutputTokens: Int = 1000,
+&nbsp;    val topP: Double = 0.95
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiResponse(
+&nbsp;    val candidates: List&lt;GeminiCandidate&gt; = emptyList(),
+&nbsp;    val promptFeedback: GeminiPromptFeedback? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiCandidate(
+&nbsp;    val content: GeminiContent? = null,
+&nbsp;    val finishReason: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;@Serializable
+&nbsp;data class GeminiPromptFeedback(
+&nbsp;    val blockReason: String? = null
+&nbsp;)
+&nbsp;
+<b class="nc">&nbsp;class GeminiService(</b>
+<b class="nc">&nbsp;    private val apiKey: String</b>
+&nbsp;) {
+<b class="nc">&nbsp;    private val json = Json {</b>
+<b class="nc">&nbsp;        ignoreUnknownKeys = true</b>
+<b class="nc">&nbsp;        isLenient = true</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private val client = HttpClient {</b>
+<b class="nc">&nbsp;        install(ContentNegotiation) {</b>
+<b class="nc">&nbsp;            json(json)</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        install(HttpTimeout) {</b>
+<b class="nc">&nbsp;            requestTimeoutMillis = 30_000</b>
+<b class="nc">&nbsp;            connectTimeoutMillis = 15_000</b>
+<b class="nc">&nbsp;            socketTimeoutMillis = 30_000</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private val baseUrl = &quot;https://generativelanguage.googleapis.com/v1beta&quot;</b>
+<b class="nc">&nbsp;    private val model = &quot;gemini-2.5-flash&quot;</b>
+&nbsp;
+&nbsp;    suspend fun generateDefinition(word: String): String {
+<b class="nc">&nbsp;        val prompt = &quot;&quot;&quot;</b>
+<b class="nc">&nbsp;            Berikan definisi singkat satu paragraf dalam bahasa Indonesia untuk kosa kata: $word. </b>
+&nbsp;            Tentukan juga kategorinya dari pilihan berikut: Umum, Sastra, Arkais.
+&nbsp;            Berikan juga satu contoh kalimat penggunaan kata tersebut yang formal atau edukatif.
+&nbsp;            Format jawaban harus JSON seperti ini: {&quot;definition&quot;: &quot;isi definisi&quot;, &quot;category&quot;: &quot;Umum/Sastra/Arkais&quot;, &quot;example&quot;: &quot;contoh kalimat&quot;}.
+&nbsp;            Jangan gunakan markdown atau teks lain.
+<b class="nc">&nbsp;        &quot;&quot;&quot;.trimIndent()</b>
+<b class="nc">&nbsp;        return generateContent(prompt).getOrElse { throw it }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun generateContent(prompt: String): Result&lt;String&gt; {
+&nbsp;        return try {
+<b class="nc">&nbsp;            val trimmedKey = apiKey.trim()</b>
+<b class="nc">&nbsp;            if (trimmedKey.isBlank()) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Gemini API key tidak boleh kosong.&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (prompt.isBlank()) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Prompt tidak boleh kosong.&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            val request = GeminiRequest(</b>
+<b class="nc">&nbsp;                contents = listOf(</b>
+<b class="nc">&nbsp;                    GeminiContent(</b>
+<b class="nc">&nbsp;                        role = &quot;user&quot;,</b>
+<b class="nc">&nbsp;                        parts = listOf(</b>
+<b class="nc">&nbsp;                            GeminiPart(text = prompt)</b>
+&nbsp;                        )
+&nbsp;                    )
+&nbsp;                )
+&nbsp;            )
+&nbsp;
+<b class="nc">&nbsp;            val httpResponse = client.post(</b>
+<b class="nc">&nbsp;                &quot;$baseUrl/models/$model:generateContent&quot;</b>
+&nbsp;            ) {
+<b class="nc">&nbsp;                contentType(ContentType.Application.Json)</b>
+<b class="nc">&nbsp;                parameter(&quot;key&quot;, trimmedKey)</b>
+<b class="nc">&nbsp;                setBody(request)</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            val rawResponse = httpResponse.bodyAsText()</b>
+<b class="nc">&nbsp;            val statusCode = httpResponse.status.value</b>
+&nbsp;
+<b class="nc">&nbsp;            println(&quot;GEMINI_HTTP_STATUS: $statusCode&quot;)</b>
+<b class="nc">&nbsp;            println(&quot;GEMINI_RAW_RESPONSE: $rawResponse&quot;)</b>
+&nbsp;
+<b class="nc">&nbsp;            if (statusCode == 400) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Request Gemini tidak valid. Detail: $rawResponse&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (statusCode == 404) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Model &#39;$model&#39; tidak ditemukan. Detail: $rawResponse&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (statusCode == 429) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Quota Gemini API tercapai (Error 429).&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (statusCode !in 200..299) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Gemini API error $statusCode: $rawResponse&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            val response = json.decodeFromString&lt;GeminiResponse&gt;(rawResponse)</b>
+&nbsp;
+<b class="nc">&nbsp;            val blockReason = response.promptFeedback?.blockReason</b>
+<b class="nc">&nbsp;            if (!blockReason.isNullOrBlank()) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Prompt diblokir oleh Gemini. Alasan: $blockReason&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            val candidate = response.candidates.firstOrNull()</b>
+<b class="nc">&nbsp;            if (candidate == null) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Gemini tidak mengembalikan kandidat jawaban.&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (!candidate.finishReason.isNullOrBlank() &amp;&amp; candidate.finishReason != &quot;STOP&quot;) {</b>
+<b class="nc">&nbsp;                return Result.failure(</b>
+<b class="nc">&nbsp;                    Exception(&quot;Gemini menghentikan respons. Alasan: ${candidate.finishReason}&quot;)</b>
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            val resultText = candidate.content</b>
+<b class="nc">&nbsp;                ?.parts</b>
+<b class="nc">&nbsp;                ?.mapNotNull { it.text }</b>
+<b class="nc">&nbsp;                ?.joinToString(separator = &quot;\n&quot;)</b>
+<b class="nc">&nbsp;                ?.trim()</b>
+&nbsp;
+<b class="nc">&nbsp;            if (resultText.isNullOrBlank()) {</b>
+<b class="nc">&nbsp;                Result.failure(Exception(&quot;Gemini tidak memberikan teks respons.&quot;))</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                Result.success(resultText)</b>
+&nbsp;            }
+&nbsp;        } catch (e: HttpRequestTimeoutException) {
+<b class="nc">&nbsp;            Result.failure(Exception(&quot;Request timeout (Error 504). Periksa koneksi internet.&quot;))</b>
+&nbsp;        } catch (e: Exception) {
+<b class="nc">&nbsp;            Result.failure(Exception(e.message ?: &quot;Terjadi kesalahan tidak diketahui.&quot;))</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-06-11 17:13</div>
+</div>
+</body>
+</html>

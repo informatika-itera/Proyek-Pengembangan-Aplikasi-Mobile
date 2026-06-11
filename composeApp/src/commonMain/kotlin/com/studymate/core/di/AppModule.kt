@@ -26,7 +26,7 @@ val databaseModule = module {
 }
 
 val dataModule = module {
-    single<AIRepository> { AIRepositoryImpl(client = get(), apiKey = ApiConfig.geminiApiKey) }
+    single<AIRepository> { AIRepositoryImpl(client = get(), apiKey = ApiConfig.groqApiKey) }
     single<MantraRepository> { MantraRepositoryImpl(database = get()) }
     single<NoteRepository> { NoteRepositoryImpl(database = get()) }
     single<UserProfileRepository> { UserProfileRepositoryImpl(database = get()) }
@@ -44,7 +44,7 @@ val useCaseModule = module {
 val viewModelModule = module {
     viewModel { HomeViewModel(noteRepository = get(), profileRepository = get(), mantraRepository = get()) }
     viewModel { NotesViewModel(noteRepository = get(), refineNoteUseCase = get(), activityRepository = get()) }
-    viewModel { ProfileViewModel(profileRepository = get(), activityRepository = get(), authRepository = get()) }
+    viewModel { ProfileViewModel(profileRepository = get(), activityRepository = get(), authRepository = get(), reminderRepository = get()) }
     viewModel { QuizViewModel(aiRepository = get(), noteRepository = get(), quizRepository = get(), activityRepository = get()) }
     viewModel { CalendarViewModel(calendarRepository = get(), reminderRepository = get()) }
 }

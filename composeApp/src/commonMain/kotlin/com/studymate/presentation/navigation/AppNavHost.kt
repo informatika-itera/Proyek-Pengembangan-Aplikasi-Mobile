@@ -179,7 +179,16 @@ fun AppNavHost(
                     ProfileScreen(
                         viewModel = viewModel,
                         isDarkTheme = isDarkTheme,
-                        onThemeToggle = onThemeToggle
+                        onThemeToggle = onThemeToggle,
+                        onNavigateToPlanner = {
+                            navController.navigate(Screen.Calendar.route) {
+                                popUpTo(Screen.Profile.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     )
                 }
                 composable(

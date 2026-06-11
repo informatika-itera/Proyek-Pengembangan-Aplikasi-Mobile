@@ -31,20 +31,24 @@ import com.studymate.core.util.LocalGoogleAuth
 import com.studymate.domain.model.AchievementTier
 import com.studymate.domain.model.ActivityDay
 import com.studymate.domain.model.Badge
+import com.studymate.domain.model.Reminder
 import com.studymate.presentation.components.LoadingIndicator
 import com.studymate.presentation.theme.*
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
     isDarkTheme: Boolean,
-    onThemeToggle: () -> Unit
+    onThemeToggle: () -> Unit,
+    onNavigateToPlanner: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
@@ -121,8 +125,11 @@ fun ProfileScreen(
                     }
                 }
 
-                // 2. Warning Card (Countdown Ujian)
-                WarningCard(examName = "UTS Pemrograman Mobile", daysLeft = 3)
+                // 2. Reminder Card
+                ReminderCard(
+                    reminder = uiState.closestReminder,
+                    onNavigateToPlanner = onNavigateToPlanner
+                )
 
                 // 3. Learning Heatmap
                 HeatmapSection(uiState.heatmap)
@@ -191,6 +198,95 @@ fun ProfileHeader(name: String, nim: String, major: String, photoUrl: String?, o
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
         )
+    }
+}
+
+@Composable
+fun ReminderCard(reminder: Reminder?, onNavigateToPlanner: () -> Unit) {
+    if (reminder == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(8.dp, RoundedCornerShape(24.dp))
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(Color(0xFFF72585), Color(0xFFB5179E))
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Tidak ada pengingat", fontWeight = FontWeight.Bold, color = Color.White, style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        }
+    } else {
+        val now = Clock.System.now().toEpochMilliseconds()
+        val daysLeft = ceil((reminder.dueDate - now) / (1000.0 * 60 * 60 * 24)).toInt()
+        val descriptionTruncated = if (reminder.description != null && reminder.description.length > 50) {
+            reminder.description.take(47) + "..."
+        } else {
+            reminder.description ?: ""
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(8.dp, RoundedCornerShape(24.dp))
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(Color(0xFFF72585), Color(0xFFB5179E))
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .clickable { onNavigateToPlanner() }
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.PriorityHigh, contentDescription = null, tint = Color.White)
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(reminder.title, fontWeight = FontWeight.Bold, color = Color.White, style = MaterialTheme.typography.labelMedium)
+                    if (descriptionTruncated.isNotEmpty()) {
+                        Text(descriptionTruncated, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Black)
+                    }
+                }
+                Surface(
+                    color = Color.White,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        "$daysLeft Hari", 
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        fontWeight = FontWeight.Black, 
+                        color = Color(0xFFF72585),
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
     }
 }
 

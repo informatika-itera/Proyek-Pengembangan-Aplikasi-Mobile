@@ -5,35 +5,48 @@ import com.studymate.domain.repository.AIRepository
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 class AIRepositoryImpl(
     private val client: HttpClient,
     private val apiKey: String
 ) : AIRepository {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     override suspend fun refineNote(subject: String, title: String, content: String): Result<String> {
         val prompt = ApiConstants.Prompts.refineNote(subject, title, content)
-        return generateContent(prompt)
+        return queryGroq(prompt)
     }
 
     override suspend fun generateQuiz(subject: String, title: String, noteContent: String): Result<String> {
         val prompt = ApiConstants.Prompts.generateQuiz(subject, title, noteContent)
-        return generateContent(prompt)
+        return queryGroq(prompt)
     }
 
-    private suspend fun generateContent(prompt: String): Result<String> {
+    private suspend fun queryGroq(prompt: String): Result<String> {
         return try {
-            // Using v1 (Stable) instead of v1beta to ensure compatibility
-            val url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$apiKey"
+            val url = "https://api.groq.com/openai/v1/chat/completions"
             
-            val response: GeminiResponse = client.post(url) {
+            val response = client.post(url) {
                 contentType(ContentType.Application.Json)
-                setBody(GeminiRequest(contents = listOf(Content(parts = listOf(Part(text = prompt))))))
-            }.body()
+                header("Authorization", "Bearer $apiKey")
+                setBody(GroqRequest(
+                    model = "llama-3.3-70b-versatile",
+                    messages = listOf(GroqMessage(role = "user", content = prompt))
+                ))
+            }
 
-            val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
+            if (!response.status.isSuccess()) {
+                return Result.failure(Exception("Groq Error: ${response.status.value}"))
+            }
+
+            val groqResponse: GroqResponse = response.body()
+            val text = groqResponse.choices.firstOrNull()?.message?.content
+            
             if (text != null) Result.success(text)
             else Result.failure(Exception("AI tidak memberikan respon."))
         } catch (e: Exception) {
@@ -43,12 +56,23 @@ class AIRepositoryImpl(
 }
 
 @Serializable
-data class GeminiRequest(val contents: List<Content>)
+data class GroqRequest(
+    val model: String,
+    val messages: List<GroqMessage>
+)
+
 @Serializable
-data class Content(val parts: List<Part>)
+data class GroqMessage(
+    val role: String,
+    val content: String
+)
+
 @Serializable
-data class Part(val text: String)
+data class GroqResponse(
+    val choices: List<GroqChoice>
+)
+
 @Serializable
-data class GeminiResponse(val candidates: List<Candidate>? = null)
-@Serializable
-data class Candidate(val content: Content)
+data class GroqChoice(
+    val message: GroqMessage
+)

@@ -1,7 +1,7 @@
 package com.studymate.core.network
 
 expect object ApiConfig {
-    val geminiApiKey: String
+    val groqApiKey: String
     val googleWebClientId: String
 }
 

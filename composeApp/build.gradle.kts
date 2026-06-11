@@ -135,8 +135,8 @@ android {
         // Inject API key from local.properties
         buildConfigField(
             "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
+            "GROQ_API_KEY",
+            "\"${localProperties.getProperty("GROQ_API_KEY", "")}\""
         )
         buildConfigField(
             "String",

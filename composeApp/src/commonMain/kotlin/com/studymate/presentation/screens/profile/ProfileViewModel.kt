@@ -5,17 +5,22 @@ import androidx.lifecycle.viewModelScope
 import com.studymate.domain.model.ActivityDay
 import com.studymate.domain.model.UserProfile
 import com.studymate.domain.model.AchievementTier
+import com.studymate.domain.model.Reminder
 import com.studymate.domain.repository.ActivityRepository
 import com.studymate.domain.repository.UserProfileRepository
 import com.studymate.domain.repository.AuthRepository
+import com.studymate.domain.repository.ReminderRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlin.math.ceil
 
 data class ProfileState(
     val user: UserProfile? = null,
     val heatmap: List<ActivityDay> = emptyList(),
     val monthlyQuizCount: Int = 0,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val closestReminder: Reminder? = null
 ) {
     val achievementTier: AchievementTier
         get() = when {
@@ -29,7 +34,8 @@ data class ProfileState(
 class ProfileViewModel(
     private val profileRepository: UserProfileRepository,
     private val activityRepository: ActivityRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val reminderRepository: ReminderRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileState())
@@ -39,6 +45,7 @@ class ProfileViewModel(
         loadProfile()
         loadHeatmap()
         loadAchievements()
+        observeReminders()
     }
 
     private fun loadProfile() {
@@ -63,6 +70,24 @@ class ProfileViewModel(
             val count = activityRepository.getMonthlyQuizCount()
             _uiState.update { it.copy(monthlyQuizCount = count) }
         }
+    }
+
+    // Observe reminders via a StateFlow to ensure updates are received reliably
+    private val remindersFlow: StateFlow<List<Reminder>> by lazy {
+        reminderRepository.getAllReminders()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
+
+    private fun observeReminders() {
+        remindersFlow
+            .onEach { reminders ->
+                val now = Clock.System.now().toEpochMilliseconds()
+                val closestReminder = reminders
+                    .filter { !it.isCompleted && it.dueDate > now }
+                    .minByOrNull { it.dueDate }
+                _uiState.update { it.copy(closestReminder = closestReminder) }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun updateProfile(name: String, major: String, nim: String) {

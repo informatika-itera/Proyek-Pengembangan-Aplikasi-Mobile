@@ -69,10 +69,14 @@ class AnimeRepositoryImpl(
             ?: remoteDataSource.fetchRandomAnime().data.toSummary()
     }
 
-    override suspend fun getRandomAnimePicks(count: Int): List<AnimeSummary> = withContext(dispatchers.default) {
+    override suspend fun getRandomAnimePicks(
+        count: Int,
+        forceRefresh: Boolean
+    ): List<AnimeSummary> = withContext(dispatchers.default) {
         getCachedRandomAnimePicks(
             cacheKey = "anime:random:picks:$count",
-            count = count
+            count = count,
+            forceRefresh = forceRefresh
         ).map { detail -> detail.toSummary() }
     }
 
@@ -240,11 +244,12 @@ class AnimeRepositoryImpl(
 
     private suspend fun getCachedRandomAnimePicks(
         cacheKey: String,
-        count: Int
+        count: Int,
+        forceRefresh: Boolean
     ): List<AnimeDetailData> {
         val cached = runCatching { pageCacheLocalDataSource.getPage(cacheKey) }.getOrNull()
 
-        if (cached?.isFresh() == true) {
+        if (!forceRefresh && cached?.isFresh() == true) {
             return JikanResponseCacheCodec.decodeAnimeDetails(cached.payloadJson)
         }
 

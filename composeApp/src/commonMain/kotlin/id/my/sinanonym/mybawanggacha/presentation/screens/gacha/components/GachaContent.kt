@@ -84,6 +84,7 @@ internal fun Content(
     onPreferenceChange: ((GachaPreference) -> GachaPreference) -> Unit,
     onRunGacha: () -> Unit,
     onReroll: () -> Unit,
+    onSkipRoll: () -> Unit,
     onAddToLibrary: () -> Unit,
     onClearHistory: () -> Unit,
     onOpenDetail: (GachaResultItem) -> Unit
@@ -129,20 +130,31 @@ internal fun Content(
 
         item(contentType = "gacha_result") {
             val result = uiState.result
-            if (result == null) {
-                EmptyState(
-                    title = "Belum ada hasil",
-                    message = "Atur filter seperlunya, lalu tekan Gacha.",
-                    modifier = Modifier.height(190.dp)
-                )
-            } else {
-                ResultScreen(
-                    item = result,
-                    isLoading = uiState.isLoading,
-                    onReroll = onReroll,
-                    onAddToLibrary = onAddToLibrary,
-                    onOpenDetail = { onOpenDetail(result) }
-                )
+            when {
+                uiState.isRolling -> {
+                    GachaRoller(
+                        anchorItem = result,
+                        history = uiState.history,
+                        canSkip = uiState.canSkipRoll,
+                        onSkip = onSkipRoll
+                    )
+                }
+                result == null -> {
+                    EmptyState(
+                        title = "Belum ada hasil",
+                        message = "Atur filter seperlunya, lalu tekan Gacha.",
+                        modifier = Modifier.height(190.dp)
+                    )
+                }
+                else -> {
+                    ResultScreen(
+                        item = result,
+                        isLoading = false,
+                        onReroll = onReroll,
+                        onAddToLibrary = onAddToLibrary,
+                        onOpenDetail = { onOpenDetail(result) }
+                    )
+                }
             }
         }
 

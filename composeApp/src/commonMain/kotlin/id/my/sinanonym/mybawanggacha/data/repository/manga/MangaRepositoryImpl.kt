@@ -74,10 +74,14 @@ class MangaRepositoryImpl(
             ?: remoteDataSource.fetchRandomManga().data.toSummary()
     }
 
-    override suspend fun getRandomMangaPicks(count: Int): List<MangaSummary> = withContext(dispatchers.default) {
+    override suspend fun getRandomMangaPicks(
+        count: Int,
+        forceRefresh: Boolean
+    ): List<MangaSummary> = withContext(dispatchers.default) {
         getCachedRandomMangaPicks(
             cacheKey = "manga:random:picks:$count",
-            count = count
+            count = count,
+            forceRefresh = forceRefresh
         ).map { detail -> detail.toSummary() }
     }
 
@@ -149,11 +153,12 @@ class MangaRepositoryImpl(
 
     private suspend fun getCachedRandomMangaPicks(
         cacheKey: String,
-        count: Int
+        count: Int,
+        forceRefresh: Boolean
     ): List<MangaDetailData> {
         val cached = runCatching { pageCacheLocalDataSource.getPage(cacheKey) }.getOrNull()
 
-        if (cached?.isFresh() == true) {
+        if (!forceRefresh && cached?.isFresh() == true) {
             return JikanResponseCacheCodec.decodeMangaDetails(cached.payloadJson)
         }
 

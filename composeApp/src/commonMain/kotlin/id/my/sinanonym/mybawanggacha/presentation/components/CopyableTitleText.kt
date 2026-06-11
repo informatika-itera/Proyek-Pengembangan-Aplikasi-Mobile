@@ -26,7 +26,8 @@ fun CopyableTitleText(
     fontWeight: FontWeight? = null,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
-    longPressThresholdMillis: Long = TITLE_COPY_LONG_PRESS_THRESHOLD_MS
+    longPressThresholdMillis: Long = TITLE_COPY_LONG_PRESS_THRESHOLD_MS,
+    onCopied: () -> Unit = {}
 ) {
     val clipboardManager = LocalClipboardManager.current
 
@@ -37,6 +38,7 @@ fun CopyableTitleText(
             thresholdMillis = longPressThresholdMillis,
             onCopy = {
                 clipboardManager.setText(AnnotatedString(text))
+                onCopied()
             }
         ),
         style = style,

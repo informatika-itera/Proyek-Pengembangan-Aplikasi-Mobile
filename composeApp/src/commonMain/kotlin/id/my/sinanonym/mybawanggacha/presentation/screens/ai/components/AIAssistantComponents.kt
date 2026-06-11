@@ -219,17 +219,10 @@ internal fun AiModelMenu(
             AiApiModel.entries.forEach { model ->
                 DropdownMenuItem(
                     text = {
-                        Column {
-                            Text(
-                                text = model.label,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = model.modelId,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = model.label,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     },
                     onClick = {
                         expanded = false

@@ -37,7 +37,9 @@ internal fun mangaDetailRailItems(): List<MBGSideRailItem> = MangaDetailSection.
 internal fun MangaDetailContent(
     manga: MangaDetail,
     selectedSection: MangaDetailSection,
-    onRelationEntryClick: (MangaRelationEntry) -> Unit
+    onRelationEntryClick: (MangaRelationEntry) -> Unit,
+    onPosterClick: () -> Unit = {},
+    onTitleCopied: () -> Unit = {}
 ) {
     AnimatedSectionContent(
         targetState = selectedSection,
@@ -46,7 +48,11 @@ internal fun MangaDetailContent(
         label = "MangaDetailSectionTransition"
     ) { section ->
         when (section) {
-            MangaDetailSection.Overview -> MangaOverviewSection(manga)
+            MangaDetailSection.Overview -> MangaOverviewSection(
+                manga = manga,
+                onPosterClick = onPosterClick,
+                onTitleCopied = onTitleCopied
+            )
             MangaDetailSection.Synopsis -> MangaSynopsisSection(manga)
             MangaDetailSection.Info -> MangaInfoSection(manga)
             MangaDetailSection.Relations -> MangaRelationsSection(

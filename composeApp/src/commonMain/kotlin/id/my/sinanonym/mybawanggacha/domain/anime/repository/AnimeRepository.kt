@@ -10,7 +10,7 @@ import id.my.sinanonym.mybawanggacha.domain.anime.model.RecentAnimeEpisode
 interface AnimeRepository {
     suspend fun getRecommendations(): List<AnimeSummary>
     suspend fun getRandomAnime(): AnimeSummary
-    suspend fun getRandomAnimePicks(count: Int): List<AnimeSummary>
+    suspend fun getRandomAnimePicks(count: Int, forceRefresh: Boolean = false): List<AnimeSummary>
     suspend fun getRecentEpisodes(): List<RecentAnimeEpisode>
     suspend fun getCurrentSeasonAnimePage(page: Int): AnimePage
     suspend fun getSeasonAnimePage(year: Int, season: AnimeSeason, page: Int): AnimePage

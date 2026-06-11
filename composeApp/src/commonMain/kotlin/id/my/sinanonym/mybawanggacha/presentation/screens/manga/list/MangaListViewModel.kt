@@ -124,7 +124,6 @@ class MangaListViewModel(
     private fun showSuccess(tab: MangaListTab, entry: MangaListCacheEntry) {
         _uiState.value = MangaListUiState.Success(
             title = tab.contentTitle(),
-            subtitle = tab.contentSubtitle(),
             manga = entry.manga,
             canLoadMore = entry.canLoadMore,
             isLoadingMore = false,

@@ -3,8 +3,10 @@ package id.my.sinanonym.mybawanggacha.presentation.screens.library.list.componen
 import id.my.sinanonym.mybawanggacha.presentation.screens.library.list.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -27,9 +29,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,10 +41,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import id.my.sinanonym.mybawanggacha.domain.library.model.LibraryEntry
@@ -59,6 +66,9 @@ import id.my.sinanonym.mybawanggacha.presentation.components.PullRefreshContaine
 import id.my.sinanonym.mybawanggacha.presentation.components.ScreenHeader
 import id.my.sinanonym.mybawanggacha.presentation.screens.library.LibraryUiState
 import org.koin.compose.viewmodel.koinViewModel
+
+private const val LibrarySwipeThresholdPx = 96f
+private const val LibrarySwipeMaxPx = 180f
 
 @Composable
 internal fun LibraryStatusFilterRow(
@@ -212,103 +222,177 @@ private fun LibraryEntryCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    var swipeOffset by remember(entry.id) { mutableFloatStateOf(0f) }
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onOpen),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.48f),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .pointerInput(entry.id) {
+                detectHorizontalDragGestures(
+                    onDragCancel = { swipeOffset = 0f },
+                    onDragEnd = {
+                        when {
+                            swipeOffset <= -LibrarySwipeThresholdPx -> onDelete()
+                            swipeOffset >= LibrarySwipeThresholdPx -> onEdit()
+                        }
+                        swipeOffset = 0f
+                    },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        swipeOffset = (swipeOffset + dragAmount)
+                            .coerceIn(-LibrarySwipeMaxPx, LibrarySwipeMaxPx)
+                    }
+                )
+            }
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    translationX = swipeOffset * 0.16f
+                }
+                .clickable(onClick = onOpen),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.48f),
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(64.dp)
+                        .height(92.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!entry.imageUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = entry.imageUrl,
+                            contentDescription = entry.title,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = entry.mediaType.displayName.take(1),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = entry.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SmallPill(text = entry.mediaType.displayName)
+                        SmallPill(text = entry.status.labelFor(entry.mediaType))
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = buildString {
+                            append("Progress: ${entry.progress.format()}")
+                            entry.userScore?.let { append(" • Score: ${it.value}/10") }
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+
+        LibrarySwipeActionOverlay(swipeOffset = swipeOffset)
+    }
+}
+
+@Composable
+private fun BoxScope.LibrarySwipeActionOverlay(
+    swipeOffset: Float
+) {
+    val progress = (abs(swipeOffset) / LibrarySwipeThresholdPx).coerceIn(0f, 1f)
+    if (progress <= 0f) return
+
+    val isEditSwipe = swipeOffset > 0f
+    val label = if (isEditSwipe) "Edit" else "Delete"
+    val icon = if (isEditSwipe) Icons.Default.Edit else Icons.Default.Delete
+    val contentAlignment = if (isEditSwipe) Alignment.CenterStart else Alignment.CenterEnd
+    val actionColor = if (isEditSwipe) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.error
+    }
+    val gradient = if (isEditSwipe) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                actionColor.copy(alpha = 0.30f * progress),
+                actionColor.copy(alpha = 0.12f * progress),
+                Color.Transparent
+            )
+        )
+    } else {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color.Transparent,
+                actionColor.copy(alpha = 0.12f * progress),
+                actionColor.copy(alpha = 0.30f * progress)
+            )
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .matchParentSize()
+            .clip(RoundedCornerShape(20.dp))
+            .background(gradient)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = contentAlignment
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f * progress))
+                .padding(horizontal = 11.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .width(64.dp)
-                    .height(92.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                if (!entry.imageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = entry.imageUrl,
-                        contentDescription = entry.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Text(
-                        text = entry.mediaType.displayName.take(1),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SmallPill(text = entry.mediaType.displayName)
-                    SmallPill(text = entry.status.labelFor(entry.mediaType))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = buildString {
-                        append("Progress: ${entry.progress.format()}")
-                        entry.userScore?.let { append(" • Score: ${it.value}/10") }
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onEdit) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Hapus",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = actionColor.copy(alpha = 0.92f * progress),
+                modifier = Modifier.width(16.dp).height(16.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = actionColor.copy(alpha = 0.92f * progress),
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

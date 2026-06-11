@@ -113,6 +113,7 @@ fun GachaScreen(
             onPreferenceChange = viewModel::updatePreference,
             onRunGacha = viewModel::runGacha,
             onReroll = viewModel::runGacha,
+            onSkipRoll = viewModel::skipRollAnimation,
             onAddToLibrary = viewModel::addResultToLibrary,
             onClearHistory = viewModel::clearHistory,
             onOpenDetail = { item ->

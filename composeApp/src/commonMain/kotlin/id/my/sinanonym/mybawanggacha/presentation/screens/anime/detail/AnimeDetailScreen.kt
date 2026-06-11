@@ -24,6 +24,7 @@ import id.my.sinanonym.mybawanggacha.presentation.components.LoadingIndicator
 import id.my.sinanonym.mybawanggacha.presentation.components.MBGRailBackButton
 import id.my.sinanonym.mybawanggacha.presentation.components.MBGSideRailScaffold
 import id.my.sinanonym.mybawanggacha.presentation.components.MediaDetailActionMenu
+import id.my.sinanonym.mybawanggacha.presentation.components.MediaImagePreviewOverlay
 import id.my.sinanonym.mybawanggacha.presentation.components.PullRefreshContainer
 import id.my.sinanonym.mybawanggacha.presentation.screens.anime.detail.components.AnimeDetailContent
 import id.my.sinanonym.mybawanggacha.presentation.screens.anime.detail.components.AnimeDetailSection
@@ -46,6 +47,8 @@ fun AnimeDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var selectedSection by remember { mutableStateOf(AnimeDetailSection.Overview) }
+    var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    var previewImageTitle by remember { mutableStateOf("") }
 
     LaunchedEffect(malId) {
         viewModel.fetchAnimeDetail(malId)
@@ -98,6 +101,18 @@ fun AnimeDetailScreen(
                                         }
                                     }
                                 }
+                            },
+                            onPosterClick = {
+                                previewImageUrl = state.anime.imageUrl
+                                previewImageTitle = state.anime.title
+                            },
+                            onTitleCopied = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Telah disalin ke clipboard",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             }
                         )
                         val isInLibrary = state.libraryEntryId != null
@@ -130,6 +145,12 @@ fun AnimeDetailScreen(
                         )
                     }
                 }
+
+                MediaImagePreviewOverlay(
+                    imageUrl = previewImageUrl,
+                    title = previewImageTitle,
+                    onDismiss = { previewImageUrl = null }
+                )
 
                 SnackbarHost(
                     hostState = snackbarHostState,

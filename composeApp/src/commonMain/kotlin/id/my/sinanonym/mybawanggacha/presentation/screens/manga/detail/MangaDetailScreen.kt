@@ -24,6 +24,7 @@ import id.my.sinanonym.mybawanggacha.presentation.components.LoadingIndicator
 import id.my.sinanonym.mybawanggacha.presentation.components.MBGRailBackButton
 import id.my.sinanonym.mybawanggacha.presentation.components.MBGSideRailScaffold
 import id.my.sinanonym.mybawanggacha.presentation.components.MediaDetailActionMenu
+import id.my.sinanonym.mybawanggacha.presentation.components.MediaImagePreviewOverlay
 import id.my.sinanonym.mybawanggacha.presentation.components.PullRefreshContainer
 import id.my.sinanonym.mybawanggacha.presentation.screens.manga.detail.components.MangaDetailContent
 import id.my.sinanonym.mybawanggacha.presentation.screens.manga.detail.components.MangaDetailSection
@@ -46,6 +47,8 @@ fun MangaDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var selectedSection by remember { mutableStateOf(MangaDetailSection.Overview) }
+    var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    var previewImageTitle by remember { mutableStateOf("") }
 
     LaunchedEffect(malId) {
         viewModel.fetchMangaDetail(malId)
@@ -95,6 +98,18 @@ fun MangaDetailScreen(
                                         }
                                     }
                                 }
+                            },
+                            onPosterClick = {
+                                previewImageUrl = state.manga.imageUrl
+                                previewImageTitle = state.manga.title
+                            },
+                            onTitleCopied = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Telah disalin ke clipboard",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             }
                         )
 
@@ -128,6 +143,12 @@ fun MangaDetailScreen(
                         )
                     }
                 }
+
+                MediaImagePreviewOverlay(
+                    imageUrl = previewImageUrl,
+                    title = previewImageTitle,
+                    onDismiss = { previewImageUrl = null }
+                )
 
                 SnackbarHost(
                     hostState = snackbarHostState,

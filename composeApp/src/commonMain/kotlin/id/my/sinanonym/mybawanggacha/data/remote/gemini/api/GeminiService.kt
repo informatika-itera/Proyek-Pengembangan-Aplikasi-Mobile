@@ -7,9 +7,12 @@ import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.GeminiPart
 import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.GeminiRequest
 import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.GeminiResponse
 import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.GenerationConfig
+import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.GeminiUsageMetadata
 import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.getErrorMessage
 import id.my.sinanonym.mybawanggacha.data.remote.gemini.dto.getTextContent
 import id.my.sinanonym.mybawanggacha.domain.settings.model.AiApiModel
+import id.my.sinanonym.mybawanggacha.domain.settings.model.AiTokenUsageDelta
+import id.my.sinanonym.mybawanggacha.domain.settings.repository.AiTokenUsageRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.parameter
@@ -21,7 +24,8 @@ import kotlinx.coroutines.flow.first
 
 class GeminiService(
     private val client: HttpClient,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val aiTokenUsageRepository: AiTokenUsageRepository
 ) {
 
     companion object {
@@ -31,15 +35,15 @@ class GeminiService(
     suspend fun generateContent(
         contents: List<GeminiContent>
     ): Result<String> = runCatching {
+        val model = AiApiModel.fromString(userPreferences.aiApiModel.first())
         val request = GeminiRequest(
             contents = contents,
             generationConfig = GenerationConfig(
                 temperature = 0.7,
-                maxOutputTokens = 8192
+                maxOutputTokens = model.effectiveOutputTokenLimit
             )
         )
 
-        val model = AiApiModel.fromString(userPreferences.aiApiModel.first())
         val apiKey = userPreferences.aiApiToken
             .first()
             .trim()
@@ -54,6 +58,15 @@ class GeminiService(
             parameter("key", apiKey)
             setBody(request)
         }.body()
+
+        response.usageMetadata?.let { usage ->
+            runCatching {
+                aiTokenUsageRepository.recordUsage(
+                    model = model,
+                    usage = usage.toDomainUsage()
+                )
+            }
+        }
 
         response.getErrorMessage()?.let { errorMsg ->
             throw Exception(errorMsg)
@@ -91,6 +104,22 @@ class GeminiService(
         )
 
         return generateContent(contents)
+    }
+
+    private fun GeminiUsageMetadata.toDomainUsage(): AiTokenUsageDelta {
+        return AiTokenUsageDelta(
+            promptTokens = promptTokenCount ?: 0,
+            candidatesTokens = candidatesTokenCount ?: 0,
+            thoughtsTokens = thoughtsTokenCount ?: 0,
+            cachedContentTokens = cachedContentTokenCount ?: 0,
+            totalTokens = totalTokenCount
+                ?: listOfNotNull(
+                    promptTokenCount,
+                    candidatesTokenCount,
+                    thoughtsTokenCount,
+                    cachedContentTokenCount
+                ).sum()
+        )
     }
 }
 

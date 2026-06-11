@@ -14,10 +14,3 @@ internal fun MangaListTab.contentTitle(): String {
     }
 }
 
-internal fun MangaListTab.contentSubtitle(): String {
-    return when (this) {
-        MangaListTab.TopManga -> "Manga dengan ranking tinggi dari katalog MyAnimeList."
-        MangaListTab.Popular -> "Manga yang paling banyak dilihat komunitas MyAnimeList."
-        MangaListTab.Recommendations -> "Rekomendasi komunitas dari Jikan/MyAnimeList."
-    }
-}

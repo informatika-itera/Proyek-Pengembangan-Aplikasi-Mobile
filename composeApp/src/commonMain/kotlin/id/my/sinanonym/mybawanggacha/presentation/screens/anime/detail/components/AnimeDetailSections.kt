@@ -47,7 +47,9 @@ internal fun AnimeDetailContent(
     selectedSection: AnimeDetailSection,
     onEpisodeWatchedChange: (Int, Boolean) -> Unit,
     onEpisodeMarkedChange: (Int, Boolean) -> Unit,
-    onRelationEntryClick: (AnimeRelationEntry) -> Unit
+    onRelationEntryClick: (AnimeRelationEntry) -> Unit,
+    onPosterClick: () -> Unit = {},
+    onTitleCopied: () -> Unit = {}
 ) {
     AnimatedSectionContent(
         targetState = selectedSection,
@@ -56,7 +58,11 @@ internal fun AnimeDetailContent(
         label = "AnimeDetailSectionTransition"
     ) { section ->
         when (section) {
-            AnimeDetailSection.Overview -> AnimeOverviewSection(anime)
+            AnimeDetailSection.Overview -> AnimeOverviewSection(
+                anime = anime,
+                onPosterClick = onPosterClick,
+                onTitleCopied = onTitleCopied
+            )
             AnimeDetailSection.Synopsis -> AnimeSynopsisSection(anime)
             AnimeDetailSection.Episodes -> AnimeEpisodeListSection(
                 anime = anime,

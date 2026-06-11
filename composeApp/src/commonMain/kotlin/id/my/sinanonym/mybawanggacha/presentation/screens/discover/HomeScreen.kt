@@ -104,12 +104,14 @@ fun HomeScreen(
 
                     is AnimeHomeUiState.Success -> HomeDiscoveryContent(
                         recommendations = state.recommendations,
+                        mangaRecommendations = state.mangaRecommendations,
                         randomAnime = state.randomAnime,
                         randomManga = state.randomManga,
                         recentEpisodes = state.recentEpisodes,
                         onAnimeClick = onNavigateToAnimeDetail,
                         onMangaClick = onNavigateToMangaDetail,
-                        onOpenAnimeList = onNavigateToAnimeList
+                        onOpenAnimeList = onNavigateToAnimeList,
+                        onOpenMangaList = onNavigateToMangaList
                     )
                 }
             }

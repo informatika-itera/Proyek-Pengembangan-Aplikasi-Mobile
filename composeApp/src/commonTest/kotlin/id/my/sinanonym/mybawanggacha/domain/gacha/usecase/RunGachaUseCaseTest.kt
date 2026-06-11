@@ -4,6 +4,8 @@ import id.my.sinanonym.mybawanggacha.domain.gacha.model.GachaMediaFormat
 import id.my.sinanonym.mybawanggacha.domain.gacha.model.GachaMediaPool
 import id.my.sinanonym.mybawanggacha.domain.gacha.model.GachaPreference
 import id.my.sinanonym.mybawanggacha.domain.gacha.model.GachaStatusFilter
+import id.my.sinanonym.mybawanggacha.domain.gacha.model.GachaHistoryEntry
+import id.my.sinanonym.mybawanggacha.domain.gacha.repository.GachaRepository
 import id.my.sinanonym.mybawanggacha.domain.library.model.LibraryEntry
 import id.my.sinanonym.mybawanggacha.domain.library.model.LibraryStatus
 import id.my.sinanonym.mybawanggacha.domain.library.model.MediaType
@@ -33,7 +35,8 @@ class RunGachaUseCaseTest {
         )
         val useCase = RunGachaUseCase(
             searchRepository = searchRepository,
-            libraryRepository = FakeLibraryRepository()
+            libraryRepository = FakeLibraryRepository(),
+            gachaRepository = FakeGachaRepository()
         )
 
         val result = useCase(
@@ -50,7 +53,7 @@ class RunGachaUseCaseTest {
             random = Random(1)
         )
 
-        assertTrue(result.malId in listOf(1, 2))
+        assertTrue(result.item.malId in listOf(1, 2))
         assertEquals(listOf(SearchMediaType.Anime, SearchMediaType.Manga), searchRepository.requests.map { it.mediaType })
         assertTrue(searchRepository.requests.all { it.genres == "1,2" })
         assertTrue(searchRepository.requests.all { it.genresExclude == "9" })
@@ -80,7 +83,8 @@ class RunGachaUseCaseTest {
                         status = LibraryStatus.Completed
                     )
                 )
-            )
+            ),
+            gachaRepository = FakeGachaRepository()
         )
 
         val result = useCase(
@@ -91,7 +95,34 @@ class RunGachaUseCaseTest {
             random = Random(1)
         )
 
-        assertEquals(2, result.malId)
+        assertEquals(2, result.item.malId)
+    }
+
+
+    @Test
+    fun invoke_withSamePreference_shouldDrawFromDeckWithoutRepeating() = runTest {
+        val searchRepository = FakeSearchRepository(
+            pages = mapOf(
+                SearchMediaType.Anime to listOf(
+                    createItem(id = 1, mediaType = SearchMediaType.Anime, score = 8.0),
+                    createItem(id = 2, mediaType = SearchMediaType.Anime, score = 8.1),
+                    createItem(id = 3, mediaType = SearchMediaType.Anime, score = 8.2)
+                )
+            )
+        )
+        val useCase = RunGachaUseCase(
+            searchRepository = searchRepository,
+            libraryRepository = FakeLibraryRepository(),
+            gachaRepository = FakeGachaRepository()
+        )
+        val preference = GachaPreference(mediaPool = GachaMediaPool.Anime)
+
+        val first = useCase(preference = preference, random = Random(1)).item
+        val second = useCase(preference = preference, random = Random(1)).item
+        val third = useCase(preference = preference, random = Random(1)).item
+
+        assertEquals(3, setOf(first.malId, second.malId, third.malId).size)
+        assertEquals(1, searchRepository.requests.size)
     }
 
     private fun createItem(
@@ -135,6 +166,24 @@ private class FakeSearchRepository(
     override suspend fun getFilterMetadata(mediaType: SearchMediaType): SearchFilterMetadata {
         return SearchFilterMetadata()
     }
+}
+
+
+private class FakeGachaRepository(
+    private val preference: GachaPreference = GachaPreference(),
+    private val history: List<GachaHistoryEntry> = emptyList()
+) : GachaRepository {
+    override fun observeLastPreference(): Flow<GachaPreference> = flowOf(preference)
+
+    override fun observeHistory(): Flow<List<GachaHistoryEntry>> = flowOf(history)
+
+    override suspend fun getLastPreference(): GachaPreference = preference
+
+    override suspend fun saveLastPreference(preference: GachaPreference) = Unit
+
+    override suspend fun saveHistoryEntry(entry: GachaHistoryEntry) = Unit
+
+    override suspend fun clearHistory() = Unit
 }
 
 private class FakeLibraryRepository(

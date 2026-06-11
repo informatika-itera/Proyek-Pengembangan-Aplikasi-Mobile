@@ -2,6 +2,7 @@ package id.my.sinanonym.mybawanggacha.core.di
 
 import id.my.sinanonym.mybawanggacha.core.network.HttpClientFactory
 import id.my.sinanonym.mybawanggacha.data.remote.gemini.api.GeminiService
+import id.my.sinanonym.mybawanggacha.data.remote.github.api.GitHubReleaseService
 import id.my.sinanonym.mybawanggacha.data.remote.jikan.api.JikanService
 import id.my.sinanonym.mybawanggacha.data.remote.jikan.source.JikanAnimeRemoteDataSource
 import id.my.sinanonym.mybawanggacha.data.remote.jikan.source.JikanMangaRemoteDataSource
@@ -17,6 +18,7 @@ val networkModule = module {
         )
     }
     singleOf(::GeminiService)
+    singleOf(::GitHubReleaseService)
     singleOf(::JikanService)
     singleOf(::JikanAnimeRemoteDataSource)
     singleOf(::JikanMangaRemoteDataSource)

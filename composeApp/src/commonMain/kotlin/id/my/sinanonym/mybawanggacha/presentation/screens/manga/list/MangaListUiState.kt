@@ -7,7 +7,6 @@ sealed interface MangaListUiState {
 
     data class Success(
         val title: String,
-        val subtitle: String,
         val manga: List<MangaSummary>,
         val canLoadMore: Boolean = false,
         val isLoadingMore: Boolean = false,

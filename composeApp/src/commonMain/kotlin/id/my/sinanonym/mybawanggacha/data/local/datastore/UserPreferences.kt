@@ -34,6 +34,7 @@ class UserPreferences(
         val AI_API_MODEL = stringPreferencesKey("ai_api_model")
         val AI_API_PERSONALITY = stringPreferencesKey("ai_api_personality")
         val AI_API_TOKEN = stringPreferencesKey("ai_api_token")
+        val AI_TOKEN_USAGE = stringPreferencesKey("ai_token_usage")
         val GACHA_PREFERENCE = stringPreferencesKey("gacha_preference")
         val GACHA_HISTORY = stringPreferencesKey("gacha_history")
     }
@@ -174,6 +175,20 @@ class UserPreferences(
     suspend fun setAiApiToken(value: String) {
         dataStore.edit { prefs ->
             prefs[Keys.AI_API_TOKEN] = value
+        }
+    }
+
+    val aiTokenUsageJson: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.AI_TOKEN_USAGE] ?: ""
+    }
+
+    suspend fun setAiTokenUsageJson(value: String) {
+        dataStore.edit { prefs ->
+            if (value.isBlank()) {
+                prefs.remove(Keys.AI_TOKEN_USAGE)
+            } else {
+                prefs[Keys.AI_TOKEN_USAGE] = value
+            }
         }
     }
 

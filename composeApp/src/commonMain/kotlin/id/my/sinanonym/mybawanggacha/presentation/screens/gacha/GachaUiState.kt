@@ -13,6 +13,8 @@ data class GachaUiState(
     val result: GachaResultItem? = null,
     val history: List<GachaHistoryEntry> = emptyList(),
     val isLoading: Boolean = false,
+    val isRolling: Boolean = false,
+    val canSkipRoll: Boolean = false,
     val errorMessage: String? = null,
     val infoMessage: String? = null
 )

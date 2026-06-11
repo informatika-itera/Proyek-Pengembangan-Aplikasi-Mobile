@@ -184,10 +184,6 @@ class AnimeListViewModel(
                 currentSeasonPeriod = currentSeasonPeriod,
                 selectedSeasonPeriod = _selectedSeasonPeriod.value
             ),
-            subtitle = tab.contentSubtitle(
-                currentSeasonPeriod = currentSeasonPeriod,
-                selectedSeasonPeriod = _selectedSeasonPeriod.value
-            ),
             anime = entry.anime,
             canLoadMore = entry.canLoadMore,
             isLoadingMore = false,

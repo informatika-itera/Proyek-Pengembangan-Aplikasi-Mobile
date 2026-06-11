@@ -7,7 +7,6 @@ sealed interface AnimeListUiState {
 
     data class Success(
         val title: String,
-        val subtitle: String,
         val anime: List<AnimeSummary>,
         val canLoadMore: Boolean = false,
         val isLoadingMore: Boolean = false,

@@ -301,16 +301,26 @@ jobs:
             exit 1
           fi
 
-      - name: Ensure release tag exists
+      - name: Verify or create release tag
         shell: bash
         run: |
-          git fetch --tags
+          release_tag="v${RELEASE_VERSION}"
 
-          if git rev-parse "v${RELEASE_VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${RELEASE_VERSION} already exists."
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            if [ "${GITHUB_REF_TYPE}" != "tag" ] || [ "${GITHUB_REF_NAME}" != "$release_tag" ]; then
+              echo "Tag mismatch: expected ${release_tag}, got ${GITHUB_REF_NAME}."
+              exit 1
+            fi
+
+            echo "Using pushed tag ${release_tag}."
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${release_tag}" >/dev/null 2>&1; then
+            echo "Tag ${release_tag} already exists on origin."
           else
-            git tag "v${RELEASE_VERSION}"
-            git push origin "v${RELEASE_VERSION}"
+            git tag "${release_tag}"
+            git push origin "refs/tags/${release_tag}"
           fi
 
       - name: Publish GitHub release

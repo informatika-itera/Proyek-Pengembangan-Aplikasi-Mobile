@@ -141,6 +141,13 @@ data class GachaHistoryEntry(
     val pickedAtEpochMillis: Long = Clock.System.now().toEpochMilliseconds()
 )
 
+data class GachaRunResult(
+    val item: GachaResultItem,
+    val remainingCandidateCount: Int,
+    val infoMessage: String? = null,
+    val shouldPrefetch: Boolean = false
+)
+
 internal fun MediaSearchItem.toGachaResultItem(): GachaResultItem {
     return GachaResultItem(
         malId = malId,

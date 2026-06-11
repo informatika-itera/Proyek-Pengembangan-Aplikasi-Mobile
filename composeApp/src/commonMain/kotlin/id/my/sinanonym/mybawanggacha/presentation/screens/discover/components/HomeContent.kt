@@ -58,14 +58,22 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 internal fun HomeDiscoveryContent(
     recommendations: List<AnimeSummary>,
+    mangaRecommendations: List<MangaSummary>,
     randomAnime: List<AnimeSummary>,
     randomManga: List<MangaSummary>,
     recentEpisodes: List<RecentAnimeEpisode>,
     onAnimeClick: (Int) -> Unit,
     onMangaClick: (Int) -> Unit,
-    onOpenAnimeList: () -> Unit
+    onOpenAnimeList: () -> Unit,
+    onOpenMangaList: () -> Unit
 ) {
-    if (recommendations.isEmpty() && randomAnime.isEmpty() && randomManga.isEmpty() && recentEpisodes.isEmpty()) {
+    if (
+        recommendations.isEmpty() &&
+        mangaRecommendations.isEmpty() &&
+        randomAnime.isEmpty() &&
+        randomManga.isEmpty() &&
+        recentEpisodes.isEmpty()
+    ) {
         EmptyState(
             title = "Discovery kosong",
             message = "Jikan belum memberikan data discovery. Coba refresh nanti."
@@ -81,8 +89,7 @@ internal fun HomeDiscoveryContent(
         item {
             ScreenHeader(
                 icon = Icons.Default.Home,
-                title = "Home",
-                subtitle = "Discovery anime dan manga"
+                title = "Home"
             )
         }
 
@@ -117,6 +124,21 @@ internal fun HomeDiscoveryContent(
                 AnimeOverviewPagedCarousel(
                     recommendations = recommendations.take(24),
                     onAnimeClick = onAnimeClick
+                )
+            }
+        }
+
+        if (mangaRecommendations.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = "Manga Overview",
+                    onViewAllClick = onOpenMangaList,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                MangaOverviewPagedCarousel(
+                    recommendations = mangaRecommendations.take(24),
+                    onMangaClick = onMangaClick
                 )
             }
         }
@@ -164,16 +186,53 @@ private fun AnimeOverviewPagedCarousel(
 }
 
 @Composable
+private fun MangaOverviewPagedCarousel(
+    recommendations: List<MangaSummary>,
+    onMangaClick: (Int) -> Unit
+) {
+    val pages = recommendations.chunked(4)
+
+    AutoSlidingRow(
+        items = pages,
+        key = { page -> page.joinToString { it.malId.toString() } },
+        autoSlideMillis = 5_700L
+    ) { pageItems ->
+        Column(
+            modifier = Modifier.width(286.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            pageItems.chunked(2).forEach { rowItems ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    rowItems.forEach { manga ->
+                        HomeMiniMediaCard(
+                            title = manga.title,
+                            imageUrl = manga.imageUrl,
+                            label = manga.score?.let { "★ ${it.toString().take(4)}" } ?: (manga.type ?: "Manga"),
+                            onClick = { onMangaClick(manga.malId) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    if (rowItems.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun RandomPickSection(
     randomAnime: List<AnimeSummary>,
     randomManga: List<MangaSummary>,
     onAnimeClick: (Int) -> Unit,
     onMangaClick: (Int) -> Unit
 ) {
-    HomeSectionTitle(
-        title = "Random Pick",
-        subtitle = "Pilihan random untukmu"
-    )
+    HomeSectionTitle(title = "Random Pick")
 
     val items = buildList<HomeRandomPick> {
         randomAnime.forEach { anime -> add(HomeRandomPick.Anime(anime)) }
@@ -210,10 +269,7 @@ private fun RecentEpisodesSection(
     episodes: List<RecentAnimeEpisode>,
     onAnimeClick: (Int) -> Unit
 ) {
-    HomeSectionTitle(
-        title = "Recent Episodes",
-        subtitle = "Episode yang baru saja update"
-    )
+    HomeSectionTitle(title = "Recent Episodes")
 
     AutoSlidingRow(
         items = episodes,
@@ -498,8 +554,7 @@ private fun PosterBox(
 
 @Composable
 private fun HomeSectionTitle(
-    title: String,
-    subtitle: String
+    title: String
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -509,15 +564,6 @@ private fun HomeSectionTitle(
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
 
         Spacer(modifier = Modifier.height(12.dp))
     }

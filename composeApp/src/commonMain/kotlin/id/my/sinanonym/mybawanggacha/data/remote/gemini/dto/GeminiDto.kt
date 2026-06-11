@@ -1,5 +1,6 @@
 package id.my.sinanonym.mybawanggacha.data.remote.gemini.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // ==================== REQUEST ====================
@@ -42,7 +43,9 @@ data class SafetySetting(
 data class GeminiResponse(
     val candidates: List<GeminiCandidate>? = null,
     val promptFeedback: PromptFeedback? = null,
-    val error: GeminiError? = null
+    val error: GeminiError? = null,
+    @SerialName("usageMetadata")
+    val usageMetadata: GeminiUsageMetadata? = null
 )
 
 @Serializable
@@ -70,6 +73,20 @@ data class GeminiError(
     val code: Int,
     val message: String,
     val status: String
+)
+
+@Serializable
+data class GeminiUsageMetadata(
+    @SerialName("promptTokenCount")
+    val promptTokenCount: Int? = null,
+    @SerialName("candidatesTokenCount")
+    val candidatesTokenCount: Int? = null,
+    @SerialName("thoughtsTokenCount")
+    val thoughtsTokenCount: Int? = null,
+    @SerialName("cachedContentTokenCount")
+    val cachedContentTokenCount: Int? = null,
+    @SerialName("totalTokenCount")
+    val totalTokenCount: Int? = null
 )
 
 // ==================== HELPER EXTENSIONS ====================

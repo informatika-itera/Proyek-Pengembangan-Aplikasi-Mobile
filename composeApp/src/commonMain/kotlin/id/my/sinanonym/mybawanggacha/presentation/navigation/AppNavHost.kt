@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -24,14 +25,17 @@ import id.my.sinanonym.mybawanggacha.presentation.screens.manga.list.MangaListSc
 import id.my.sinanonym.mybawanggacha.presentation.screens.search.SearchScreen
 import id.my.sinanonym.mybawanggacha.presentation.screens.settings.SettingsScreen
 import id.my.sinanonym.mybawanggacha.domain.library.model.MediaType
+import kotlin.time.Clock
 
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     modifier: Modifier = Modifier
 ) {
-    val navigationActions = createNavigationActions(navController)
-    
+    val navigationActions = remember(navController) {
+        createNavigationActions(navController)
+    }
+
     NavHost(
         navController = navController,
         startDestination = Route.Home,
@@ -197,7 +201,7 @@ fun AppNavHost(
                 }
             )
         }
-        
+
         composable<Route.NoteDetail> { backStackEntry ->
             val route: Route.NoteDetail = backStackEntry.toRoute()
             NoteDetailScreen(
@@ -207,7 +211,7 @@ fun AppNavHost(
                 onShare = { _ -> }
             )
         }
-        
+
         composable<Route.AIAssistant> { backStackEntry ->
             val route: Route.AIAssistant = backStackEntry.toRoute()
             AIAssistantScreen(
@@ -258,30 +262,68 @@ fun AppNavHost(
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
-        override fun navigateToHome() {
+        private var lastNavigationAtMillis = 0L
+
+        private fun runNavigation(block: () -> Unit) {
+            val now = Clock.System.now().toEpochMilliseconds()
+            if (now - lastNavigationAtMillis < NAVIGATION_DEBOUNCE_MS) return
+            lastNavigationAtMillis = now
+            block()
+        }
+
+        private fun navigateToHomeRoot() {
             navController.navigate(Route.Home) {
-                popUpTo(Route.Home) { inclusive = true }
+                popUpTo(Route.Home) {
+                    inclusive = false
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
             }
         }
 
-        override fun navigateToSearch() {
-            navController.navigate(Route.Search)
+        override fun navigateToHome() = runNavigation {
+            navigateToHomeRoot()
         }
 
-        override fun navigateToMyLibrary() {
-            navController.navigate(Route.MyLibrary)
+        override fun navigateToSearch() = runNavigation {
+            navController.navigate(Route.Search) {
+                popUpTo(Route.Home) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
 
-        override fun navigateToGacha() {
-            navController.navigate(Route.Gacha)
+        override fun navigateToMyLibrary() = runNavigation {
+            navController.navigate(Route.MyLibrary) {
+                popUpTo(Route.Home) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
 
-        override fun navigateToAnimeList() {
-            navController.navigate(Route.AnimeList)
+        override fun navigateToGacha() = runNavigation {
+            navController.navigate(Route.Gacha) {
+                popUpTo(Route.Home) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
 
-        override fun navigateToMangaList() {
-            navController.navigate(Route.MangaList)
+        override fun navigateToAnimeList() = runNavigation {
+            navController.navigate(Route.AnimeList) {
+                popUpTo(Route.Home) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+
+        override fun navigateToMangaList() = runNavigation {
+            navController.navigate(Route.MangaList) {
+                popUpTo(Route.Home) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
 
         override fun navigateToLibraryEntryEditor(
@@ -291,7 +333,7 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             imageUrl: String?,
             totalCount: Int?,
             entryId: Long?
-        ) {
+        ) = runNavigation {
             navController.navigate(
                 Route.LibraryEntryEditor(
                     mediaId = mediaId,
@@ -301,21 +343,31 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
                     totalCount = totalCount,
                     entryId = entryId
                 )
-            )
+            ) {
+                launchSingleTop = true
+            }
         }
 
-        override fun navigateToSettings() {
-            navController.navigate(Route.Settings)
+        override fun navigateToSettings() = runNavigation {
+            navController.navigate(Route.Settings) {
+                popUpTo(Route.Home) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
-        
-        override fun navigateToAddNote(noteId: Long?) {
-            navController.navigate(Route.AddNote(noteId))
+
+        override fun navigateToAddNote(noteId: Long?) = runNavigation {
+            navController.navigate(Route.AddNote(noteId)) {
+                launchSingleTop = true
+            }
         }
-        
-        override fun navigateToNoteDetail(noteId: Long) {
-            navController.navigate(Route.NoteDetail(noteId))
+
+        override fun navigateToNoteDetail(noteId: Long) = runNavigation {
+            navController.navigate(Route.NoteDetail(noteId)) {
+                launchSingleTop = true
+            }
         }
-        
+
         override fun navigateToAIAssistant(
             noteId: Long?,
             initialText: String?,
@@ -323,7 +375,7 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             mediaId: Int?,
             mediaType: String?,
             mediaTitle: String?
-        ) {
+        ) = runNavigation {
             navController.navigate(
                 Route.AIAssistant(
                     noteId = noteId,
@@ -333,19 +385,29 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
                     mediaType = mediaType,
                     mediaTitle = mediaTitle
                 )
-            )
+            ) {
+                launchSingleTop = true
+            }
         }
 
-        override fun navigateToAnimeDetail(malId: Int) {
-            navController.navigate(Route.AnimeDetail(malId))
+        override fun navigateToAnimeDetail(malId: Int) = runNavigation {
+            navController.navigate(Route.AnimeDetail(malId)) {
+                launchSingleTop = true
+            }
         }
 
-        override fun navigateToMangaDetail(malId: Int) {
-            navController.navigate(Route.MangaDetail(malId))
+        override fun navigateToMangaDetail(malId: Int) = runNavigation {
+            navController.navigate(Route.MangaDetail(malId)) {
+                launchSingleTop = true
+            }
         }
 
-        override fun navigateBack() {
-            navController.popBackStack()
+        override fun navigateBack() = runNavigation {
+            if (!navController.popBackStack()) {
+                navigateToHomeRoot()
+            }
         }
     }
 }
+
+private const val NAVIGATION_DEBOUNCE_MS = 240L

@@ -1,5 +1,6 @@
 package id.my.sinanonym.mybawanggacha.presentation.screens.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -45,6 +46,10 @@ fun SettingsScreen(
 
     var selectedPane by remember { mutableStateOf(SettingsPane.Main) }
 
+    BackHandler(enabled = selectedPane != SettingsPane.Main) {
+        selectedPane = SettingsPane.Main
+    }
+
     MBGSideRailScaffold(
         selectedRailKey = "",
         onRailItemClick = { key ->
@@ -85,6 +90,7 @@ fun SettingsScreen(
                         appColorScheme = uiState.appColorScheme,
                         aiApiSettings = uiState.aiApiSettings,
                         requestUsage = uiState.requestUsage,
+                        aiTokenUsage = uiState.aiTokenUsage,
                         onPaneSelected = { selectedPane = it }
                     )
                 }
@@ -134,9 +140,13 @@ fun SettingsScreen(
                 SettingsPane.RequestUsage -> {
                     SettingsPaneHeader(
                         title = "Request Usage",
-                        description = "Pantau pemakaian request Jikan."
+                        description = "Pantau pemakaian request Jikan dan token AI."
                     )
-                    SettingsRequestUsageSection(requestUsage = uiState.requestUsage)
+                    SettingsRequestUsageSection(
+                        requestUsage = uiState.requestUsage,
+                        aiTokenUsage = uiState.aiTokenUsage,
+                        onResetAiTokenUsage = viewModel::resetAiTokenUsage
+                    )
                 }
 
                 SettingsPane.About -> {
@@ -144,7 +154,11 @@ fun SettingsScreen(
                         title = "About",
                         description = "Info aplikasi dan sumber data."
                     )
-                    SettingsAboutSection(showTitle = false)
+                    SettingsAboutSection(
+                        showTitle = false,
+                        release = uiState.release,
+                        onCheckRelease = viewModel::checkLatestRelease
+                    )
                 }
             }
         }

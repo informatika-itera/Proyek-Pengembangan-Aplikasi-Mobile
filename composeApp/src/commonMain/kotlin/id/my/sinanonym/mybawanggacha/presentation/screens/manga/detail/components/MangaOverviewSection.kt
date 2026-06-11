@@ -1,6 +1,7 @@
 package id.my.sinanonym.mybawanggacha.presentation.screens.manga.detail.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,11 @@ import id.my.sinanonym.mybawanggacha.domain.manga.model.MangaDetail
 import id.my.sinanonym.mybawanggacha.presentation.components.CopyableTitleText
 
 @Composable
-internal fun MangaOverviewSection(manga: MangaDetail) {
+internal fun MangaOverviewSection(
+    manga: MangaDetail,
+    onPosterClick: () -> Unit = {},
+    onTitleCopied: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +53,8 @@ internal fun MangaOverviewSection(manga: MangaDetail) {
             color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold,
             maxLines = 3,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            onCopied = onTitleCopied
         )
 
         manga.englishTitle
@@ -61,7 +67,8 @@ internal fun MangaOverviewSection(manga: MangaDetail) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    onCopied = onTitleCopied
                 )
             }
 
@@ -74,7 +81,8 @@ internal fun MangaOverviewSection(manga: MangaDetail) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    onCopied = onTitleCopied
                 )
             }
 
@@ -102,7 +110,8 @@ internal fun MangaOverviewSection(manga: MangaDetail) {
                     .width(124.dp)
                     .height(178.dp)
                     .clip(RoundedCornerShape(18.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable(onClick = onPosterClick),
                 contentScale = ContentScale.Crop
             )
 

@@ -2,12 +2,18 @@ package id.my.sinanonym.mybawanggacha.domain.settings.model
 
 enum class AiApiModel(
     val label: String,
-    val modelId: String
+    val modelId: String,
+    val inputTokenLimit: Int,
+    val outputTokenLimit: Int,
+    val appOutputTokenLimit: Int = 8_192
 ) {
-    Gemini35Flash("Gemini 3.5 Flash", "gemini-3.5-flash"),
-    Gemini25Flash("Gemini 2.5 Flash", "gemini-2.5-flash"),
-    Gemini25Pro("Gemini 2.5 Pro", "gemini-2.5-pro"),
-    Gemini20Flash("Gemini 2.0 Flash", "gemini-2.0-flash");
+    Gemini35Flash("Gemini 3.5 Flash", "gemini-3.5-flash", 1_000_000, 65_536),
+    Gemini25Flash("Gemini 2.5 Flash", "gemini-2.5-flash", 1_048_576, 65_536),
+    Gemini25Pro("Gemini 2.5 Pro", "gemini-2.5-pro", 1_048_576, 65_536),
+    Gemini20Flash("Gemini 2.0 Flash", "gemini-2.0-flash", 1_048_576, 8_192);
+
+    val effectiveOutputTokenLimit: Int
+        get() = minOf(outputTokenLimit, appOutputTokenLimit)
 
     companion object {
         fun fromString(value: String?): AiApiModel {

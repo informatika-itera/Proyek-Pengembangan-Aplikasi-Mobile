@@ -3,6 +3,7 @@ package id.my.sinanonym.mybawanggacha.presentation.screens.manga.list.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -53,8 +54,7 @@ import id.my.sinanonym.mybawanggacha.presentation.components.media.MediaPosterSk
 fun ListHeader() {
     ScreenHeader(
         icon = Icons.Default.MenuBook,
-        title = "Manga List",
-        subtitle = "Katalog manga dari Jikan"
+        title = "Manga List"
     )
 }
 
@@ -120,15 +120,7 @@ fun ListContent(
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = uiState.subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 PosterGrid(
                     manga = uiState.manga,
@@ -149,23 +141,34 @@ fun ListContent(
 private fun ListSkeleton() {
     Column(modifier = Modifier.fillMaxSize()) {
         SkeletonLine(width = 174.dp, height = 24.dp)
-        Spacer(modifier = Modifier.height(8.dp))
-        SkeletonLine(width = 242.dp, height = 14.dp)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 132.dp),
-            contentPadding = PaddingValues(bottom = 32.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(
-                count = 8,
-                key = { index -> "manga_skeleton_$index" },
-                contentType = { "manga_poster_skeleton" }
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val horizontalSpacing = 12.dp
+            val columnCount = (maxWidth.value / POSTER_BASE_WIDTH_DP)
+                .toInt()
+                .coerceAtLeast(MIN_POSTER_GRID_COLUMNS)
+            val posterWidth = (maxWidth - horizontalSpacing * (columnCount - 1).toFloat()) /
+                columnCount.toFloat()
+            val posterHeight = posterWidth * POSTER_ASPECT_RATIO
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columnCount),
+                contentPadding = PaddingValues(bottom = 32.dp),
+                horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
-                MediaPosterSkeletonCard()
+                items(
+                    count = 8,
+                    key = { index -> "manga_skeleton_$index" },
+                    contentType = { "manga_poster_skeleton" }
+                ) {
+                    MediaPosterSkeletonCard(
+                        posterWidth = posterWidth,
+                        posterHeight = posterHeight
+                    )
+                }
             }
         }
     }
@@ -218,34 +221,46 @@ private fun PosterGrid(
         if (shouldLoadMore) onLoadMore()
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 132.dp),
-        state = gridState,
-        contentPadding = PaddingValues(bottom = 32.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
-        modifier = modifier.fillMaxSize()
-    ) {
-        items(
-            items = manga,
-            key = { it.malId },
-            contentType = { "manga_poster" }
-        ) { item ->
-            MediaPosterCard(
-                title = item.title,
-                imageUrl = item.imageUrl.orEmpty(),
-                leadingBadge = item.takeIf { showBadges }?.rankLabel(),
-                trailingBadge = item.takeIf { showBadges }?.scoreLabel(),
-                onClick = { onMangaClick(item.malId) }
-            )
-        }
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val horizontalSpacing = 12.dp
+        val columnCount = (maxWidth.value / POSTER_BASE_WIDTH_DP)
+            .toInt()
+            .coerceAtLeast(MIN_POSTER_GRID_COLUMNS)
+        val posterWidth = (maxWidth - horizontalSpacing * (columnCount - 1).toFloat()) /
+            columnCount.toFloat()
+        val posterHeight = posterWidth * POSTER_ASPECT_RATIO
 
-        if (isLoadingMore) {
-            item(
-                span = { GridItemSpan(maxLineSpan) },
-                contentType = "manga_loading_more"
-            ) {
-                LoadingMoreRow()
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columnCount),
+            state = gridState,
+            contentPadding = PaddingValues(bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(
+                items = manga,
+                key = { it.malId },
+                contentType = { "manga_poster" }
+            ) { item ->
+                MediaPosterCard(
+                    title = item.title,
+                    imageUrl = item.imageUrl.orEmpty(),
+                    posterWidth = posterWidth,
+                    posterHeight = posterHeight,
+                    leadingBadge = item.takeIf { showBadges }?.rankLabel(),
+                    trailingBadge = item.takeIf { showBadges }?.scoreLabel(),
+                    onClick = { onMangaClick(item.malId) }
+                )
+            }
+
+            if (isLoadingMore) {
+                item(
+                    span = { GridItemSpan(maxLineSpan) },
+                    contentType = "manga_loading_more"
+                ) {
+                    LoadingMoreRow()
+                }
             }
         }
     }
@@ -271,6 +286,9 @@ private fun LoadingMoreRow() {
 }
 
 private const val LOAD_MORE_THRESHOLD = 6
+private const val MIN_POSTER_GRID_COLUMNS = 2
+private const val POSTER_BASE_WIDTH_DP = 132f
+private const val POSTER_ASPECT_RATIO = 188f / 132f
 
 private fun MangaSummary.rankLabel(): String? {
     return rank?.let { "#$it" }

@@ -1,6 +1,7 @@
 package id.my.sinanonym.mybawanggacha.presentation.screens.settings.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.Card
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -47,9 +49,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -79,6 +84,7 @@ internal fun SettingsMainMenu(
     appColorScheme: AppColorScheme,
     aiApiSettings: AiApiSettings,
     requestUsage: SettingsRequestUsageUiState,
+    aiTokenUsage: SettingsAiTokenUsageUiState,
     onPaneSelected: (SettingsPane) -> Unit
 ) {
     Column(
@@ -126,7 +132,13 @@ internal fun SettingsMainMenu(
         SettingsMenuRow(
             icon = Icons.Default.Storage,
             title = "Request Usage",
-            description = "${requestUsage.usedLastMinute}/${requestUsage.minuteLimit} request menit ini • ${requestUsage.remainingThisMinute} tersisa",
+            description = buildString {
+                append("Jikan ")
+                append(requestUsage.serviceStatus.label)
+                append(" • ")
+                append("${requestUsage.usedLastMinute}/${requestUsage.minuteLimit}")
+                append(" • AI ${aiTokenUsage.totalTokens.formatTokenCount()} token")
+            },
             onClick = { onPaneSelected(SettingsPane.RequestUsage) }
         )
 
@@ -358,7 +370,7 @@ internal fun SettingsApiSection(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text(
             text = "Model",
@@ -426,7 +438,7 @@ private fun AiModelDropdown(
 
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
-            value = "${selected.label}  ·  ${selected.modelId}",
+            value = selected.label,
             onValueChange = {},
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
@@ -453,17 +465,10 @@ private fun AiModelDropdown(
             AiApiModel.entries.forEach { model ->
                 DropdownMenuItem(
                     text = {
-                        Column {
-                            Text(
-                                text = model.label,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = model.modelId,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = model.label,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     },
                     onClick = {
                         expanded = false
@@ -574,11 +579,13 @@ internal fun SettingsNetworkSection(
 
 @Composable
 internal fun SettingsRequestUsageSection(
-    requestUsage: SettingsRequestUsageUiState
+    requestUsage: SettingsRequestUsageUiState,
+    aiTokenUsage: SettingsAiTokenUsageUiState,
+    onResetAiTokenUsage: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "Jikan Request Budget",
@@ -588,6 +595,18 @@ internal fun SettingsRequestUsageSection(
         )
 
         SettingsRequestUsageCard(requestUsage = requestUsage)
+
+        Text(
+            text = "AI Token Usage",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        SettingsAiTokenUsageCard(
+            aiTokenUsage = aiTokenUsage,
+            onResetAiTokenUsage = onResetAiTokenUsage
+        )
     }
 }
 
@@ -626,7 +645,7 @@ private fun SettingsRequestUsageCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Request terpakai",
+                        text = "Request used",
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold
@@ -646,30 +665,190 @@ private fun SettingsRequestUsageCard(
                         .height(6.dp)
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SettingsUsageMetric(
-                        label = "Menit ini",
-                        value = "${requestUsage.remainingThisMinute} tersisa",
-                        modifier = Modifier.weight(1f)
-                    )
-                    SettingsUsageMetric(
-                        label = "Detik ini",
-                        value = "${requestUsage.usedLastSecond}/${requestUsage.secondLimit}",
-                        modifier = Modifier.weight(1f)
+                if (requestUsage.serviceStatus.shortDetail.isNotBlank()) {
+                    Text(
+                        text = requestUsage.serviceStatus.shortDetail,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        SettingsUsageMetric(
+                            label = "Min left",
+                            value = requestUsage.remainingThisMinute.toString()
+                        )
+                        SettingsStatusPill(
+                            label = requestUsage.serviceStatus.label,
+                            active = requestUsage.serviceStatus.isActive,
+                            checking = requestUsage.serviceStatus.isChecking
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        SettingsUsageMetric(
+                            label = "Sec",
+                            value = "${requestUsage.usedLastSecond}/${requestUsage.secondLimit}"
+                        )
+                        SettingsStatusPill(
+                            label = requestUsage.requestReadyLabel,
+                            active = requestUsage.isRequestReady
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SettingsAiTokenUsageCard(
+    aiTokenUsage: SettingsAiTokenUsageUiState,
+    onResetAiTokenUsage: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Total AI token",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "${aiTokenUsage.totalRequests} request tercatat",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Text(
-                    text = requestUsage.cooldownLabel,
-                    style = MaterialTheme.typography.labelMedium,
+                    text = aiTokenUsage.totalTokens.formatTokenCount(),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            aiTokenUsage.entries.forEachIndexed { index, entry ->
+                SettingsAiModelUsageRow(entry = entry)
+                if (index != aiTokenUsage.entries.lastIndex) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.24f))
+                }
+            }
+
+            Button(
+                onClick = onResetAiTokenUsage,
+                enabled = aiTokenUsage.totalRequests > 0L
+            ) {
+                Text("Reset AI token usage")
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsAiModelUsageRow(
+    entry: SettingsAiModelTokenUsageUiState
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = entry.label,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "${entry.requestCount} request • ${entry.totalTokens.formatTokenCount()} token",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            Text(
+                text = entry.totalTokens.formatTokenCount(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
         }
+
+        LinearProgressIndicator(
+            progress = { entry.lastInputProgress.coerceIn(0f, 1f) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SettingsUsageMetric(
+                label = "Last total",
+                value = entry.lastTotalTokens.formatTokenCount(),
+                modifier = Modifier.weight(1f)
+            )
+            SettingsUsageMetric(
+                label = "Input",
+                value = "${entry.lastPromptTokens.formatTokenCount()}/${entry.inputTokenLimit.formatTokenCount()}",
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SettingsUsageMetric(
+                label = "Output",
+                value = "${entry.lastCandidatesTokens.formatTokenCount()}/${entry.effectiveOutputTokenLimit.formatTokenCount()}",
+                modifier = Modifier.weight(1f)
+            )
+            SettingsUsageMetric(
+                label = "Think/cache",
+                value = "${entry.lastThoughtsTokens.formatTokenCount()} / ${entry.lastCachedContentTokens.formatTokenCount()}",
+                modifier = Modifier.weight(1f)
+            )
+        }
+
     }
 }
 
@@ -695,6 +874,60 @@ private fun SettingsUsageMetric(
     }
 }
 
+@Composable
+private fun SettingsStatusPill(
+    label: String,
+    active: Boolean,
+    modifier: Modifier = Modifier,
+    checking: Boolean = false
+) {
+    val dotColor = when {
+        checking -> MaterialTheme.colorScheme.outline
+        active -> ActiveStatusColor
+        else -> MaterialTheme.colorScheme.error
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.50f),
+        contentColor = MaterialTheme.colorScheme.onSurface
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(dotColor)
+            )
+
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+private val ActiveStatusColor = Color(0xFF34C759)
+
+
+private fun Long.formatTokenCount(): String {
+    return when {
+        this >= 1_000_000L -> "${this / 1_000_000L}.${((this % 1_000_000L) / 100_000L)}M"
+        this >= 1_000L -> "${this / 1_000L}.${((this % 1_000L) / 100L)}K"
+        else -> toString()
+    }
+}
+
+private fun Int.formatTokenCount(): String = toLong().formatTokenCount()
+
 
 @Composable
 private fun SettingsDivider() {
@@ -719,9 +952,12 @@ private fun SettingsChoiceChip(
 
 @Composable
 internal fun SettingsAboutSection(
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    release: SettingsReleaseUiState = SettingsReleaseUiState(),
+    onCheckRelease: () -> Unit = {}
 ) {
     val buildInfo = AppBuildInfoProvider.current
+    val uriHandler = LocalUriHandler.current
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -740,14 +976,20 @@ internal fun SettingsAboutSection(
 
         SettingsBuildInfoCard(buildInfo = buildInfo)
 
+        SettingsReleaseCard(
+            buildInfo = buildInfo,
+            release = release,
+            onCheckRelease = onCheckRelease,
+            onOpenUrl = uriHandler::openExternalUrl
+        )
+
         SettingsDetailCard(
             icon = Icons.Default.Cloud,
             title = "Data & AI",
             rows = listOf(
                 "Data source" to buildInfo.dataSource,
                 "AI provider" to buildInfo.aiProvider,
-                "Library" to "Local SQLDelight database + DataStore preferences",
-                "Offline mode" to "Network/cache policy dapat diatur di Data & Offline"
+                "Library" to "Local SQLDelight database + DataStore preferences"
             )
         )
 
@@ -873,6 +1115,8 @@ private fun SettingsDeveloperRow(
     email: String,
     avatarUrl: String
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -883,7 +1127,8 @@ private fun SettingsDeveloperRow(
             contentDescription = "$name GitHub avatar",
             modifier = Modifier
                 .size(42.dp)
-                .clip(CircleShape),
+                .clip(CircleShape)
+                .clickable { uriHandler.openExternalUrl(githubUrl) },
             contentScale = ContentScale.Crop
         )
 
@@ -898,21 +1143,122 @@ private fun SettingsDeveloperRow(
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "$handle • $githubUrl",
+                text = handle,
+                modifier = Modifier.clickable { uriHandler.openExternalUrl(githubUrl) },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontFamily = FontFamily.Monospace,
+                textDecoration = TextDecoration.Underline
+            )
+            Text(
+                text = githubUrl,
+                modifier = Modifier.clickable { uriHandler.openExternalUrl(githubUrl) },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = FontFamily.Monospace
+                fontFamily = FontFamily.Monospace,
+                textDecoration = TextDecoration.Underline
             )
             Text(
                 text = email,
+                modifier = Modifier.clickable { uriHandler.openExternalUrl("mailto:$email") },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
-                fontFamily = FontFamily.Monospace
+                fontFamily = FontFamily.Monospace,
+                textDecoration = TextDecoration.Underline
             )
         }
     }
 }
 
+
+@Composable
+private fun SettingsReleaseCard(
+    buildInfo: AppBuildInfo,
+    release: SettingsReleaseUiState,
+    onCheckRelease: () -> Unit,
+    onOpenUrl: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = Icons.Default.Verified,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Release",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+
+                SettingsDetailRow(
+                    label = "Current",
+                    value = buildInfo.versionDisplay()
+                )
+
+                if (release.latestVersion.isNotBlank()) {
+                    SettingsDetailRow(
+                        label = "Latest",
+                        value = release.latestVersion
+                    )
+                }
+
+                Text(
+                    text = release.error.ifBlank { release.message },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (release.isUpdateAvailable) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    fontWeight = if (release.isUpdateAvailable) FontWeight.SemiBold else FontWeight.Normal
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = onCheckRelease,
+                        enabled = !release.isChecking
+                    ) {
+                        Text(if (release.isChecking) "Checking" else "Check")
+                    }
+
+                    Button(
+                        onClick = {
+                            onOpenUrl(
+                                release.releaseUrl.takeIf { it.isNotBlank() }
+                                    ?: GitHubReleasesUrl
+                            )
+                        }
+                    ) {
+                        Text(if (release.canOpenRelease) "Open release" else "GitHub")
+                    }
+                }
+            }
+        }
+    }
+}
 @Composable
 private fun SettingsBuildInfoCard(buildInfo: AppBuildInfo) {
     SettingsDetailCard(
@@ -927,7 +1273,7 @@ private fun buildInfoRows(buildInfo: AppBuildInfo): List<Pair<String, String>> {
         add("Version" to buildInfo.versionDisplay())
         add("Profile" to buildInfo.buildProfile)
         add("Target" to buildInfo.buildTarget)
-        add("Repository" to buildInfo.repository)
+        add("Repository" to buildInfo.repository.ifBlank { GitHubRepositoryUrl })
 
         if (buildInfo.hasEmbeddedGitMetadata) {
             addKnown("Branch", buildInfo.branch)
@@ -1015,6 +1361,9 @@ private fun SettingsDetailRow(
     label: String,
     value: String
 ) {
+    val uriHandler = LocalUriHandler.current
+    val normalizedUrl = value.externalUrlOrNull()
+
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
             text = label,
@@ -1024,9 +1373,43 @@ private fun SettingsDetailRow(
         )
         Text(
             text = value.ifBlank { "unknown" },
+            modifier = if (normalizedUrl != null) {
+                Modifier.clickable { uriHandler.openExternalUrl(normalizedUrl) }
+            } else {
+                Modifier
+            },
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontFamily = FontFamily.Monospace
+            color = if (normalizedUrl != null) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            fontFamily = FontFamily.Monospace,
+            textDecoration = if (normalizedUrl != null) TextDecoration.Underline else null
         )
+    }
+}
+
+private const val GitHubRepositoryUrl =
+    "https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile"
+private const val GitHubReleasesUrl =
+    "https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/releases"
+
+private fun UriHandler.openExternalUrl(url: String) {
+    url.externalUrlOrNull()?.let { normalized ->
+        runCatching { openUri(normalized) }
+    }
+}
+
+private fun String.externalUrlOrNull(): String? {
+    val value = trim()
+    if (value.isBlank()) return null
+
+    return when {
+        value.startsWith("https://") -> value
+        value.startsWith("http://") -> value
+        value.startsWith("mailto:") -> value
+        value.startsWith("github.com/") -> "https://$value"
+        else -> null
     }
 }

@@ -1,6 +1,14 @@
 package com.example.foodsaver.domain.repository
 
 interface AIRepository {
+    suspend fun generateResponse(
+        prompt: String, 
+        systemPrompt: String,
+        temperature: Double = 0.7,
+        maxTokens: Int = 1500
+    ): Result<String>
+    
+    // Metode lama dipertahankan untuk kompatibilitas internal jika diperlukan
     suspend fun suggestRecipes(ingredients: List<String>): Result<String>
     suspend fun suggestStorageTips(foodItem: String): Result<String>
     suspend fun chat(message: String): Result<String>

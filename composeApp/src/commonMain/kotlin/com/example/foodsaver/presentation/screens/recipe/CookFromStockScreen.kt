@@ -48,10 +48,37 @@ fun CookFromStockScreen(
     var manualInput by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
-    LaunchedEffect(state.error) {
-        state.error?.let {
+    val isGenerating = state.recommendationState is RecommendationUiState.Loading
+
+    LaunchedEffect(state.validationError) {
+        state.validationError?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            viewModel.clearValidationError()
+        }
+    }
+
+    // Effect to navigate when recommendation is ready
+    LaunchedEffect(state.recommendationState) {
+        if (state.recommendationState is RecommendationUiState.Success || 
+            state.recommendationState is RecommendationUiState.Fallback ||
+            state.recommendationState is RecommendationUiState.Empty ||
+            state.recommendationState is RecommendationUiState.Error) {
+            
+            // We navigate to Result Screen, and it will handle showing the state
+            // But wait, the Requirement says "Don't enter result page if empty" (No, it says "Don't directly enter result page if ingredients empty")
+            // Actually, for better UX, we navigate to the result screen and let it handle the recommendationState.
+            if (state.recommendationState is RecommendationUiState.Success || 
+                state.recommendationState is RecommendationUiState.Fallback ||
+                state.recommendationState is RecommendationUiState.Empty ||
+                state.recommendationState is RecommendationUiState.Error) {
+                
+                onNavigateToResult(
+                    state.selectedIngredientIds.toList(),
+                    state.manualIngredients,
+                    state.prioritizeExpired,
+                    state.preference
+                )
+            }
         }
     }
 
@@ -71,7 +98,7 @@ fun CookFromStockScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.resetIngredients() }) {
+                    IconButton(onClick = { viewModel.resetIngredients() }, enabled = !isGenerating) {
                         Icon(Icons.Default.Refresh, contentDescription = "Reset")
                     }
                 },
@@ -88,28 +115,35 @@ fun CookFromStockScreen(
             ) {
                 Button(
                     onClick = {
-                        if (state.selectedIngredientIds.isNotEmpty() || state.manualIngredients.isNotEmpty()) {
-                            onNavigateToResult(
-                                state.selectedIngredientIds.toList(),
-                                state.manualIngredients,
-                                state.prioritizeExpired,
-                                state.preference
-                            )
-                        } else {
-                            viewModel.addManualIngredient("") 
-                        }
+                        viewModel.generateRecommendation(
+                            state.selectedIngredientIds.toList(),
+                            state.manualIngredients,
+                            state.prioritizeExpired,
+                            state.preference
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                         .height(56.dp)
                         .testTag("recipe_generate_button"),
+                    enabled = !isGenerating,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(Icons.Default.RestaurantMenu, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Buat Rekomendasi Resep", fontWeight = FontWeight.Bold)
+                    if (isGenerating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text("Mencari resep...", fontWeight = FontWeight.Bold)
+                    } else {
+                        Icon(Icons.Default.RestaurantMenu, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Buat Rekomendasi Resep", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         },
@@ -128,13 +162,13 @@ fun CookFromStockScreen(
             ) {
                 Tab(
                     selected = selectedMode == RecipeInputMode.INVENTORY,
-                    onClick = { selectedMode = RecipeInputMode.INVENTORY },
+                    onClick = { if (!isGenerating) selectedMode = RecipeInputMode.INVENTORY },
                     text = { Text("Inventaris", fontWeight = FontWeight.Bold) },
                     modifier = Modifier.testTag("recipe_inventory_tab")
                 )
                 Tab(
                     selected = selectedMode == RecipeInputMode.MANUAL,
-                    onClick = { selectedMode = RecipeInputMode.MANUAL },
+                    onClick = { if (!isGenerating) selectedMode = RecipeInputMode.MANUAL },
                     text = { Text("Input Manual", fontWeight = FontWeight.Bold) },
                     modifier = Modifier.testTag("recipe_manual_tab")
                 )
@@ -142,7 +176,7 @@ fun CookFromStockScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (state.isLoading) {
+            if (state.isLoadingIngredients) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
@@ -191,7 +225,7 @@ fun CookFromStockScreen(
                                 IngredientSelectableCard(
                                     item = item,
                                     isSelected = state.selectedIngredientIds.contains(item.id),
-                                    onToggle = { viewModel.toggleIngredientSelection(item.id) }
+                                    onToggle = { if (!isGenerating) viewModel.toggleIngredientSelection(item.id) }
                                 )
                             }
                         }
@@ -201,6 +235,7 @@ fun CookFromStockScreen(
                                 value = manualInput,
                                 onValueChange = { manualInput = it },
                                 modifier = Modifier.fillMaxWidth().testTag("manual_ingredient_input"),
+                                enabled = !isGenerating,
                                 placeholder = { Text("Contoh: telur, nasi, bakso") },
                                 label = { Text("Tambah Bahan") },
                                 trailingIcon = {
@@ -210,6 +245,7 @@ fun CookFromStockScreen(
                                             manualInput = ""
                                             focusManager.clearFocus()
                                         },
+                                        enabled = !isGenerating && manualInput.isNotBlank(),
                                         modifier = Modifier.testTag("btn_add_manual")
                                     ) {
                                         Icon(Icons.Default.Add, contentDescription = "Tambah")
@@ -237,12 +273,13 @@ fun CookFromStockScreen(
                                         InputChip(
                                             selected = false,
                                             onClick = {},
+                                            enabled = !isGenerating,
                                             label = { Text(ingredient) },
                                             trailingIcon = {
                                                 Icon(
                                                     Icons.Default.Close,
                                                     contentDescription = "Hapus",
-                                                    modifier = Modifier.size(16.dp).clickable {
+                                                    modifier = Modifier.size(16.dp).clickable(enabled = !isGenerating) {
                                                         viewModel.removeManualIngredient(ingredient)
                                                     }
                                                 )
@@ -293,6 +330,7 @@ fun CookFromStockScreen(
                             Switch(
                                 checked = state.prioritizeExpired,
                                 onCheckedChange = { viewModel.setPrioritizeExpired(it) },
+                                enabled = !isGenerating,
                                 modifier = Modifier.testTag("switch_prioritize")
                             )
                         }
@@ -311,6 +349,7 @@ fun CookFromStockScreen(
                                 FilterChip(
                                     selected = state.preference == pref,
                                     onClick = { viewModel.setPreference(pref) },
+                                    enabled = !isGenerating,
                                     label = { Text(pref) },
                                     modifier = Modifier.weight(1f).testTag("chip_pref_$pref")
                                 )

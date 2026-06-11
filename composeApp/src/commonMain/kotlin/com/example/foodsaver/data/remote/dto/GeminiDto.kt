@@ -1,12 +1,13 @@
 package com.example.foodsaver.data.remote.dto
 
 import kotlinx.serialization.Serializable
-
-// ==================== REQUEST ====================
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class GeminiRequest(
     val contents: List<GeminiContent>,
+    @SerialName("system_instruction")
+    val systemInstruction: GeminiContent? = null,
     val generationConfig: GenerationConfig? = null,
     val safetySettings: List<SafetySetting>? = null
 )
@@ -14,7 +15,7 @@ data class GeminiRequest(
 @Serializable
 data class GeminiContent(
     val parts: List<GeminiPart>,
-    val role: String = "user"
+    val role: String? = null
 )
 
 @Serializable
@@ -25,8 +26,11 @@ data class GeminiPart(
 @Serializable
 data class GenerationConfig(
     val temperature: Double = 0.7,
+    @SerialName("maxOutputTokens")
     val maxOutputTokens: Int = 1000,
+    @SerialName("topP")
     val topP: Double = 0.95,
+    @SerialName("topK")
     val topK: Int = 40
 )
 
@@ -35,8 +39,6 @@ data class SafetySetting(
     val category: String,
     val threshold: String
 )
-
-// ==================== RESPONSE ====================
 
 @Serializable
 data class GeminiResponse(
@@ -72,8 +74,6 @@ data class GeminiError(
     val status: String? = null
 )
 
-// ==================== HELPER EXTENSIONS ====================
-
 fun GeminiResponse.getTextContent(): String? {
     return candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
 }
@@ -84,7 +84,7 @@ fun GeminiResponse.isBlocked(): Boolean {
 
 fun GeminiResponse.getErrorMessage(): String? {
     return error?.message ?: if (isBlocked()) {
-        "Konten diblokir: ${promptFeedback?.blockReason}"
+        "Konten diblokir oleh AI: ${promptFeedback?.blockReason}"
     } else {
         null
     }

@@ -5,5 +5,5 @@ package com.example.foodsaver.core.network
  * Untuk iOS, API Key bisa diambil dari Build Settings atau Environment Variables.
  */
 actual object ApiConfig {
-    actual val apiKey: String = "" // Akan dikonfigurasi via XCConfig di tahap berikutnya
+    actual val geminiApiKey: String = "" // Akan dikonfigurasi via XCConfig di tahap berikutnya
 }

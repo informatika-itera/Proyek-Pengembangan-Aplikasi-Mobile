@@ -7,6 +7,7 @@ import com.example.foodsaver.data.local.FoodSaverDatabase
 import com.example.foodsaver.data.local.datastore.UserPreferences
 import com.example.foodsaver.data.remote.api.GeminiService
 import com.example.foodsaver.data.remote.api.MealApiService
+import com.example.foodsaver.data.remote.api.IndonesianRecipeApiService
 import com.example.foodsaver.data.repository.AIRepositoryImpl
 import com.example.foodsaver.data.repository.FoodRepositoryImpl
 import com.example.foodsaver.data.repository.MealPlanRepositoryImpl
@@ -56,10 +57,11 @@ val commonModule = module {
     single { HttpClientFactory().create() }
     single { GeminiService(get()) }
     single { MealApiService(get()) }
+    single { IndonesianRecipeApiService(get()) }
 
     single<AIRepository> { AIRepositoryImpl(get()) }
     single<FoodRepository> { FoodRepositoryImpl(get()) }
-    single<RecipeRepository> { RecipeRepositoryImpl(get(), get()) }
+    single<RecipeRepository> { RecipeRepositoryImpl(get(), get(), get(), get()) }
     single<MealPlanRepository> { MealPlanRepositoryImpl(get()) }
     
     factory { GetAllFoodUseCase(get()) }
@@ -91,7 +93,7 @@ val commonModule = module {
     viewModel { ExpiryViewModel(get()) }
     viewModel { CalendarViewModel(get()) }
     viewModel { ProfileViewModel(get(), get()) }
-    viewModel { CookFromStockViewModel(get()) }
+    viewModel { CookFromStockViewModel(get(), get()) }
 }
 
 fun initKoin(

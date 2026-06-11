@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
 import com.example.Feelia.domain.repository.NoteRepository
-import com.example.Feelia.domain.usecase.DetectEmotionUseCase
+import com.example.Feelia.domain.usecase.DetectEmotionWithInsightUseCase
 import com.example.Feelia.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,7 +23,7 @@ import kotlinx.datetime.Instant
 class AddNoteViewModel(
     private val repository: NoteRepository,
     private val saveNoteUseCase: SaveNoteUseCase,
-    private val detectEmotionUseCase: DetectEmotionUseCase
+    private val detectEmotionWithInsightUseCase: DetectEmotionWithInsightUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddNoteUiState())
@@ -57,9 +57,13 @@ class AddNoteViewModel(
 
     fun onContentChange(content: String) {
         _uiState.update { it.copy(content = content, contentError = null) }
-        // Auto-detect emosi setelah user berhenti mengetik 1.5 detik
+
         if (content.trim().length >= 15) {
             scheduleEmotionDetection(content)
+        } else {
+            // ← TAMBAH INI: cancel job dan reset state kalau teks terlalu pendek
+            detectEmotionJob?.cancel()
+            _uiState.update { it.copy(isDetectingEmotion = false, isEmotionAutoDetected = false) }
         }
     }
 
@@ -100,19 +104,49 @@ class AddNoteViewModel(
         detectEmotionJob = viewModelScope.launch {
             delay(1500)
             _uiState.update { it.copy(isDetectingEmotion = true) }
-            detectEmotionUseCase(content)
-                .onSuccess { emotion ->
+            detectEmotionWithInsightUseCase(content)
+                .onSuccess { result ->
                     _uiState.update {
                         it.copy(
-                            emotion = emotion,
+                            emotion = result.emotion,
+                            emotionInsight = result.insight,
                             isDetectingEmotion = false,
                             isEmotionAutoDetected = true
                         )
                     }
                 }
-                .onFailure {
-                    _uiState.update { it.copy(isDetectingEmotion = false) }
+                .onFailure { error ->
+                    // ← sekarang pakai mapAiError, bukan raw error.message
+                    _uiState.update {
+                        it.copy(
+                            isDetectingEmotion = false,
+                            emotionInsight = mapAiError(error)
+                        )
+                    }
                 }
+        }
+    }
+
+    // ── Error mapping: pesan teknis → pesan ramah pengguna ───────────────────
+    private fun mapAiError(error: Throwable): String {
+        val msg = error.message ?: return "Terjadi kesalahan tidak diketahui."
+        return when {
+            msg.contains("quota", ignoreCase = true) ||
+                    msg.contains("Terlalu banyak", ignoreCase = true) ||
+                    msg.contains("429", ignoreCase = true) ->
+                "Fitur AI sedang istirahat sebentar 😅 Coba lagi dalam 1 menit ya!"
+
+            msg.contains("timeout", ignoreCase = true) ||
+                    msg.contains("connect", ignoreCase = true) ->
+                "Koneksi bermasalah. Pastikan internet kamu aktif."
+
+            msg.contains("Server AI", ignoreCase = true) ->
+                "Server AI sedang sibuk. Coba lagi nanti."
+
+            msg.contains("terlalu pendek", ignoreCase = true) ->
+                "" // teks terlalu pendek → diam saja, tidak perlu tampil pesan
+
+            else -> "AI tidak bisa merespons sekarang. Coba lagi ya!"
         }
     }
 }
@@ -120,6 +154,7 @@ class AddNoteViewModel(
 data class AddNoteUiState(
     val content: String = "",
     val emotion: Emotion = Emotion.NEUTRAL,
+    val emotionInsight: String = "",
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,

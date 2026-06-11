@@ -19,7 +19,8 @@ data class GeminiContent(
 
 @Serializable
 data class GeminiPart(
-    val text: String
+    val text: String = "",
+    val thought: Boolean? = null  // ← tambah ini: gemini-2.5 kadang return thought parts
 )
 
 @Serializable
@@ -28,6 +29,7 @@ data class GenerationConfig(
     val maxOutputTokens: Int = 1000,
     val topP: Double = 0.95,
     val topK: Int = 40
+    // ← ThinkingConfig DIHAPUS: tidak kompatibel dengan gemini-2.5-flash stable
 )
 
 @Serializable
@@ -42,12 +44,13 @@ data class SafetySetting(
 data class GeminiResponse(
     val candidates: List<GeminiCandidate>? = null,
     val promptFeedback: PromptFeedback? = null,
-    val error: GeminiError? = null
+    val error: GeminiError? = null,
+    val usageMetadata: UsageMetadata? = null  // ← tambah: 2.5-flash return ini
 )
 
 @Serializable
 data class GeminiCandidate(
-    val content: GeminiContent,
+    val content: GeminiContent? = null,
     val finishReason: String? = null,
     val index: Int = 0,
     val safetyRatings: List<SafetyRating>? = null
@@ -72,10 +75,24 @@ data class GeminiError(
     val status: String
 )
 
+@Serializable
+data class UsageMetadata(
+    val promptTokenCount: Int? = null,
+    val candidatesTokenCount: Int? = null,
+    val totalTokenCount: Int? = null
+)
+
 // ==================== HELPER EXTENSIONS ====================
 
 fun GeminiResponse.getTextContent(): String? {
-    return candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
+    return candidates
+        ?.firstOrNull { it.content != null }
+        ?.content
+        ?.parts
+        // ← filter: skip thought parts, ambil hanya text parts yang tidak kosong
+        ?.filter { it.thought != true && it.text.isNotBlank() }
+        ?.firstOrNull()
+        ?.text
 }
 
 fun GeminiResponse.isBlocked(): Boolean {

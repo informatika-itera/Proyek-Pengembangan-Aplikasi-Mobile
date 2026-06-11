@@ -59,9 +59,9 @@ object HttpClientFactory {
             
             // Timeout configuration
             install(HttpTimeout) {
-                requestTimeoutMillis = 30_000    // 30 seconds
+                requestTimeoutMillis = 60_000    // 30 seconds
                 connectTimeoutMillis = 15_000    // 15 seconds
-                socketTimeoutMillis = 30_000     // 30 seconds
+                socketTimeoutMillis = 60_000     // 30 seconds
             }
         }
     }

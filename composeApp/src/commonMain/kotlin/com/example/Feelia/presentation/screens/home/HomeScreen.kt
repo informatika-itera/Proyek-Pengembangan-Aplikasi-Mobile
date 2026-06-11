@@ -54,6 +54,7 @@ import com.example.Feelia.presentation.components.ErrorState
 import com.example.Feelia.presentation.components.LoadingIndicator
 import com.example.Feelia.presentation.components.NoteCard
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material.icons.outlined.BarChart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +63,7 @@ fun HomeScreen(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAI: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAnalytics: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -111,6 +113,9 @@ fun HomeScreen(
                         )
                     }
 
+                    IconButton(onClick = onNavigateToAnalytics) {
+                        Icon(Icons.Outlined.BarChart, contentDescription = "Analitik")
+                    }
                     IconButton(onClick = onNavigateToAI) {
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
                     }

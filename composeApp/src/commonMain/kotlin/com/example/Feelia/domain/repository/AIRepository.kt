@@ -1,8 +1,11 @@
 package com.example.Feelia.domain.repository
 
+import com.example.Feelia.domain.model.EmotionResult
+
 interface AIRepository {
     suspend fun detectEmotion(text: String): Result<String>
     suspend fun getEmotionInsight(content: String, emotion: String): Result<String>
+    suspend fun detectEmotionWithInsight(text: String): Result<EmotionResult> // ← TAMBAH INI
     suspend fun summarize(text: String): Result<String>
     suspend fun generateIdeas(topic: String): Result<List<String>>
     suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>

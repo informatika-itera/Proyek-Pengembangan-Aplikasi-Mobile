@@ -32,7 +32,11 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
-
+import com.example.Feelia.domain.usecase.DetectEmotionWithInsightUseCase
+import com.example.Feelia.domain.usecase.GetWeeklyInsightUseCase
+import com.example.Feelia.domain.usecase.GetFrequentWordsUseCase
+import com.example.Feelia.domain.usecase.GetAIWeeklyInsightUseCase
+import com.example.Feelia.presentation.screens.analytics.AnalyticsViewModel
 // ==================== NETWORK MODULE ====================
 
 val networkModule = module {
@@ -75,6 +79,10 @@ val useCaseModule = module {
     singleOf(::GenerateIdeasUseCase)
     singleOf(::DetectEmotionUseCase)
     singleOf(::GetEmotionInsightUseCase)
+    singleOf(::DetectEmotionWithInsightUseCase)
+    singleOf(::GetWeeklyInsightUseCase)
+    singleOf(::GetFrequentWordsUseCase)
+    singleOf(::GetAIWeeklyInsightUseCase)
 }
 
 // ==================== VIEWMODEL MODULE ====================
@@ -85,6 +93,7 @@ val viewModelModule = module {
     viewModelOf(::NoteDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::AnalyticsViewModel)
 }
 
 // ==================== SHARED MODULES ====================

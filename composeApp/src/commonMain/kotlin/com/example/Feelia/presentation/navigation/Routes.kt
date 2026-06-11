@@ -8,6 +8,9 @@ sealed interface Route {
     data object Home : Route
 
     @Serializable
+    data object Analytics : Route
+
+    @Serializable
     data class AddNote(val noteId: Long? = null) : Route
 
     @Serializable
@@ -30,4 +33,5 @@ interface NavigationActions {
     fun navigateToAIAssistant(noteId: Long? = null, initialText: String? = null)
     fun navigateToSettings()
     fun navigateBack()
+    fun navigateToAnalytics()
 }

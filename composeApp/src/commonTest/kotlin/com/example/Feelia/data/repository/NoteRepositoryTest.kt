@@ -1,9 +1,8 @@
 package com.example.Feelia.data.repository
 
 import app.cash.turbine.test
+import com.example.Feelia.domain.model.Emotion
 import com.example.Feelia.domain.model.Note
-import com.example.Feelia.domain.model.NoteCategory
-import com.example.Feelia.domain.model.NoteColor
 import com.example.Feelia.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,247 +14,251 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Unit Tests untuk NoteRepository
- * 
- * Testing Guidelines:
- * 1. Gunakan FakeRepository untuk isolasi
- * 2. Test satu behavior per test
- * 3. Gunakan Turbine untuk test Flow
- * 4. Follow AAA pattern (Arrange, Act, Assert)
- */
 class NoteRepositoryTest {
-    
+
     private lateinit var repository: FakeNoteRepository
-    
+
     @BeforeTest
     fun setup() {
         repository = FakeNoteRepository()
     }
-    
+
     // ==================== INSERT TESTS ====================
-    
+
     @Test
-    fun `insertNote should return new note id`() = runTest {
-        // Arrange
-        val note = createTestNote(title = "Test Note")
-        
-        // Act
+    fun `insertNote should return positive id`() = runTest {
+        val note = createTestNote("Hari ini menyenangkan")
         val id = repository.insertNote(note)
-        
-        // Assert
         assertTrue(id > 0)
     }
-    
+
     @Test
     fun `insertNote should add note to list`() = runTest {
-        // Arrange
-        val note = createTestNote(title = "New Note")
-        
-        // Act
+        val note = createTestNote("Jurnal pertama")
         repository.insertNote(note)
-        
-        // Assert
         repository.getAllNotes().test {
             val notes = awaitItem()
             assertEquals(1, notes.size)
-            assertEquals("New Note", notes.first().title)
+            assertEquals("Jurnal pertama", notes.first().content)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== GET TESTS ====================
-    
+
     @Test
-    fun `getAllNotes should return all notes`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote(title = "Note 1"))
-        repository.insertNote(createTestNote(title = "Note 2"))
-        
-        // Act & Assert
+    fun `insertNote with HAPPY emotion should persist emotion`() = runTest {
+        val note = createTestNote("Senang banget hari ini", Emotion.HAPPY)
+        val id = repository.insertNote(note)
+        repository.getNoteById(id).test {
+            val result = awaitItem()
+            assertEquals(Emotion.HAPPY, result?.emotion)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ==================== GET TESTS ====================
+
+    @Test
+    fun `getAllNotes should return all inserted notes`() = runTest {
+        repository.insertNote(createTestNote("Jurnal 1"))
+        repository.insertNote(createTestNote("Jurnal 2"))
+        repository.insertNote(createTestNote("Jurnal 3"))
         repository.getAllNotes().test {
             val notes = awaitItem()
-            assertEquals(2, notes.size)
+            assertEquals(3, notes.size)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
     fun `getNoteById should return correct note`() = runTest {
-        // Arrange
-        val id = repository.insertNote(createTestNote(title = "Find Me"))
-        
-        // Act & Assert
+        val id = repository.insertNote(createTestNote("Cari jurnal ini"))
         repository.getNoteById(id).test {
             val note = awaitItem()
             assertNotNull(note)
-            assertEquals("Find Me", note.title)
+            assertEquals("Cari jurnal ini", note.content)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
     fun `getNoteById should return null for non-existent id`() = runTest {
-        // Act & Assert
-        repository.getNoteById(999).test {
-            val note = awaitItem()
-            assertEquals(null, note)
+        repository.getNoteById(999L).test {
+            assertNull(awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== SEARCH TESTS ====================
-    
+
     @Test
-    fun `searchNotes should find notes by title`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote(title = "Kotlin Tutorial"))
-        repository.insertNote(createTestNote(title = "Java Guide"))
-        
-        // Act & Assert
-        repository.searchNotes("Kotlin").test {
+    fun `getNotesByEmotion should filter correctly`() = runTest {
+        repository.insertNote(createTestNote("Senang", Emotion.HAPPY))
+        repository.insertNote(createTestNote("Sedih", Emotion.SAD))
+        repository.insertNote(createTestNote("Senang lagi", Emotion.HAPPY))
+        repository.getNotesByEmotion(Emotion.HAPPY).test {
             val notes = awaitItem()
-            assertEquals(1, notes.size)
-            assertEquals("Kotlin Tutorial", notes.first().title)
+            assertEquals(2, notes.size)
+            assertTrue(notes.all { it.emotion == Emotion.HAPPY })
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
+
     @Test
-    fun `searchNotes should find notes by content`() = runTest {
-        // Arrange
-        repository.insertNote(createTestNote(title = "Recipe", content = "Add tomatoes"))
-        repository.insertNote(createTestNote(title = "Shopping", content = "Buy milk"))
-        
-        // Act & Assert
-        repository.searchNotes("tomatoes").test {
-            val notes = awaitItem()
-            assertEquals(1, notes.size)
-            assertEquals("Recipe", notes.first().title)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    // ==================== DELETE TESTS ====================
-    
-    @Test
-    fun `deleteNote should remove note from list`() = runTest {
-        // Arrange
-        val id = repository.insertNote(createTestNote(title = "To Delete"))
-        
-        // Act
-        repository.deleteNote(id)
-        
-        // Assert
-        repository.getAllNotes().test {
+    fun `getNotesByEmotion should return empty if none match`() = runTest {
+        repository.insertNote(createTestNote("Senang", Emotion.HAPPY))
+        repository.getNotesByEmotion(Emotion.ANGRY).test {
             val notes = awaitItem()
             assertTrue(notes.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== UPDATE TESTS ====================
-    
+
+    // ==================== SEARCH TESTS ====================
+
     @Test
-    fun `updateNote should modify existing note`() = runTest {
-        // Arrange
-        val id = repository.insertNote(createTestNote(title = "Original"))
-        
-        // Act
-        val updatedNote = createTestNote(id = id, title = "Updated")
-        repository.updateNote(updatedNote)
-        
-        // Assert
-        repository.getNoteById(id).test {
-            val note = awaitItem()
-            assertEquals("Updated", note?.title)
+    fun `searchNotes should find by content keyword`() = runTest {
+        repository.insertNote(createTestNote("Hari ini sangat menyenangkan"))
+        repository.insertNote(createTestNote("Sedih banget hari ini"))
+        repository.insertNote(createTestNote("Cuaca cerah dan indah"))
+        repository.searchNotes("hari ini").test {
+            val notes = awaitItem()
+            assertEquals(2, notes.size)
             cancelAndIgnoreRemainingEvents()
         }
     }
-    
-    // ==================== HELPER FUNCTIONS ====================
-    
-    private fun createTestNote(
-        id: Long = 0,
-        title: String = "Test",
-        content: String = "Content",
-        category: NoteCategory = NoteCategory.GENERAL
-    ): Note {
-        return Note(
-            id = id,
-            title = title,
-            content = content,
-            category = category,
-            color = NoteColor.DEFAULT,
-            isPinned = false,
-            createdAt = Clock.System.now(),
-            updatedAt = Clock.System.now()
-        )
+
+    @Test
+    fun `searchNotes should be case insensitive`() = runTest {
+        repository.insertNote(createTestNote("Belajar Kotlin multiplatform"))
+        repository.searchNotes("kotlin").test {
+            val notes = awaitItem()
+            assertEquals(1, notes.size)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
+
+    @Test
+    fun `searchNotes should return empty for no match`() = runTest {
+        repository.insertNote(createTestNote("Jurnal biasa"))
+        repository.searchNotes("tidakada").test {
+            val notes = awaitItem()
+            assertTrue(notes.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ==================== DELETE TESTS ====================
+
+    @Test
+    fun `deleteNote should remove note from list`() = runTest {
+        val id = repository.insertNote(createTestNote("Akan dihapus"))
+        repository.deleteNote(id)
+        repository.getAllNotes().test {
+            assertTrue(awaitItem().isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `deleteNote should not affect other notes`() = runTest {
+        val id1 = repository.insertNote(createTestNote("Jurnal 1"))
+        repository.insertNote(createTestNote("Jurnal 2"))
+        repository.deleteNote(id1)
+        repository.getAllNotes().test {
+            val notes = awaitItem()
+            assertEquals(1, notes.size)
+            assertEquals("Jurnal 2", notes.first().content)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ==================== UPDATE TESTS ====================
+
+    @Test
+    fun `updateNote should change content`() = runTest {
+        val id = repository.insertNote(createTestNote("Konten lama"))
+        val updated = createTestNote("Konten baru").copy(id = id)
+        repository.updateNote(updated)
+        repository.getNoteById(id).test {
+            assertEquals("Konten baru", awaitItem()?.content)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `updateNote should change emotion`() = runTest {
+        val id = repository.insertNote(createTestNote("Netral", Emotion.NEUTRAL))
+        val updated = createTestNote("Senang sekarang", Emotion.HAPPY).copy(id = id)
+        repository.updateNote(updated)
+        repository.getNoteById(id).test {
+            assertEquals(Emotion.HAPPY, awaitItem()?.emotion)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ==================== PIN TESTS ====================
+
+    @Test
+    fun `togglePinNote should set isPinned to true`() = runTest {
+        val id = repository.insertNote(createTestNote("Pin ini"))
+        repository.togglePinNote(id)
+        repository.getNoteById(id).test {
+            assertTrue(awaitItem()?.isPinned == true)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `togglePinNote twice should return to unpinned`() = runTest {
+        val id = repository.insertNote(createTestNote("Toggle dua kali"))
+        repository.togglePinNote(id)
+        repository.togglePinNote(id)
+        repository.getNoteById(id).test {
+            assertTrue(awaitItem()?.isPinned == false)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ==================== HELPER ====================
+
+    private fun createTestNote(
+        content: String = "Test jurnal",
+        emotion: Emotion = Emotion.NEUTRAL
+    ) = Note(
+        content = content,
+        emotion = emotion,
+        isPinned = false,
+        createdAt = Clock.System.now(),
+        updatedAt = Clock.System.now()
+    )
 }
 
-/**
- * Fake Repository untuk Testing
- * 
- * In-memory implementation yang tidak bergantung pada database.
- * Digunakan untuk unit testing tanpa side effects.
- */
 class FakeNoteRepository : NoteRepository {
-    
     private val notes = MutableStateFlow<List<Note>>(emptyList())
     private var nextId = 1L
-    
+
     override fun getAllNotes(): Flow<List<Note>> = notes
-    
-    override fun getPinnedNotes(): Flow<List<Note>> {
-        return notes.map { list -> list.filter { it.isPinned } }
-    }
-    
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
-        return notes.map { list -> list.filter { it.category == category } }
-    }
-    
-    override fun searchNotes(query: String): Flow<List<Note>> {
-        return notes.map { list ->
-            list.filter {
-                it.title.contains(query, ignoreCase = true) ||
-                it.content.contains(query, ignoreCase = true)
-            }
-        }
-    }
-    
-    override fun getNoteById(id: Long): Flow<Note?> {
-        return notes.map { list -> list.find { it.id == id } }
-    }
-    
+    override fun getPinnedNotes(): Flow<List<Note>> =
+        notes.map { it.filter { n -> n.isPinned } }
+    override fun getNotesByEmotion(emotion: Emotion): Flow<List<Note>> =
+        notes.map { it.filter { n -> n.emotion == emotion } }
+    override fun searchNotes(query: String): Flow<List<Note>> =
+        notes.map { it.filter { n -> n.content.contains(query, ignoreCase = true) } }
+    override fun getNoteById(id: Long): Flow<Note?> =
+        notes.map { it.find { n -> n.id == id } }
     override suspend fun insertNote(note: Note): Long {
         val id = nextId++
-        val newNote = note.copy(id = id)
-        notes.update { it + newNote }
+        notes.update { it + note.copy(id = id) }
         return id
     }
-    
     override suspend fun updateNote(note: Note) {
-        notes.update { list ->
-            list.map { if (it.id == note.id) note else it }
-        }
+        notes.update { it.map { n -> if (n.id == note.id) note else n } }
     }
-    
     override suspend fun deleteNote(id: Long) {
-        notes.update { list -> list.filter { it.id != id } }
+        notes.update { it.filter { n -> n.id != id } }
     }
-    
     override suspend fun togglePinNote(id: Long) {
-        notes.update { list ->
-            list.map { 
-                if (it.id == id) it.copy(isPinned = !it.isPinned) else it 
-            }
-        }
-    }
-    
-    override suspend fun deleteNotes(ids: List<Long>) {
-        notes.update { list -> list.filter { it.id !in ids } }
+        notes.update { it.map { n -> if (n.id == id) n.copy(isPinned = !n.isPinned) else n } }
     }
 }

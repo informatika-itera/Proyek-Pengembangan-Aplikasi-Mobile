@@ -13,28 +13,30 @@ import io.ktor.client.call.body
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import kotlinx.coroutines.delay
 
 class GeminiService(private val client: HttpClient) {
-    
+
     companion object {
-        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-2.0-flash"
+        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+        private const val MODEL = "gemini-2.5-flash"
+        private const val MAX_RETRIES = 3
+        private const val BASE_DELAY_MS = 2000L
     }
-    
+
     suspend fun generateContent(
         prompt: String,
         systemPrompt: String? = null
-    ): Result<String> = runCatching {
+    ): Result<String> {
         val contents = mutableListOf<GeminiContent>()
-        
+
         if (systemPrompt != null) {
             contents.add(
-                GeminiContent(
-                    parts = listOf(GeminiPart(text = systemPrompt)),
-                    role = "user"
-                )
+                GeminiContent(parts = listOf(GeminiPart(text = systemPrompt)), role = "user")
             )
             contents.add(
                 GeminiContent(
@@ -43,33 +45,76 @@ class GeminiService(private val client: HttpClient) {
                 )
             )
         }
-        
+
         contents.add(
-            GeminiContent(
-                parts = listOf(GeminiPart(text = prompt)),
-                role = "user"
-            )
+            GeminiContent(parts = listOf(GeminiPart(text = prompt)), role = "user")
         )
-        
+
         val request = GeminiRequest(
             contents = contents,
-            generationConfig = GenerationConfig(
-                temperature = 0.7,
-                maxOutputTokens = 1000
-            )
+            generationConfig = GenerationConfig(temperature = 0.7, maxOutputTokens = 1000)
         )
-        
-        val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
-            contentType(ContentType.Application.Json)
-            parameter("key", ApiConfig.geminiApiKey)
-            setBody(request)
-        }.body()
-        
-        response.getErrorMessage()?.let { errorMsg ->
-            throw Exception(errorMsg)
+
+        return executeWithRetry(request)
+    }
+
+    private suspend fun executeWithRetry(request: GeminiRequest): Result<String> {
+        var lastException: Exception = Exception("Unknown error")
+
+        repeat(MAX_RETRIES) { attempt ->
+            try {
+                val httpResponse: HttpResponse = client.post("$BASE_URL/$MODEL:generateContent") {
+                    contentType(ContentType.Application.Json)
+                    parameter("key", ApiConfig.geminiApiKey)
+                    setBody(request)
+                }
+
+                // Tangani 429 (quota) di level HTTP — sebelum parsing body
+                if (httpResponse.status == HttpStatusCode.TooManyRequests) {
+                    val waitMs = BASE_DELAY_MS * (attempt + 1) * 2
+                    lastException = Exception("QUOTA_EXCEEDED: Terlalu banyak permintaan ke Gemini API.")
+                    delay(waitMs)
+                    return@repeat
+                }
+
+                // Tangani 5xx server error
+                if (httpResponse.status.value >= 500) {
+                    val waitMs = BASE_DELAY_MS * (attempt + 1)
+                    lastException = Exception("SERVER_ERROR: Server AI error (${httpResponse.status.value}).")
+                    delay(waitMs)
+                    return@repeat
+                }
+
+                val response: GeminiResponse = httpResponse.body()
+
+                response.getErrorMessage()?.let { errorMsg ->
+                    if (errorMsg.contains("quota", ignoreCase = true) ||
+                        errorMsg.contains("RATE_LIMIT", ignoreCase = true)
+                    ) {
+                        val waitMs = BASE_DELAY_MS * (attempt + 1) * 2
+                        lastException = Exception("QUOTA_EXCEEDED: $errorMsg")
+                        delay(waitMs)
+                        return@repeat
+                    }
+                    // Error lain langsung fail tanpa retry
+                    return Result.failure(Exception(errorMsg))
+                }
+
+                val text = response.getTextContent()
+                    ?: return Result.failure(Exception("Respons kosong dari AI"))
+
+                return Result.success(text)
+
+            } catch (e: Exception) {
+                // Jangan retry kalau sudah kita lempar sendiri (quota/server)
+                lastException = e
+                if (attempt < MAX_RETRIES - 1) {
+                    delay(BASE_DELAY_MS * (attempt + 1))
+                }
+            }
         }
-        
-        response.getTextContent() ?: throw Exception("Respons kosong dari AI")
+
+        return Result.failure(lastException)
     }
 }
 // membuat prompt emotion detector, prompt emotional insight dan update AI context ke Feelia

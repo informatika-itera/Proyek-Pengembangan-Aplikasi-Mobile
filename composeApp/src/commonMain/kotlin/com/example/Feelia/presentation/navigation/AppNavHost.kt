@@ -12,6 +12,7 @@ import com.example.Feelia.presentation.screens.ai.AIAssistantScreen
 import com.example.Feelia.presentation.screens.detail.NoteDetailScreen
 import com.example.Feelia.presentation.screens.home.HomeScreen
 import com.example.Feelia.presentation.screens.settings.SettingsScreen
+import com.example.Feelia.presentation.screens.analytics.AnalyticsScreen
 
 @Composable
 fun AppNavHost(
@@ -30,7 +31,8 @@ fun AppNavHost(
                 onNavigateToAddNote = { navigationActions.navigateToAddNote() },
                 onNavigateToDetail = { noteId -> navigationActions.navigateToNoteDetail(noteId) },
                 onNavigateToAI = { navigationActions.navigateToAIAssistant() },
-                onNavigateToSettings = { navigationActions.navigateToSettings() }
+                onNavigateToSettings = { navigationActions.navigateToSettings() },
+                onNavigateToAnalytics = { navigationActions.navigateToAnalytics() }
             )
         }
 
@@ -71,6 +73,10 @@ fun AppNavHost(
         composable<Route.Settings> {
             SettingsScreen(onNavigateBack = { navigationActions.navigateBack() })
         }
+        composable<Route.Analytics> {
+            AnalyticsScreen(onNavigateBack = { navigationActions.navigateBack() })
+        }
+
     }
 }
 
@@ -100,6 +106,10 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
 
         override fun navigateBack() {
             navController.popBackStack()
+        }
+
+        override fun navigateToAnalytics() {
+            navController.navigate(Route.Analytics)
         }
     }
 }

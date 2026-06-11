@@ -68,7 +68,7 @@ class AIAssistantViewModel(
                     _uiState.update { it.copy(isLoading = false, result = output) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
+                    _uiState.update { it.copy(isLoading = false, error = mapAiError(error)) }
                 }
         }
     }
@@ -125,6 +125,30 @@ class AIAssistantViewModel(
     
     private suspend fun chat(message: String): Result<String> {
         return aiRepository.chat(message)
+    }
+
+    // ── Error mapping ────────────────────────────────────────────────────────────
+    private fun mapAiError(error: Throwable): String {
+        val msg = error.message ?: return "Terjadi kesalahan tidak diketahui."
+        return when {
+            msg.contains("quota", ignoreCase = true) ||
+                    msg.contains("Terlalu banyak", ignoreCase = true) ||
+                    msg.contains("429", ignoreCase = true) ->
+                "Fitur AI sedang istirahat sebentar 😅 Coba lagi dalam 1 menit ya!"
+
+            msg.contains("timeout", ignoreCase = true) ||
+                    msg.contains("connect", ignoreCase = true) ->
+                "Koneksi bermasalah. Pastikan internet kamu aktif."
+
+            msg.contains("Server AI", ignoreCase = true) ->
+                "Server AI sedang sibuk. Coba lagi nanti."
+
+            msg.contains("terlalu pendek", ignoreCase = true) ||
+                    msg.contains("terlalu singkat", ignoreCase = true) ->
+                "Teks terlalu pendek untuk diproses AI."
+
+            else -> "AI tidak bisa merespons sekarang. Coba lagi ya!"
+        }
     }
 }
 

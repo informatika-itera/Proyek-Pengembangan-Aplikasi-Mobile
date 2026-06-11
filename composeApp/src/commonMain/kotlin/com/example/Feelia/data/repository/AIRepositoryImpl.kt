@@ -2,6 +2,8 @@ package com.example.Feelia.data.repository
 
 import com.example.Feelia.data.remote.api.GeminiService
 import com.example.Feelia.data.remote.api.SystemPrompts
+import com.example.Feelia.domain.model.Emotion
+import com.example.Feelia.domain.model.EmotionResult
 import com.example.Feelia.domain.repository.AIRepository
 import com.example.Feelia.domain.repository.WritingStyle
 
@@ -27,6 +29,39 @@ class AIRepositoryImpl(
             prompt = prompt,
             systemPrompt = SystemPrompts.EMOTION_INSIGHT
         )
+    }
+
+    override suspend fun detectEmotionWithInsight(text: String): Result<EmotionResult> {
+        val prompt = """
+            Analisis jurnal berikut dan berikan dua informasi.
+            
+            Jurnal: $text
+            
+            Balas HANYA dalam format JSON berikut, tanpa teks lain, tanpa markdown:
+            {"emotion":"HAPPY","insight":"Kalimat insight yang hangat di sini."}
+            
+            Pilihan emotion: HAPPY, SAD, ANXIOUS, ANGRY, NEUTRAL
+            Insight: maksimal 2-3 kalimat, bahasa Indonesia, gunakan kata 'kamu'.
+        """.trimIndent()
+
+        return geminiService.generateContent(prompt = prompt)
+            .mapCatching { response ->
+                val jsonStr = response.trim()
+                    .removePrefix("```json")
+                    .removePrefix("```")
+                    .removeSuffix("```")
+                    .trim()
+
+                val emotionRaw = Regex(""""emotion"\s*:\s*"(\w+)"""")
+                    .find(jsonStr)?.groupValues?.get(1) ?: "NEUTRAL"
+                val insight = Regex(""""insight"\s*:\s*"([^"]+)"""")
+                    .find(jsonStr)?.groupValues?.get(1) ?: ""
+
+                EmotionResult(
+                    emotion = Emotion.fromString(emotionRaw.uppercase()),
+                    insight = insight
+                )
+            }
     }
 
     override suspend fun summarize(text: String): Result<String> {

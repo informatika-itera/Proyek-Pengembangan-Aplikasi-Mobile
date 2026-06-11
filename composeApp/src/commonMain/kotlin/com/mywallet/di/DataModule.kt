@@ -1,4 +1,4 @@
-package com.mywallet.di
+﻿package com.mywallet.di
 
 import com.mywallet.data.local.SavingsGoalLocalDataSource
 import com.mywallet.data.local.TransactionLocalDataSource
@@ -22,7 +22,7 @@ val dataModule = module {
     single { SavingsGoalLocalDataSource(get()) }
     single<TransactionRepository> { TransactionRepositoryImpl(get()) }
     single<SavingsGoalRepository> { SavingsGoalRepositoryImpl(get()) }
-    single<UserRepository> { UserRepositoryImpl() }
+    single<UserRepository> { UserRepositoryImpl(get()) }
     
     single { createHttpClient() }
     single<CurrencyService> { CurrencyServiceImpl(get()) }

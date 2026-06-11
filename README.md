@@ -21,11 +21,39 @@ MyWallet adalah aplikasi pencatat keuangan pribadi yang membantu pengguna melaca
 
 ---
 
+## Download
+
+▶️ [Download MyWallet APK](https://drive.google.com/file/d/1ZBrj99ZBzjfz2y7MbzOJeBXRrvIwidgb/view?usp=sharing)
+
+---
+
+## Video Presentasi My Wallet 123140082-123140069
+
+▶️ [Demo My Wallet](https://youtu.be/TB6eA-g8A2g?si=4o8jKhIzQAetjd7K)
+
 ## Video Demo
 
 - ▶️ [Demo Sprint 2 My-Wallet](https://drive.google.com/file/d/1FeOSdrNuSRtN2vJ53XGHaajSZcirldII/view?usp=drive_link)
 - ▶️ [Demo Sprint 3 My-Wallet](https://drive.google.com/file/d/187kRjo8srat9RaCW-ozL4qeWrPrYVMTU/view?usp=drive_link)
-- ▶️ Demo Sprint 4 My-Wallet (akan ditambahkan)
+- ▶️ [Demo Sprint 4 My-Wallet](https://drive.google.com/file/d/1nEzfRM7mW1XmbGsERlk2dC2HN3Lf_SMP/view?usp=drive_link)
+- ▶️ [Demo Sprint 5 My-Wallet](https://drive.google.com/file/d/1AyMU6QJte6PMITo0qpcq1ZimvE490f9l/view?usp=drive_link)
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/home.jpeg" width="160"/><br/><b>Home</b></td>
+    <td align="center"><img src="screenshots/riwayat-transaksi.jpeg" width="160"/><br/><b>Riwayat Transaksi</b></td>
+    <td align="center"><img src="screenshots/tambah-transaksi.jpeg" width="160"/><br/><b>Tambah Transaksi</b></td>
+    <td align="center"><img src="screenshots/analisis-keuangan.jpeg" width="160"/><br/><b>Analisis Keuangan</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/tabungan.jpeg" width="160"/><br/><b>Target Tabungan</b></td>
+    <td align="center"><img src="screenshots/profil.jpeg" width="160"/><br/><b>Profil</b></td>
+    <td align="center"><img src="screenshots/dark-mode.jpeg" width="160"/><br/><b>Dark Mode</b></td>
+  </tr>
+</table>
 
 ---
 
@@ -116,7 +144,12 @@ git checkout project/123140082-123140069-MyWallet
 # Jalankan unit test spesifik
 ./gradlew :composeApp:testDebugUnitTest
 ```
+## Test Results
 
+![Test Report](screenshots/test-report.png)
+
+- Unit Tests: 11 tests, 0 failures, 100% 
+- UI Tests: 6 tests (HomeScreenUiTest, SavingsGoalUiTest, StatisticsUiTest)
 ### UI Tests (Instrumented)
 ```bash
 # Pastikan emulator/device sudah terhubung, lalu jalankan:
@@ -160,7 +193,7 @@ git checkout project/123140082-123140069-MyWallet
 | Sprint 2 | W12 | Core features: screens, navigasi, data layer, CRUD | Done |
 | Sprint 3 | W13 | API integration, search, offline support, dark mode | Done |
 | Sprint 4 | W14 | UI polish, bug fixes, testing | Done |
-| Sprint 5 | W15 | Final preparation, demo prep | Upcoming |
+| Sprint 5 | W15 | Final preparation, demo prep | Done |
 | UAS | W16 | Final Demo Day | Upcoming |
 
 ---

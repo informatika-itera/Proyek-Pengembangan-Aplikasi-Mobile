@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -33,6 +34,8 @@ import com.example.foodsaver.presentation.screens.recipe.CookFromStockScreen
 import com.example.foodsaver.presentation.screens.recipe.RecipeListScreen
 import com.example.foodsaver.presentation.screens.recipe.RecipeRecommendationScreen
 import com.example.foodsaver.presentation.screens.recipe.detail.RecipeDetailScreen
+import com.example.foodsaver.presentation.screens.recipe.CookFromStockViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AppNavHost() {
@@ -79,7 +82,8 @@ fun AppNavHost() {
                             onClick = {
                                 if (!selected) {
                                     navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
+                                        val startRoute = navController.graph.findStartDestination().route ?: "home"
+                                        popUpTo(startRoute) {
                                             saveState = true
                                         }
                                         launchSingleTop = true
@@ -112,7 +116,8 @@ fun AppNavHost() {
                     onAIClick = { navController.navigate("ai") },
                     onCalendarClick = { 
                         navController.navigate("calendar") {
-                            popUpTo(navController.graph.findStartDestination().id) {
+                            val startRoute = navController.graph.findStartDestination().route ?: "home"
+                            popUpTo(startRoute) {
                                 saveState = true
                             }
                             launchSingleTop = true
@@ -121,7 +126,8 @@ fun AppNavHost() {
                     },
                     onCookFromStockClick = { 
                         navController.navigate("recipe") {
-                            popUpTo(navController.graph.findStartDestination().id) {
+                            val startRoute = navController.graph.findStartDestination().route ?: "home"
+                            popUpTo(startRoute) {
                                 saveState = true
                             }
                             launchSingleTop = true
@@ -164,6 +170,12 @@ fun AppNavHost() {
                 val prioritize = backStackEntry.arguments?.getBoolean("prioritize") ?: true
                 val pref = backStackEntry.arguments?.getString("pref") ?: "Praktis"
                 
+                // Use the ViewModel from the "recipe" back stack entry to share the state
+                val recipeEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry("recipe")
+                }
+                val viewModel: CookFromStockViewModel = koinViewModel(viewModelStoreOwner = recipeEntry)
+
                 RecipeRecommendationScreen(
                     ingredientIds = ids,
                     manualIngredients = manual,
@@ -174,7 +186,8 @@ fun AppNavHost() {
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
                         }
-                    }
+                    },
+                    viewModel = viewModel
                 )
             }
 

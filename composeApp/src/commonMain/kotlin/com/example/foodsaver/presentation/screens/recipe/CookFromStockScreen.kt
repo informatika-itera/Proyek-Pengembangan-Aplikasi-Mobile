@@ -57,27 +57,21 @@ fun CookFromStockScreen(
         }
     }
 
-    // Effect to navigate when recommendation is ready
-    LaunchedEffect(state.recommendationState) {
-        if (state.recommendationState is RecommendationUiState.Success || 
-            state.recommendationState is RecommendationUiState.Fallback ||
-            state.recommendationState is RecommendationUiState.Empty ||
-            state.recommendationState is RecommendationUiState.Error) {
-            
-            // We navigate to Result Screen, and it will handle showing the state
-            // But wait, the Requirement says "Don't enter result page if empty" (No, it says "Don't directly enter result page if ingredients empty")
-            // Actually, for better UX, we navigate to the result screen and let it handle the recommendationState.
-            if (state.recommendationState is RecommendationUiState.Success || 
-                state.recommendationState is RecommendationUiState.Fallback ||
-                state.recommendationState is RecommendationUiState.Empty ||
-                state.recommendationState is RecommendationUiState.Error) {
-                
-                onNavigateToResult(
-                    state.selectedIngredientIds.toList(),
-                    state.manualIngredients,
-                    state.prioritizeExpired,
-                    state.preference
-                )
+    // Use event-based navigation to prevent looping
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CookFromStockEvent.NavigateToResult -> {
+                    onNavigateToResult(
+                        state.selectedIngredientIds.toList(),
+                        state.manualIngredients,
+                        state.prioritizeExpired,
+                        state.preference
+                    )
+                    // Reset the recommendation state after navigation so that if we come back, 
+                    // it doesn't immediately show the old result if we were to use the old LaunchedEffect logic.
+                    // But here it's even safer because it's a SharedFlow event.
+                }
             }
         }
     }

@@ -52,7 +52,12 @@ class CookFromStockViewModelTest {
                 preference: String,
                 prioritizeExpiring: Boolean
             ): Result<RecipeRecommendation> {
-                // Return fallback for testing
+                if (ingredients.any { it.name.lowercase() == "error" }) {
+                    return Result.failure(Exception("Network Error"))
+                }
+                if (ingredients.any { it.name.lowercase() == "empty" }) {
+                    return Result.failure(Exception("Empty result"))
+                }
                 return Result.success(ruleBasedEngine.generateRecommendations(ingredients, preference, prioritizeExpiring))
             }
 
@@ -105,11 +110,11 @@ class CookFromStockViewModelTest {
         advanceUntilIdle()
         
         val state = viewModel.state.value.recommendationState
-        assertTrue(state is RecipeUiState.Fallback || state is RecipeUiState.Success)
+        assertTrue(state is RecommendationUiState.Fallback || state is RecommendationUiState.Success)
         
-        if (state is RecipeUiState.Fallback) {
+        if (state is RecommendationUiState.Fallback) {
             assertEquals("Nasi Goreng Telur", state.recommendation.title)
-        } else if (state is RecipeUiState.Success) {
+        } else if (state is RecommendationUiState.Success) {
             assertEquals("Nasi Goreng Telur", state.recommendation.title)
         }
     }
@@ -119,6 +124,17 @@ class CookFromStockViewModelTest {
         viewModel.generateRecommendation(emptyList(), emptyList(), true, "Praktis")
         advanceUntilIdle()
         assertEquals("Pilih atau masukkan minimal satu bahan terlebih dahulu.", viewModel.state.value.validationError)
-        assertEquals(RecipeUiState.Idle, viewModel.state.value.recommendationState)
+        assertEquals(RecommendationUiState.Idle, viewModel.state.value.recommendationState)
+    }
+
+    @Test
+    fun `generateRecommendation should handle error from repository`() = runTest {
+        viewModel.addManualIngredient("error")
+        viewModel.generateRecommendation(emptyList(), listOf("error"), true, "Praktis")
+        advanceUntilIdle()
+        
+        val state = viewModel.state.value.recommendationState
+        assertTrue(state is RecommendationUiState.Error)
+        assertEquals("Network Error", (state as RecommendationUiState.Error).message)
     }
 }

@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.Clock
 
 class RecipeRepositoryImpl(
@@ -32,110 +34,121 @@ class RecipeRepositoryImpl(
     override suspend fun searchRecipesByIngredients(ingredients: List<String>): List<Recipe> {
         if (ingredients.isEmpty()) return emptyList()
         
-        val mainIngredient = ingredients.first()
-        val response = apiService.searchByIngredient(mainIngredient)
-        
-        return response.meals?.map { dto ->
-            dto.toDomain()
-        } ?: emptyList()
+        return withContext(Dispatchers.IO) {
+            try {
+                val mainIngredient = ingredients.first()
+                val response = apiService.searchByIngredient(mainIngredient)
+                response.meals?.map { it.toDomain() } ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
     }
 
     override suspend fun getRecipeDetails(id: String): Recipe? {
-        val response = apiService.getRecipeDetails(id)
-        val dto = response.meals?.firstOrNull() ?: return null
-        val isFav = queries.getFavoriteById(id).executeAsOneOrNull() != null
-        return dto.toDomain().copy(isFavorite = isFav)
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getRecipeDetails(id)
+                val dto = response.meals?.firstOrNull() ?: return@withContext null
+                val isFav = queries.getFavoriteById(id).executeAsOneOrNull() != null
+                dto.toDomain().copy(isFavorite = isFav)
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
     override suspend fun searchRecipesByName(query: String): List<Recipe> {
-        val response = apiService.searchByName(query)
-        return response.meals?.map { it.toDomain() } ?: emptyList()
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.searchByName(query)
+                response.meals?.map { it.toDomain() } ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
     }
 
     override suspend fun getRecommendations(
         ingredients: List<RecipeIngredient>,
         preference: String,
         prioritizeExpiring: Boolean
-    ): Result<RecipeRecommendation> {
-        return try {
-            if (ingredients.isEmpty()) {
-                return Result.failure(Exception("No ingredients provided"))
-            }
+    ): Result<RecipeRecommendation> = withContext(Dispatchers.IO) {
+        if (ingredients.isEmpty()) {
+            return@withContext Result.failure(Exception("Pilih minimal satu bahan terlebih dahulu."))
+        }
 
-            // 1. Try Indonesian API First with local names
-            // Try top 3 ingredients to find a recipe
-            val searchCandidates = ingredients.take(3)
-            for (ingredient in searchCandidates) {
-                val query = ingredient.name.lowercase()
-                try {
-                    val searchResult = indonesianApiService.searchByIngredient(query)
-                    if (searchResult.status && searchResult.results.isNotEmpty()) {
-                        // Try top candidates
-                        for (candidate in searchResult.results.take(3)) {
-                            val detailResponse = indonesianApiService.getRecipeDetails(candidate.key)
-                            if (detailResponse.status) {
-                                println("Indonesian API found recipe: ${detailResponse.results.title} for query: $query")
-                                return Result.success(detailResponse.results.toRecommendation(ingredients))
-                            }
-                        }
-                    } else {
-                        println("Indonesian API result empty for query: $query")
-                    }
-                } catch (e: Exception) {
-                    println("Indonesian API error: ${e.message}")
+        // 1. Indonesian API
+        val searchCandidates = ingredients.take(3)
+        for (ingredient in searchCandidates) {
+            val query = ingredient.name.lowercase()
+            try {
+                val searchResult = withTimeoutOrNull(5000) { 
+                    indonesianApiService.searchByIngredient(query) 
                 }
+                if (searchResult != null && searchResult.status && searchResult.results.isNotEmpty()) {
+                    for (candidate in searchResult.results.take(2)) {
+                        val detailResponse = withTimeoutOrNull(4000) {
+                            indonesianApiService.getRecipeDetails(candidate.key)
+                        }
+                        if (detailResponse != null && detailResponse.status) {
+                            return@withContext Result.success(detailResponse.results.toRecommendation(ingredients))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Continue to next source
             }
+        }
 
-            // 2. Global API (TheMealDB) - Mapping to English
+        // 2. Global API (TheMealDB)
+        try {
             val englishIngredients = ingredients.map { IngredientMapper.mapToEnglish(it.name) }.distinct()
             val mealMap = mutableMapOf<String, Int>()
-            val searchTerms = englishIngredients.take(5)
+            val searchTerms = englishIngredients.take(3)
             
             for (term in searchTerms) {
-                try {
-                    val response = apiService.searchByIngredient(term)
-                    response.meals?.forEach { meal ->
-                        mealMap[meal.id] = (mealMap[meal.id] ?: 0) + 1
-                    }
-                } catch (e: Exception) {}
+                val response = withTimeoutOrNull(4000) { apiService.searchByIngredient(term) }
+                response?.meals?.forEach { meal ->
+                    mealMap[meal.id] = (mealMap[meal.id] ?: 0) + 1
+                }
             }
             
             if (mealMap.isNotEmpty()) {
-                val topCandidates = mealMap.toList().sortedByDescending { it.second }.take(3)
-                
+                val topCandidates = mealMap.toList().sortedByDescending { it.second }.take(2)
                 val recommendations = mutableListOf<RecipeRecommendation>()
+                
                 for ((id, _) in topCandidates) {
-                    val detailResponse = apiService.getRecipeDetails(id)
-                    detailResponse.meals?.firstOrNull()?.let { dto ->
+                    val detailResponse = withTimeoutOrNull(4000) { apiService.getRecipeDetails(id) }
+                    detailResponse?.meals?.firstOrNull()?.let { dto ->
                         val recipeIngredients = dto.getIngredients()
                         val matchedCount = englishIngredients.count { userIng -> 
                             recipeIngredients.any { it.contains(userIng, ignoreCase = true) }
                         }
-                        val matchScore = matchedCount.toDouble() / englishIngredients.size
+                        val matchScore = matchedCount.toDouble() / (englishIngredients.size.coerceAtLeast(1))
                         recommendations.add(dto.toRecommendation(matchScore, ingredients))
                     }
                 }
                 
                 if (recommendations.isNotEmpty()) {
-                    return Result.success(recommendations.maxBy { it.matchScore })
+                    return@withContext Result.success(recommendations.maxBy { it.matchScore })
                 }
             }
-            
-            // 3. Last Fallback: Rule-Based Engine
-            val localFallback = ruleBasedEngine.generateRecommendations(ingredients, preference, prioritizeExpiring)
-            // Mark as fallback explicitly by adding it to reason or description if needed, 
-            // but the engine already puts "Rekomendasi Lokal" in warningMessage.
-            Result.success(localFallback)
-            
         } catch (e: Exception) {
-            println("Repository Recommendation error: ${e.message}")
-            Result.success(ruleBasedEngine.generateRecommendations(ingredients, preference, prioritizeExpiring))
+            // Continue to fallback
+        }
+        
+        // 3. Local Fallback
+        return@withContext try {
+            val localFallback = ruleBasedEngine.generateRecommendations(ingredients, preference, prioritizeExpiring)
+            Result.success(localFallback)
+        } catch (e: Exception) {
+            Result.failure(Exception("Resep belum bisa dimuat. Periksa koneksi internet kamu lalu coba lagi."))
         }
     }
 
     private fun IndoRecipeDetailDto.toRecommendation(userIngredients: List<RecipeIngredient>): RecipeRecommendation {
         val recipeIngredients = ingredient ?: emptyList()
-        
         val used = userIngredients.filter { userIng ->
             recipeIngredients.any { it.contains(userIng.name, ignoreCase = true) }
         }.map { it.name }
@@ -202,7 +215,8 @@ class RecipeRepositoryImpl(
     private fun cleanRecipeInstructionsFromList(rawSteps: List<String>): List<String> {
         return rawSteps.map { it.trim() }
             .filter { it.isNotBlank() }
-            .map { it.replace(Regex("^\\d+\\.\\s*"), "") }
+            .map { it.replace(Regex("^(?i)step\\s*\\d+[:.]?\\s*", RegexOption.IGNORE_CASE), "") }
+            .map { it.replace(Regex("^\\d+[:.]?\\s*"), "") }
             .map { it.replace(Regex("^Langkah\\s+\\d+[:.]?\\s*", RegexOption.IGNORE_CASE), "") }
             .distinct()
     }

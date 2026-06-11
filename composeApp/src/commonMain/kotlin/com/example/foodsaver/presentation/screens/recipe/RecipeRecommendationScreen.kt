@@ -49,8 +49,8 @@ fun RecipeRecommendationScreen(
     var showConfirmDialog by remember { mutableStateOf(false) }
 
     val recommendation = when (val resState = state.recommendationState) {
-        is RecipeUiState.Success -> resState.recommendation
-        is RecipeUiState.Fallback -> resState.recommendation
+        is RecommendationUiState.Success -> resState.recommendation
+        is RecommendationUiState.Fallback -> resState.recommendation
         else -> null
     }
 
@@ -147,7 +147,7 @@ fun RecipeRecommendationScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding).testTag("recipe_result_card")) {
             when (val recState = state.recommendationState) {
-                is RecipeUiState.Loading, RecipeUiState.Idle -> {
+                is RecommendationUiState.Loading, RecommendationUiState.Idle -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -167,7 +167,7 @@ fun RecipeRecommendationScreen(
                         )
                     }
                 }
-                is RecipeUiState.Error -> {
+                is RecommendationUiState.Error -> {
                     Column(
                         modifier = Modifier.fillMaxSize().padding(32.dp).testTag("empty_state"),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -187,7 +187,7 @@ fun RecipeRecommendationScreen(
                         }
                     }
                 }
-                RecipeUiState.Empty -> {
+                RecommendationUiState.Empty -> {
                     Column(
                         modifier = Modifier.fillMaxSize().padding(32.dp).testTag("empty_state"),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -213,9 +213,9 @@ fun RecipeRecommendationScreen(
                         }
                     }
                 }
-                is RecipeUiState.Success, is RecipeUiState.Fallback -> {
-                    val recipe = if (recState is RecipeUiState.Success) recState.recommendation else (recState as RecipeUiState.Fallback).recommendation
-                    val isFallback = recState is RecipeUiState.Fallback
+                is RecommendationUiState.Success, is RecommendationUiState.Fallback -> {
+                    val recipe = if (recState is RecommendationUiState.Success) recState.recommendation else (recState as RecommendationUiState.Fallback).recommendation
+                    val isFallback = recState is RecommendationUiState.Fallback
 
                     Column(
                         modifier = Modifier

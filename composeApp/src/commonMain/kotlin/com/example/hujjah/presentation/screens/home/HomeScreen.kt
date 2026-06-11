@@ -52,6 +52,8 @@ fun HomeScreen(
     val quote by viewModel.quoteOfTheDay.collectAsStateWithLifecycle()
     val lastReadLoc by viewModel.lastReadLocation.collectAsStateWithLifecycle()
     val isTimerRunning by viewModel.isTimerRunning.collectAsStateWithLifecycle()
+    val userName by viewModel.userName.collectAsStateWithLifecycle()
+    val profileImageBase64 by viewModel.profileImageBase64.collectAsStateWithLifecycle()
 
     val colors = LocalHujjahColors.current
     val textGlow = if (colors.isDarkTheme) {
@@ -108,7 +110,7 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     )
                     Text(
-                        text = "Awi",
+                        text = userName,
                         style = MaterialTheme.typography.headlineMedium.copy(
                             shadow = textGlow
                         ),
@@ -144,12 +146,27 @@ fun HomeScreen(
                             .clickable { onNavigateToProfile() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "A",
-                            color = MaterialTheme.colorScheme.background,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
+                        if (profileImageBase64.isNotEmpty()) {
+                            @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
+                            val imageBytes = try {
+                                kotlin.io.encoding.Base64.decode(profileImageBase64)
+                            } catch (e: Exception) {
+                                null
+                            }
+                            coil3.compose.AsyncImage(
+                                model = imageBytes,
+                                contentDescription = "Profile Image",
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize().clip(CircleShape)
+                            )
+                        } else {
+                            Text(
+                                text = if (userName.isNotEmpty()) userName.take(1).uppercase() else "H",
+                                color = MaterialTheme.colorScheme.background,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
                     }
                 }
             }

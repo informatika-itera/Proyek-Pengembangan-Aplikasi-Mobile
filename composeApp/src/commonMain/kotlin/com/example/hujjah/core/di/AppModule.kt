@@ -33,6 +33,7 @@ import com.example.hujjah.presentation.screens.result.HujjahResultViewModel
 import com.example.hujjah.presentation.screens.quran.QuranViewModel
 import com.example.hujjah.presentation.screens.hadith.HadithViewModel
 import com.example.hujjah.presentation.screens.profile.ProfileViewModel
+import com.example.hujjah.presentation.screens.notes.NotesViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -106,6 +107,7 @@ val viewModelModule = module {
     viewModelOf(::QuranViewModel)
     viewModelOf(::HadithViewModel)
     viewModelOf(::ProfileViewModel)
+    viewModelOf(::NotesViewModel)
 }
 
 // ==================== SHARED MODULES ====================

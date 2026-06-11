@@ -44,10 +44,12 @@ fun HujjahLensScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToLens: () -> Unit,
     onNavigateToQuran: () -> Unit,
+    onNavigateToQuranDetail: (surahNumber: Int, surahName: String, verseNumber: Int?) -> Unit,
     onNavigateToHadith: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToBookmarks: () -> Unit,
     onNavigateToResult: (String) -> Unit,
+    onNavigateToAddNote: (Long?, String?) -> Unit,
     viewModel: HujjahLensViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -63,7 +65,6 @@ fun HujjahLensScreen(
     }
 
     var selectedMessageForAction by remember { mutableStateOf<ChatMessage?>(null) }
-    var selectedReferenceForAction by remember { mutableStateOf<IslamicReference?>(null) }
     var showActionDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -81,15 +82,6 @@ fun HujjahLensScreen(
                             text = "AI Spiritual Counselor",
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToBookmarks) {
-                        Icon(
-                            imageVector = Icons.Outlined.BookmarkBorder,
-                            contentDescription = "Tersimpan",
-                            tint = colors.goldHighlight
                         )
                     }
                 },
@@ -114,6 +106,31 @@ fun HujjahLensScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            if (uiState.isOffline) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "☁️ Mode Luring: Anda hanya dapat membaca riwayat chat.",
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
             // ==================== CHAT HISTORY AREA ====================
             Box(
                 modifier = Modifier
@@ -144,10 +161,10 @@ fun HujjahLensScreen(
                                     selectedMessageForAction = message
                                     showActionDialog = true
                                 },
-                                onLongPressReference = { ref ->
-                                    selectedReferenceForAction = ref
-                                    selectedMessageForAction = message
-                                    showActionDialog = true
+                                onClickReference = { ref ->
+                                    if (ref.sourceType == com.example.hujjah.domain.model.islamic.SourceType.QURAN && ref.surahNumber != null) {
+                                        onNavigateToQuranDetail(ref.surahNumber, ref.sourceName.substringBefore(":").trim(), ref.verseNumber)
+                                    }
                                 }
                             )
                         }
@@ -176,12 +193,6 @@ fun HujjahLensScreen(
                                                 strokeWidth = 2.dp,
                                                 color = colors.goldHighlight
                                             )
-                                            Spacer(modifier = Modifier.width(12.dp))
-                                            Text(
-                                                text = "Hujjah sedang menelaah dalil...",
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                            )
                                         }
                                     }
                                 }
@@ -198,58 +209,6 @@ fun HujjahLensScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                     .padding(bottom = 8.dp)
             ) {
-                // FLOATING CONTEXT FILTER (Capsules)
-                val emotionFilters = listOf(
-                    EmotionFilter("Cemas 😟", "Saya merasa cemas dan takut akan masa depan saya."),
-                    EmotionFilter("Sedih 😢", "Saya merasa sedih dan hampa saat ini."),
-                    EmotionFilter("Marah 😡", "Saya sedang marah dan sulit mengendalikan emosi saya."),
-                    EmotionFilter("Ujian 🤲", "Saya sedang menghadapi ujian hidup yang berat."),
-                    EmotionFilter("Dosa 😔", "Saya menyesal atas dosa saya dan ingin bertaubat."),
-                    EmotionFilter("Syukur ☀️", "Saya sangat bersyukur atas nikmat yang didapatkan hari ini."),
-                    EmotionFilter("Malas Shalat 🕌", "Saya merasa malas mendirikan shalat tepat waktu."),
-                    EmotionFilter("Malas Belajar 📚", "Saya sedang malas belajar dan menuntut ilmu.")
-                )
-
-                Text(
-                    text = "Ada apa hari ini?",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.goldHighlight,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                    letterSpacing = 1.sp
-                )
-
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    items(emotionFilters) { filter ->
-                        Card(
-                            shape = RoundedCornerShape(50),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (colors.isDarkTheme) colors.islamicGreen else MaterialTheme.colorScheme.surface
-                            ),
-                            border = BorderStroke(1.dp, colors.goldHighlight.copy(alpha = 0.4f)),
-                            modifier = Modifier
-                                .clickable {
-                                    viewModel.sendUserMessage(filter.messagePrompt)
-                                }
-                        ) {
-                            Text(
-                                text = filter.displayName,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (colors.isDarkTheme) Color.White else colors.islamicGreen,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 // CHAT INPUT FIELD
                 Row(
                     modifier = Modifier
@@ -262,7 +221,7 @@ fun HujjahLensScreen(
                         onValueChange = viewModel::onInputTextChanged,
                         placeholder = {
                             Text(
-                                "Curhat di sini...",
+                                if (uiState.isOffline) "Fitur chat tidak tersedia dalam mode luring" else "Curhat di sini...",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
@@ -278,7 +237,8 @@ fun HujjahLensScreen(
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         ),
                         maxLines = 3,
-                        singleLine = false
+                        singleLine = false,
+                        enabled = !uiState.isOffline
                     )
 
                     IconButton(
@@ -290,8 +250,8 @@ fun HujjahLensScreen(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(colors.goldHighlight),
-                        enabled = uiState.inputText.isNotBlank() && !uiState.isLoading
+                            .background(if (uiState.isOffline) colors.goldHighlight.copy(alpha = 0.5f) else colors.goldHighlight),
+                        enabled = uiState.inputText.isNotBlank() && !uiState.isLoading && !uiState.isOffline
                     ) {
                         Icon(
                             imageVector = Icons.Default.Send,
@@ -309,57 +269,89 @@ fun HujjahLensScreen(
         AlertDialog(
             onDismissRequest = {
                 showActionDialog = false
-                selectedReferenceForAction = null
             },
             title = {
                 Text(
-                    text = "Aksi Hujjah",
+                    text = "Opsi Pesan",
                     fontWeight = FontWeight.Bold,
-                    color = colors.islamicGreen
+                    color = colors.goldHighlight
                 )
             },
             text = {
-                Text(
-                    if (selectedReferenceForAction != null) {
-                        "Simpan dalil \"${selectedReferenceForAction?.sourceName}\" ke Khazanah Bookmark?"
-                    } else {
-                        "Hapus pesan ini dari riwayat obrolan lokal?"
-                    }
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val ref = selectedReferenceForAction
-                        if (ref != null) {
-                            viewModel.saveBookmark(ref)
-                        } else {
-                            viewModel.deleteMessage(selectedMessageForAction!!.id)
-                        }
-                        showActionDialog = false
-                        selectedReferenceForAction = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.goldHighlight)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (selectedReferenceForAction != null) Icons.Default.Bookmark else Icons.Default.Delete,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.background,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            if (selectedReferenceForAction != null) "Simpan" else "Hapus",
-                            color = MaterialTheme.colorScheme.background
-                        )
+                    Text(
+                        text = "Pilih tindakan yang ingin Anda lakukan untuk pesan ini:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    // Opsi Simpan ke Catatan
+                    Surface(
+                        onClick = {
+                            showActionDialog = false
+                            onNavigateToAddNote(null, selectedMessageForAction!!.text)
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        color = colors.goldHighlight.copy(alpha = 0.1f),
+                        border = BorderStroke(1.dp, colors.goldHighlight.copy(alpha = 0.3f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Bookmark,
+                                contentDescription = null,
+                                tint = colors.goldHighlight
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Simpan ke Catatan Saya",
+                                fontWeight = FontWeight.SemiBold,
+                                color = colors.goldHighlight
+                            )
+                        }
+                    }
+                    
+                    // Opsi Hapus Pesan
+                    Surface(
+                        onClick = {
+                            viewModel.deleteMessage(selectedMessageForAction!!.id)
+                            showActionDialog = false
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Hapus Pesan",
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             },
+            confirmButton = {},
             dismissButton = {
                 TextButton(onClick = {
                     showActionDialog = false
-                    selectedReferenceForAction = null
                 }) {
                     Text("Batal", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
@@ -374,7 +366,7 @@ private fun ChatBubble(
     message: ChatMessage,
     colors: com.example.hujjah.presentation.theme.HujjahColors,
     onLongPressMessage: () -> Unit,
-    onLongPressReference: (IslamicReference) -> Unit
+    onClickReference: (IslamicReference) -> Unit
 ) {
     val isUser = message.sender == Sender.USER
 
@@ -423,6 +415,7 @@ private fun ChatBubble(
                         } else {
                             if (colors.isDarkTheme) Color.White else colors.islamicGreen
                         },
+                        textAlign = TextAlign.Justify,
                         lineHeight = 22.sp
                     )
 
@@ -462,11 +455,8 @@ private fun ChatBubble(
                         ),
                         border = BorderStroke(1.dp, colors.goldHighlight.copy(alpha = 0.3f)),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onLongClick = { onLongPressReference(reference) },
-                                onClick = {}
-                            )
+                            .fillMaxWidth(0.7f)
+                            .clickable { onClickReference(reference) }
                     ) {
                         Row(
                             modifier = Modifier
@@ -479,58 +469,22 @@ private fun ChatBubble(
                                     .fillMaxHeight()
                                     .background(colors.goldHighlight)
                             )
-                            Column(modifier = Modifier.padding(14.dp).weight(1f)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = if (reference.sourceType == com.example.hujjah.domain.model.islamic.SourceType.QURAN) "Al-Qur'an" else "Hadis",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = colors.goldHighlight,
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(colors.goldHighlight.copy(alpha = 0.15f))
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-
-                                    Text(
-                                        text = reference.sourceName,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                Text(
-                                    text = reference.arabicText,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    textAlign = TextAlign.End,
-                                    lineHeight = 30.sp,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.BookmarkBorder,
+                                    contentDescription = null,
+                                    tint = colors.goldHighlight,
+                                    modifier = Modifier.size(20.dp)
                                 )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
+                                Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = "\"${reference.translation}\"",
+                                    text = "📖 Baca Surah Penuh: ${reference.sourceName}",
                                     fontSize = 13.sp,
-                                    fontStyle = FontStyle.Italic,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-                                )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                Text(
-                                    text = reference.explanation,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
                                 )
                             }
                         }
@@ -541,7 +495,31 @@ private fun ChatBubble(
     }
 }
 
-private data class EmotionFilter(
-    val displayName: String,
-    val messagePrompt: String
-)
+private fun getSurahNumber(sourceName: String): Int? {
+    val clean = sourceName.uppercase()
+    return when {
+        clean.contains("ALI 'IMRAN") || clean.contains("ALI IMRAN") -> 3
+        clean.contains("AR-RA'D") || clean.contains("AR RAD") -> 13
+        clean.contains("AL-INSYIRAH") || clean.contains("AL INSYIRAH") -> 94
+        clean.contains("AL-BAQARAH") || clean.contains("AL BAQARAH") -> 2
+        clean.contains("AZ-ZUMAR") || clean.contains("AZ ZUMAR") -> 39
+        clean.contains("AT-TAHRIM") || clean.contains("AT TAHRIM") -> 66
+        clean.contains("IBRAHIM") -> 14
+        clean.contains("AL-MA'UN") || clean.contains("AL MAUN") -> 107
+        clean.contains("ATH-THALAQ") || clean.contains("ATH THALAQ") -> 65
+        clean.contains("AL-MUJADILAH") || clean.contains("AL MUJADILAH") -> 58
+        clean.contains("AL-ISRA") || clean.contains("AL ISRA") -> 17
+        clean.contains("HUD") -> 11
+        else -> null
+    }
+}
+
+private fun extractSurahName(sourceName: String): String {
+    val start = sourceName.indexOf("QS. ")
+    val end = sourceName.indexOf(":")
+    if (start != -1 && end != -1 && end > start + 4) {
+        return sourceName.substring(start + 4, end).trim()
+    }
+    return sourceName.replace("QS. ", "").substringBefore(":").trim()
+}
+

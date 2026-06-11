@@ -40,27 +40,81 @@ class ProfileViewModel(
             initialValue = ""
         )
 
+    val readingDurationSeconds: StateFlow<Int> = userPreferences.readingDurationSeconds
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    val currentStreakDays: StateFlow<Int> = userPreferences.currentStreakDays
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    fun deleteProfileImage() {
+        viewModelScope.launch {
+            try {
+                userPreferences.setProfileImageBase64("")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun logoutAndReset() {
+        viewModelScope.launch {
+            try {
+                userPreferences.setUserName("Hamba Allah")
+                userPreferences.setProfileImageBase64("")
+                userPreferences.setDarkMode(false)
+                userPreferences.setArabicFontSize(22)
+                userPreferences.resetReadingDuration()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun updateUserName(name: String) {
         viewModelScope.launch {
-            userPreferences.setUserName(name)
+            try {
+                userPreferences.setUserName(name)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun setDarkMode(enabled: Boolean) {
         viewModelScope.launch {
-            userPreferences.setDarkMode(enabled)
+            try {
+                userPreferences.setDarkMode(enabled)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun setArabicFontSize(size: Int) {
         viewModelScope.launch {
-            userPreferences.setArabicFontSize(size)
+            try {
+                userPreferences.setArabicFontSize(size)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun updateProfileImage(base64: String) {
         viewModelScope.launch {
-            userPreferences.setProfileImageBase64(base64)
+            try {
+                userPreferences.setProfileImageBase64(base64)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

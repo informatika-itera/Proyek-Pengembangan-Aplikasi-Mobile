@@ -10,14 +10,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,16 +52,21 @@ fun ProfileScreen(
     onNavigateToHadith: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToBookmarks: () -> Unit,
+    onNavigateToNotes: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
     val arabicFontSize by viewModel.arabicFontSize.collectAsStateWithLifecycle()
     val profileImageBase64 by viewModel.profileImageBase64.collectAsStateWithLifecycle()
+    val readingDurationSeconds by viewModel.readingDurationSeconds.collectAsStateWithLifecycle()
+    val currentStreakDays by viewModel.currentStreakDays.collectAsStateWithLifecycle()
 
     val colors = LocalHujjahColors.current
 
     var showEditNameDialog by remember { mutableStateOf(false) }
+    var showLogoutConfirmDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
     var editedName by remember { mutableStateOf(userName) }
 
     // Sync input field when database value loads
@@ -109,7 +124,7 @@ fun ProfileScreen(
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // ==================== INTERACTIVE HERO PROFILE ====================
+                // ==================== A. HERO SECTION (AVATAR & EDIT NAME) ====================
                 Box(
                     contentAlignment = Alignment.BottomEnd,
                     modifier = Modifier.size(120.dp)
@@ -118,13 +133,20 @@ fun ProfileScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .background(colors.goldHighlight)
-                            .border(3.dp, colors.goldHighlight, CircleShape),
+                            .background(colors.goldHighlight.copy(alpha = 0.2f))
+                            .border(3.dp, colors.goldHighlight, CircleShape)
+                            .clickable { imagePickerLauncher() },
                         contentAlignment = Alignment.Center
                     ) {
                         if (profileImageBase64.isNotEmpty()) {
+                            @OptIn(ExperimentalEncodingApi::class)
+                            val imageBytes = try {
+                                Base64.decode(profileImageBase64)
+                            } catch (e: Exception) {
+                                null
+                            }
                             AsyncImage(
-                                model = "data:image/jpeg;base64,$profileImageBase64",
+                                model = imageBytes,
                                 contentDescription = "Profile Image",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize().clip(CircleShape)
@@ -132,7 +154,7 @@ fun ProfileScreen(
                         } else {
                             Text(
                                 text = if (userName.isNotEmpty()) userName.take(1).uppercase() else "H",
-                                color = MaterialTheme.colorScheme.background,
+                                color = colors.goldHighlight,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 48.sp
                             )
@@ -151,36 +173,143 @@ fun ProfileScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit Profile",
+                            contentDescription = "Ganti Foto Profil",
                             tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                if (profileImageBase64.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Hapus Foto",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { viewModel.deleteProfileImage() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
 
-                Text(
-                    text = userName,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (colors.isDarkTheme) Color.White else colors.islamicGreen,
-                    modifier = Modifier.clickable { showEditNameDialog = true }
-                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showEditNameDialog = true }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = userName,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (colors.isDarkTheme) Color.White else colors.islamicGreen,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Nama",
+                        tint = colors.goldHighlight,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
 
-                // ==================== SETTINGS LIST ====================
-                // Switch: Gold Glow in the Dark
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ==================== B. PAPAN STATISTIK PENCAPAIAN ====================
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (colors.isDarkTheme) colors.islamicGreen.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+                        containerColor = if (colors.isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFF2F2F7)
+                    ),
+                    border = BorderStroke(1.dp, colors.goldHighlight.copy(alpha = 0.15f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.LocalFireDepartment,
+                                contentDescription = "Streak",
+                                tint = colors.goldHighlight,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "$currentStreakDays Hari",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
+                            )
+                            Text(
+                                text = "Streak Mengaji",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                        }
+
+                        // Divider vertical
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(40.dp)
+                                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        )
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Timer,
+                                contentDescription = "Waktu Baca",
+                                tint = colors.goldHighlight,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val durationMinutes = readingDurationSeconds / 60
+                            Text(
+                                text = "$durationMinutes Menit",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
+                            )
+                            Text(
+                                text = "Total Waktu",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ==================== C. PREFERENCES & ACCESSIBILITY ====================
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (colors.isDarkTheme) colors.islamicGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
                     ),
                     border = BorderStroke(0.5.dp, colors.goldHighlight.copy(alpha = 0.2f))
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(18.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -188,13 +317,13 @@ fun ProfileScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Gold Glow in the Dark",
+                                    text = "Mode Gelap OLED",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
                                     color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
                                 )
                                 Text(
-                                    text = "Efek berpendar emas di mode gelap",
+                                    text = "Ubah latar belakang menjadi hitam pekat",
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                                 )
@@ -244,27 +373,90 @@ fun ProfileScreen(
                                     inactiveTrackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                                 )
                             )
+
+                            // Live Preview Box
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (colors.isDarkTheme) Color.Black else Color(0xFFF9F9FB))
+                                    .border(0.5.dp, colors.goldHighlight.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                    fontSize = arabicFontSize.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = colors.goldHighlight,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ==================== D. GROUPED NAVIGATION 1 ====================
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (colors.isDarkTheme) colors.islamicGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
+                    ),
+                    border = BorderStroke(0.5.dp, colors.goldHighlight.copy(alpha = 0.2f))
+                ) {
+                    Column {
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.BookmarkBorder,
+                            title = "Khazanah Dalil Tersimpan",
+                            onClick = onNavigateToBookmarks,
+                            tintColor = colors.goldHighlight
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.ChatBubbleOutline,
+                            title = "Riwayat Konseling",
+                            onClick = onNavigateToLens,
+                            tintColor = colors.goldHighlight
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.Description,
+                            title = "Catatan Harian Saya",
+                            onClick = onNavigateToNotes,
+                            tintColor = colors.goldHighlight
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Standard Menu List
+                // ==================== GROUPED NAVIGATION 2 ====================
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (colors.isDarkTheme) colors.islamicGreen.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+                        containerColor = if (colors.isDarkTheme) colors.islamicGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
                     ),
                     border = BorderStroke(0.5.dp, colors.goldHighlight.copy(alpha = 0.2f))
                 ) {
                     Column {
-                        ProfileMenuItem("Khazanah Dalil Tersimpan", onNavigateToBookmarks)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                        ProfileMenuItem("Riwayat Konseling", onNavigateToLens)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                        ProfileMenuItem("Keluar", {})
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.Info,
+                            title = "Tentang Hujjah",
+                            onClick = { showAboutDialog = true },
+                            tintColor = colors.goldHighlight
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.ExitToApp,
+                            title = "Keluar & Reset Akun",
+                            onClick = { showLogoutConfirmDialog = true },
+                            tintColor = MaterialTheme.colorScheme.error,
+                            textColor = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }
@@ -272,10 +464,10 @@ fun ProfileScreen(
             // ==================== EXECUTIVE FOOTER ====================
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(top = 36.dp, bottom = 24.dp)
             ) {
                 Text(
-                    text = "Hujjah Mobile App Versi 1.0.0",
+                    text = "Hujjah Mobile App Versi 1.1.0",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
@@ -299,9 +491,10 @@ fun ProfileScreen(
             text = {
                 OutlinedTextField(
                     value = editedName,
-                    onValueChange = { editedName = it },
+                    onValueChange = { if (it.length <= 25) editedName = it },
                     label = { Text("Nama Pengguna") },
                     singleLine = true,
+                    supportingText = { Text("${editedName.length}/25") },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = colors.goldHighlight,
                         focusedLabelColor = colors.goldHighlight
@@ -328,26 +521,100 @@ fun ProfileScreen(
             }
         )
     }
+
+    // About Dialog
+    if (showAboutDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            title = { Text("Tentang Hujjah", fontWeight = FontWeight.Bold, color = colors.goldHighlight) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Hujjah adalah aplikasi konseling spiritual dan khazanah dalil Al-Qur'an & Hadits yang dirancang dengan antarmuka Apple Premium.",
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = "Aplikasi ini mempermudah pencarian dalil shahih dan interaksi tanya jawab berbasis teknologi AI asisten spiritual yang aman.",
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = "Hak Cipta © 2026. Dikembangkan oleh Awi & Bimas.",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showAboutDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.goldHighlight)
+                ) {
+                    Text("Tutup", color = MaterialTheme.colorScheme.background)
+                }
+            }
+        )
+    }
+
+    // Logout Confirm Dialog
+    if (showLogoutConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirmDialog = false },
+            title = { Text("Keluar & Reset Data?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+            text = {
+                Text("Tindakan ini akan mengembalikan profil Anda ke nama 'Hamba Allah', menghapus foto profil, dan mereset seluruh statistik mengaji Anda dari awal.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.logoutAndReset()
+                        showLogoutConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Keluar & Reset", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirmDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 private fun ProfileMenuItem(
+    icon: ImageVector,
     title: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    tintColor: Color,
+    textColor: Color = Color.Unspecified
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(vertical = 16.dp, horizontal = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tintColor,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Text(
+                text = title,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = textColor
+            )
+        }
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,

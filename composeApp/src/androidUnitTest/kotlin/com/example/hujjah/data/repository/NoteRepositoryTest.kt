@@ -2,8 +2,6 @@ package com.example.hujjah.data.repository
 
 import app.cash.turbine.test
 import com.example.hujjah.domain.model.Note
-import com.example.hujjah.domain.model.NoteCategory
-import com.example.hujjah.domain.model.NoteColor
 import com.example.hujjah.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -181,14 +179,14 @@ class NoteRepositoryTest {
         id: Long = 0,
         title: String = "Test",
         content: String = "Content",
-        category: NoteCategory = NoteCategory.GENERAL
+        category: String = "Umum"
     ): Note {
         return Note(
             id = id,
             title = title,
             content = content,
             category = category,
-            color = NoteColor.DEFAULT,
+            color = "DEFAULT",
             isPinned = false,
             createdAt = Clock.System.now(),
             updatedAt = Clock.System.now()
@@ -213,7 +211,7 @@ class FakeNoteRepository : NoteRepository {
         return notes.map { list -> list.filter { it.isPinned } }
     }
     
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
+    override fun getNotesByCategory(category: String): Flow<List<Note>> {
         return notes.map { list -> list.filter { it.category == category } }
     }
     

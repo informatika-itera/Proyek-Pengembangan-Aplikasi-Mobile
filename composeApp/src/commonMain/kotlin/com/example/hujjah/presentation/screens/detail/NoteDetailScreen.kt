@@ -36,8 +36,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import com.example.hujjah.presentation.theme.LocalHujjahColors
+import androidx.compose.ui.text.font.FontStyle
 import com.example.hujjah.core.util.formatToDisplay
 import com.example.hujjah.presentation.components.CategoryBadge
 import com.example.hujjah.presentation.components.EmptyState
@@ -148,7 +163,7 @@ fun NoteDetailScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        CategoryBadge(category = state.note.category.displayName)
+                        CategoryBadge(category = state.note.category)
                         
                         Text(
                             text = state.note.updatedAt.formatToDisplay(),
@@ -159,10 +174,109 @@ fun NoteDetailScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
+                    // Parse rujukan dalil dari konten
+                    val rawContent = state.note.content
+                    val regex = Regex("""\n\n\[Rujukan:\s*(Quran|Hadits)\s*(\|\|\||\|)\s*(.*?)\s*\]""")
+                    val match = regex.find(rawContent)
+                    val cleanText = if (match != null) rawContent.replace(match.value, "") else rawContent
+                    
                     Text(
-                        text = state.note.content,
+                        text = cleanText,
                         style = MaterialTheme.typography.bodyLarge
                     )
+                    
+                    if (match != null) {
+                        val fullTag = match.value
+                        val tagContent = fullTag.trim().removeSurrounding("[Rujukan:", "]").trim()
+                        val parts = if (tagContent.contains("|||")) {
+                            tagContent.split("|||").map { it.trim() }
+                        } else {
+                            tagContent.split("|").map { it.trim() }
+                        }
+                        
+                        if (parts.size >= 3) {
+                            val refType = parts[0]
+                            val refSource = parts[1]
+                            val refNumber = parts[2]
+                            val refArabic = parts.getOrNull(3) ?: ""
+                            val refTranslation = parts.getOrNull(4) ?: ""
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            // Rujukan Card Apple Premium
+                            val colors = LocalHujjahColors.current
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (colors.isDarkTheme) Color.Black else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ),
+                                border = BorderStroke(1.dp, colors.goldHighlight.copy(alpha = 0.4f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(CircleShape)
+                                                .background(colors.goldHighlight.copy(alpha = 0.15f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = if (refType == "Quran") "📖" else "📚",
+                                                fontSize = 20.sp
+                                            )
+                                        }
+                                        
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Rujukan Terhubung",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = colors.goldHighlight,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = if (refType == "Quran") {
+                                                    "Surah $refSource: Ayat $refNumber"
+                                                } else {
+                                                    "Hadits $refSource: No. $refNumber"
+                                                },
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
+                                            )
+                                        }
+                                    }
+                                    
+                                    // Tampilkan isi teks rujukan jika tersedia
+                                    if (refArabic.isNotBlank()) {
+                                        Spacer(modifier = Modifier.height(14.dp))
+                                        Text(
+                                            text = refArabic,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = TextAlign.End,
+                                            lineHeight = 28.sp,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            color = if (colors.isDarkTheme) Color.White else colors.islamicGreen
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = "\"$refTranslation\"",
+                                            fontSize = 13.sp,
+                                            fontStyle = FontStyle.Italic,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                            lineHeight = 18.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             

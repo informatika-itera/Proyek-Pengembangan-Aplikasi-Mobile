@@ -3,8 +3,6 @@ package com.example.hujjah.presentation.screens.addnote
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hujjah.domain.model.Note
-import com.example.hujjah.domain.model.NoteCategory
-import com.example.hujjah.domain.model.NoteColor
 import com.example.hujjah.domain.repository.NoteRepository
 import com.example.hujjah.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,9 +26,16 @@ class AddNoteViewModel(
     
     private val _events = MutableSharedFlow<AddNoteEvent>()
     val events: SharedFlow<AddNoteEvent> = _events.asSharedFlow()
-    
     private var currentNoteId: Long? = null
-    
+
+    fun initializeNote(noteId: Long?, initialContent: String?) {
+        if (noteId != null) {
+            loadNote(noteId)
+        } else if (!initialContent.isNullOrBlank()) {
+            _uiState.update { it.copy(content = initialContent, category = "Hujjah Lens") }
+        }
+    }
+
     fun loadNote(noteId: Long) {
         currentNoteId = noteId
         _uiState.update { it.copy(isLoading = true) }
@@ -64,12 +69,8 @@ class AddNoteViewModel(
         _uiState.update { it.copy(content = content) }
     }
     
-    fun onCategoryChange(category: NoteCategory) {
+    fun onCategoryChange(category: String) {
         _uiState.update { it.copy(category = category) }
-    }
-    
-    fun onColorChange(color: NoteColor) {
-        _uiState.update { it.copy(color = color) }
     }
     
     fun saveNote() {
@@ -87,7 +88,7 @@ class AddNoteViewModel(
                 id = currentNoteId ?: 0,
                 title = state.title.trim(),
                 content = state.content.trim(),
-                category = state.category,
+                category = state.category.trim().ifBlank { "Umum" },
                 color = state.color,
                 createdAt = if (currentNoteId == null) Clock.System.now() else state.createdAt,
                 updatedAt = Clock.System.now()
@@ -116,8 +117,8 @@ class AddNoteViewModel(
 data class AddNoteUiState(
     val title: String = "",
     val content: String = "",
-    val category: NoteCategory = NoteCategory.GENERAL,
-    val color: NoteColor = NoteColor.DEFAULT,
+    val category: String = "Umum",
+    val color: String = "DEFAULT",
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,

@@ -213,15 +213,15 @@ class HujjahRepositoryImpl(
                 // Network failed, if local is empty, emit default 9 perawi
                 if (localBooks.isEmpty()) {
                     val staticBooks = listOf(
-                        HadithBookItem("bukhari", "Shahih Bukhari", 7008),
-                        HadithBookItem("muslim", "Shahih Muslim", 5362),
-                        HadithBookItem("tirmidzi", "Sunan Tirmidzi", 3891),
-                        HadithBookItem("nasai", "Sunan Nasai", 5662),
-                        HadithBookItem("abu-dawud", "Sunan Abu Dawud", 4590),
+                        HadithBookItem("bukhari", "Shahih Bukhari", 6638),
+                        HadithBookItem("muslim", "Shahih Muslim", 4930),
+                        HadithBookItem("tirmidzi", "Sunan Tirmidzi", 3625),
+                        HadithBookItem("nasai", "Sunan Nasai", 5364),
+                        HadithBookItem("abu-daud", "Sunan Abu Daud", 4419),
                         HadithBookItem("ibnu-majah", "Sunan Ibnu Majah", 4285),
-                        HadithBookItem("ahmad", "Musnad Ahmad", 26363),
-                        HadithBookItem("darimi", "Sunan Darimi", 3367),
-                        HadithBookItem("muwatta-malik", "Muwatta Malik", 1594)
+                        HadithBookItem("ahmad", "Musnad Ahmad", 4305),
+                        HadithBookItem("darimi", "Sunan Darimi", 2949),
+                        HadithBookItem("malik", "Muwatta Malik", 1587)
                     )
                     emit(staticBooks)
                 }

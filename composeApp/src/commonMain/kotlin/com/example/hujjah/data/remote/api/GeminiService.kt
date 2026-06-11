@@ -20,7 +20,7 @@ class GeminiService(private val client: HttpClient) {
     
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-2.0-flash"
+        private const val MODEL = "gemini-flash-latest"
     }
     
     suspend fun generateContent(
@@ -29,20 +29,12 @@ class GeminiService(private val client: HttpClient) {
     ): Result<String> = runCatching {
         val contents = mutableListOf<GeminiContent>()
         
-        if (systemPrompt != null) {
-            contents.add(
-                GeminiContent(
-                    parts = listOf(GeminiPart(text = systemPrompt)),
-                    role = "user"
-                )
+        val sysInstruction = if (systemPrompt != null) {
+            GeminiContent(
+                parts = listOf(GeminiPart(text = systemPrompt)),
+                role = "user"
             )
-            contents.add(
-                GeminiContent(
-                    parts = listOf(GeminiPart(text = "Baik, saya akan mengikuti instruksi tersebut.")),
-                    role = "model"
-                )
-            )
-        }
+        } else null
         
         contents.add(
             GeminiContent(
@@ -52,10 +44,11 @@ class GeminiService(private val client: HttpClient) {
         )
         
         val request = GeminiRequest(
+            systemInstruction = sysInstruction,
             contents = contents,
             generationConfig = GenerationConfig(
                 temperature = 0.7,
-                maxOutputTokens = 1000
+                maxOutputTokens = 4000
             )
         )
         

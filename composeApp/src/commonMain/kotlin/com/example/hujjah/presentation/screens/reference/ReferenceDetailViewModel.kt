@@ -39,12 +39,25 @@ class ReferenceDetailViewModel(
                     hujjahRepository.getReferenceById(referenceId),
                     bookmarkRepository.getBookmarkByReferenceId(referenceId)
                 ) { reference, bookmark ->
+                    val finalReference = reference ?: bookmark?.let {
+                        IslamicReference(
+                            id = it.referenceId,
+                            sourceType = it.sourceType,
+                            title = it.title,
+                            sourceName = it.sourceName,
+                            arabicText = it.arabicText,
+                            translation = it.translation,
+                            explanation = it.explanation,
+                            topicId = it.topicId,
+                            topicTitle = it.topicTitle
+                        )
+                    }
                     ReferenceDetailUiState(
                         isLoading = false,
-                        reference = reference,
+                        reference = finalReference,
                         isBookmarked = bookmark != null,
                         note = bookmark?.note.orEmpty(),
-                        errorMessage = if (reference == null) "Referensi tidak ditemukan" else null
+                        errorMessage = if (finalReference == null) "Referensi tidak ditemukan" else null
                     )
                 }.collect { state ->
                     _uiState.value = state

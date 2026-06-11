@@ -2,8 +2,6 @@ package com.example.hujjah.data.local.entity
 
 import com.example.hujjah.data.local.NoteEntity
 import com.example.hujjah.domain.model.Note
-import com.example.hujjah.domain.model.NoteCategory
-import com.example.hujjah.domain.model.NoteColor
 import kotlinx.datetime.Instant
 
 fun NoteEntity.toDomain(): Note {
@@ -11,8 +9,8 @@ fun NoteEntity.toDomain(): Note {
         id = id,
         title = title,
         content = content,
-        category = NoteCategory.fromString(category),
-        color = NoteColor.fromString(color),
+        category = category,
+        color = color,
         isPinned = is_pinned == 1L,
         createdAt = Instant.fromEpochMilliseconds(created_at),
         updatedAt = Instant.fromEpochMilliseconds(updated_at)
@@ -33,8 +31,8 @@ fun Note.toEntityValues(): NoteEntityValues {
     return NoteEntityValues(
         title = title,
         content = content,
-        category = category.name,
-        color = color.name,
+        category = category,
+        color = color,
         isPinned = if (isPinned) 1L else 0L,
         createdAt = createdAt.toEpochMilliseconds(),
         updatedAt = updatedAt.toEpochMilliseconds()

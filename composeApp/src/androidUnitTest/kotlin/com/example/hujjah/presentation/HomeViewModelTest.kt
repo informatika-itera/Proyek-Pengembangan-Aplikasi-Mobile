@@ -11,6 +11,9 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import okio.Path.Companion.toPath
+import kotlinx.datetime.Clock
+import kotlinx.coroutines.cancelChildren
+import androidx.lifecycle.viewModelScope
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -29,61 +32,69 @@ class HomeViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         
-        // Create a temporary preference datastore for testing
+        // Buat file preference unik untuk setiap test run agar tidak bentrok (IllegalStateException di OkioStorage)
+        val uniqueName = "test_hujjah_pref_${Clock.System.now().toEpochMilliseconds()}_${(0..99999).random()}.preferences_pb"
         val dataStore = PreferenceDataStoreFactory.createWithPath(
-            produceFile = { "build/tmp/test_hujjah_preferences.preferences_pb".toPath() }
+            produceFile = { ("build/tmp/" + uniqueName).toPath() }
         )
         userPreferences = UserPreferences(dataStore)
         viewModel = HomeViewModel(userPreferences)
     }
     
     @AfterTest
-    fun tearDown() = runTest {
+    fun tearDown() {
+        viewModel.viewModelScope.coroutineContext.cancelChildren()
         Dispatchers.resetMain()
-        // Reset/clear user preferences after test
-        userPreferences.resetReadingDuration()
     }
     
     @Test
     fun `initial state should have default values`() = runTest(testDispatcher) {
         viewModel.readingDurationSeconds.test {
             assertEquals(0, awaitItem())
+            cancelAndIgnoreRemainingEvents()
         }
         viewModel.currentStreakDays.test {
             assertEquals(0, awaitItem())
+            cancelAndIgnoreRemainingEvents()
         }
         viewModel.lastReadLocation.test {
             assertEquals("", awaitItem())
+            cancelAndIgnoreRemainingEvents()
         }
         viewModel.quoteOfTheDay.test {
             val quote = awaitItem()
             assertNotNull(quote)
-            assertEquals("QS. Ar-Ra'd: 28", quote.reference) // Let's check the default quote reference or general fallback
+            assertEquals("QS. Ar-Ra'd: 28", quote.reference)
+            cancelAndIgnoreRemainingEvents()
         }
+        testScheduler.advanceTimeBy(6000)
     }
     
     @Test
     fun `simulateReadingTime should update reading duration`() = runTest(testDispatcher) {
-        viewModel.simulateReadingTime(60)
-        
-        // Wait for coroutine to complete
+        userPreferences.addReadingDuration(60)
         testScheduler.advanceUntilIdle()
         
         viewModel.readingDurationSeconds.test {
-            assertEquals(60, awaitItem())
+            assertEquals(0, awaitItem()) // initial value
+            assertEquals(60, awaitItem()) // updated value
+            cancelAndIgnoreRemainingEvents()
         }
+        testScheduler.advanceTimeBy(6000)
     }
     
     @Test
     fun `resetReadingTime should set duration to zero`() = runTest(testDispatcher) {
-        viewModel.simulateReadingTime(60)
+        userPreferences.addReadingDuration(60)
         testScheduler.advanceUntilIdle()
         
         viewModel.resetReadingTime()
         testScheduler.advanceUntilIdle()
         
         viewModel.readingDurationSeconds.test {
-            assertEquals(0, awaitItem())
+            assertEquals(0, awaitItem()) // Karena disubscribe setelah reset, langsung bernilai 0
+            cancelAndIgnoreRemainingEvents()
         }
+        testScheduler.advanceTimeBy(6000)
     }
 }

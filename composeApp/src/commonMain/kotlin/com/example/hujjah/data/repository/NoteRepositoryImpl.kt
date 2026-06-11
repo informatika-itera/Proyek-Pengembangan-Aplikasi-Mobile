@@ -8,7 +8,6 @@ import com.example.hujjah.data.local.entity.toDomain
 import com.example.hujjah.data.local.entity.toDomainList
 import com.example.hujjah.data.local.entity.toEntityValues
 import com.example.hujjah.domain.model.Note
-import com.example.hujjah.domain.model.NoteCategory
 import com.example.hujjah.domain.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,8 +33,8 @@ class NoteRepositoryImpl(private val database: NoteDatabase) : NoteRepository {
             .map { entities -> entities.toDomainList() }
     }
     
-    override fun getNotesByCategory(category: NoteCategory): Flow<List<Note>> {
-        return queries.getNotesByCategory(category.name)
+    override fun getNotesByCategory(category: String): Flow<List<Note>> {
+        return queries.getNotesByCategory(category)
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.toDomainList() }

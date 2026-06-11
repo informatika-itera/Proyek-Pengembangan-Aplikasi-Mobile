@@ -63,6 +63,7 @@ fun HujjahTheme(
     CompositionLocalProvider(LocalHujjahColors provides hujjahColors) {
         MaterialTheme(
             colorScheme = colorScheme,
+            typography = HujjahTypography(),
             content = content
         )
     }

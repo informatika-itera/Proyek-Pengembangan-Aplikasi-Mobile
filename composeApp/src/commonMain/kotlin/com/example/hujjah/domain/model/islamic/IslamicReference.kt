@@ -12,5 +12,7 @@ data class IslamicReference(
     val translation: String,
     val explanation: String,
     val topicId: String,
-    val topicTitle: String
+    val topicTitle: String,
+    val surahNumber: Int? = null,
+    val verseNumber: Int? = null
 )

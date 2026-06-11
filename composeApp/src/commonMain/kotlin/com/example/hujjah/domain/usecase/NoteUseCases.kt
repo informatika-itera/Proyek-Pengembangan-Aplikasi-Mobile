@@ -1,7 +1,6 @@
 package com.example.hujjah.domain.usecase
 
 import com.example.hujjah.domain.model.Note
-import com.example.hujjah.domain.model.NoteCategory
 import com.example.hujjah.domain.repository.AIRepository
 import com.example.hujjah.domain.repository.NoteRepository
 import com.example.hujjah.domain.repository.WritingStyle
@@ -44,7 +43,7 @@ enum class NoteSortBy(val displayName: String) {
 class SearchNotesUseCase(
     private val repository: NoteRepository
 ) {
-    operator fun invoke(query: String, category: NoteCategory? = null): Flow<List<Note>> {
+    operator fun invoke(query: String, category: String? = null): Flow<List<Note>> {
         return if (query.isBlank() && category == null) {
             repository.getAllNotes()
         } else if (query.isBlank()) {

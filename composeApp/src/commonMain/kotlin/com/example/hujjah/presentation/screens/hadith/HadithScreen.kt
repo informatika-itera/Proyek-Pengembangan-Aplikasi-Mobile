@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +49,8 @@ import com.example.hujjah.presentation.theme.LocalHujjahColors
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.example.hujjah.data.local.datastore.UserPreferences
+import com.example.hujjah.domain.repository.hujjah.BookmarkRepository
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,8 +64,10 @@ fun HadithScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colors = LocalHujjahColors.current
+    val coroutineScope = rememberCoroutineScope()
     
     val userPreferences = koinInject<UserPreferences>()
+    val bookmarkRepository = koinInject<BookmarkRepository>()
     val arabicFontSize by userPreferences.arabicFontSize.collectAsStateWithLifecycle(initialValue = 22)
 
     val isViewingBook = uiState.currentBookId != null
@@ -336,6 +342,49 @@ fun HadithScreen(
                                                 fontSize = 12.sp,
                                                 style = TextStyle(shadow = textGlow)
                                             )
+
+                                            // Tombol Simpan ke Khazanah Dalil
+                                            val referenceId = "hadith-${uiState.currentBookId}-${hadith.number}"
+                                            val isBookmarked by bookmarkRepository.getBookmarkByReferenceId(referenceId)
+                                                .collectAsStateWithLifecycle(initialValue = null)
+
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.clickable {
+                                                    coroutineScope.launch {
+                                                        if (isBookmarked != null) {
+                                                            bookmarkRepository.deleteBookmark(referenceId)
+                                                        } else {
+                                                            val ref = com.example.hujjah.domain.model.islamic.IslamicReference(
+                                                                id = referenceId,
+                                                                sourceType = com.example.hujjah.domain.model.islamic.SourceType.HADITH,
+                                                                title = "Hadits Perawi ${uiState.currentBookName}: No. ${hadith.number}",
+                                                                sourceName = "${uiState.currentBookName} No. ${hadith.number}",
+                                                                arabicText = hadith.arab,
+                                                                translation = hadith.translation,
+                                                                explanation = "",
+                                                                topicId = "hadith",
+                                                                topicTitle = "Ensiklopedia Hadits"
+                                                            )
+                                                            bookmarkRepository.saveBookmark(ref, "")
+                                                        }
+                                                    }
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (isBookmarked != null) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                                                    contentDescription = "Simpan ke Khazanah Dalil",
+                                                    tint = if (isBookmarked != null) colors.goldHighlight else colors.islamicGreen,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = if (isBookmarked != null) "Tersimpan" else "Simpan Dalil",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (isBookmarked != null) colors.goldHighlight else colors.islamicGreen
+                                                )
+                                            }
                                         }
 
                                         Spacer(modifier = Modifier.height(12.dp))

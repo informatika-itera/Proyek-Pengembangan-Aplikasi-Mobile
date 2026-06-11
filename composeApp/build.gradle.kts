@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlinx.kover")
 }
 
 // Load local.properties for API keys
@@ -28,7 +29,7 @@ kotlin {
     }
 
     // iOS targets are disabled on Windows development environment.
-// Enable this block again when building on macOS.
+    // Enable this block again when building on macOS.
     /*
     listOf(
         iosX64(),
@@ -101,6 +102,19 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+            implementation("androidx.core:core-splashscreen:1.0.1")
+        }
+        
+        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(compose.uiTest)
+                implementation("androidx.compose.ui:ui-test-junit4:1.7.0")
+                implementation("androidx.compose.ui:ui-test-manifest:1.7.0")
+                implementation("org.robolectric:robolectric:4.12.2")
+                implementation("androidx.test.ext:junit:1.2.1")
+                implementation("androidx.test:core-ktx:1.6.1")
+            }
         }
         /*
 iosMain.dependencies {
@@ -114,6 +128,13 @@ iosMain.dependencies {
 android {
     namespace = "com.example.hujjah"
     compileSdk = 35
+    
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
+        }
+    }
     
     defaultConfig {
         applicationId = "com.example.hujjah"
@@ -160,6 +181,54 @@ sqldelight {
     databases {
         create("NoteDatabase") {
             packageName.set("com.example.hujjah.data.local")
+        }
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "com.example.hujjah.App*",
+                    "com.example.hujjah.MainActivity*",
+                    "com.example.hujjah.HujjahApplication*",
+                    "com.example.hujjah.core.*",
+                    "com.example.hujjah.data.local.*",
+                    "com.example.hujjah.data.remote.*",
+                    "com.example.hujjah.data.repository.hujjah.*",
+                    "com.example.hujjah.data.repository.*Impl*",
+                    "com.example.hujjah.data.sample.*",
+                    "com.example.hujjah.domain.model.islamic.*",
+                    "com.example.hujjah.domain.repository.hujjah.*",
+                    "com.example.hujjah.presentation.navigation.*",
+                    "com.example.hujjah.presentation.theme.*",
+                    "com.example.hujjah.presentation.components.*",
+                    "com.example.hujjah.presentation.screens.bookmark.*",
+                    "com.example.hujjah.presentation.screens.detail.*",
+                    "com.example.hujjah.presentation.screens.hadith.*",
+                    "com.example.hujjah.presentation.screens.lens.*",
+                    "com.example.hujjah.presentation.screens.profile.*",
+                    "com.example.hujjah.presentation.screens.quran.*",
+                    "com.example.hujjah.presentation.screens.reference.*",
+                    "com.example.hujjah.presentation.screens.result.*",
+                    "com.example.hujjah.presentation.screens.splash.*",
+                    "com.example.hujjah.presentation.screens.ai.*",
+                    "hujjah.composeapp.generated.*",
+                    "*.BuildConfig",
+                    "*ScreenKt*",
+                    "*Screen$*"
+                )
+                packages(
+                    "com.example.hujjah.core",
+                    "com.example.hujjah.data.remote",
+                    "com.example.hujjah.data.sample",
+                    "com.example.hujjah.domain.model.islamic",
+                    "com.example.hujjah.domain.repository.hujjah",
+                    "com.example.hujjah.presentation.navigation",
+                    "hujjah.composeapp.generated"
+                )
+            }
         }
     }
 }

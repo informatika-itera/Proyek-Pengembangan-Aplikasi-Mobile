@@ -16,6 +16,11 @@ import com.example.hujjah.presentation.screens.hadith.HadithScreen
 import com.example.hujjah.presentation.screens.profile.ProfileScreen
 import com.example.hujjah.presentation.screens.reference.ReferenceDetailScreen
 import com.example.hujjah.presentation.screens.result.HujjahResultScreen
+import com.example.hujjah.presentation.screens.splash.SplashScreen
+import com.example.hujjah.presentation.screens.notes.NotesScreen
+import com.example.hujjah.presentation.screens.addnote.AddNoteScreen
+import com.example.hujjah.presentation.screens.detail.NoteDetailScreen
+
 
 @Composable
 fun AppNavHost(
@@ -28,9 +33,22 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Route.Home,
+        startDestination = Route.Splash,
         modifier = modifier
     ) {
+
+        // ==================== SPLASH SCREEN ====================
+        composable<Route.Splash> {
+            SplashScreen(
+                onSplashFinished = {
+                    navController.navigate(Route.Home) {
+                        popUpTo(Route.Splash) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+
         // ==================== 1. BERANDA (HOME) ====================
         composable<Route.Home> {
             HomeScreen(
@@ -51,10 +69,12 @@ fun AppNavHost(
                 onNavigateToHome = navigationActions::navigateToHome,
                 onNavigateToLens = navigationActions::navigateToHujjahLens,
                 onNavigateToQuran = navigationActions::navigateToQuran,
+                onNavigateToQuranDetail = navigationActions::navigateToQuranDetail,
                 onNavigateToHadith = navigationActions::navigateToHadith,
                 onNavigateToProfile = navigationActions::navigateToProfile,
                 onNavigateToBookmarks = navigationActions::navigateToBookmarks,
-                onNavigateToResult = navigationActions::navigateToHujjahResult
+                onNavigateToResult = navigationActions::navigateToHujjahResult,
+                onNavigateToAddNote = navigationActions::navigateToAddNote
             )
         }
 
@@ -75,6 +95,7 @@ fun AppNavHost(
             QuranDetailScreen(
                 surahNumber = route.surahNumber,
                 surahName = route.surahName,
+                verseNumber = route.verseNumber,
                 onNavigateBack = navigationActions::navigateBack
             )
         }
@@ -98,7 +119,37 @@ fun AppNavHost(
                 onNavigateToQuran = navigationActions::navigateToQuran,
                 onNavigateToHadith = navigationActions::navigateToHadith,
                 onNavigateToProfile = navigationActions::navigateToProfile,
-                onNavigateToBookmarks = navigationActions::navigateToBookmarks
+                onNavigateToBookmarks = navigationActions::navigateToBookmarks,
+                onNavigateToNotes = navigationActions::navigateToNotes
+            )
+        }
+
+        // ==================== NOTES SCREEN ====================
+        composable<Route.Notes> {
+            NotesScreen(
+                onNavigateBack = navigationActions::navigateBack,
+                onNavigateToAddNote = { navigationActions::navigateToAddNote.invoke(null, null) },
+                onNavigateToDetail = navigationActions::navigateToNoteDetail
+            )
+        }
+
+        composable<Route.AddNote> { backStackEntry ->
+            val route: Route.AddNote = backStackEntry.toRoute()
+            AddNoteScreen(
+                noteId = route.noteId,
+                initialContent = route.initialContent,
+                onNavigateBack = navigationActions::navigateBack,
+                onNavigateToAI = { /* optional fallback */ }
+            )
+        }
+
+        composable<Route.NoteDetail> { backStackEntry ->
+            val route: Route.NoteDetail = backStackEntry.toRoute()
+            NoteDetailScreen(
+                noteId = route.noteId,
+                onNavigateBack = navigationActions::navigateBack,
+                onNavigateToEdit = { noteId -> navigationActions.navigateToAddNote(noteId, null) },
+                onShare = { /* optional share action */ }
             )
         }
 
@@ -167,8 +218,8 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             }
         }
 
-        override fun navigateToQuranDetail(surahNumber: Int, surahName: String) {
-            navController.navigate(Route.QuranDetail(surahNumber, surahName))
+        override fun navigateToQuranDetail(surahNumber: Int, surahName: String, verseNumber: Int?) {
+            navController.navigate(Route.QuranDetail(surahNumber, surahName, verseNumber))
         }
 
         override fun navigateToHadith() {
@@ -195,6 +246,18 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
 
         override fun navigateToBookmarks() {
             navController.navigate(Route.Bookmark)
+        }
+
+        override fun navigateToNotes() {
+            navController.navigate(Route.Notes)
+        }
+
+        override fun navigateToNoteDetail(noteId: Long) {
+            navController.navigate(Route.NoteDetail(noteId))
+        }
+
+        override fun navigateToAddNote(noteId: Long?, initialContent: String?) {
+            navController.navigate(Route.AddNote(noteId, initialContent))
         }
 
         override fun navigateBack() {

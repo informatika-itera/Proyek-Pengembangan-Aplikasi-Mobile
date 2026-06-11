@@ -39,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.hujjah.domain.model.Note
-import com.example.hujjah.domain.model.NoteColor
 
 @Composable
 fun NoteCard(
@@ -49,10 +48,7 @@ fun NoteCard(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor by animateColorAsState(
-        targetValue = Color(note.color.hexValue),
-        label = "card_bg"
-    )
+    val backgroundColor = MaterialTheme.colorScheme.surface
     
     Card(
         modifier = modifier
@@ -116,7 +112,7 @@ fun NoteCard(
             }
             
             Spacer(modifier = Modifier.height(8.dp))
-            CategoryBadge(category = note.category.displayName)
+            CategoryBadge(category = note.category)
         }
     }
 }
@@ -216,43 +212,6 @@ fun ErrorState(
             Button(onClick = onRetry) {
                 Text("Coba Lagi")
             }
-        }
-    }
-}
-
-@Composable
-fun ColorPickerRow(
-    selectedColor: NoteColor,
-    onColorSelected: (NoteColor) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        NoteColor.entries.forEach { color ->
-            val isSelected = color == selectedColor
-            val alpha by animateFloatAsState(
-                targetValue = if (isSelected) 1f else 0.6f,
-                label = "color_alpha"
-            )
-            
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .alpha(alpha)
-                    .clip(CircleShape)
-                    .background(Color(color.hexValue))
-                    .clickable { onColorSelected(color) }
-                    .then(
-                        if (isSelected) {
-                            Modifier.background(
-                                Color.Black.copy(alpha = 0.1f),
-                                CircleShape
-                            )
-                        } else Modifier
-                    )
-            )
         }
     }
 }

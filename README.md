@@ -679,6 +679,42 @@ Untuk persoalan hukum agama yang kompleks, pengguna dianjurkan bertanya kepada u
 
 https://github.com/user-attachments/assets/8bc1e5dd-0d35-47af-b859-5827582aedf7
 
+### Sprint 3
+
+https://github.com/user-attachments/assets/3a352384-808b-4a4b-9306-eee70b3a3b75
+
+## 🧪 Testing & Laporan Cakupan Kode (Sprint 4)
+
+Kami telah menerapkan pengujian komprehensif (Unit, Flow, dan Compose UI Tests) menggunakan **Robolectric** dan melacak cakupan pengujian dengan **Kotlinx Kover**.
+
+### 📊 Ringkasan Pengujian
+- **Total Pengujian:** 37 Tes
+- **Tingkat Kelulusan:** 100% Passed
+- **Cakupan Laporan Kover (Coverage):**
+  - **Class Coverage:** 76.9%
+  - **Line Coverage:** 85.9% (Telah melampaui target minimal 50% dan target bonus 70%!)
+  - **Instruction Coverage:** 82.3%
+
+### 🚀 Cara Menjalankan Pengujian
+Untuk menjalankan seluruh unit dan UI tests, jalankan perintah berikut dari direktori root:
+
+```bash
+# Hentikan daemon Gradle lama (opsional untuk menghindari kunci berkas di Windows)
+./gradlew.bat --stop
+
+# Jalankan seluruh unit dan UI tests
+./gradlew.bat testDebugUnitTest --no-configuration-cache
+```
+
+### 📈 Cara Men-generate Laporan Cakupan (Kover Report)
+Untuk membuat laporan cakupan pengujian dalam format HTML, gunakan perintah berikut:
+
+```bash
+./gradlew.bat koverHtmlReport --no-configuration-cache
+```
+Laporan HTML yang dihasilkan dapat dibuka di peramban (browser) Anda melalui jalur berkas:
+`composeApp/build/reports/kover/html/index.html`
+
 ## 📄 License
 
 Project ini dibuat untuk keperluan tugas mata kuliah **Pengembangan Aplikasi Mobile**.

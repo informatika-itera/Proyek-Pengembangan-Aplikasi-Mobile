@@ -2,6 +2,7 @@ package com.example.travelplanner.data.repository
 
 import com.example.travelplanner.domain.model.Trip
 import com.example.travelplanner.domain.model.ItineraryItem
+import com.example.travelplanner.domain.model.UserProfile
 import com.example.travelplanner.domain.repository.TripRepository
 import com.example.travelplanner.data.local.TravelPlannerDatabase
 import app.cash.sqldelight.coroutines.asFlow
@@ -9,7 +10,9 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
@@ -82,6 +85,38 @@ class TripRepositoryImpl(
 
     override suspend fun deleteTrip(id: String) {
         queries.deleteTrip(id)
+    }
+
+    override fun getProfile(): Flow<UserProfile?> {
+        return queries.getProfile()
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.Default)
+            .map { entity ->
+                entity?.let {
+                    UserProfile(
+                        name = it.name,
+                        email = it.email
+                    )
+                }
+            }
+            .catch { e ->
+                println("getProfile Flow Error: ${e.message}")
+                e.printStackTrace()
+                emit(null)
+            }
+    }
+
+    override suspend fun saveProfile(profile: UserProfile) = withContext(Dispatchers.IO) {
+        try {
+            queries.insertOrUpdateProfile(
+                id = "user_profile",
+                name = profile.name,
+                email = profile.email
+            )
+        } catch (e: Exception) {
+            println("saveProfile Error: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     private fun extractEndDate(startDate: String, duration: String): String {

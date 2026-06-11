@@ -94,7 +94,7 @@ fun BottomNavigationBar(navController: NavHostController, currentRoute: String?)
         val tabs = listOf(
             Triple(s.navHome,    Route.Home,            Icons.Default.Home),
             Triple(s.navTrips,   Route.MyTrips,         Icons.Default.Map),
-            Triple(s.navFinance, Route.Expenses(null),  Icons.Default.AccountBalanceWallet),
+            Triple(s.navFinance, Route.FinanceSummary,  Icons.Default.AccountBalanceWallet),
             Triple(s.navProfile, Route.Profile,         Icons.Default.Person)
         )
 

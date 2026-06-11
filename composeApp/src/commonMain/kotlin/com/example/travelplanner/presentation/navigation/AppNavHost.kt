@@ -16,6 +16,10 @@ import com.example.travelplanner.presentation.screens.expenses.ExpenseTrackerScr
 import com.example.travelplanner.presentation.screens.settings.SettingsScreen
 import com.example.travelplanner.presentation.screens.profile.ProfileScreen
 import com.example.travelplanner.presentation.screens.splash.SplashScreen
+import com.example.travelplanner.presentation.screens.help.HelpScreen
+import com.example.travelplanner.presentation.screens.summary.FinanceSummaryScreen
+import com.example.travelplanner.presentation.screens.summary.TripSummaryScreen
+import com.example.travelplanner.presentation.screens.about.AboutScreen
 
 sealed class Route {
     @Serializable data object Splash : Route()
@@ -26,6 +30,10 @@ sealed class Route {
     @Serializable data class  Expenses(val tripId: String? = null) : Route()
     @Serializable data object Profile : Route()
     @Serializable data object Settings : Route()
+    @Serializable data object FinanceSummary : Route()
+    @Serializable data class  TripSummary(val tripId: String) : Route()
+    @Serializable data object Help : Route()
+    @Serializable data object About : Route()
 }
 
 @Composable
@@ -73,7 +81,8 @@ fun AppNavHost(
             TripResultScreen(
                 tripId = route.tripId,
                 onNavigateBack            = { navController.popBackStack() },
-                onNavigateToExpenseTracker = { navController.navigate(Route.Expenses(route.tripId)) }
+                onNavigateToExpenseTracker = { navController.navigate(Route.Expenses(route.tripId)) },
+                onNavigateToTripSummary   = { navController.navigate(Route.TripSummary(it)) }
             )
         }
 
@@ -112,10 +121,36 @@ fun AppNavHost(
                     }
                 },
                 onNavigateToExpenses = {
-                    navController.navigate(Route.Expenses(null)) {
+                    navController.navigate(Route.FinanceSummary) {
                         popUpTo(Route.Home) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
+                    }
+                },
+                onNavigateToHelp     = { navController.navigate(Route.Help) },
+                onNavigateToAbout    = { navController.navigate(Route.About) }
+            )
+        }
+
+        composable<Route.FinanceSummary> {
+            FinanceSummaryScreen(
+                onNavigateToSummary = { tripId ->
+                    navController.navigate(Route.TripSummary(tripId))
+                }
+            )
+        }
+
+        composable<Route.TripSummary> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.TripSummary>()
+            TripSummaryScreen(
+                tripId = route.tripId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToExpenses = { tripId ->
+                    navController.navigate(Route.Expenses(tripId))
+                },
+                onNavigateToHome = {
+                    navController.navigate(Route.Home) {
+                        popUpTo(Route.Home) { inclusive = true }
                     }
                 }
             )
@@ -129,6 +164,18 @@ fun AppNavHost(
                 isEnglish        = isEnglish,
                 onToggleLanguage = onToggleLanguage,
                 onNavigateBack   = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.Help> {
+            HelpScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.About> {
+            AboutScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

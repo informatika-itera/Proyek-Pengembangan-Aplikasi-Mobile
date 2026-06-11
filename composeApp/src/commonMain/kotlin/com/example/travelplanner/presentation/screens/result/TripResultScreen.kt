@@ -52,6 +52,7 @@ fun TripResultScreen(
     tripId: String,
     onNavigateBack: () -> Unit,
     onNavigateToExpenseTracker: () -> Unit,
+    onNavigateToTripSummary: (String) -> Unit,
     viewModel: TripResultViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -258,6 +259,36 @@ fun TripResultScreen(
                                 isLast   = idx == trip.itineraryItems.lastIndex,
                                 modifier = Modifier.padding(horizontal = 24.dp)
                             )
+                        }
+                    }
+
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Button(
+                                onClick = { onNavigateToTripSummary(trip.id) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(50.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (s.isEnglish) "Finish Trip" else "Selesaikan Perjalanan",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }

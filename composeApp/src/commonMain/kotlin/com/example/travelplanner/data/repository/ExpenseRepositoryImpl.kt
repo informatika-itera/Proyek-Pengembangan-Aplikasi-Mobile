@@ -55,4 +55,21 @@ class ExpenseRepositoryImpl(
             .mapToOneOrNull(Dispatchers.Default)
             .map { sum -> sum?.SUM ?: 0.0 }
     }
+
+    override fun getFinanceSummaryList(): Flow<List<com.example.travelplanner.domain.model.TripFinanceSummary>> {
+        return queries.getFinanceSummaryList()
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { list ->
+                list.map { item ->
+                    com.example.travelplanner.domain.model.TripFinanceSummary(
+                        id = item.id,
+                        city = item.city,
+                        duration = item.duration,
+                        startDate = item.start_date,
+                        totalExpense = item.total_expense
+                    )
+                }
+            }
+    }
 }

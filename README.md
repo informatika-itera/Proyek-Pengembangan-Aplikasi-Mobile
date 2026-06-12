@@ -1,21 +1,29 @@
-# <p align="center">🍱 FoodSaver</p>
+<div align="center">
+
+# 🍱 FoodSaver
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/rdtngh/123140089-123140125-FoodSaver/build.yml?branch=main&style=flat&logo=github&logoColor=white&label=CI%2FCD)](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions)
+![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=flat&logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android%2B-3DDC84?style=flat&logo=android&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
+
+</div>
+
+---
 
 <p align="center">
-  <img src="docs/images/logo_foodsaver.png" alt="FoodSaver Logo" width="200"/>
+  <img src="docs/images/logo_foodsaver.png" alt="FoodSaver Logo" width="160"/>
+  <h3>Track • Cook • Save Food</h3>
+  <p>
+    Aplikasi mobile untuk manajemen stok makanan dan pengingat kedaluwarsa dengan AI Assistant
+  </p>
 </p>
 
-<p align="center">
-  <strong>Track. Cook. Save Food.</strong><br>
-  Solusi cerdas manajemen stok makanan dan pengingat kedaluwarsa berbasis Kotlin Multiplatform.
-</p>
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/beningapniprameswari/FoodSaver/build.yml?branch=main&label=CI&logo=github" alt="GitHub Actions CI">
-  <img src="https://img.shields.io/badge/Platform-Android-green?logo=android" alt="Platform Android">
-  <img src="https://img.shields.io/badge/Kotlin-Multiplatform-blue?logo=kotlin" alt="Kotlin Multiplatform">
-  <img src="https://img.shields.io/badge/Compose-Multiplatform-blueviolet?logo=jetpackcompose" alt="Compose Multiplatform">
-  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License MIT">
-</p>
+**[🚀 Demo](#) · [📖 Dokumentasi](docs/) · [🤝 Kontribusi](#kontribusi) · [📝 Lisensi](LICENSE)**
+
+</div>
 
 ---
 
@@ -27,7 +35,7 @@
 | **Raditya Alrasyid Nugroho** | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Developer |
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
-**Dosen:** Pak Habib  
+**Dosen:** Pak Habib [mh4Scripts](https://github.com/mh4Scripts)  
 **Institut:** Institut Teknologi Sumatera (ITERA)
 
 ---
@@ -163,7 +171,7 @@ composeApp/src/commonMain/kotlin/com/example/foodsaver/
 ### Langkah-langkah
 1. **Clone Repository:**
    ```bash
-   git clone https://github.com/beningapniprameswari/FoodSaver.git
+   git clone https://github.com/rdtngh/123140089-123140125-FoodSaver.git
    cd FoodSaver
    ```
 2. **Setup API Key (Opsional):**
@@ -281,5 +289,3 @@ Project ini dilengkapi dengan workflow `.github/workflows/build.yml` yang secara
 
 ## 📜 Lisensi
 Distribusi di bawah **MIT License**. Dibuat untuk keperluan pembelajaran mata kuliah Pengembangan Aplikasi Mobile ITERA.
-
-Copyright © 2026 **FoodSaver Team**.

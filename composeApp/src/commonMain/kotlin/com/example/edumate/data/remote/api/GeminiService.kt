@@ -57,7 +57,7 @@ class GeminiService(private val client: HttpClient) {
                 contents = contents,
                 generationConfig = GenerationConfig(
                     temperature = 0.7,
-                    maxOutputTokens = 1000
+                    maxOutputTokens = 2048 // DIUBAH: Ditingkatkan agar hasil teks panjang tidak terpotong oleh limit AI
                 )
             )
 
@@ -107,6 +107,7 @@ object SystemPrompts {
         - Setiap ide harus unik dan berbeda
         - Format: nomor diikuti ide
         - Ide harus praktis dan bisa diimplementasikan
+        - JANGAN berikan kalimat pengantar atau penutup (seperti "Berikut adalah ide..."). Langsung tuliskan poinnya.
     """.trimIndent()
 
     val WRITING_IMPROVER = """

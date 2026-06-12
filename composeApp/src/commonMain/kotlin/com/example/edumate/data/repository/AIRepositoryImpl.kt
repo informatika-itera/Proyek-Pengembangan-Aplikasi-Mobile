@@ -23,16 +23,19 @@ class AIRepositoryImpl(
             prompt = prompt,
             systemPrompt = SystemPrompts.IDEA_GENERATOR
         ).map { response ->
-            response.lineSequence()
-                .map { it.trim() }
+            // Menghapus format bold bawaan AI agar UI bersih
+            val cleanedResponse = response.replace(Regex("""\*\*"""), "")
+
+            // PERBAIKAN: Memisahkan string berdasarkan pola angka list (1., 2., dll) atau bullet point.
+            // Ini mencegah pemotongan jika AI memberi karakter Enter/garis baru di tengah-tengah kalimat.
+            val rawItems = cleanedResponse.split(Regex("(?m)^\\s*(?:\\d+[.)]|[-*•])\\s+"))
+
+            val ideas = rawItems
+                .map { it.trim().replace("\n", " ") } // Menggabungkan baris yang terputus oleh enter menjadi spasi
                 .filter { it.isNotBlank() }
-                .map { line ->
-                    line.replace(Regex("""^[-*•]\s*"""), "")
-                        .replace(Regex("""^\d+[.)]\s*"""), "")
-                        .trim()
-                }
-                .take(5)
-                .toList()
+                .filter { !it.matches(Regex("(?i).*berikut.*ide.*")) } // Membuang kalimat pengantar jika AI tetap ngeyel
+
+            if (ideas.isNotEmpty()) ideas else listOf(response.trim())
         }
     }
 

@@ -585,7 +585,7 @@ fun TimelineListSection(
                             "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
                         }
                         Text(reminder.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                        Text(timeStr, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text("Pengingat • $timeStr", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     }
                 }
             }
@@ -629,7 +629,15 @@ fun TimelineListSection(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(event.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                        Text(startTimeStr, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                if (event.isHoliday) "Libur" else "Agenda",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = agendaColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(" • $startTimeStr", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
                     }
                 }
             }

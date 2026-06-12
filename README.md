@@ -178,8 +178,6 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 ### 🎥 Demo Sprint 4
 [Demo Sprint 4](https://youtu.be/at6TFoI4SOg)
 
-oRgG741M1VE)
-
 ## 📌 Sprint 5 - 
 ### Deliverables Sprint 5
 - [x] All remaining bugs fixed and application stability verified

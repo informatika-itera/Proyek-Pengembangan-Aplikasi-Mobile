@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS NoteEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    rawContent TEXT NOT NULL,
+    refinedContent TEXT,
+    subject TEXT NOT NULL DEFAULT '',
+    isRefined INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);

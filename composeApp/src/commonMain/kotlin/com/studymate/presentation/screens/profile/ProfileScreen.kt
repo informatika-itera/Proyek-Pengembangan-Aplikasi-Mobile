@@ -37,6 +37,7 @@ import com.studymate.presentation.components.LoadingIndicator
 import com.studymate.presentation.theme.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
@@ -49,7 +50,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
-    onNavigateToPlanner: () -> Unit
+    onNavigateToPlanner: (LocalDate?) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
@@ -141,6 +142,7 @@ fun ProfileScreen(
                 // 2. Reminder Card
                 ReminderCard(
                     reminder = uiState.closestReminder,
+                    timeRemaining = uiState.timeRemaining,
                     onNavigateToPlanner = onNavigateToPlanner
                 )
 
@@ -215,7 +217,11 @@ fun ProfileHeader(name: String, nim: String, major: String, photoUrl: String?, o
 }
 
 @Composable
-fun ReminderCard(reminder: Reminder?, onNavigateToPlanner: () -> Unit) {
+fun ReminderCard(
+    reminder: Reminder?, 
+    timeRemaining: String, 
+    onNavigateToPlanner: (kotlinx.datetime.LocalDate?) -> Unit
+) {
     if (reminder == null) {
         Box(
             modifier = Modifier
@@ -247,10 +253,8 @@ fun ReminderCard(reminder: Reminder?, onNavigateToPlanner: () -> Unit) {
             }
         }
     } else {
-        val now = Clock.System.now().toEpochMilliseconds()
-        val daysLeft = ceil((reminder.dueDate - now) / (1000.0 * 60 * 60 * 24)).toInt()
-        val descriptionTruncated = if (reminder.description != null && reminder.description.length > 50) {
-            reminder.description.take(47) + "..."
+        val descriptionTruncated = if (reminder.description != null && reminder.description?.let { it.length > 50 } == true) {
+            reminder.description!!.take(47) + "..."
         } else {
             reminder.description ?: ""
         }
@@ -265,7 +269,11 @@ fun ReminderCard(reminder: Reminder?, onNavigateToPlanner: () -> Unit) {
                     ),
                     shape = RoundedCornerShape(24.dp)
                 )
-                .clickable { onNavigateToPlanner() }
+                .clickable { 
+                    val date = kotlinx.datetime.Instant.fromEpochMilliseconds(reminder.dueDate)
+                        .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+                    onNavigateToPlanner(date) 
+                }
                 .padding(20.dp)
         ) {
             Row(
@@ -281,9 +289,9 @@ fun ReminderCard(reminder: Reminder?, onNavigateToPlanner: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(reminder.title, fontWeight = FontWeight.Bold, color = Color.White, style = MaterialTheme.typography.labelMedium)
+                    Text(reminder.title, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.labelMedium)
                     if (descriptionTruncated.isNotEmpty()) {
-                        Text(descriptionTruncated, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Black)
+                        Text(descriptionTruncated, style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Black)
                     }
                 }
                 Surface(
@@ -291,7 +299,7 @@ fun ReminderCard(reminder: Reminder?, onNavigateToPlanner: () -> Unit) {
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        "$daysLeft Hari", 
+                        timeRemaining,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         fontWeight = FontWeight.Black, 
                         color = Color(0xFFF72585),

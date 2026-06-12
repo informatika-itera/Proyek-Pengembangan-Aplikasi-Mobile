@@ -49,6 +49,12 @@ class CalendarViewModel(
         _uiState.update { it.copy(selectedDate = date) }
     }
 
+    fun selectDateAndTab(date: LocalDate, isMonthly: Boolean) {
+        _uiState.update { it.copy(selectedDate = date) }
+        // We'll handle tab selection in the UI based on this if needed, 
+        // but the ViewModel just updates the date for now.
+    }
+
     fun addEvent(title: String, description: String?, startTime: Long, endTime: Long) {
         viewModelScope.launch {
             val event = CalendarEvent(

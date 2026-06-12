@@ -72,11 +72,11 @@ fun AppNavHost(
                             Triple(Screen.Profile, Icons.Default.Person, "Profile")
                         )
                         items.forEach { (screen, icon, label) ->
-                            val isSelected = currentRoute == screen.route
+                            val isSelected = currentRoute?.startsWith(screen.route) == true
                             NavigationBarItem(
                                 selected = isSelected,
                                 onClick = {
-                                    if (currentRoute != screen.route) {
+                                    if (!isSelected) {
                                         navController.navigate(screen.route) {
                                             popUpTo(Screen.Home.route) {
                                                 saveState = true
@@ -193,20 +193,30 @@ fun AppNavHost(
                     )
                 }
 
-                composable(Screen.Calendar.route) { CalendarScreen() }
+                composable(
+                    route = "calendar?date={date}",
+                    arguments = listOf(navArgument(NavArgs.DATE) { 
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    })
+                ) { backStackEntry ->
+                    val dateStr = backStackEntry.arguments?.getString(NavArgs.DATE)
+                    CalendarScreen(initialDate = dateStr)
+                }
                 composable(Screen.Profile.route) {
                     val viewModel: ProfileViewModel = koinViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = onThemeToggle,
-                        onNavigateToPlanner = {
-                            navController.navigate(Screen.Calendar.route) {
-                                popUpTo(Screen.Profile.route) {
+                        onNavigateToPlanner = { date ->
+                            val route = Screen.Calendar.createRoute(date?.toString())
+                            navController.navigate(route) {
+                                popUpTo(Screen.Home.route) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
-                                restoreState = true
                             }
                         }
                     )

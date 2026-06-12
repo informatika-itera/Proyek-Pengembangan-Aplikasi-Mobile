@@ -1,29 +1,12 @@
-<div align="center">
+# 🥗 FoodSaver
 
-# 🍱 FoodSaver
+[![FoodSaver CI](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml/badge.svg?branch=project/123140089-123140125-FoodSaver)](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions/workflows/build.yml?query=branch%3Aproject%2F123140089-123140125-FoodSaver)
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/rdtngh/123140089-123140125-FoodSaver/build.yml?branch=main&style=flat&logo=github&logoColor=white&label=CI%2FCD)](https://github.com/rdtngh/123140089-123140125-FoodSaver/actions)
-![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=flat&logo=kotlin&logoColor=white)
-![Android](https://img.shields.io/badge/Android%2B-3DDC84?style=flat&logo=android&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
-</div>
 
----
+> Track. Cook. Save Food.
 
-<p align="center">
-  <img src="docs/images/logo_foodsaver.png" alt="FoodSaver Logo" width="160"/>
-  <h3>Track • Cook • Save Food</h3>
-  <p>
-    Aplikasi mobile untuk manajemen stok makanan dan pengingat kedaluwarsa dengan AI Assistant
-  </p>
-</p>
-
-<div align="center">
-
-**[🚀 Demo](#) · [📖 Dokumentasi](docs/) · [🤝 Kontribusi](#kontribusi) · [📝 Lisensi](LICENSE)**
-
-</div>
+FoodSaver adalah aplikasi mobile multiplatform berbasis Android-first yang membantu pengguna mencatat stok makanan, memantau tanggal kedaluwarsa, mendapatkan pengingat makanan yang hampir expired, serta memperoleh rekomendasi resep dari bahan yang tersedia agar makanan tidak terbuang.
 
 ---
 
@@ -31,8 +14,8 @@
 
 | Nama | NIM | GitHub | Role |
 | :--- | :--- | :--- | :--- |
-| **Bening Apni Prameswari** | 123140089 | [@beningapniprameswari](https://github.com/beningapniprameswari) | Lead & UI/UX Developer |
-| **Raditya Alrasyid Nugroho** | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Developer |
+| **Bening Apni Prameswari** | 123140089 | [@beningapniprameswari](https://github.com/beningapniprameswari) | Full Stack Developer |
+| **Raditya Alrasyid Nugroho** | 123140125 | [@rdtngh](https://github.com/rdtngh) | Full Stack Developer |
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
 **Dosen:** Pak Habib [mh4Scripts](https://github.com/mh4Scripts)  
@@ -51,6 +34,12 @@ Dengan FoodSaver, pengguna dapat:
 - **Asisten AI:** Bertanya tentang tips penyimpanan makanan melalui fitur AI Chat.
 
 ---
+
+## 🎬 Demo Aplikasi
+
+**https://youtu.be/BHWKOMmYIwo**
+
+----
 
 ## ✨ Fitur Aplikasi
 
@@ -157,7 +146,7 @@ composeApp/src/commonMain/kotlin/com/example/foodsaver/
 | **Sprint 3** | W13 | Advanced Features | Integrasi Recipe API, Gemini AI Chat, dan fitur Kalender. |
 | **Sprint 4** | W14 | Polish & Testing | UI Refinement, penanganan error/empty state, dan Unit Testing. |
 | **Sprint 5** | W15 | Final Preparation | Dokumentasi README final, pembuatan demo, dan APK build. |
-| **UAS** | W16 | Final Demo Day | Presentasi akhir dan demo aplikasi di depan Dosen. |
+| **UAS** | W16 | Final Demo Day | Final project & demo aplikasi. |
 
 ---
 
@@ -225,42 +214,42 @@ Jika koneksi internet terputus atau API limit tercapai:
 
 ---
 
-## 🎬 Demo Aplikasi
-
-[**Tonton Demo Video di Google Drive**](https://drive.google.com/...)
-
-<p align="center">
-  <img src="docs/images/demo-thumbnail.png" alt="Demo FoodSaver" width="600" style="border-radius: 10px;"/>
-  <br>
-  <i>Klik gambar untuk melihat demo fungsionalitas aplikasi.</i>
-</p>
-
----
-
 ## 📱 App Preview
 
-| Home | Add Food | Detail |
+| Beranda | Tambah Makanan | Detail Makanan |
 | :---: | :---: | :---: |
-| <img src="docs/images/ss_home.png" width="200"/> | <img src="docs/images/ss_add.png" width="200"/> | <img src="docs/images/ss_detail.png" width="200"/> |
-| **Expiry Alert** | **Recipe** | **Calendar** |
-| <img src="docs/images/ss_expiry.png" width="200"/> | <img src="docs/images/ss_recipe.png" width="200"/> | <img src="docs/images/ss_calendar.png" width="200"/> |
-| **Profile** | **AI Assistant** | **Dark Mode** |
-| <img src="docs/images/ss_profile.png" width="200"/> | <img src="docs/images/ss_ai.png" width="200"/> | <img src="docs/images/ss_dark.png" width="200"/> |
+| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/49c601b9-251c-42f0-b4cd-ca486eb6583d" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/136a4e3c-83dc-40d0-a105-91d59d3e820d" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/96214d45-5cac-4efc-848f-f32395ab206e" /> |
+| **Peringatan** | **Resep** | **Kalender** |
+| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d94d0474-fd9e-4e56-bff3-62886c3cfeab" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/51355416-aa82-4bb0-9e06-ed959b5eac36" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9986e1d0-d95f-450d-b861-a1104e7df7e2" /> |
+| **Profil** | **Asisten AI** | **Dark Mode** |
+| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6c0c5653-e24f-4443-b196-1266d9c3cd1a" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/b6fa2c47-dc1b-4710-a451-90d084e08090" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fb5416ef-9879-4c66-8e13-efbcd113ef4d" /> |
 
 ---
 
 ## 🧪 Testing & Coverage
 
 ### Menjalankan Unit Test
-```bash
-./gradlew :composeApp:testDebugUnitTest
-```
-Aplikasi mencakup pengujian untuk:
-- **Logic Engine:** Validasi status kedaluwarsa.
-- **Utility:** Formatter angka dan pembersihan teks resep.
-- **Mapper:** Validasi konversi data dari API ke Model domain.
 
-**Target Coverage:** Minimal 50% sesuai requirement Sprint 4.
+```bash
+.\gradlew :composeApp:test
+```
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/9b60c2a6-9134-4d5f-8cec-7cf7e5eeecef" />
+
+Aplikasi FoodSaver sudah mencakup pengujian pada beberapa bagian utama berikut:
+
+- **Logic Engine**
+  - Menguji logic utama aplikasi, terutama validasi status kedaluwarsa makanan.
+  - Contoh: menentukan apakah makanan masih aman, mendekati kedaluwarsa, atau sudah kedaluwarsa.
+
+- **Utility / Helper**
+  - Menguji beberapa fungsi bantuan yang digunakan dalam aplikasi.
+  - Contoh: formatter angka, pengolahan teks, dan pembersihan teks resep.
+
+- **Local Data / Datastore**
+  - Menguji sebagian fungsi yang berkaitan dengan pengolahan data lokal.
+  - Contoh: penyimpanan atau pemrosesan data sederhana yang digunakan oleh aplikasi.
+
+> Catatan: Berdasarkan hasil Kover Coverage Report, bagian `domain.engine` sudah memiliki coverage paling tinggi, sedangkan beberapa bagian seperti `mapper`, `repository`, `remote API`, dan sebagian besar layer UI masih perlu ditambahkan pengujian lebih lanjut.
 
 ---
 

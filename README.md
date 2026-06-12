@@ -7,8 +7,13 @@ FitKos adalah aplikasi Android berbasis Kotlin yang dirancang untuk membantu pen
 
 FitKos juga dilengkapi dengan AI Assistant berbasis Gemini API yang dapat memberikan rekomendasi sehat hemat, tips makanan, dan saran aktivitas ringan dengan gaya bahasa yang santai dan mudah dipahami.
 
-## 👥 Tim Pengembangan
+## 🎥 Demo Final
+https://github.com/user-attachments/assets/aa8346aa-3d00-4bb4-b28d-c7cccb5cfaf2
 
+Demo final aplikasi FitKos dapat dilihat melalui link berikut:
+[Demo Final FitKos - Youtube](https://youtu.be/YZUwQ-jnWtg?si=bLViGgofWJJDNbJH)
+
+## 👥 Tim Pengembangan
 
 | Nama | NIM | GitHub |
 | --- | --- | --- |
@@ -49,14 +54,14 @@ FitKos juga dilengkapi dengan AI Assistant berbasis Gemini API yang dapat member
 - [x] Testing infrastructure dengan Fake Repository dan Test DataStore
 - [x] README updated dengan instruksi testing dan coverage report
 
-### Direncanakan untuk Sprint 5
-- [x] Memastikan semua bug tersisa sudah diperbaiki dan aplikasi stabil
-- [ ] Menyiapkan presentation slides dalam format PDF/PPTX
-- [x] Menulis dan melatih demo script untuk Demo Day
-- [x] Membuat release APK dan mengujinya pada device/emulator
-- [x] Finalisasi README dengan fitur, setup, screenshot, dan instruksi testing
-- [x] Menyiapkan backup video demo untuk mengantisipasi kendala teknis
-- [x] Melakukan latihan demo minimal 2 kali bersama tim
+### Sprint 5 / Final Preparation
+- [x] Final check bug dan stabilitas aplikasi
+- [x] Finalisasi README dengan fitur, setup, testing, demo, dan coverage report
+- [x] Menyiapkan video demo final maksimal 3 menit
+- [x] Menyematkan link video demo final di README
+- [x] Memastikan CI GitHub Actions passing
+- [x] Memastikan build dan test berjalan sukses
+- [x] Membuat release APK final
 
 ## 🏗️ Arsitektur & Teknologi Stack
 FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, mudah dikembangkan, dan mudah diuji.
@@ -94,8 +99,8 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
     │   ├── ai/                   # FitKos AI Assistant
     │   ├── watertracker/         # Daily water tracker
     │   ├── exercise/             # Exercise timer and workout tips
-    │   └── settings/             # User preferences and dark mode
-    │   └──splash/                # Splash and first user setup
+    │   ├── settings/             # User preferences and dark mode
+    │   └── splash/               # Splash and first user setup
     └── theme/                    # Material theme
 ```
 
@@ -178,55 +183,17 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 ### 🎥 Demo Sprint 4
 [Demo Sprint 4](https://youtu.be/at6TFoI4SOg)
 
-## 📌 Sprint 5 - 
-### Deliverables Sprint 5
-- [x] All remaining bugs fixed and application stability verified
-- [x] Demo script written and rehearsed by the team
-- [x]     Release APK built and tested on Android devices/emulators
-- [x] README finalized with features, setup guide, screenshots, and testing instructions
-- [x] Backup demo video recorded for technical contingency
-- [x] Team completed at least two full demo practice sessions
-
-### Release & Deployment
-- Release APK successfully generated and tested
-- Application validated on Android devices/emulators
-- Versioning finalized for the project release
-- Repository cleaned up and documented for submission
-
-### Final Demo Highlights
-
-The final demonstration showcases the complete FitKos experience:
-
-- Dashboard and daily health summary
-- Meal Log management (Create, Read, Update, Delete)
-- Search and filter functionality
-- Daily Water Tracker
-- Exercise Timer and activity tracking
-- AI Healthy Lifestyle Assistant powered by Gemini API
-- Offline support using Stale-While-Revalidate strategy
-- Dark Mode preferences
-- Clean Architecture and MVVM implementation
-- Testing infrastructure and coverage reporting
-
-### 🎥 Demo Final Fitkos
-[Demo Final](https://youtu.be/YZUwQ-jnWtg?si=bLViGgofWJJDNbJH)
-
 ## 🚀 Getting Started
-
 1. Clone Repository
-
 ```bash
 git clone https://github.com/raapstronaut/FitKos.git
 ```
-
 2. Setup API Key
-
 Tambahkan `GEMINI_API_KEY=your_key` di file `local.properties`.
-
 3. Buka di Android Studio Ladybug+ dan jalankan task: `:composeApp:installDebug`
-
+   
 ## 🧪 Testing
-FitKos menggunakan unit test, UI test, dan coverage report untuk memastikan fitur utama berjalan stabil pada Sprint 4.
+FitKos menggunakan unit test, UI test, dan coverage report untuk memastikan fitur utama berjalan stabil.
 
 ### Menjalankan Unit Test
 Unit test digunakan untuk menguji logika pada Repository, UseCase, dan ViewModel.
@@ -237,13 +204,11 @@ Untuk menjalankan seluruh test:
 ```bash
 ./gradlew test
 ```
-
 ### Menjalankan UI Test
 UI test digunakan untuk menguji critical user flows menggunakan Compose UI Test. Pengujian ini membutuhkan emulator atau device Android yang aktif.
 ```bash
 ./gradlew :composeApp:connectedDebugAndroidTest
 ```
-
 UI test yang tersedia mencakup:
 - Dashboard ditampilkan saat aplikasi dibuka dalam mode test
 - Navigasi ke Meal Log melalui bottom navigation
@@ -255,14 +220,12 @@ Aplikasi ini menggunakan Kover untuk membuat laporan coverage.
 ./gradlew :composeApp:koverHtmlReport
 ```
 Laporan dapat ditemukan di: `composeApp/build/reports/kover/html/index.html`
-
 Hasil coverage terakhir:
 - Filtered line coverage: 77.1%
 - Filtered instruction coverage: 70.6%
 
 Coverage report screenshot:
 <img width="1879" height="957" alt="Screenshot 2026-06-08 224425" src="https://github.com/user-attachments/assets/e35e57b9-5abf-4577-8f2c-610645a89a6f" />
-
 Coverage dihitung menggunakan filtered scope pada testable logic utama, seperti:
 - Domain model
 - Domain use case
@@ -276,12 +239,12 @@ Beberapa bagian dikecualikan dari coverage report karena bukan target utama unit
 - Platform-specific configuration
 - Remote DTO/API
 - Pure UI Compose shell
-
+  
 ### Infrastruktur Testing
 - **Fakes**: Digunakan `FakeNoteRepository` dan `FakeWaterRepository` untuk mensimulasikan database.
 - **DataStore**: Menggunakan `createTestDataStore` (Okio-based) untuk testing preferensi pengguna di `commonTest`.
 - **Turbine**: Digunakan untuk testing Kotlin Flows/StateFlow pada ViewModel.
+- **Kover**: Digunakan untuk menghasilkan laporan coverage.
 
 ## 📄 Lisensi
-
----MIT License — dibuat untuk keperluan pembelajaran Pengembangan Aplikasi Mobile ITERA.
+MIT License — dibuat untuk keperluan pembelajaran Pengembangan Aplikasi Mobile ITERA.

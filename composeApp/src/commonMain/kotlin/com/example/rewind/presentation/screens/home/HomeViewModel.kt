@@ -14,6 +14,7 @@ import com.example.rewind.domain.usecase.MovieSortBy
 import com.example.rewind.domain.usecase.SaveMovieUseCase
 import com.example.rewind.domain.usecase.SearchTmdbUseCase
 import com.example.rewind.domain.usecase.GetTrendingUseCase
+import com.example.rewind.domain.usecase.GetTmdbDetailUseCase
 import com.example.rewind.data.remote.dto.TmdbGenreMapper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -46,7 +47,8 @@ class HomeViewModel(
     private val deleteMovieUseCase: DeleteMovieUseCase,
     private val searchTmdbUseCase: SearchTmdbUseCase,
     private val saveMovieUseCase: SaveMovieUseCase,
-    private val getTrendingUseCase: GetTrendingUseCase
+    private val getTrendingUseCase: GetTrendingUseCase,
+    private val getTmdbDetailUseCase: GetTmdbDetailUseCase
 ) : ViewModel() {
 
     private val _sortBy = MutableStateFlow(MovieSortBy.UPDATED_DESC)
@@ -171,9 +173,23 @@ class HomeViewModel(
 
             val type = if (item.isTvSeries) MovieType.SERIES else MovieType.MOVIE
 
-            val totalEpisodes = if (item.isTvSeries) {
-                item.numberOfEpisodes
-            } else null
+            // Ambil jumlah episode yang lebih akurat dari detail API jika ini series
+            var totalEpisodes = if (item.isTvSeries) item.numberOfEpisodes else null
+            
+            if (item.isTvSeries && totalEpisodes == null) {
+                when (val detailResult = getTmdbDetailUseCase(item.id, isTv = true)) {
+                    is NetworkResult.Success -> {
+                        totalEpisodes = detailResult.data.numberOfEpisodes
+                    }
+                    else -> {}
+                }
+            }
+
+            val calculatedWatchedEpisodes = if (status == WatchStatus.COMPLETED) {
+                totalEpisodes ?: if (type == MovieType.MOVIE) 1 else 0
+            } else {
+                0
+            }
 
             val movie = Movie(
                 title = item.displayTitle,
@@ -184,7 +200,7 @@ class HomeViewModel(
                 review = userReview,
                 synopsis = item.overview ?: "",
                 totalEpisodes = totalEpisodes,
-                watchedEpisodes = 0,
+                watchedEpisodes = calculatedWatchedEpisodes,
                 createdAt = Clock.System.now(),
                 updatedAt = Clock.System.now(),
                 posterUrl = item.posterUrl("w500") // Simpan URL poster ke database lokal

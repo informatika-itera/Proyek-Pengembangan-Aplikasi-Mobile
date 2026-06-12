@@ -152,7 +152,7 @@ fun HomeScreen(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 110.dp)
+                .padding(bottom = 20.dp)
         )
     }
 }
@@ -882,11 +882,11 @@ private fun MovieCard(
     modifier: Modifier = Modifier
 ) {
     val (statusColor, statusLabel) = when (movie.status) {
-        WatchStatus.COMPLETED  -> StatusFinished    to "Completed"
-        WatchStatus.WATCHING   -> StatusWatching    to "Watching"
-        WatchStatus.PLAN_TO_WATCH -> StatusWantToWatch to "Planned"
-        WatchStatus.ON_HOLD    -> StatusOnHold      to "On Hold"
-        WatchStatus.DROPPED    -> StatusDropped     to "Dropped"
+        WatchStatus.COMPLETED  -> StatusFinished    to "Selesai"
+        WatchStatus.WATCHING   -> StatusWatching    to "Sedang Ditonton"
+        WatchStatus.PLAN_TO_WATCH -> StatusWantToWatch to "Rencana"
+        WatchStatus.ON_HOLD    -> StatusOnHold      to "Ditunda"
+        WatchStatus.DROPPED    -> StatusDropped     to "Berhenti"
     }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -1417,8 +1417,14 @@ private fun TmdbDetailDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())  // ← scroll supaya tidak overflow
+                        .heightIn(max = 650.dp)
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState())
+                    ) {
                     // ── Poster Header ──────────────────────────────────────
                     Box(
                         modifier = Modifier
@@ -1611,32 +1617,35 @@ private fun TmdbDetailDialog(
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
-
-                        // ── Buttons ─────────────────────────────────────
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            TextButton(onClick = onDismiss) {
-                                Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    onConfirmAdd(
-                                        selectedStatus,
-                                        if (showRatingReview && rating > 0f) rating else null,
-                                        if (showRatingReview) userReview else ""
-                                    )
-                                },
-                                shape = RoundedCornerShape(35.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = GoldAmber,
-                                    contentColor = BackgroundDark
+                    }
+                }
+                    
+                    // ── Buttons ─────────────────────────────────────
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 20.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = onDismiss) {
+                            Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                onConfirmAdd(
+                                    selectedStatus,
+                                    if (showRatingReview && rating > 0f) rating else null,
+                                    if (showRatingReview) userReview else ""
                                 )
-                            ) {
-                                Text("Tambah", fontWeight = FontWeight.ExtraBold)
-                            }
+                            },
+                            shape = RoundedCornerShape(35.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = GoldAmber,
+                                contentColor = BackgroundDark
+                            )
+                        ) {
+                            Text("Simpan", fontWeight = FontWeight.ExtraBold)
                         }
                     }
                 }

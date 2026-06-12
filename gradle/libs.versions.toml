@@ -16,6 +16,7 @@ coil = "3.0.4"
 compose-ui-test = "1.7.5"
 turbine = "1.2.0"
 kover = "0.8.3"
+work-runtime = "2.9.1"
 
 [libraries]
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -47,6 +48,7 @@ kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.re
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose-ui-test" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-ui-test" }
+work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

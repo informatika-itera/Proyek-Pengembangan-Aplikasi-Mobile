@@ -31,6 +31,7 @@ class UserPreferences(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_BIO = stringPreferencesKey("user_bio")
+        val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     }
 
     // ==================== DARK MODE ====================
@@ -142,6 +143,24 @@ class UserPreferences(
     suspend fun setUserBio(bio: String) {
         dataStore.edit { prefs ->
             prefs[Keys.USER_BIO] = bio
+        }
+    }
+
+    // ==================== NOTIFICATIONS ====================
+
+    /**
+     * Observe notification reminder setting
+     */
+    val notificationsEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFICATIONS_ENABLED] ?: true
+    }
+
+    /**
+     * Set notification reminder enabled/disabled
+     */
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.NOTIFICATIONS_ENABLED] = enabled
         }
     }
 }

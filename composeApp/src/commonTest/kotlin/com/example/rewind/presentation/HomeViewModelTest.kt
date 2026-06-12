@@ -13,6 +13,7 @@ import com.example.rewind.domain.repository.TmdbRepository
 import com.example.rewind.domain.usecase.DeleteMovieUseCase
 import com.example.rewind.domain.usecase.GetAllMoviesUseCase
 import com.example.rewind.domain.usecase.GetTrendingUseCase
+import com.example.rewind.domain.usecase.GetTmdbDetailUseCase
 import com.example.rewind.domain.usecase.MovieSortBy
 import com.example.rewind.domain.usecase.SaveMovieUseCase
 import com.example.rewind.domain.usecase.SearchTmdbUseCase
@@ -50,6 +51,7 @@ class HomeViewModelTest {
     private lateinit var searchTmdbUseCase: SearchTmdbUseCase
     private lateinit var saveMovieUseCase: SaveMovieUseCase
     private lateinit var getTrendingUseCase: GetTrendingUseCase
+    private lateinit var getTmdbDetailUseCase: GetTmdbDetailUseCase
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var fakeRepository: FakeMovieRepository
@@ -67,13 +69,15 @@ class HomeViewModelTest {
         searchTmdbUseCase = SearchTmdbUseCase(fakeTmdbRepository)
         saveMovieUseCase = SaveMovieUseCase(fakeRepository)
         getTrendingUseCase = GetTrendingUseCase(fakeTmdbRepository)
+        getTmdbDetailUseCase = GetTmdbDetailUseCase(fakeTmdbRepository)
 
         viewModel = HomeViewModel(
             getAllMoviesUseCase,
             deleteMovieUseCase,
             searchTmdbUseCase,
             saveMovieUseCase,
-            getTrendingUseCase
+            getTrendingUseCase,
+            getTmdbDetailUseCase
         )
     }
 
@@ -89,7 +93,8 @@ class HomeViewModelTest {
             deleteMovieUseCase,
             searchTmdbUseCase,
             saveMovieUseCase,
-            getTrendingUseCase
+            getTrendingUseCase,
+            getTmdbDetailUseCase
         )
         vm.uiState.test {
             advanceUntilIdle()
@@ -107,7 +112,8 @@ class HomeViewModelTest {
             deleteMovieUseCase,
             searchTmdbUseCase,
             saveMovieUseCase,
-            getTrendingUseCase
+            getTrendingUseCase,
+            getTmdbDetailUseCase
         )
 
         vm.uiState.test {
@@ -127,7 +133,8 @@ class HomeViewModelTest {
             deleteMovieUseCase,
             searchTmdbUseCase,
             saveMovieUseCase,
-            getTrendingUseCase
+            getTrendingUseCase,
+            getTmdbDetailUseCase
         )
 
         vm.uiState.test {
@@ -150,7 +157,8 @@ class HomeViewModelTest {
             deleteMovieUseCase,
             searchTmdbUseCase,
             saveMovieUseCase,
-            getTrendingUseCase
+            getTrendingUseCase,
+            getTmdbDetailUseCase
         )
 
         vm.uiState.test {
@@ -171,7 +179,7 @@ class HomeViewModelTest {
         val dummyData = listOf(TmdbMovieDto(id = 1, title = "Avengers", overview = null, posterPath = null, genreIds = emptyList()))
         fakeTmdbRepository.trendingResult = NetworkResult.Success(dummyData)
 
-        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase, searchTmdbUseCase, saveMovieUseCase, getTrendingUseCase)
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase, searchTmdbUseCase, saveMovieUseCase, getTrendingUseCase, getTmdbDetailUseCase)
 
         vm.fetchTrending()
         advanceUntilIdle()
@@ -182,7 +190,7 @@ class HomeViewModelTest {
 
     @Test
     fun `addTmdbToCollection should update addMessage on success`() = runTest {
-        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase, searchTmdbUseCase, saveMovieUseCase, getTrendingUseCase)
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase, searchTmdbUseCase, saveMovieUseCase, getTrendingUseCase, getTmdbDetailUseCase)
         val dummyMovie = TmdbMovieDto(id = 1, title = "Iron Man", overview = "Hero", posterPath = null, genreIds = emptyList())
 
         vm.addTmdbToCollection(dummyMovie, WatchStatus.COMPLETED)
@@ -194,7 +202,7 @@ class HomeViewModelTest {
 
     @Test
     fun `clearAddMessage should reset addMessage to null`() = runTest {
-        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase, searchTmdbUseCase, saveMovieUseCase, getTrendingUseCase)
+        val vm = HomeViewModel(getAllMoviesUseCase, deleteMovieUseCase, searchTmdbUseCase, saveMovieUseCase, getTrendingUseCase, getTmdbDetailUseCase)
         val dummyMovie = TmdbMovieDto(id = 1, title = "Iron Man", overview = "Hero", posterPath = null, genreIds = emptyList())
 
         vm.addTmdbToCollection(dummyMovie, WatchStatus.COMPLETED)

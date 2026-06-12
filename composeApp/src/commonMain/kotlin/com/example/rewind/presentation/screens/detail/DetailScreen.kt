@@ -741,6 +741,21 @@ private fun MovieDetail(
                 }
             }
 
+            if (movie.synopsis.isNotBlank()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel(text = "SINOPSIS")
+                    SectionCard {
+                        Text(
+                            text = movie.synopsis,
+                            color = onBg,
+                            fontSize = 14.sp,
+                            lineHeight = 24.sp,
+                            letterSpacing = 0.1.sp
+                        )
+                    }
+                }
+            }
+
             if (movie.review.isNotBlank()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(text = "ULASANKU")

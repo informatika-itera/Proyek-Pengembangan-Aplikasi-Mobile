@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.7"
+        android:scaleY="0.7">
+        
+        <!-- Clapperboard Drop Shadow -->
+        <path
+            android:pathData="M 28 46 L 82 28 L 84 34 L 28 54 H 86 V 82 C 86 84 84 86 82 86 H 26 C 24 86 22 84 22 82 V 46 Z"
+            android:fillColor="#40000000" />
+
+        <!-- Main Board Base -->
+        <path
+            android:pathData="M 24 54 H 84 V 80 C 84 82.2 82.2 84 80 84 H 28 C 25.8 84 24 82.2 24 80 Z"
+            android:fillColor="#1A0A0A" />
+
+        <!-- Clapperboard Details (Lines for text) -->
+        <path
+            android:pathData="M 32 62 H 76 V 64 H 32 Z M 32 70 H 60 V 72 H 32 Z M 66 70 H 76 V 72 H 66 Z"
+            android:fillColor="#E8A838" />
+
+        <!-- Fixed Bar Base -->
+        <path
+            android:pathData="M 24 48 H 84 V 54 H 24 Z"
+            android:fillColor="#E8A838" />
+        
+        <!-- Stripes on Fixed Bar -->
+        <path
+            android:pathData="
+                M 24 48 L 30 48 L 36 54 H 30 Z
+                M 39 48 L 47 48 L 53 54 H 45 Z
+                M 56 48 L 64 48 L 70 54 H 62 Z
+                M 73 48 L 81 48 L 84 51 V 54 H 79 Z"
+            android:fillColor="#1A0A0A" />
+
+        <!-- Moving Bar Group -->
+        <group
+            android:pivotX="24"
+            android:pivotY="46"
+            android:rotation="-18">
+            
+            <!-- Moving Bar Base -->
+            <path
+                android:pathData="M 24 40 H 84 V 46 H 24 Z"
+                android:fillColor="#E8A838" />
+            
+            <!-- Stripes on Moving Bar -->
+            <path
+                android:pathData="
+                    M 30 40 H 38 L 32 46 H 24 Z
+                    M 47 40 H 55 L 49 46 H 41 Z
+                    M 64 40 H 72 L 66 46 H 58 Z
+                    M 81 40 H 84 V 46 H 75 Z"
+                android:fillColor="#1A0A0A" />
+        </group>
+    </group>
+</vector>

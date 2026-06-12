@@ -89,7 +89,7 @@ fun AppNavHost() {
                 SplashScreen(
                     onFinished = {
                         navController.navigate(Route.Home) {
-                            popUpTo(Route.Splash) { inclusive = true }
+                            popUpTo<Route.Splash> { inclusive = true }
                         }
                     }
                 )
@@ -197,7 +197,7 @@ private fun RewindBottomBar(
                     onClick = {
                         if (!isSelected) {
                             navController.navigate(item.route) {
-                                popUpTo(Route.Home) { saveState = true }
+                                popUpTo<Route.Home> { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }

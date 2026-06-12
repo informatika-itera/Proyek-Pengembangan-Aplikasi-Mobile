@@ -1,5 +1,7 @@
 package com.example.rewind.presentation.screens.profile
 
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -521,6 +523,15 @@ private fun RecentPosterScroll(movies: List<com.example.rewind.domain.model.Movi
                         RoundedCornerShape(14.dp)
                     )
             ) {
+                // Poster image from TMDB
+                if (movie.posterUrl != null) {
+                    AsyncImage(
+                        model = movie.posterUrl,
+                        contentDescription = movie.title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 // Overlay gradient bawah
                 Box(
                     modifier = Modifier
@@ -1089,11 +1100,11 @@ private fun StatusBreakdown(state: ProfileUiState.Success) {
     val onBackground = MaterialTheme.colorScheme.onBackground
 
     val statusItems = listOf(
-        WatchStatus.COMPLETED to (StatusFinished to "Completed"),
-        WatchStatus.WATCHING to (StatusWatching to "Watching"),
-        WatchStatus.PLAN_TO_WATCH to (StatusWantToWatch to "Planned"),
-        WatchStatus.ON_HOLD to (StatusOnHold to "On Hold"),
-        WatchStatus.DROPPED to (StatusDropped to "Dropped")
+        WatchStatus.COMPLETED to (StatusFinished to "Selesai"),
+        WatchStatus.WATCHING to (StatusWatching to "Sedang Ditonton"),
+        WatchStatus.PLAN_TO_WATCH to (StatusWantToWatch to "Rencana"),
+        WatchStatus.ON_HOLD to (StatusOnHold to "Ditunda"),
+        WatchStatus.DROPPED to (StatusDropped to "Berhenti")
     )
 
     Box(
@@ -1360,11 +1371,11 @@ private fun RecentActivity(movies: List<com.example.rewind.domain.model.Movie>) 
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             movies.forEachIndexed { index, movie ->
                 val (statusColor, statusLabel) = when (movie.status) {
-                    WatchStatus.COMPLETED -> StatusFinished to "Done"
-                    WatchStatus.WATCHING -> StatusWatching to "Watching"
-                    WatchStatus.PLAN_TO_WATCH -> StatusWantToWatch to "Planned"
-                    WatchStatus.ON_HOLD -> StatusOnHold to "On Hold"
-                    WatchStatus.DROPPED -> StatusDropped to "Dropped"
+                    WatchStatus.COMPLETED -> StatusFinished to "Selesai"
+                    WatchStatus.WATCHING -> StatusWatching to "Sedang Ditonton"
+                    WatchStatus.PLAN_TO_WATCH -> StatusWantToWatch to "Rencana"
+                    WatchStatus.ON_HOLD -> StatusOnHold to "Ditunda"
+                    WatchStatus.DROPPED -> StatusDropped to "Berhenti"
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

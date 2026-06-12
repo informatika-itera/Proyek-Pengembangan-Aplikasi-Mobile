@@ -1,7 +1,9 @@
 package com.example.gamenews.presentation.screens.detail
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -11,10 +13,13 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -78,89 +83,119 @@ fun GameDetailScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = g.title,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colors.primary
-                        )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            InfoChip(label = "Genre", value = g.genre)
-                            InfoChip(label = "Rating", value = "⭐ ${g.rating}")
-                        }
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            g.developer?.let {
-                                InfoChip(label = "Developer", value = it)
-                            }
-                            g.releaseYear?.let {
-                                InfoChip(label = "Tahun", value = it.toString())
-                            }
-                        }
-
-                        Divider()
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "About",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
+                        // Cover image
+                        if (!g.imageUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = g.imageUrl,
+                                contentDescription = "Cover ${g.title}",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 150.dp, max = 280.dp)
+                                    .background(MaterialTheme.colors.primary.copy(alpha = 0.05f))
                             )
-                            Surface(
-                                shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colors.primary.copy(alpha = 0.15f)
+                        } else {
+                            // Placeholder jika tidak ada gambar
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(220.dp)
+                                    .background(MaterialTheme.colors.primary.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "✨ AI",
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    style = MaterialTheme.typography.caption,
-                                    color = MaterialTheme.colors.primary,
-                                    fontWeight = FontWeight.Bold
+                                    text = "🎮",
+                                    fontSize = 48.sp
                                 )
                             }
                         }
 
-                        when {
-                            isGeneratingDescription -> {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = g.title,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.primary
+                            )
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                InfoChip(label = "Genre", value = g.genre)
+                                InfoChip(label = "Rating", value = "⭐ ${g.rating}")
+                            }
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                g.developer?.let {
+                                    InfoChip(label = "Developer", value = it)
+                                }
+                                g.releaseYear?.let {
+                                    InfoChip(label = "Tahun", value = it.toString())
+                                }
+                            }
+
+                            Divider()
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "About",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp
+                                )
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = MaterialTheme.colors.primary.copy(alpha = 0.15f)
                                 ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp
-                                    )
                                     Text(
-                                        text = "Sedang membuat deskripsi dengan AI...",
-                                        color = Color.Gray,
-                                        style = MaterialTheme.typography.body2
+                                        text = "✨ AI",
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.caption,
+                                        color = MaterialTheme.colors.primary,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
-                            aiDescription != null -> {
-                                Text(
-                                    text = aiDescription!!,
-                                    style = MaterialTheme.typography.body1,
-                                    color = Color.DarkGray,
-                                    lineHeight = 24.sp
-                                )
-                            }
-                            else -> {
-                                Text(
-                                    text = g.description.ifEmpty {
-                                        "Deskripsi tidak tersedia."
-                                    },
-                                    style = MaterialTheme.typography.body1,
-                                    color = Color.DarkGray,
-                                    lineHeight = 24.sp
-                                )
+
+                            when {
+                                isGeneratingDescription -> {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                        Text(
+                                            text = "Sedang membuat deskripsi dengan AI...",
+                                            color = Color.Gray,
+                                            style = MaterialTheme.typography.body2
+                                        )
+                                    }
+                                }
+                                aiDescription != null -> {
+                                    Text(
+                                        text = aiDescription!!,
+                                        style = MaterialTheme.typography.body1,
+                                        color = Color.DarkGray,
+                                        lineHeight = 24.sp
+                                    )
+                                }
+                                else -> {
+                                    Text(
+                                        text = g.description.ifEmpty { "Deskripsi tidak tersedia." },
+                                        style = MaterialTheme.typography.body1,
+                                        color = Color.DarkGray,
+                                        lineHeight = 24.sp
+                                    )
+                                }
                             }
                         }
                     }

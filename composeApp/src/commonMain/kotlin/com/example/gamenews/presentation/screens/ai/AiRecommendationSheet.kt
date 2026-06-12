@@ -1,14 +1,11 @@
 package com.example.gamenews.presentation.screens.ai
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +32,12 @@ fun AIRecommendationSheet(
     val viewModel: AIRecommendationViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
+    // Seluruh sheet bisa scroll
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .fillMaxHeight(0.85f)  // maksimal 85% tinggi layar
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
             .navigationBarsPadding()
     ) {
@@ -122,7 +122,6 @@ fun AIRecommendationSheet(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 3 genre chip teratas
                 val topGenres = availableGenres.take(3)
                 if (topGenres.isNotEmpty()) {
                     Text(
@@ -151,7 +150,6 @@ fun AIRecommendationSheet(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                // Search bar genre
                 OutlinedTextField(
                     value = content.genre,
                     onValueChange = onGenreChange,
@@ -162,15 +160,10 @@ fun AIRecommendationSheet(
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                // Saran genre jika tidak exact match
                 val genreQuery = content.genre.trim()
-                val exactMatch = availableGenres.any {
-                    it.equals(genreQuery, ignoreCase = true)
-                }
+                val exactMatch = availableGenres.any { it.equals(genreQuery, ignoreCase = true) }
                 val similarGenres = if (genreQuery.isNotBlank() && !exactMatch) {
-                    availableGenres.filter {
-                        it.contains(genreQuery, ignoreCase = true)
-                    }
+                    availableGenres.filter { it.contains(genreQuery, ignoreCase = true) }
                 } else emptyList()
 
                 if (genreQuery.isNotBlank() && !exactMatch) {
@@ -281,23 +274,16 @@ private fun AIResultContent(
         uiState.result != null -> {
             Spacer(modifier = Modifier.height(8.dp))
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 300.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.05f),
                 elevation = 0.dp
             ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        text = uiState.result,
-                        style = MaterialTheme.typography.body2
-                    )
-                }
+                Text(
+                    text = uiState.result,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.body2
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {

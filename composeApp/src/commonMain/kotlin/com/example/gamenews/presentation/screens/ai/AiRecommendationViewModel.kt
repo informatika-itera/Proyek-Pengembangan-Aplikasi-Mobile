@@ -26,8 +26,44 @@ class AIRecommendationViewModel(
     fun recommendByWishlist(games: List<Game>) {
         if (_uiState.value.isLoading || _uiState.value.result != null) return
 
-        val gameList = games.take(5).joinToString(", ") { it.title }
-        val prompt = "Rekomendasikan 5 game mirip dengan: $gameList. Format: Nama - Alasan singkat (1 kalimat)."
+        val prompt = when (games.size) {
+            1 -> {
+                """
+                Berikan TEPAT 3 rekomendasi game yang mirip dengan "${games[0].title}" bergenre ${games[0].genre}.
+                Tampilkan dengan format:
+                1. Nama Game - alasan satu kalimat kenapa mirip
+                2. Nama Game - alasan satu kalimat kenapa mirip
+                3. Nama Game - alasan satu kalimat kenapa mirip
+                Jangan tambahkan teks lain selain 3 rekomendasi tersebut.
+                """.trimIndent()
+            }
+            2 -> {
+                """
+                Berikan TEPAT 3 rekomendasi game berdasarkan wishlist berikut:
+                - 2 game mirip dengan "${games[0].title}" (${games[0].genre})
+                - 1 game mirip dengan "${games[1].title}" (${games[1].genre})
+                Tampilkan dengan format:
+                1. Nama Game - alasan satu kalimat
+                2. Nama Game - alasan satu kalimat
+                3. Nama Game - alasan satu kalimat
+                Jangan tambahkan teks lain selain 3 rekomendasi tersebut.
+                """.trimIndent()
+            }
+            else -> {
+                val top3 = games.take(3)
+                """
+                Berikan TEPAT 3 rekomendasi game berdasarkan wishlist berikut:
+                - 1 game mirip dengan "${top3[0].title}" (${top3[0].genre})
+                - 1 game mirip dengan "${top3[1].title}" (${top3[1].genre})
+                - 1 game mirip dengan "${top3[2].title}" (${top3[2].genre})
+                Tampilkan dengan format:
+                1. Nama Game - alasan satu kalimat
+                2. Nama Game - alasan satu kalimat
+                3. Nama Game - alasan satu kalimat
+                Jangan tambahkan teks lain selain 3 rekomendasi tersebut.
+                """.trimIndent()
+            }
+        }
 
         execute(prompt)
     }
@@ -35,7 +71,14 @@ class AIRecommendationViewModel(
     fun recommendByGenre(genre: String) {
         if (_uiState.value.isLoading) return
 
-        val prompt = "Rekomendasikan 5 game $genre terbaik. Format: Nama - Alasan singkat (1 kalimat)."
+        val prompt = """
+            Berikan TEPAT 3 rekomendasi game terbaik bergenre $genre.
+            Tampilkan dengan format:
+            1. Nama Game - alasan satu kalimat kenapa bagus
+            2. Nama Game - alasan satu kalimat kenapa bagus
+            3. Nama Game - alasan satu kalimat kenapa bagus
+            Jangan tambahkan teks lain selain 3 rekomendasi tersebut.
+        """.trimIndent()
 
         execute(prompt)
     }
@@ -44,9 +87,13 @@ class AIRecommendationViewModel(
         if (_uiState.value.isLoading) return
 
         val prompt = """
-            User mencari rekomendasi game dengan deskripsi: "$userInput".
-            Rekomendasikan 5 game yang paling cocok.
-            Format: Nama Game - Alasan singkat (1 kalimat).
+            User mencari game dengan deskripsi: "$userInput"
+            Berikan TEPAT 3 rekomendasi game yang paling cocok.
+            Tampilkan dengan format:
+            1. Nama Game - alasan satu kalimat kenapa cocok
+            2. Nama Game - alasan satu kalimat kenapa cocok
+            3. Nama Game - alasan satu kalimat kenapa cocok
+            Jangan tambahkan teks lain selain 3 rekomendasi tersebut.
         """.trimIndent()
 
         execute(prompt)

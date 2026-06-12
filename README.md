@@ -5,6 +5,13 @@ readme_content = """# 🎮 GameCo
 
 Aplikasi mobile berbasis **Kotlin Multiplatform (KMP)** yang menyajikan berita game terbaru, fitur pencarian, filter genre/rating, serta rekomendasi berbasis AI yang dipersonalisasi.
 
+Video Presentas
+https://youtu.be/KQxzPVBLBIY
+
+Video Demo
+
+https://github.com/user-attachments/assets/28507cbc-2be6-49c9-af86-729ec91be617
+
 ---
 
 ## 🚀 Fitur Utama

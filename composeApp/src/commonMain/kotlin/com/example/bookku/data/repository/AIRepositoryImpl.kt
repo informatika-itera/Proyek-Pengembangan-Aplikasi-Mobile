@@ -10,68 +10,42 @@ class AIRepositoryImpl(
 ) : AIRepository {
     
     override suspend fun summarize(text: String): Result<String> {
-        val prompt = """
-            Rangkum teks berikut:
-            
-            $text
-        """.trimIndent()
-        
         return geminiService.generateContent(
-            prompt = prompt,
+            prompt = text,
             systemPrompt = SystemPrompts.SUMMARIZER
         )
     }
     
     override suspend fun generateIdeas(topic: String): Result<List<String>> {
-        val prompt = """
-            Berikan 5 ide kreatif untuk topik: $topic
-        """.trimIndent()
-        
         return geminiService.generateContent(
-            prompt = prompt,
+            prompt = topic,
             systemPrompt = SystemPrompts.IDEA_GENERATOR
         ).map { response ->
             response.lines()
                 .filter { it.isNotBlank() }
-                .map { line ->
-                    line.replace(Regex("^\\d+\\.\\s*"), "").trim()
-                }
+                .map { line -> line.replace(Regex("^\\d+\\.\\s*"), "").trim() }
                 .filter { it.isNotBlank() }
         }
     }
     
     override suspend fun improveWriting(text: String, style: WritingStyle): Result<String> {
         val styleInstruction = when (style) {
-            WritingStyle.FORMAL -> "Gunakan gaya formal dan profesional."
-            WritingStyle.CASUAL -> "Gunakan gaya santai dan friendly."
-            WritingStyle.ACADEMIC -> "Gunakan gaya akademik dan ilmiah."
-            WritingStyle.CREATIVE -> "Gunakan gaya kreatif dan menarik."
+            WritingStyle.FORMAL -> "Gunakan gaya formal."
+            WritingStyle.CASUAL -> "Gunakan gaya santai."
+            WritingStyle.ACADEMIC -> "Gunakan gaya akademik."
+            WritingStyle.CREATIVE -> "Gunakan gaya kreatif."
             WritingStyle.NEUTRAL -> "Gunakan gaya netral."
         }
         
-        val prompt = """
-            $styleInstruction
-            
-            Perbaiki tulisan berikut:
-            
-            $text
-        """.trimIndent()
-        
         return geminiService.generateContent(
-            prompt = prompt,
+            prompt = "$styleInstruction\n\n$text",
             systemPrompt = SystemPrompts.WRITING_IMPROVER
         )
     }
     
     override suspend fun translate(text: String, targetLanguage: String): Result<String> {
-        val prompt = """
-            Terjemahkan ke bahasa $targetLanguage:
-            
-            $text
-        """.trimIndent()
-        
         return geminiService.generateContent(
-            prompt = prompt,
+            prompt = "Translate to $targetLanguage: $text",
             systemPrompt = SystemPrompts.TRANSLATOR
         )
     }
@@ -81,17 +55,9 @@ class AIRepositoryImpl(
     }
     
     override suspend fun suggestTitle(content: String): Result<String> {
-        val prompt = """
-            Berikan saran judul untuk konten berikut:
-            
-            $content
-        """.trimIndent()
-        
         return geminiService.generateContent(
-            prompt = prompt,
+            prompt = content,
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         ).map { it.trim().removeSurrounding("\"") }
     }
 }
-
-

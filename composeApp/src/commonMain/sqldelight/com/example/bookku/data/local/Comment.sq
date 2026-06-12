@@ -1,0 +1,37 @@
+CREATE TABLE Comment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  user_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  parent_comment_id INTEGER,
+  likes_count INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (book_id) REFERENCES BookEntity(id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_comment_id) REFERENCES Comment(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_comment_book_id ON Comment(book_id);
+
+getCommentsByBook:
+SELECT * FROM Comment
+WHERE book_id = ? AND parent_comment_id IS NULL
+ORDER BY created_at DESC;
+
+getReplies:
+SELECT * FROM Comment WHERE parent_comment_id = ? ORDER BY created_at ASC;
+
+insertComment:
+INSERT INTO Comment (
+  book_id, user_id, user_name, content, parent_comment_id, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteComment:
+DELETE FROM Comment WHERE id = ?;
+
+likeComment:
+UPDATE Comment SET likes_count = likes_count + 1 WHERE id = ?;
+
+getAllComments:
+SELECT * FROM Comment ORDER BY created_at DESC;

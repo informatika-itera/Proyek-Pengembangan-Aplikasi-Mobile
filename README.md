@@ -13,11 +13,10 @@
 ---
 
 ## Video Demo
-<p align="center">
-  <video src="https://raw.githubusercontent.com/informatika-itera/Proyek-Pengembangan-Aplikasi-Mobile/main/docs/full_demo_TP.mp4" width="80%" controls></video>
-  <br>
-  <em>Jika video di atas tidak dapat diputar langsung di browser Anda, Anda dapat mengunduh atau menontonnya di sini: <strong><a href="docs/full_demo_TP.mp4">Video Demo (full_demo_TP.mp4)</a></strong></em>
-</p>
+
+![](docs/full_demo_TP.mp4)
+
+*Jika video di atas tidak dapat diputar langsung di browser Anda, Anda dapat mengunduh atau menontonnya secara manual di sini: **[Video Demo (full_demo_TP.mp4)](docs/full_demo_TP.mp4)***
 
 ---
 

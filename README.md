@@ -50,13 +50,13 @@ FitKos juga dilengkapi dengan AI Assistant berbasis Gemini API yang dapat member
 - [x] README updated dengan instruksi testing dan coverage report
 
 ### Direncanakan untuk Sprint 5
-- [ ] Memastikan semua bug tersisa sudah diperbaiki dan aplikasi stabil
+- [x] Memastikan semua bug tersisa sudah diperbaiki dan aplikasi stabil
 - [ ] Menyiapkan presentation slides dalam format PDF/PPTX
-- [ ] Menulis dan melatih demo script untuk Demo Day
-- [ ] Membuat release APK dan mengujinya pada device/emulator
-- [ ] Finalisasi README dengan fitur, setup, screenshot, dan instruksi testing
-- [ ] Menyiapkan backup video demo untuk mengantisipasi kendala teknis
-- [ ] Melakukan latihan demo minimal 2 kali bersama tim
+- [x] Menulis dan melatih demo script untuk Demo Day
+- [x] Membuat release APK dan mengujinya pada device/emulator
+- [x] Finalisasi README dengan fitur, setup, screenshot, dan instruksi testing
+- [x] Menyiapkan backup video demo untuk mengantisipasi kendala teknis
+- [x] Melakukan latihan demo minimal 2 kali bersama tim
 
 ## 🏗️ Arsitektur & Teknologi Stack
 FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, mudah dikembangkan, dan mudah diuji.
@@ -177,6 +177,41 @@ FitKos menggunakan pendekatan Clean Architecture dan MVVM agar kode lebih rapi, 
 
 ### 🎥 Demo Sprint 4
 [Demo Sprint 4](https://youtu.be/at6TFoI4SOg)
+
+oRgG741M1VE)
+
+## 📌 Sprint 5 - 
+### Deliverables Sprint 5
+- [x] All remaining bugs fixed and application stability verified
+- [x] Demo script written and rehearsed by the team
+- [x]     Release APK built and tested on Android devices/emulators
+- [x] README finalized with features, setup guide, screenshots, and testing instructions
+- [x] Backup demo video recorded for technical contingency
+- [x] Team completed at least two full demo practice sessions
+
+### Release & Deployment
+- Release APK successfully generated and tested
+- Application validated on Android devices/emulators
+- Versioning finalized for the project release
+- Repository cleaned up and documented for submission
+
+### Final Demo Highlights
+
+The final demonstration showcases the complete FitKos experience:
+
+- Dashboard and daily health summary
+- Meal Log management (Create, Read, Update, Delete)
+- Search and filter functionality
+- Daily Water Tracker
+- Exercise Timer and activity tracking
+- AI Healthy Lifestyle Assistant powered by Gemini API
+- Offline support using Stale-While-Revalidate strategy
+- Dark Mode preferences
+- Clean Architecture and MVVM implementation
+- Testing infrastructure and coverage reporting
+
+### 🎥 Demo Final Fitkos
+[Demo Final](https://youtu.be/YZUwQ-jnWtg?si=bLViGgofWJJDNbJH)
 
 ## 🚀 Getting Started
 

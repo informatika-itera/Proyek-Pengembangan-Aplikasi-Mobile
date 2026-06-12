@@ -1,10 +1,20 @@
 # 🥗 NutriScan
 
-![CI](https://github.com/Xysaa/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+<p align="center">
+  <img src="docs/images/logo_nutriscan.png" alt="NutriScan Logo" width="120"/>
+</p>
 
-> Scan. Analyze. Eat Smart.
+<p align="center">
+  <strong>Scan. Analyze. Eat Smart.</strong><br/>
+  Aplikasi mobile multiplatform (Android-first) untuk memindai barcode makanan<br/>dan mendapatkan analisis nutrisi yang dipersonalisasi.
+</p>
 
-Aplikasi mobile multiplatform (Android-first) yang memungkinkan pengguna untuk **memindai barcode makanan/minuman kemasan** dan mendapatkan **analisis nutrisi yang dipersonalisasi** berdasarkan profil kesehatan masing-masing pengguna.
+<p align="center">
+  <img src="https://github.com/Xysaa/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg" alt="CI"/>
+  <img src="https://img.shields.io/badge/Platform-Android-green?logo=android" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin" alt="Kotlin"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue" alt="License"/>
+</p>
 
 ---
 
@@ -33,7 +43,7 @@ NutriScan membantu pengguna membuat keputusan konsumsi yang lebih sehat. Cukup a
 
 ## ✨ Fitur
 
-### Minimum (Wajib)
+### ✅ Minimum (Wajib)
 - [ ] **Onboarding & Profil Pengguna** — Input data diri: nama, usia, tinggi badan, berat badan, riwayat penyakit (diabetes, hipertensi, obesitas, dll.) — disimpan lokal dengan SQLDelight
 - [ ] **Barcode Scanner** — Scan barcode produk kemasan menggunakan kamera perangkat
 - [ ] **Detail Nutrisi** — Tampilkan informasi lengkap: kalori, lemak, gula, garam, protein, karbohidrat per sajian
@@ -44,11 +54,11 @@ NutriScan membantu pengguna membuat keputusan konsumsi yang lebih sehat. Cukup a
 - [ ] **Minimal 10 unit tests** + 3 UI tests, coverage > 50%
 - [ ] **Koin DI** — Dependency injection setup
 
-### Bonus (Target)
-- [ ] **AI Integration (+10%)** — Gunakan Gemini API untuk memberikan saran konsumsi yang lebih kontekstual dan natural ("Produk ini tinggi gula, cocok dikonsumsi sebelum olahraga tapi hindari sebelum tidur...")
+### 🎯 Bonus (Target)
+- [ ] **AI Integration (+10%)** — Gunakan Gemini API untuk memberikan saran konsumsi yang lebih kontekstual dan natural
 - [ ] **Offline First (+5%)** — Cache hasil scan terakhir di SQLDelight; aplikasi tetap bisa menampilkan riwayat tanpa internet
 - [ ] **Dark Mode (+5%)** — Support tema gelap/terang dengan Material 3
-- [ ] **Animations (+5%)** — Animasi transisi antar screen, animasi loading saat fetch API, animasi indikator status nutrisi
+- [ ] **Animations (+5%)** — Animasi transisi antar screen, loading, dan indikator status nutrisi
 
 **Total target bonus: +25%**
 
@@ -80,19 +90,22 @@ Menggunakan **Clean Architecture + MVVM** sesuai panduan mata kuliah.
 └─────────────────────────────────────────────────┘
 ```
 
-### Struktur Folder
+### 📁 Struktur Folder
+
+<details>
+<summary>Klik untuk expand</summary>
 
 ```
 composeApp/src/commonMain/kotlin/com/nutriscan/
-├── core/                        # Koin modules
-│   ├── di
-        ├── AppModule.kt
-│   ├── network
-        ├── ApiConfig.kt
-        ├── HttpClientFactory.kt
-│   └── util
-        ├── DatabaseDriverFactory.kt
-        ├── Extension.kt 
+├── core/
+│   ├── di/
+│   │   └── AppModule.kt
+│   ├── network/
+│   │   ├── ApiConfig.kt
+│   │   └── HttpClientFactory.kt
+│   └── util/
+│       ├── DatabaseDriverFactory.kt
+│       └── Extension.kt
 ├── data/
 │   ├── local/
 │   │   ├── dao/               # SQLDelight DAOs
@@ -111,12 +124,14 @@ composeApp/src/commonMain/kotlin/com/nutriscan/
     ├── theme/                  # Material3 Colors, Typography, Dark Mode
     ├── components/             # Reusable composables (NutrientBar, StatusChip)
     └── screens/
-        ├── onboarding/         # Input profil pengguna
-        ├── home/               # Scanner screen (kamera + barcode)
-        ├── result/             # Hasil scan & analisis nutrisi
-        ├── history/            # Riwayat produk yang pernah di-scan
-        └── profile/            # Lihat & edit profil pengguna
+        ├── onboarding/
+        ├── home/
+        ├── result/
+        ├── history/
+        └── profile/
 ```
+
+</details>
 
 ---
 
@@ -164,32 +179,31 @@ composeApp/src/commonMain/kotlin/com/nutriscan/
 
 ### Langkah Setup
 
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   cd YOUR_REPO_NAME
-   ```
+**1. Clone repository**
+```bash
+git clone https://github.com/Xysaa/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
+```
 
-2. **Setup `local.properties`**
-   ```bash
-   cp local.properties.example local.properties
-   # Edit local.properties dan isi:
-   # GEMINI_API_KEY=your_key_here
-   ```
-   Dapatkan Gemini API key gratis di: https://aistudio.google.com/
+**2. Setup `local.properties`**
+```bash
+cp local.properties.example local.properties
+# Edit local.properties dan isi:
+# GEMINI_API_KEY=your_key_here
+```
+> Dapatkan Gemini API key gratis di: https://aistudio.google.com/
 
-3. **Build project**
-   ```bash
-   ./gradlew build
-   # Atau hanya APK debug (lebih cepat):
-   ./gradlew :composeApp:assembleDebug
-   ```
+**3. Build project**
+```bash
+./gradlew build
+# Atau hanya APK debug (lebih cepat):
+./gradlew :composeApp:assembleDebug
+```
 
-4. **Run di Android**
-   - Pilih run configuration `composeApp` di Android Studio, atau:
-   ```bash
-   ./gradlew :composeApp:installDebug
-   ```
+**4. Run di Android**
+```bash
+./gradlew :composeApp:installDebug
+```
 
 ### Menjalankan Tests
 ```bash
@@ -204,12 +218,12 @@ composeApp/src/commonMain/kotlin/com/nutriscan/
 ### OpenFoodFacts API
 - **Base URL:** `https://world.openfoodfacts.org`
 - **Endpoint:** `GET /api/v2/product/{barcode}.json`
-- **Gratis & tanpa API key** untuk penggunaan wajar
-- Dokumentasi: https://openfoodfacts.github.io/openfoodfacts-server/api/
+- **Auth:** Tidak diperlukan (gratis & open-source)
+- **Docs:** https://openfoodfacts.github.io/openfoodfacts-server/api/
 
 ### Gemini API
-- **Model:** `gemini-2.0-flash` (gratis tier)
-- Digunakan untuk: generate saran konsumsi berbasis profil + data nutrisi
+- **Model:** `gemini-2.5-flash-lite` (gratis tier)
+- **Digunakan untuk:** Generate saran konsumsi berbasis profil + data nutrisi
 
 ---
 
@@ -217,16 +231,27 @@ composeApp/src/commonMain/kotlin/com/nutriscan/
 
 Analisis didasarkan pada **% Angka Kecukupan Gizi (AKG)** harian yang disesuaikan dengan profil pengguna:
 
-| Nutrisi | Ambang PERHATIAN | Ambang HINDARI | Penyesuaian Riwayat Penyakit |
-|---------|-----------------|----------------|-------------------------------|
-| Gula | > 20% AKG/sajian | > 35% AKG/sajian | Threshold diturunkan 50% untuk diabetes |
-| Natrium (Garam) | > 20% AKG/sajian | > 35% AKG/sajian | Threshold diturunkan 50% untuk hipertensi |
-| Lemak Jenuh | > 15% AKG/sajian | > 25% AKG/sajian | Threshold diturunkan untuk obesitas |
+| Nutrisi | ⚠️ PERHATIAN | 🚫 HINDARI | Penyesuaian Riwayat Penyakit |
+|---------|-------------|-----------|-------------------------------|
+| Gula | > 20% AKG/sajian | > 35% AKG/sajian | Threshold ↓50% untuk diabetes |
+| Natrium | > 20% AKG/sajian | > 35% AKG/sajian | Threshold ↓50% untuk hipertensi |
+| Lemak Jenuh | > 15% AKG/sajian | > 25% AKG/sajian | Threshold ↓ untuk obesitas |
 | Kalori | > 25% AKG/sajian | > 40% AKG/sajian | Disesuaikan dengan BMI |
 
 ---
+[![Demo NutriScan](https://img.shields.io/badge/▶%20Demo%20Video-Google%20Drive-blue?style=for-the-badge&logo=google-drive)](https://drive.google.com/file/d/1OgK3ieI7e-v-M9r-Y9AN1-Yo9KPTCx73/view?usp=sharing)
+---
+## 🎥 Demo Aplikasi
 
-[![Demo NutriScan](https://img.shields.io/badge/▶%20Demo%20Video-Google%20Drive-blue?style=for-the-badge&logo=google-drive)](https://drive.google.com/file/d/1RXEF24xgiuptpOwfNTZz1h-6iBXPDWQD/view?usp=sharing)
+<p align="center">
+  <a href="https://youtube.com/shorts/Ls1inti81Ig?feature=share">
+    <img src="https://img.youtube.com/vi/Ls1inti81Ig/maxresdefault.jpg" alt="Demo NutriScan" width="480"/>
+  </a>
+  <br/>
+  <sub>▶️ Klik thumbnail untuk menonton demo di YouTube</sub>
+</p>
+
+---
 
 ## 📊 Coverage Report
 
@@ -235,6 +260,7 @@ Analisis didasarkan pada **% Angka Kecukupan Gizi (AKG)** harian yang disesuaika
 </p>
 
 ---
+
 ## 📄 Lisensi
 
 MIT License — dibuat untuk keperluan pembelajaran Pengembangan Aplikasi Mobile ITERA.

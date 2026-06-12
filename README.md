@@ -7,14 +7,14 @@
 </p>
 
 <p align="center">
-  <strong>WanderMind: Smart AI-Powered Travel Planner Assistant</strong>
+  <strong>Smart AI-Powered Travel Planner Assistant</strong>
 </p>
 
 ---
 
 ## Video Demo
 <p align="center">
-  <video src="docs/full_demo_TP.mp4" width="80%" controls></video>
+  <video src="https://raw.githubusercontent.com/informatika-itera/Proyek-Pengembangan-Aplikasi-Mobile/main/docs/full_demo_TP.mp4" width="80%" controls></video>
   <br>
   <em>Jika video di atas tidak dapat diputar langsung di browser Anda, Anda dapat mengunduh atau menontonnya di sini: <strong><a href="docs/full_demo_TP.mp4">Video Demo (full_demo_TP.mp4)</a></strong></em>
 </p>
@@ -22,8 +22,10 @@
 ---
 
 ## Team
-- **Muhammad Romadhon Santoso** - [@rmdnsantoso](https://github.com/rmdnsantoso) - FrontEnd Dev
-- **Taufik Hidayat NST** - [@15-188-Taufik](https://github.com/15-188-Taufik) - Backend Dev
+| Nama | NIM | GitHub | Peran |
+| :--- | :--- | :--- | :--- |
+| **Muhammad Romadhon Santoso** | 123140031 | [@rmdnsantoso](https://github.com/rmdnsantoso) | FrontEnd Dev |
+| **Taufik Hidayat NST** | 123140188 | [@15-188-Taufik](https://github.com/15-188-Taufik) | Backend Dev |
 
 ---
 
@@ -105,37 +107,37 @@ composeApp/src/
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_3.jpeg" width="150" alt="Screenshot 3"/><br/>
-      <sub>Itinerary Result</sub>
+      <sub>Trip Styles</sub>
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_4.jpeg" width="150" alt="Screenshot 4"/><br/>
-      <sub>Budget Breakdown</sub>
+      <sub>Itinerary Result</sub>
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_5.jpeg" width="150" alt="Screenshot 5"/><br/>
-      <sub>Notes List</sub>
+      <sub>Activity Plan</sub>
     </td>
   </tr>
   <tr>
     <td align="center" width="20%">
       <img src="docs/ss_6.jpeg" width="150" alt="Screenshot 6"/><br/>
-      <sub>Create Note</sub>
+      <sub>Trip Expenses</sub>
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_7.jpeg" width="150" alt="Screenshot 7"/><br/>
-      <sub>Transport Finder</sub>
+      <sub>Expenses List</sub>
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_8.jpeg" width="150" alt="Screenshot 8"/><br/>
-      <sub>Hotel Finder</sub>
+      <sub>Trip Summary</sub>
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_9.jpeg" width="150" alt="Screenshot 9"/><br/>
-      <sub>Settings</sub>
+      <sub>Trip Summary</sub>
     </td>
     <td align="center" width="20%">
       <img src="docs/ss_10.jpeg" width="150" alt="Screenshot 10"/><br/>
-      <sub>About Page</sub>
+      <sub>Profile Page</sub>
     </td>
   </tr>
 </table>

@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+
+    id("org.jetbrains.kotlinx.kover")
 }
 
 val localProperties = Properties().apply {

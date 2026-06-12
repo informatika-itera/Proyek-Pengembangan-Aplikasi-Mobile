@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,12 +22,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -67,6 +68,9 @@ fun AddEditScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+
+    // State untuk mengontrol apakah Drop Down Prioritas sedang terbuka atau tertutup
+    var dropdownExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -209,24 +213,37 @@ fun AddEditScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Tingkat Prioritas", style = MaterialTheme.typography.titleMedium)
-            Row(modifier = Modifier.fillMaxWidth()) {
-                TaskPriority.entries.forEach { priority ->
-                    Row(
-                        modifier = Modifier
-                            .selectable(
-                                selected = (priority == uiState.priority),
-                                onClick = { viewModel.onEvent(AddEditEvent.SelectedPriority(priority)) }
-                            )
-                            .padding(end = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = (priority == uiState.priority),
-                            onClick = { viewModel.onEvent(AddEditEvent.SelectedPriority(priority)) }
+            // Komponen Drop Down Menu untuk Tingkat Prioritas menggunakan Material 3 ExposedDropdownMenuBox
+            ExposedDropdownMenuBox(
+                expanded = dropdownExpanded,
+                onExpandedChange = { dropdownExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = uiState.priority.displayName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tingkat Prioritas") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = dropdownExpanded,
+                    onDismissRequest = { dropdownExpanded = false }
+                ) {
+                    TaskPriority.entries.forEach { priority ->
+                        DropdownMenuItem(
+                            text = { Text(text = priority.displayName) },
+                            onClick = {
+                                viewModel.onEvent(AddEditEvent.SelectedPriority(priority))
+                                dropdownExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = priority.displayName)
                     }
                 }
             }

@@ -23,7 +23,7 @@ import com.example.bridgebit.presentation.theme.NoteAITheme
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
 
-// Data class untuk membantu definisi item navbar bawah
+
 data class BottomNavItem(
     val label: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -40,8 +40,6 @@ fun App() {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
-
-            // DAFTAR HALAMAN YANG SUDAH DIPERBAIKI (Tidak ada error parameter lagi)
             val navigationItems = remember {
                 listOf(
                     BottomNavItem("Riwayat", Icons.Default.History, Route.Dashboard),
@@ -73,7 +71,7 @@ fun App() {
                                     onClick = {
                                         if (!isSelected) {
                                             navController.navigate(item.route) {
-                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                popUpTo(Route.Dashboard) {
                                                     saveState = true
                                                 }
                                                 launchSingleTop = true

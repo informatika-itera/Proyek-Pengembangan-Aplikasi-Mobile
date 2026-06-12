@@ -51,7 +51,7 @@ class WorkspaceViewModel(
         viewModelScope.launch {
             val prompt = """
                 Terjemahkan teks berikut dari bahasa ${sourceLanguage.value} ke bahasa ${targetLanguage.value}: "$textToTranslate"
-                
+
                 Tugas keduamu adalah mengklasifikasikan teks tersebut ke dalam TEPAT SATU kategori. 
                 Kamu WAJIB memilih dari daftar kategori berikut (jangan pernah membuat kategori di luar daftar ini):
                 - Teknologi & IT
@@ -62,14 +62,20 @@ class WorkspaceViewModel(
                 - Bisnis & Profesional
                 - Umum
                 
+                ATURAN TAMBAHAN:
+                Jika bahasa target (${targetLanguage.value}) tidak menggunakan alfabet Latin (misalnya Jepang, Korea, Arab, Rusia, dll), kamu WAJIB menyertakan cara bacanya (romanisasi alfabet) di dalam tanda kurung setelah teks asli.
+                Contoh format jika ke Jepang: こんにちは (Konnichiwa)
+                Contoh format jika ke Korea: 감사합니다 (Gamsahamnida)
+                Contoh format jika ke Arab: شكرا (Syukran)
+
                 WAJIB balas persis dengan format ini (tanpa awalan/akhiran apapun):
-                T: [Hasil Terjemahan]
+                T: [Hasil Terjemahan beserta romanisasinya jika ada]
                 K: [Nama Kategori dari daftar di atas]
             """.trimIndent()
 
             aiRepository.chat(prompt)
                 .onSuccess { result ->
-                    // SAFE PARSING LOGIC
+
                     val translated = if (result.contains("T:")) {
                         result.substringAfter("T:").substringBefore("K:").trim()
                     } else {

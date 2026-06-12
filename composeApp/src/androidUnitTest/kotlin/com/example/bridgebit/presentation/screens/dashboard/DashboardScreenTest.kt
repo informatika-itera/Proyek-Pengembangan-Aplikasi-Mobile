@@ -159,7 +159,7 @@ class DashboardScreenTest {
     fun dashboardScreen_emptyState_noFilter_showsCorrectMessage() {
         renderDashboardScreen()
         emitHistory(emptyList())
-        composeTestRule.onNodeWithText("Belum ada riwayat terjemahan.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Riwayat Kosong").assertIsDisplayed()
     }
 
     // ─── Test 7: Success state menampilkan item translation pertama ───────────
@@ -269,7 +269,7 @@ class DashboardScreenTest {
         renderDashboardScreen()
         viewModel.setCategoryFilter("Teknologi & IT")
         emitHistory(emptyList())
-        composeTestRule.onNodeWithText("Data tidak ditemukan.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Data tidak ditemukan").assertIsDisplayed()
     }
 
     // ─── Test 19: FAB tombol tambah terjemahan ditampilkan ───────────────────

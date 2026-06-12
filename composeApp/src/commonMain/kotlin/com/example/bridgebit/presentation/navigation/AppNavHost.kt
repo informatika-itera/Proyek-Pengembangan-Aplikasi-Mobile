@@ -2,6 +2,7 @@ package com.example.bridgebit.presentation.navigation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import com.example.bridgebit.presentation.screens.detail.TranslationDetailScreen
 import com.example.bridgebit.presentation.screens.workspace.WorkspaceScreen
 import com.example.bridgebit.presentation.screens.vault.VaultScreen
 import com.example.bridgebit.presentation.screens.insights.InsightsScreen
+import com.example.bridgebit.domain.usecase.ClearAllHistoryUseCase
 
 @Composable
 fun AppNavHost(
@@ -72,21 +74,30 @@ fun AppNavHost(
 
         composable<Route.Settings> {
             val userPreferences: UserPreferences = koinInject()
+            val clearAllHistoryUseCase: ClearAllHistoryUseCase = koinInject()
+            val notificationService: com.example.bridgebit.core.notification.NotificationService = koinInject()
             val isDarkMode by userPreferences.isDarkMode.collectAsState(initial = false)
             val coroutineScope = rememberCoroutineScope()
 
             var profileName by remember { mutableStateOf("Nama") }
             var profileEmail by remember { mutableStateOf("email@gmail.com") }
             var isEditingProfile by remember { mutableStateOf(false) }
-            var isNotificationEnabled by remember { mutableStateOf(true) }
+            val isNotificationEnabled by userPreferences.isNotificationEnabled.collectAsState(initial = false)
+            
+            var showClearDialog by remember { mutableStateOf(false) }
+            val snackbarHostState = remember { SnackbarHostState() }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding() // TAMBAHAN PENTING AGAR TIDAK NABRAK STATUS BAR
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            Scaffold(
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+            ) { paddingValues ->
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                 item {
                     Text(
                         text = "Pengaturan",
@@ -144,7 +155,12 @@ fun AppNavHost(
                     Spacer(modifier = Modifier.height(4.dp))
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Row(
-                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    coroutineScope.launch { userPreferences.setDarkMode(!isDarkMode) }
+                                }
+                                .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -175,7 +191,20 @@ fun AppNavHost(
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val isChecked = !isNotificationEnabled
+                                        coroutineScope.launch { userPreferences.setNotificationEnabled(isChecked) }
+                                        if (isChecked) {
+                                            notificationService.requestPermission { granted ->
+                                                if (granted) {
+                                                    notificationService.showNotification("Notifikasi Aktif", "Anda akan menerima pengingat harian dari BridgeBit!")
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -185,12 +214,15 @@ fun AppNavHost(
                                 }
                                 Switch(
                                     checked = isNotificationEnabled,
-                                    onCheckedChange = { isNotificationEnabled = it }
+                                    onCheckedChange = null // Handled by Row click
                                 )
                             }
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showClearDialog = true }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -201,7 +233,7 @@ fun AppNavHost(
                                         Text(text = "Data lokal akan dibersihkan permanen", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                                     }
                                 }
-                                TextButton(onClick = { /* Aksi Clear Database */ }) {
+                                TextButton(onClick = { showClearDialog = true }) {
                                     Text("Bersihkan", color = MaterialTheme.colorScheme.error)
                                 }
                             }
@@ -209,6 +241,44 @@ fun AppNavHost(
                     }
                 }
                 item { Spacer(modifier = Modifier.height(24.dp)) }
+            }
+
+            if (showClearDialog) {
+                AlertDialog(
+                    onDismissRequest = { showClearDialog = false },
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Default.Warning, contentDescription = "Peringatan", tint = MaterialTheme.colorScheme.error)
+                            Text("Hapus Riwayat?")
+                        }
+                    },
+                    text = {
+                        Text("Semua riwayat terjemahan (kecuali yang disimpan di Vault) akan dihapus secara permanen dan tidak dapat dikembalikan.")
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showClearDialog = false
+                                coroutineScope.launch {
+                                    clearAllHistoryUseCase().onSuccess {
+                                        snackbarHostState.showSnackbar("Riwayat berhasil dibersihkan")
+                                    }.onFailure {
+                                        snackbarHostState.showSnackbar("Gagal membersihkan riwayat")
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Ya, Hapus")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showClearDialog = false }) {
+                            Text("Batal")
+                        }
+                    }
+                )
+            }
             }
         }
     }

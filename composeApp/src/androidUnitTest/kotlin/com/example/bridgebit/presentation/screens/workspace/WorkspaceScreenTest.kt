@@ -161,7 +161,7 @@ class WorkspaceScreenTest {
         composeTestRule.onNodeWithText("Inggris").assertIsDisplayed()
     }
 
-    // ─── Test 7: Arrow symbol (➔) antar bahasa ditampilkan ───────────────────
+    // ─── Test 7: Arrow symbol (Tukar Bahasa) antar bahasa ditampilkan ───────────
     @Test
     fun workspaceScreen_arrowSymbol_isDisplayed() {
         composeTestRule.setContent {
@@ -172,7 +172,7 @@ class WorkspaceScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("➔").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Tukar Bahasa").assertIsDisplayed()
     }
 
     // ─── Test 8: Label input "Ketik teks asli di sini..." ditampilkan ────────

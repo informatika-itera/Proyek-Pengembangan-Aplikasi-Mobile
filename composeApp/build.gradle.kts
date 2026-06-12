@@ -119,6 +119,20 @@ android {
         )
     }
 
+    // --- PERBAIKAN SIGNING CONFIGS ---
+    val keystoreFile = localProperties.getProperty("RELEASE_STORE_FILE")
+    if (!keystoreFile.isNullOrEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystoreFile)
+                storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+    // ---------------------------------
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -127,6 +141,11 @@ android {
 
     buildTypes {
         release {
+            // --- PERBAIKAN BUILD TYPES ---
+            if (!keystoreFile.isNullOrEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            // -----------------------------
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -144,7 +163,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // WAJIB DITAMBAHKAN UNTUK ROBOLECTRIC
     testOptions {
         unitTests {
             isIncludeAndroidResources = true

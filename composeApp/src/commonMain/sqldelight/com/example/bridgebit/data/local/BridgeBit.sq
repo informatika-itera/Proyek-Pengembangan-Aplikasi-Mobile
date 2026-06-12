@@ -55,3 +55,7 @@ WHERE id = ?;
 deleteTranslationsByIds:
 DELETE FROM TranslationEntity
 WHERE id IN ?;
+
+clearAllHistory:
+DELETE FROM TranslationEntity
+WHERE is_vaulted = 0;

@@ -75,4 +75,8 @@ class TranslationRepositoryImpl(private val database: BridgeBitDatabase) : Trans
     override suspend fun deleteTranslationsByIds(ids: List<Long>) = withContext(Dispatchers.Default) {
         queries.deleteTranslationsByIds(ids)
     }
+
+    override suspend fun clearAllHistory() = withContext(Dispatchers.Default) {
+        queries.clearAllHistory()
+    }
 }

@@ -124,7 +124,7 @@ class VaultScreenTest {
     fun vaultScreen_emptyState_showsCorrectMessage() {
         renderVaultScreen()
         emitVaultItems(emptyList())
-        composeTestRule.onNodeWithText("Belum ada frasa yang disimpan ke Vault.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Vault Kosong").assertIsDisplayed()
     }
 
     // ─── Test 3: Title screen tetap tampil saat vault ada items ────────────────
@@ -254,6 +254,6 @@ class VaultScreenTest {
     fun vaultScreen_withItems_emptyMessageNotDisplayed() {
         renderVaultScreen()
         emitVaultItems(vaultedItems)
-        composeTestRule.onNodeWithText("Belum ada frasa yang disimpan ke Vault.").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Vault Kosong").assertDoesNotExist()
     }
 }

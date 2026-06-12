@@ -19,15 +19,85 @@ import io.ktor.http.contentType
 class GeminiService(private val client: HttpClient) {
 
     companion object {
-        private val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        // PERBAIKAN: Menambahkan "-latest" pada nama model
-        private val MODEL = "gemini-2.5-flash"
+        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+        private const val MODEL = "gemini-2.5-flash"
     }
 
+    /**
+     * General-purpose content generation. Used for summarization, translation,
+     * writing improvement, idea generation, etc.
+     *
+     * @param prompt       The user-facing prompt.
+     * @param systemPrompt Optional system instruction prepended as a fake user/model turn.
+     */
     suspend fun generateContent(
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
+        val contents = buildContents(prompt, systemPrompt)
+
+        val request = GeminiRequest(
+            contents = contents,
+            generationConfig = GenerationConfig(
+                temperature = 0.7,
+                maxOutputTokens = 1000
+            )
+        )
+
+        val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
+            contentType(ContentType.Application.Json)
+            parameter("key", ApiConfig.geminiApiKey)
+            setBody(request)
+        }.body()
+
+        response.getErrorMessage()?.let { throw Exception(it) }
+        response.getTextContent() ?: throw Exception("Respons kosong dari AI")
+    }
+
+    /**
+     * Structured JSON content generation. Used exclusively for quiz generation.
+     *
+     * Setting [responseMimeType] to "application/json" instructs the Gemini API
+     * to return **only** valid JSON, preventing markdown wrappers, prose preambles,
+     * or delimiter-based text that broke the old "|||" parsing approach.
+     *
+     * @param prompt           The user-facing prompt describing the JSON schema expected.
+     * @param systemPrompt     System instruction enforcing JSON output rules.
+     * @param responseMimeType Must be "application/json" for structured output.
+     * @param maxOutputTokens  Higher limit for multi-question arrays (default 4096).
+     */
+    suspend fun generateStructuredContent(
+        prompt: String,
+        systemPrompt: String? = null,
+        responseMimeType: String = "application/json",
+        maxOutputTokens: Int = 4096
+    ): Result<String> = runCatching {
+        val contents = buildContents(prompt, systemPrompt)
+
+        val request = GeminiRequest(
+            contents = contents,
+            generationConfig = GenerationConfig(
+                temperature = 0.4, // Lower temperature = more deterministic JSON structure
+                maxOutputTokens = maxOutputTokens,
+                responseMimeType = responseMimeType
+            )
+        )
+
+        val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
+            contentType(ContentType.Application.Json)
+            parameter("key", ApiConfig.geminiApiKey)
+            setBody(request)
+        }.body()
+
+        response.getErrorMessage()?.let { throw Exception(it) }
+        response.getTextContent() ?: throw Exception("Respons kosong dari AI")
+    }
+
+    /** Builds the content list, optionally prefixing with a system prompt fake-turn. */
+    private fun buildContents(
+        prompt: String,
+        systemPrompt: String?
+    ): MutableList<GeminiContent> {
         val contents = mutableListOf<GeminiContent>()
 
         if (systemPrompt != null) {
@@ -52,25 +122,7 @@ class GeminiService(private val client: HttpClient) {
             )
         )
 
-        val request = GeminiRequest(
-            contents = contents,
-            generationConfig = GenerationConfig(
-                temperature = 0.7,
-                maxOutputTokens = 1000
-            )
-        )
-
-        val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
-            contentType(ContentType.Application.Json)
-            parameter("key", ApiConfig.geminiApiKey)
-            setBody(request)
-        }.body()
-
-        response.getErrorMessage()?.let { errorMsg ->
-            throw Exception(errorMsg)
-        }
-
-        response.getTextContent() ?: throw Exception("Respons kosong dari AI")
+        return contents
     }
 }
 
@@ -130,5 +182,28 @@ object SystemPrompts {
         - Pertahankan makna dan nuansa asli
         - Gunakan bahasa yang natural, bukan literal
         - Berikan HANYA hasil terjemahan, tanpa penjelasan
+    """.trimIndent()
+
+    /**
+     * System prompt for the quiz generator.
+     *
+     * This prompt is paired with [generateStructuredContent] and
+     * responseMimeType = "application/json". It enforces a strict JSON array
+     * schema, preventing the model from adding prose, markdown, or extra fields.
+     */
+    val QUIZ_GENERATOR = """
+        You are a strict JSON API endpoint for a vocabulary quiz application.
+        Your ONLY job is to return a JSON array — nothing else.
+        
+        ABSOLUTE RULES:
+        1. Your entire response MUST be a valid JSON array: [ {...}, {...}, ... ]
+        2. Do NOT include markdown, code fences, explanations, or any text outside the JSON array.
+        3. Each object in the array MUST have EXACTLY these four fields:
+           - "question": string (the quiz question text)
+           - "options": array of exactly 4 strings (the multiple-choice options)
+           - "answer": string (must exactly match one of the strings in "options")
+           - "explanation": string (a brief explanation of the correct answer)
+        4. The number of objects in the array MUST exactly match the number requested.
+        5. The "answer" field MUST be the full text of the correct option, not a letter like "A" or "B".
     """.trimIndent()
 }

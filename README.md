@@ -1,108 +1,126 @@
 # BridgeBit
+
 [![CI](https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg?branch=project%2F123140002-123140032-BridgeBit)](https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml)
 
-## Team
-- Ar'rauf Setiawan Muhammad Jabar (Domain + Data layer, Database, API) - @arrauf02
-- Muhammad Daffa Hakim Matondang (Presentation layer, UI/UX, Testing) - @dakim777
+## 👥 Team
 
-## Description
-BridgeBit adalah aplikasi penerjemah cerdas berbasis AI yang dirancang untuk memberikan terjemahan kontekstual dan mendalam. Menggunakan Kotlin Multiplatform, aplikasi ini bertujuan membantu pengguna memahami nuansa bahasa, istilah teknis, dan menyediakan asisten belajar pribadi melalui asisten AI yang terintegrasi secara cerdas.
+| Name | Role | GitHub |
+| --- | --- | --- |
+| Ar'rauf Setiawan Muhammad Jabar | Domain + Data layer, Database, API | [@arrauf02](https://github.com/arrauf02) |
+| Muhammad Daffa Hakim Matondang | Presentation layer, UI/UX, Testing | [@dakim777](https://github.com/dakim777) |
 
+---
 
-## Demo
-Link Demo Sprint 2: [https://youtube.com/shorts/ngfyzMd6CXk?feature=share]
-Video Tes Coverage dan UI Polish Test Sprint 4 PAM: [https://youtu.be/OUmG4H25QWI]
+## 📖 Description
 
-## Features
-- [ ] **Contextual Translation**: Menerjemahkan teks dengan mempertimbangkan nuansa formal atau santai menggunakan Gemini API.
-- [ ] **Phrase Vault**: Menyimpan hasil terjemahan penting ke database lokal untuk akses luring.
-- [ ] **Categorization**: Mengelompokkan kata atau frasa tersimpan ke dalam kategori khusus (misal: IT, Medis, Kuliah).
-- [ ] **History Dashboard**: Menampilkan riwayat terjemahan terakhir yang dilakukan pengguna.
-- [ ] **AI Context Assistant**: Fitur chat interaktif untuk menanyakan detail tata bahasa atau alasan pemilihan kata oleh AI.
-- [ ] **Learning Insights**: Statistik harian tentang perkembangan kosakata yang dipelajari.
-- [ ] **AI-Generated Quiz**: Kuis otomatis yang dibuat berdasarkan kata-kata yang paling sering dicari atau disimpan oleh pengguna.
+BridgeBit adalah aplikasi penerjemah cerdas berbasis AI yang dirancang untuk memberikan terjemahan kontekstual dan mendalam. Menggunakan Kotlin Multiplatform (KMP), aplikasi ini tidak hanya berfungsi sebagai alat penerjemah, tetapi juga sebagai asisten belajar kosakata pribadi yang dilengkapi dengan analitik pembelajaran, penyortiran kategori otomatis, dan kuis adaptif bertenaga AI.
+
+---
+
+## 🎬 Demo
+
+- **Link Demo Sprint 2:** https://youtube.com/shorts/ngfyzMd6CXk?feature=share
+- **Video Tes Coverage dan UI Polish Test Sprint 4 PAM:** https://youtu.be/OUmG4H25QWI
+
+---
+
+## 📸 Screenshots & UI Previews
+
+|                         Dashboard & History                         | Workspace (Translate) | Detail Terjemahan |
+|:-------------------------------------------------------------------:| :---: | :---: |
+|                 ![Dashboard Screen](assets/dashboard.png)                  | ![Workspace Screen](assets/workspace.png) | ![Detail Screen](assets/detail.png) |
+| Menampilkan riwayat dengan fitur pencarian & filter multi-kriteria. | Input teks cerdas dengan deteksi kategori otomatis oleh Gemini AI. | Detail hasil terjemahan lengkap dengan opsi salin, edit, dan simpan. |
+
+|                          Phrase Vault                           | Learning Insights |                            AI Vocabulary Quiz                             |
+|:---------------------------------------------------------------:| :---: |:-------------------------------------------------------------------------:|
+|                ![Vault Screen](assets/vault.png)                | ![Insights Screen 1](assets/insight.png)<br><br>![Insights Screen 2](assets/insight2.png) |                      ![Quiz Screen](assets/quiz.png)                      |
+| Kumpulan kosakata favorit yang dikelompokkan berdasarkan topik. | Statistik belajar, *Learning Streak*, grafik distribusi topik, dan pencapaian mingguan. | Kuis pilihan ganda yang dihasilkan otomatis oleh AI dari riwayat belajar. |
+
+---
+
+## ✨ Features
+
+- [x] **AI-Powered Workspace (Terjemahan Cerdas):** Menerjemahkan teks antar bahasa dengan Gemini API. Termasuk fitur otomatisasi penambahan *romanisasi* (cara baca) untuk bahasa non-Latin (seperti Jepang, Korea, Arab) dan pengklasifikasian topik secara otomatis.
+- [x] **Dashboard & Advanced Filtering:** Menampilkan riwayat terjemahan dengan kemampuan pencarian teks secara langsung (*real-time debounce*) dan penyaringan berdasarkan *Vault*, Kategori Topik, atau Bahasa.
+- [x] **Phrase Vault:** Menyimpan terjemahan penting ke database SQLDelight lokal untuk akses luring, yang otomatis dikelompokkan berdasarkan kategorinya.
+- [x] **Learning Insights & Analytics:** Melacak progres belajar pengguna, termasuk *Learning Streak* (hari berturut-turut), total terjemahan, grafik *Vocabulary Growth* 7 hari terakhir, dan diagram distribusi topik.
+- [x] **AI-Generated Vocabulary Quiz:** Fitur kuis dinamis yang membaca riwayat/vault pengguna dan memerintahkan Gemini API (via *JSON Mode*) untuk menghasilkan soal kuis *multiple-choice* adaptif untuk menguji kosakata.
+- [x] **Settings & User Preferences:** Konfigurasi Mode Gelap (*Dark Mode*), pengaturan notifikasi pengingat belajar (menggunakan izin notifikasi *native*), dan kontrol manajemen penghapusan data lokal.
+
+---
 
 ## 📁 Struktur Project
 
-```
+```text
 composeApp/src/
 ├── commonMain/
 │   ├── kotlin/com/example/bridgebit/
-│   │   ├── core/                      # Utilitas, Network (Ktor), dan Koin DI
-│   │   │   ├── di/                    # Modul dependency injection (AppModule.kt)
-│   │   │   ├── network/               # Konfigurasi API & HttpClient
-│   │   │   └── util/                  # Ekstensi & expect/actual classes
+│   │   ├── core/                      # Utilitas, Network (Ktor), Koin DI, & Notification
+│   │   │   ├── di/                    # Modul Dependency Injection (AppModule, dll)
+│   │   │   ├── network/               # Konfigurasi HTTP Client (Ktor) & ApiConfig
+│   │   │   ├── notification/          # Abstraksi NotificationService (expect/actual)
+│   │   │   └── util/                  # Ekstensi & expect/actual classes (Clipboard, Driver DB)
 │   │   │
 │   │   ├── data/                      # Data layer (Local, Remote, Repository Impl)
-│   │   │   ├── local/                 # Database Entity & DataStore Preferences
-│   │   │   ├── remote/                # DTOs & GeminiService API
-│   │   │   └── repository/            # Implementasi Translation & AI Repository
+│   │   │   ├── local/                 # SQLDelight Entity Mappers & DataStore Preferences
+│   │   │   ├── remote/                # DTOs & GeminiService API (JSON parsing)
+│   │   │   └── repository/            # Implementasi TranslationRepository & AIRepository
 │   │   │
 │   │   ├── domain/                    # Domain layer (Kotlin murni)
-│   │   │   ├── model/                 # Domain models (Translation)
-│   │   │   ├── repository/            # Interfaces untuk Repository
-│   │   │   └── usecase/               # Logika Bisnis (SaveTranslation, SearchHistory, dll)
+│   │   │   ├── model/                 # Domain models (Translation, QuizQuestion)
+│   │   │   ├── repository/            # Interfaces untuk Repositori
+│   │   │   └── usecase/               # Logika Bisnis (SearchHistory, ToggleVault, dll)
 │   │   │
 │   │   ├── presentation/              # Presentation layer (UI & State)
-│   │   │   ├── components/            # Komponen UI Reusable (TranslationCard, Loading, dll)
+│   │   │   ├── components/            # Komponen Reusable (ShimmerEffect, EmptyState, dll)
 │   │   │   ├── navigation/            # Setup Navigasi (AppNavHost, Routes)
 │   │   │   ├── screens/               # Compose Screens & ViewModels
-│   │   │   │   ├── dashboard/         # Halaman Beranda & Riwayat
+│   │   │   │   ├── dashboard/         # Halaman Beranda & Riwayat Filter
 │   │   │   │   ├── detail/            # Halaman Detail Terjemahan
-│   │   │   │   ├── insights/          # Halaman Statistik & Kuis AI
-│   │   │   │   ├── vault/             # Halaman Frasa Tersimpan (Vault)
+│   │   │   │   ├── insights/          # Halaman Statistik, Grafik, & UI Kuis AI
+│   │   │   │   ├── vault/             # Halaman Frasa Tersimpan
 │   │   │   │   └── workspace/         # Halaman Input & Terjemahan Baru
-│   │   │   └── theme/                 # Konfigurasi Material 3 Theme & Spacing
+│   │   │   ├── theme/                 # Material 3 Theme, Typography, Spacing
+│   │   │   └── App.kt                 # Main Compose entry point & Bottom Navigation
 │   │   │
-│   │   └── App.kt                     # Main Compose entry point & Bottom Navigation
-│   │
 │   └── sqldelight/com/example/bridgebit/data/local/
-│       └── BridgeBit.sq               # Skema database SQLDelight
+│       └── BridgeBit.sq               # Skema database relasional (SQLDelight)
 │
-├── commonTest/kotlin/                 # Pengujian untuk logika Shared/Common
+├── commonTest/kotlin/                 # Pengujian Unit & State Validation (Logika Common)
 │
-├── androidMain/                       # Implementasi spesifik Android
+├── androidMain/                       # Implementasi platform-spesifik Android
 │   ├── AndroidManifest.xml
-│   ├── res/                           # Resources Android (strings, themes)
+│   ├── res/                           # Resources Native Android (strings, launcher icons)
 │   └── kotlin/com/example/bridgebit/
-│       ├── MainActivity.kt            # Entry point Activity Android
-│       ├── NoteAIApplication.kt       # Inisialisasi awal aplikasi Android
-│       └── core/ & data/              # Implementasi actual Android (Driver DB, DataStore)
+│       ├── MainActivity.kt            # Entry point UI Android
+│       ├── NoteAIApplication.kt       # Application class & Lifecycle tracking
+│       └── core/ & data/              # Implementasi `actual` (AndroidSqliteDriver, DataStore, Clipboard)
 │
-├── androidUnitTest/kotlin/            # Kumpulan Unit Test (Presentation, Domain, Data)
+├── androidUnitTest/kotlin/            # Unit Test & UI Test (Kover, Robolectric, JUnit4)
 │
-└── iosMain/kotlin/                    # Implementasi spesifik iOS
-    ├── MainViewController.kt          # Entry point UIViewController iOS
-    └── core/ & data/                  # Implementasi actual iOS (Driver DB, DataStore)
+└── iosMain/kotlin/                    # Implementasi platform-spesifik iOS
+    ├── MainViewController.kt          # Compose UIViewController wrapper
+    └── core/ & data/                  # Implementasi `actual` (NativeSqliteDriver, NSDocumentDirectory)
 ```
-## Tech Stack
-KMP, Compose Multiplatform, Ktor, SQLDelight, Koin, Gemini API
 
-## Architecture
-Aplikasi ini mengadopsi **Clean Architecture** yang dipadukan dengan pola **MVVM** (Model-View-ViewModel) untuk memastikan pemisahan tanggung jawab yang jelas antara logika bisnis, data, dan antarmuka pengguna.
+---
 
-- **Presentation Layer**: UI menggunakan Compose Multiplatform dan State management menggunakan StateFlow di dalam ViewModel.
-- **Domain Layer**: Berisi logika bisnis murni, Use Cases, dan interface Repository.
-- **Data Layer**: Implementasi Repository yang mengelola sumber data lokal (SQLDelight) dan remote (Ktor untuk Gemini API).
+## 🛠 Tech Stack
 
-## Testing & Coverage
-Aplikasi BridgeBit dilengkapi dengan pengujian (*Unit Test* dan *UI Test*) menggunakan JUnit 4, MockK, dan Robolectric. 
+| Kategori | Teknologi |
+| --- | --- |
+| **Framework** | Kotlin Multiplatform (KMP), Compose Multiplatform |
+| **Architecture** | Clean Architecture + MVVM (Model-View-ViewModel) |
+| **Dependency Injection** | Koin |
+| **Networking** | Ktor HTTP Client (dengan *ContentNegotiation* & *Logging*) |
+| **Database Lokal** | SQLDelight |
+| **Preferences** | Jetpack DataStore |
+| **Testing** | JUnit4, MockK, Coroutines Test, Compose UI Test (Robolectric) |
+| **API** | Gemini API (`gemini-2.5-flash`) |
 
-### Kover Coverage Report
-Berikut adalah status cakupan pengujian (*Test Coverage*) terakhir berdasarkan *Kover Report*:
+---
 
-| Module / Package | Line Coverage |
-| :--- | :---: |
-| **Overall Project (`composeApp`)** | **83.6%** |
-| `presentation.screens.dashboard` | **97.0%** |
-| `presentation.screens.insights` | **76.2%** |
-| `presentation.screens.vault` | **95.3%** |
-| `presentation.screens.workspace` | **97.8%** |
-| `presentation.screens.detail` | **94.9%** |
-
-![Kover Coverage Report](ss_coverage.png)
-
-*(Screenshot Kover HTML Report terbaru dapat dilihat di atas, atau diakses via `build/reports/kover/htmlDebug/index.html` setelah menjalankan task Kover).*
+## 🧪 Testing & Coverage
 
 Fokus pengujian dibagi ke dalam 3 *layer* utama:
 
@@ -119,10 +137,93 @@ Fokus pengujian dibagi ke dalam 3 *layer* utama:
 ### 3. Data Layer (Repository)
 - **AIRepository (`AIRepositoryImplTest`):** Menguji interaksi dengan Gemini API menggunakan Ktor. Memastikan *prompting* berjalan sesuai *WritingStyle* (Formal/Casual) dan membersihkan/mem-parsing format respon AI dengan benar.
 - **TranslationRepository (`TranslationRepositoryImplTest`):** Menguji pemetaan data (*mapping*) dari Domain Model ke SQLDelight Entity dan memvalidasi eksekusi *query* *database* (Insert, Update, Delete, Toggle).
-## Setup
-1. **Clone repo**
-   ```bash
-   git clone [https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile.git](https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile.git)
-   cd Proyek-Pengembangan-Aplikasi-Mobile
+
+### Kover Coverage Report
+
+| Module / Package | Line Coverage |
+| --- | --- |
+| **Overall Project (`composeApp`)** | **83.6%** |
+| `presentation.screens.dashboard` | 97.0% |
+| `presentation.screens.insights` | 76.2% |
+| `presentation.screens.vault` | 95.3% |
+| `presentation.screens.workspace` | 97.8% |
+| `presentation.screens.detail` | 94.9% |
+
+![Kover Coverage Report](assets/ss_coverage.png)
+
+*(Screenshot Kover HTML Report terbaru dapat dilihat di atas, atau diakses via `build/reports/kover/htmlDebug/index.html` setelah menjalankan task Kover).*
 
 
+---
+
+## 🚀 Setup & Installation
+
+Ikuti langkah-langkah di bawah ini untuk menjalankan proyek BridgeBit di mesin lokal Anda.
+
+### 1. Prasyarat Sistem
+
+- Android Studio (Jellyfish / Koala atau terbaru) dengan plugin Kotlin Multiplatform terinstal.
+- Xcode (untuk menjalankan/men-deploy aplikasi ke simulator atau perangkat iOS).
+- JDK 17 atau yang lebih baru.
+
+### 2. Kloning Repositori
+
+```bash
+git clone https://github.com/arrauf02/Proyek-Pengembangan-Aplikasi-Mobile.git
+cd Proyek-Pengembangan-Aplikasi-Mobile
+```
+
+### 3. Dapatkan Gemini API Key
+
+Aplikasi ini membutuhkan API key dari Google Gemini untuk fitur terjemahan dan pembuatan kuis.
+
+1. Kunjungi [Google AI Studio](https://aistudio.google.com/).
+2. Buat proyek baru dan dapatkan **API Key** Anda.
+
+### 4. Konfigurasi API Key
+
+Agar Ktor dapat melakukan *request* ke Gemini API, Anda wajib menyematkan API Key tersebut ke dalam platform Android dan iOS.
+
+#### 🤖 Android
+
+1. Buka file `local.properties` di *root directory* proyek (jika belum ada, buat file tersebut).
+2. Tambahkan baris berikut:
+
+```properties
+GEMINI_API_KEY=YOUR_API_KEY_HERE
+```
+
+3. Lakukan **Sync Project with Gradle Files**. Variabel ini akan otomatis diinjeksi ke dalam `BuildConfig` via pengaturan Gradle.
+
+#### 🍎 iOS
+
+1. Buka folder `iosApp/iosApp/` di Finder atau Xcode.
+2. Buka file `Info.plist`.
+3. Tambahkan atribut kunci baru dengan nama `GEMINI_API_KEY` bertipe `String`, lalu masukkan API Key Anda sebagai *value*-nya:
+
+```xml
+<key>GEMINI_API_KEY</key>
+<string>YOUR_API_KEY_HERE</string>
+```
+
+### 5. Menjalankan Aplikasi
+
+**Android:**
+Buka proyek di Android Studio, pilih modul `composeApp`, pilih emulator atau perangkat fisik, lalu klik **Run** (`Shift + F10`).
+
+**iOS:**
+Pilih konfigurasi target `iosApp` di Android Studio dan pilih Simulator iOS, atau buka folder `iosApp` menggunakan **Xcode**, tunggu dependensi *CocoaPods*/*SPM* terselesaikan, lalu klik **Play** (`Cmd + R`).
+
+### 6. Menjalankan Unit Test & Coverage
+
+Untuk mengeksekusi semua tes di Android dan melihat laporan *coverage*:
+
+```bash
+./gradlew koverHtmlReportDebug
+```
+
+Buka file berikut di browser untuk melihat laporan interaktif:
+
+```
+build/reports/kover/htmlDebug/index.html
+```

@@ -29,6 +29,7 @@ class UserPreferences(
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val NOTIFICATION_ENABLED = booleanPreferencesKey("notification_enabled")
     }
     
     // ==================== DARK MODE ====================
@@ -115,9 +116,15 @@ class UserPreferences(
     /**
      * Set onboarding completed
      */
-    suspend fun setOnboardingCompleted() {
+    // ==================== NOTIFICATIONS ====================
+    
+    val isNotificationEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFICATION_ENABLED] ?: false
+    }
+    
+    suspend fun setNotificationEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.ONBOARDING_COMPLETED] = true
+            prefs[Keys.NOTIFICATION_ENABLED] = enabled
         }
     }
 }

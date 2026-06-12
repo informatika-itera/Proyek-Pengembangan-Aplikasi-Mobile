@@ -1,5 +1,6 @@
 package com.example.bridgebit.data.remote.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // ==================== REQUEST ====================
@@ -24,10 +25,21 @@ data class GeminiPart(
 
 @Serializable
 data class GenerationConfig(
+    @SerialName("temperature")
     val temperature: Double = 0.7,
+    @SerialName("maxOutputTokens")
     val maxOutputTokens: Int = 1000,
+    @SerialName("topP")
     val topP: Double = 0.95,
-    val topK: Int = 40
+    @SerialName("topK")
+    val topK: Int = 40,
+    /**
+     * When set to "application/json", the Gemini API guarantees the response
+     * is valid JSON. This is essential for the quiz generation feature to
+     * reliably return a JSON array of multiple questions instead of free-form text.
+     */
+    @SerialName("responseMimeType")
+    val responseMimeType: String? = null
 )
 
 @Serializable

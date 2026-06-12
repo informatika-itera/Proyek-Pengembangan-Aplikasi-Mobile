@@ -1,5 +1,11 @@
 package com.example.bridgebit.presentation.screens.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +22,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import com.example.bridgebit.presentation.components.TranslationCard
 import org.koin.compose.viewmodel.koinViewModel
@@ -40,10 +48,24 @@ fun DashboardScreen(
     val availableCategories = listOf("Semua Kategori", "Teknologi & IT", "Akademik & Pendidikan", "Keuangan & Kripto", "Hiburan & Hobi", "Traveling & Transportasi", "Bisnis & Profesional", "Umum")
     val availableLanguages = listOf("Semua Bahasa", "Indonesia", "Inggris", "Jepang", "Korea", "Arab", "Jerman")
 
+    val infiniteTransition = rememberInfiniteTransition(label = "fabPulseTransition")
+    val fabScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "fabPulse"
+    )
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("BridgeBit History") }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToWorkspace) {
+            FloatingActionButton(
+                onClick = onNavigateToWorkspace,
+                modifier = Modifier.scale(fabScale)
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Terjemahan Baru")
             }
         }
@@ -89,11 +111,12 @@ fun DashboardScreen(
 
                 // 2. Filter Kategori (Dropdown)
                 Box {
+                    val categoryRotation by animateFloatAsState(targetValue = if (expandedCategory) 180f else 0f)
                     FilterChip(
                         selected = filterState.selectedCategory != null,
                         onClick = { expandedCategory = true },
                         label = { Text(filterState.selectedCategory ?: "Kategori") },
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) }
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = Modifier.rotate(categoryRotation)) }
                     )
                     DropdownMenu(expanded = expandedCategory, onDismissRequest = { expandedCategory = false }) {
                         availableCategories.forEach { cat ->
@@ -110,11 +133,12 @@ fun DashboardScreen(
 
                 // 3. Filter Bahasa (Dropdown)
                 Box {
+                    val languageRotation by animateFloatAsState(targetValue = if (expandedLanguage) 180f else 0f)
                     FilterChip(
                         selected = filterState.selectedLanguage != null,
                         onClick = { expandedLanguage = true },
                         label = { Text(filterState.selectedLanguage ?: "Bahasa") },
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) }
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = Modifier.rotate(languageRotation)) }
                     )
                     DropdownMenu(expanded = expandedLanguage, onDismissRequest = { expandedLanguage = false }) {
                         availableLanguages.forEach { lang ->
@@ -130,7 +154,11 @@ fun DashboardScreen(
                 }
 
                 // 4. Tombol Reset (Muncul hanya jika ada filter aktif)
-                if (filterState.isVaultOnly || filterState.selectedCategory != null || filterState.selectedLanguage != null) {
+                AnimatedVisibility(
+                    visible = filterState.isVaultOnly || filterState.selectedCategory != null || filterState.selectedLanguage != null,
+                    enter = fadeIn() + expandHorizontally(),
+                    exit = fadeOut() + shrinkHorizontally()
+                ) {
                     TextButton(onClick = { viewModel.resetFilters() }) {
                         Text("Reset")
                     }
@@ -143,12 +171,13 @@ fun DashboardScreen(
             Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
                 when (state) {
                     is DashboardUiState.Loading -> CircularProgressIndicator()
-                    is DashboardUiState.Empty -> Text(
-                        text = if (searchQuery.isNotBlank() || filterState.selectedCategory != null || filterState.selectedLanguage != null || filterState.isVaultOnly)
-                            "Data tidak ditemukan."
-                        else "Belum ada riwayat terjemahan.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    is DashboardUiState.Empty -> {
+                        val isSearch = searchQuery.isNotBlank() || filterState.selectedCategory != null || filterState.selectedLanguage != null || filterState.isVaultOnly
+                        com.example.bridgebit.presentation.components.AnimatedEmptyState(
+                            title = if (isSearch) "Data tidak ditemukan" else "Riwayat Kosong",
+                            subtitle = if (isSearch) "Coba ubah kata kunci atau filter pencarian Anda." else "Belum ada riwayat terjemahan. Mulai terjemahkan frasa baru!"
+                        )
+                    }
                     is DashboardUiState.Success -> {
                         val historyList = (state as DashboardUiState.Success).history
                         LazyColumn(

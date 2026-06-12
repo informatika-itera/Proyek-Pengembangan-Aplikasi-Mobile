@@ -14,4 +14,5 @@ interface TranslationRepository {
     suspend fun deleteTranslationById(id: Long)
     suspend fun deleteTranslationsByIds(ids: List<Long>)
     suspend fun toggleVaultStatus(id: Long)
+    suspend fun clearAllHistory()
 }

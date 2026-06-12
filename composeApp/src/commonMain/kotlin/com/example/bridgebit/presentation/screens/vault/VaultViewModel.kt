@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 class VaultViewModel(
     getVaultPhrasesUseCase: GetVaultPhrasesUseCase,
     private val toggleVaultStatusUseCase: ToggleVaultStatusUseCase,
-    private val deleteTranslationUseCase: DeleteTranslationUseCase // <-- Masukkan ke sini
+    private val deleteTranslationUseCase: DeleteTranslationUseCase
 ) : ViewModel() {
 
     val groupedVaultPhrases: StateFlow<Map<String, List<Translation>>> = getVaultPhrasesUseCase()
@@ -30,7 +30,7 @@ class VaultViewModel(
         viewModelScope.launch { toggleVaultStatusUseCase(id) }
     }
 
-    // <-- FUNGSI BARU UNTUK HAPUS PERMANEN -->
+
     fun deleteTranslation(id: Long) {
         viewModelScope.launch { deleteTranslationUseCase(id) }
     }

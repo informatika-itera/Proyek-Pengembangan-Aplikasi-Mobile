@@ -69,6 +69,17 @@ class ToggleVaultStatusUseCase(private val repository: TranslationRepository) {
     }
 }
 
+class ClearAllHistoryUseCase(private val repository: TranslationRepository) {
+    suspend operator fun invoke(): Result<Unit> {
+        return try {
+            repository.clearAllHistory()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
+
 // ==========================================
 // AI USE CASES (Dinonaktifkan Sementara untuk Sprint 2)
 // ==========================================

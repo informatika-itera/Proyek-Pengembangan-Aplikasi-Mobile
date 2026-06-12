@@ -8,7 +8,7 @@ import org.koin.compose.KoinContext
 
 @Composable
 fun App() {
-    var isDarkTheme by remember { mutableStateOf(true) } // Default to dark as per mockup
+    var isDarkTheme by remember { mutableStateOf(false) } // Default to light mode
 
     KoinContext {
         StudyMateTheme(darkTheme = isDarkTheme) {

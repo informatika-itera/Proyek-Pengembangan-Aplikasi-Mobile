@@ -7,20 +7,28 @@ CREATE TABLE UserProfileEntity (
     localPhotoPath TEXT,
     nim TEXT NOT NULL DEFAULT '',
     major TEXT NOT NULL DEFAULT '',
+    lifeGoals TEXT NOT NULL DEFAULT '',
     currentStreak INTEGER NOT NULL DEFAULT 0,
     lastStudyDate INTEGER,
     dailyMantra TEXT NOT NULL DEFAULT 'Jangan pernah berhenti belajar, karena hidup tidak pernah berhenti mengajar.'
 );
 
 insertProfile:
-INSERT OR REPLACE INTO UserProfileEntity(id, email, googleName, googlePhotoUrl, localName, localPhotoPath, nim, major, currentStreak, lastStudyDate, dailyMantra)
-VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO UserProfileEntity(id, email, googleName, googlePhotoUrl, localName, localPhotoPath, nim, major, lifeGoals, currentStreak, lastStudyDate, dailyMantra)
+VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getProfile:
 SELECT * FROM UserProfileEntity WHERE id = 1;
 
 updateLocalProfile:
-UPDATE UserProfileEntity SET localName = ?, localPhotoPath = ?, nim = ?, major = ? WHERE id = 1;
+INSERT INTO UserProfileEntity(id, localName, localPhotoPath, nim, major, lifeGoals)
+VALUES (1, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    localName = excluded.localName,
+    localPhotoPath = excluded.localPhotoPath,
+    nim = excluded.nim,
+    major = excluded.major,
+    lifeGoals = excluded.lifeGoals;
 
 updateStreak:
 UPDATE UserProfileEntity SET currentStreak = ?, lastStudyDate = ? WHERE id = 1;

@@ -79,7 +79,7 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
     }
 
     private fun getPrimaryCalendarId(): Long? {
-        val projection = arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.IS_PRIMARY)
+        val projection = arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_NAME)
         val cursor = context.contentResolver.query(
             CalendarContract.Calendars.CONTENT_URI,
             projection,
@@ -87,12 +87,16 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
             null,
             null
         )
+        var firstId: Long? = null
         cursor?.use {
-            while (it.moveToNext()) {
-                if (it.getInt(1) == 1) return it.getLong(0)
+            if (it.moveToFirst()) {
+                firstId = it.getLong(0)
+                do {
+                    if (it.getInt(1) == 1) return it.getLong(0)
+                } while (it.moveToNext())
             }
         }
-        return null
+        return firstId
     }
 
     override suspend fun deleteEvent(eventId: String): Result<Unit> = withContext(Dispatchers.IO) {

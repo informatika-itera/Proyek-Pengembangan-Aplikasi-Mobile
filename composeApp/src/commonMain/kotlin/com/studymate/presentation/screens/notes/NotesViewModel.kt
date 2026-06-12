@@ -70,7 +70,7 @@ class NotesViewModel(
     fun addNote(title: String, rawContent: String, subject: String, onComplete: () -> Unit = {}) {
         if (title.isBlank() || subject.isBlank()) {
             viewModelScope.launch {
-                _events.emit(NoteEvent.ShowMessage("Judul dan Mata Kuliah tidak boleh kosong"))
+                _events.emit(NoteEvent.ShowMessage("Judul dan Mata Pelajaran tidak boleh kosong"))
             }
             return
         }
@@ -82,6 +82,12 @@ class NotesViewModel(
                     subject = subject
                 )
                 noteRepository.insertNote(newNote)
+                // Record activity so streaks are updated when user creates a note
+                try {
+                    activityRepository.recordNoteCreation()
+                } catch (_: Exception) {
+                    // non-fatal: don't block UX if activity recording fails
+                }
                 _events.emit(NoteEvent.ShowMessage("Catatan berhasil disimpan!"))
                 onComplete()
             } catch (e: Exception) {
@@ -93,7 +99,7 @@ class NotesViewModel(
     fun updateNote(note: Note, onComplete: () -> Unit = {}) {
         if (note.title.isBlank() || note.subject.isBlank()) {
             viewModelScope.launch {
-                _events.emit(NoteEvent.ShowMessage("Judul dan Mata Kuliah tidak boleh kosong"))
+                _events.emit(NoteEvent.ShowMessage("Judul dan Mata Pelajaran tidak boleh kosong"))
             }
             return
         }

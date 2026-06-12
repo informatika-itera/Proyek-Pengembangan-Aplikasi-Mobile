@@ -62,7 +62,7 @@ class ProfileViewModel(
     }
 
     private fun loadHeatmap() {
-        activityRepository.getActivityHeatmap(30)
+        activityRepository.getActivityHeatmap(130) // Load roughly 18 weeks (126 days)
             .onEach { heatmap ->
                 _uiState.update { it.copy(heatmap = heatmap) }
             }
@@ -113,9 +113,39 @@ class ProfileViewModel(
         }
     }
 
-    fun updateProfile(name: String, major: String, nim: String) {
+    fun updateProfile(name: String, major: String, nim: String, lifeGoals: String) {
         viewModelScope.launch {
-            profileRepository.updateLocalProfile(name, null, nim, major)
+            val currentUser = uiState.value.user
+            profileRepository.updateLocalProfile(
+                name = name,
+                photoPath = currentUser?.localPhotoPath,
+                nim = nim,
+                major = major,
+                lifeGoals = lifeGoals
+            )
+        }
+    }
+
+    fun updateProfilePhoto(path: String?) {
+        viewModelScope.launch {
+            val currentUser = uiState.value.user
+            profileRepository.updateLocalProfile(
+                name = currentUser?.localName ?: currentUser?.googleName,
+                photoPath = path,
+                nim = currentUser?.nim,
+                major = currentUser?.major,
+                lifeGoals = currentUser?.lifeGoals
+            )
+        }
+    }
+
+    fun deleteProfilePhoto() {
+        updateProfilePhoto(null)
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.signOut()
         }
     }
 
@@ -129,12 +159,6 @@ class ProfileViewModel(
                 .onFailure {
                     _uiState.update { it.copy(isLoading = false) }
                 }
-        }
-    }
-
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.signOut()
         }
     }
 }

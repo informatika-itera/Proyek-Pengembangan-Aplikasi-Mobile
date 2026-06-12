@@ -46,6 +46,7 @@ fun AdvancedQuizScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Advanced Quiz", fontWeight = FontWeight.Black) },

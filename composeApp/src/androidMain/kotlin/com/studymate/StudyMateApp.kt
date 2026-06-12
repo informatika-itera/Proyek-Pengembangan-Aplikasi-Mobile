@@ -3,6 +3,8 @@ package com.studymate
 import android.app.Application
 import com.studymate.core.di.initKoin
 import com.studymate.core.util.DatabaseDriverFactory
+import com.studymate.core.util.NotificationHelper
+import com.studymate.core.util.NotificationScheduler
 import com.studymate.data.repository.AndroidCalendarRepository
 import com.studymate.domain.repository.CalendarRepository
 import org.koin.android.ext.koin.androidContext

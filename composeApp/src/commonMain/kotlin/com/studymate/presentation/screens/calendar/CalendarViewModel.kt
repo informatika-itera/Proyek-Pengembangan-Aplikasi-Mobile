@@ -81,6 +81,18 @@ class CalendarViewModel(
         }
     }
 
+    fun navigatePrev(isMonthly: Boolean) {
+        val unit = if (isMonthly) DateTimeUnit.MONTH else DateTimeUnit.DAY
+        val prevDate = _uiState.value.selectedDate.minus(1, unit)
+        _uiState.update { it.copy(selectedDate = prevDate) }
+    }
+
+    fun navigateNext(isMonthly: Boolean) {
+        val unit = if (isMonthly) DateTimeUnit.MONTH else DateTimeUnit.DAY
+        val nextDate = _uiState.value.selectedDate.plus(1, unit)
+        _uiState.update { it.copy(selectedDate = nextDate) }
+    }
+
     fun deleteEvent(eventId: String) {
         viewModelScope.launch {
             calendarRepository.deleteEvent(eventId).onSuccess {
@@ -89,29 +101,9 @@ class CalendarViewModel(
         }
     }
 
-    fun deleteReminder(id: Long) {
+    fun deleteReminder(reminderId: Long) {
         viewModelScope.launch {
-            reminderRepository.deleteReminder(id)
+            reminderRepository.deleteReminder(reminderId)
         }
-    }
-
-    fun navigatePrev(isMonthly: Boolean) {
-        val current = _uiState.value.selectedDate
-        val next = if (isMonthly) {
-            current.minus(1, DateTimeUnit.MONTH)
-        } else {
-            current.minus(7, DateTimeUnit.DAY)
-        }
-        _uiState.update { it.copy(selectedDate = next) }
-    }
-
-    fun navigateNext(isMonthly: Boolean) {
-        val current = _uiState.value.selectedDate
-        val next = if (isMonthly) {
-            current.plus(1, DateTimeUnit.MONTH)
-        } else {
-            current.plus(7, DateTimeUnit.DAY)
-        }
-        _uiState.update { it.copy(selectedDate = next) }
     }
 }

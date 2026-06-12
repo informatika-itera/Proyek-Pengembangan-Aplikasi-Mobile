@@ -1,6 +1,8 @@
 package com.studymate.presentation.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,76 +53,64 @@ fun AppNavHost(
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                Surface(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .shadow(16.dp, RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp)),
-                    color = MaterialTheme.colorScheme.surface,
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
-                    NavigationBar(
-                        containerColor = Color.Transparent,
-                        tonalElevation = 0.dp,
-                        modifier = Modifier.height(72.dp)
-                    ) {
-                        val items = listOf(
-                            Triple(Screen.Home, Icons.Default.Home, "Home"),
-                            Triple(Screen.Notes, Icons.Default.EditNote, "Notes"),
-                            Triple(Screen.Quiz, Icons.Default.School, "Quiz"),
-                            Triple(Screen.Calendar, Icons.Default.CalendarMonth, "Planner"),
-                            Triple(Screen.Profile, Icons.Default.Person, "Profile")
-                        )
-                        items.forEach { (screen, icon, label) ->
-                            val isSelected = currentRoute?.startsWith(screen.route) == true
-                            NavigationBarItem(
-                                selected = isSelected,
-                                onClick = {
-                                    if (!isSelected) {
-                                        navController.navigate(screen.route) {
-                                            popUpTo(Screen.Home.route) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
+                    val items = listOf(
+                        Triple(Screen.Home, Icons.Default.Home, "Home"),
+                        Triple(Screen.Notes, Icons.Default.EditNote, "Notes"),
+                        Triple(Screen.Quiz, Icons.Default.School, "Quiz"),
+                        Triple(Screen.Calendar, Icons.Default.CalendarMonth, "Planner"),
+                        Triple(Screen.Profile, Icons.Default.Person, "Profile")
+                    )
+                    items.forEach { (screen, icon, label) ->
+                        val isSelected = currentRoute == screen.route
+                        NavigationBarItem(
+                            selected = isSelected,
+                            alwaysShowLabel = true,
+                            onClick = {
+                                if (currentRoute != screen.route) {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(Screen.Home.route) {
+                                            saveState = true
                                         }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                },
-                                icon = {
-                                    Icon(
-                                        icon,
-                                        contentDescription = label,
-                                        modifier = Modifier.size(24.dp),
-                                        tint = if (isSelected) PrimaryLight else Color.Gray
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        label,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                        fontSize = 10.sp
-                                    )
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = PrimaryLight.copy(alpha = 0.12f),
-                                    selectedIconColor = PrimaryLight,
-                                    selectedTextColor = PrimaryLight,
-                                    unselectedIconColor = Color.Gray,
-                                    unselectedTextColor = Color.Gray
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = label,
+                                    modifier = Modifier.size(24.dp)
                                 )
+                            },
+                            label = {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = PrimaryLight.copy(alpha = 0.12f),
+                                selectedIconColor = PrimaryLight,
+                                selectedTextColor = PrimaryLight,
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray
                             )
-                        }
+                        )
                     }
                 }
             }
         }
-    ) { _ ->
-        Box(modifier = Modifier.padding(bottom = 0.dp)) {
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             NavHost(
                 navController = navController,
-                startDestination = Screen.Splash.route,
-                modifier = Modifier.padding(bottom = if (showBottomBar) 88.dp else 0.dp)
+                startDestination = Screen.Splash.route
             ) {
                 composable(Screen.Splash.route) {
                     SplashScreen(
@@ -168,14 +158,16 @@ fun AppNavHost(
                         navController.getBackStackEntry(Screen.Quiz.route)
                     }
                     val viewModel: QuizViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
+                    // Create a typed handler to avoid lambda-parameter-count inference issues in the analyzer
+                    val onNoteSelectedHandler: (com.studymate.domain.model.Note) -> Unit = { note ->
+                        viewModel.startQuiz(note)
+                        navController.popBackStack()
+                    }
                     SelectNoteForQuizScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navController.popBackStack() },
                         onNavigateToAdvanced = { navController.navigate(Screen.AdvancedQuiz.route) },
-                        onNoteSelected = { note, count ->
-                            viewModel.startQuiz(note, count)
-                            navController.popBackStack()
-                        }
+                        onNoteSelected = onNoteSelectedHandler
                     )
                 }
                 composable(Screen.AdvancedQuiz.route) {
@@ -193,30 +185,20 @@ fun AppNavHost(
                     )
                 }
 
-                composable(
-                    route = "calendar?date={date}",
-                    arguments = listOf(navArgument(NavArgs.DATE) { 
-                        type = NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    })
-                ) { backStackEntry ->
-                    val dateStr = backStackEntry.arguments?.getString(NavArgs.DATE)
-                    CalendarScreen(initialDate = dateStr)
-                }
+                composable(Screen.Calendar.route) { CalendarScreen() }
                 composable(Screen.Profile.route) {
                     val viewModel: ProfileViewModel = koinViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = onThemeToggle,
-                        onNavigateToPlanner = { date ->
-                            val route = Screen.Calendar.createRoute(date?.toString())
-                            navController.navigate(route) {
-                                popUpTo(Screen.Home.route) {
+                        onNavigateToPlanner = {
+                            navController.navigate(Screen.Calendar.route) {
+                                popUpTo(Screen.Profile.route) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
+                                restoreState = true
                             }
                         }
                     )

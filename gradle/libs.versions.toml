@@ -21,6 +21,7 @@ google-api-client = "2.7.0"
 google-services-calendar = "v3-rev20220715-2.0.0"
 androidx-glance = "1.1.1"
 androidx-work = "2.9.1"
+kover = "0.9.8"
 
 # Testing
 turbine = "1.2.0"
@@ -97,3 +98,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

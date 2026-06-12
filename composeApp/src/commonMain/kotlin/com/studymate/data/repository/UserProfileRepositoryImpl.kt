@@ -30,6 +30,7 @@ class UserProfileRepositoryImpl(
                         localPhotoPath = it.localPhotoPath,
                         nim = it.nim,
                         major = it.major,
+                        lifeGoals = it.lifeGoals,
                         currentStreak = it.currentStreak.toInt(),
                         lastStudyDate = it.lastStudyDate,
                         dailyMantra = it.dailyMantra
@@ -48,6 +49,7 @@ class UserProfileRepositoryImpl(
                 localPhotoPath = profile.localPhotoPath,
                 nim = profile.nim,
                 major = profile.major,
+                lifeGoals = profile.lifeGoals,
                 currentStreak = profile.currentStreak.toLong(),
                 lastStudyDate = profile.lastStudyDate,
                 dailyMantra = profile.dailyMantra
@@ -55,13 +57,14 @@ class UserProfileRepositoryImpl(
         }
     }
 
-    override suspend fun updateLocalProfile(name: String?, photoPath: String?, nim: String?, major: String?) {
+    override suspend fun updateLocalProfile(name: String?, photoPath: String?, nim: String?, major: String?, lifeGoals: String?) {
         withContext(Dispatchers.IO) {
             database.userProfileQueries.updateLocalProfile(
                 localName = name,
                 localPhotoPath = photoPath,
                 nim = nim ?: "",
-                major = major ?: ""
+                major = major ?: "",
+                lifeGoals = lifeGoals ?: ""
             )
         }
     }

@@ -91,9 +91,9 @@ composeApp/src/
 │   │   │
 │   │   ├── remote/
 │   │   │   ├── api/
-│   │   │   │   └── GeminiService.kt          # API service
+│   │   │   │   └── AIRepositoryImpl.kt       # AI implementation (Groq)
 │   │   │   └── dto/
-│   │   │       └── GeminiDto.kt              # Request/Response DTOs
+│   │   │       └── GroqDto.kt                # Request/Response DTOs
 │   │   │
 │   │   └── repository/
 │   │       ├── NoteRepositoryImpl.kt         # Repository implementation
@@ -253,17 +253,13 @@ class NoteRepositoryImpl(
 ```kotlin
 // DTO: Data Transfer Object untuk API
 @Serializable
-data class GeminiRequest(
-    val contents: List<GeminiContent>,
-    // ... untuk serialization
+data class GroqRequest(
+    val model: String,
+    val messages: List<GroqMessage>
 )
 
-// Service: Komunikasi dengan API
-class GeminiService(private val client: HttpClient) {
-    suspend fun generateContent(prompt: String): Result<String> {
-        // API call implementation
-    }
-}
+// implementation: Komunikasi dengan API via Repository
+// (StudyMate sekarang menggunakan Groq API)
 ```
 
 ### 3. Presentation Layer (Paling Luar)
@@ -352,7 +348,7 @@ Pattern untuk kode platform-specific:
 
 // File: commonMain/.../ApiConfig.kt
 expect object ApiConfig {
-    val geminiApiKey: String
+    val groqApiKey: String
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -361,7 +357,7 @@ expect object ApiConfig {
 
 // File: androidMain/.../ApiConfig.android.kt
 actual object ApiConfig {
-    actual val geminiApiKey: String = BuildConfig.GEMINI_API_KEY
+    actual val groqApiKey: String = BuildConfig.GROQ_API_KEY
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -370,8 +366,8 @@ actual object ApiConfig {
 
 // File: iosMain/.../ApiConfig.ios.kt
 actual object ApiConfig {
-    actual val geminiApiKey: String
-        get() = NSBundle.mainBundle.objectForInfoDictionaryKey("GEMINI_API_KEY") as? String ?: ""
+    actual val groqApiKey: String
+        get() = NSBundle.mainBundle.objectForInfoDictionaryKey("GROQ_API_KEY") as? String ?: ""
 }
 ```
 
@@ -387,7 +383,6 @@ actual object ApiConfig {
 // Network Module
 val networkModule = module {
     single { HttpClientFactory.create() }    // Singleton
-    singleOf(::GeminiService)                // Auto-inject dependencies
 }
 
 // Repository Module

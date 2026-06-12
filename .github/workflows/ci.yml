@@ -29,10 +29,10 @@ jobs:
         with:
           gradle-version: 9.4.1
 
-      # 4. Create local.properties untuk API Key Gemini
+      # 4. Create local.properties untuk API Key Groq
       - name: Create local.properties
         run: |
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > local.properties
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" > local.properties
           echo "sdk.dir=$ANDROID_HOME" >> local.properties
 
      # 5. Grant execute permission for gradlew (Kita biarkan saja, tidak masalah)

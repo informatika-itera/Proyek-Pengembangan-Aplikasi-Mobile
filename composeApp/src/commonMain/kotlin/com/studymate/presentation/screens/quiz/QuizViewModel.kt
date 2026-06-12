@@ -26,9 +26,7 @@ sealed interface QuizUiState {
         val answers: Map<Int, Int> = emptyMap(),
         val isFinished: Boolean = false
     ) : QuizUiState
-    data class Review(
-        val history: QuizHistory
-    ) : QuizUiState
+    data class Review(val history: QuizHistory) : QuizUiState
     data class Error(val message: String) : QuizUiState
 }
 
@@ -51,14 +49,13 @@ class QuizViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val notes: StateFlow<List<Note>> = noteRepository.getAllNotes()
-        .map { allNotes -> allNotes.filter { it.refinedContent != null } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val allSubjects: StateFlow<List<String>> = noteRepository.getAllNotes()
-        .map { all -> all.map { it.subject }.filter { it.isNotBlank() }.distinct().sorted() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allSubjects: StateFlow<List<String>> = notes.map { list ->
+        list.map { it.subject }.filter { it.isNotBlank() }.distinct().sorted()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun startQuiz(note: Note, questionCount: Int) {
+    fun startQuiz(note: Note, questionCount: Int = 5) {
         viewModelScope.launch {
             _uiState.value = QuizUiState.Loading
             
@@ -68,7 +65,29 @@ class QuizViewModel(
                 noteContent = note.refinedContent ?: note.rawContent,
                 questionCount = questionCount
             )
-            handleQuizResult(result, note)
+            result.onSuccess { jsonString ->
+                try {
+                    val cleanedJson = extractJson(jsonString)
+                    val quizResponse = json.decodeFromString<QuizResponseDto>(cleanedJson)
+                    val questions = quizResponse.questions.map { dto ->
+                        QuizQuestion(
+                            question = dto.question,
+                            options = dto.options,
+                            correctAnswerIndex = dto.correct,
+                            explanation = dto.explanation
+                        )
+                    }
+                    
+                    _uiState.value = QuizUiState.ActiveSession(
+                        note = note,
+                        questions = questions
+                    )
+                } catch (e: Exception) {
+                    _uiState.value = QuizUiState.Error("Gagal memproses soal: ${e.message}\n\nRespon Mentah: ${jsonString.take(100)}...")
+                }
+            }.onFailure {
+                _uiState.value = QuizUiState.Error(it.message ?: "Gagal membuat kuis.")
+            }
         }
     }
 
@@ -76,58 +95,47 @@ class QuizViewModel(
         viewModelScope.launch {
             _uiState.value = QuizUiState.Loading
             
-            val combinedContent = selectedNotes.joinToString("\n\n---\n\n") { 
-                "Materi: ${it.title}\n${it.refinedContent ?: it.rawContent}"
-            }
-            
+            val combinedContent = selectedNotes.joinToString("\n\n") { it.refinedContent ?: it.rawContent }
             val result = aiRepository.generateQuiz(
                 subject = subject,
-                title = "Gabungan ${selectedNotes.size} Materi",
+                title = "Advanced Quiz: $subject",
                 noteContent = combinedContent,
                 questionCount = questionCount
             )
             
-            // For advanced quiz, we use a placeholder note title
-            val placeholderNote = selectedNotes.first().copy(
-                title = "Advanced Quiz: $subject",
-                subject = subject
-            )
-            handleQuizResult(result, placeholderNote)
+            result.onSuccess { jsonString ->
+                try {
+                    val cleanedJson = extractJson(jsonString)
+                    val quizResponse = json.decodeFromString<QuizResponseDto>(cleanedJson)
+                    val questions = quizResponse.questions.take(questionCount).map { dto ->
+                        QuizQuestion(
+                            question = dto.question,
+                            options = dto.options,
+                            correctAnswerIndex = dto.correct,
+                            explanation = dto.explanation
+                        )
+                    }
+                    
+                    _uiState.value = QuizUiState.ActiveSession(
+                        note = selectedNotes.firstOrNull() ?: Note(title = "Advanced Quiz", subject = subject, rawContent = ""),
+                        questions = questions
+                    )
+                } catch (e: Exception) {
+                    _uiState.value = QuizUiState.Error("Gagal memproses soal: ${e.message}\n\nRespon Mentah: ${jsonString.take(100)}...")
+                }
+            }.onFailure {
+                _uiState.value = QuizUiState.Error(it.message ?: "Gagal membuat kuis.")
+            }
         }
     }
 
-    private fun handleQuizResult(result: Result<String>, note: Note) {
-        result.onSuccess { jsonString ->
-            try {
-                val startIndex = jsonString.indexOf('{')
-                val endIndex = jsonString.lastIndexOf('}')
-                
-                if (startIndex == -1 || endIndex == -1 || endIndex < startIndex) {
-                    throw Exception("AI tidak mengembalikan format data yang benar.")
-                }
-                
-                val cleanedJson = jsonString.substring(startIndex, endIndex + 1)
-
-                val quizResponse = json.decodeFromString<QuizResponseDto>(cleanedJson)
-                val questions = quizResponse.questions.map { dto ->
-                    QuizQuestion(
-                        question = dto.question,
-                        options = dto.options,
-                        correctAnswerIndex = dto.correct,
-                        explanation = dto.explanation
-                    )
-                }
-                
-                _uiState.value = QuizUiState.ActiveSession(
-                    note = note,
-                    questions = questions
-                )
-            } catch (e: Exception) {
-                _uiState.value = QuizUiState.Error("Gagal memproses soal: ${e.message}")
-            }
-        }.onFailure {
-            _uiState.value = QuizUiState.Error(it.message ?: "Gagal membuat kuis.")
+    private fun extractJson(input: String): String {
+        val firstBrace = input.indexOf('{')
+        val lastBrace = input.lastIndexOf('}')
+        if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+            return input.substring(firstBrace, lastBrace + 1)
         }
+        return input.trim().removePrefix("```json").removeSuffix("```").trim()
     }
 
     fun submitAnswer(questionIndex: Int, answerIndex: Int) {
@@ -152,7 +160,7 @@ class QuizViewModel(
             session.questions[idx].correctAnswerIndex == answer
         }.size
         
-        val historyItem = QuizHistory(
+        val history = QuizHistory(
             noteId = session.note.id,
             noteTitle = session.note.title,
             subject = session.note.subject,
@@ -164,14 +172,31 @@ class QuizViewModel(
         )
         
         viewModelScope.launch {
-            quizRepository.insertHistory(historyItem)
+            quizRepository.insertHistory(history)
             activityRepository.recordQuizCompletion()
             _uiState.value = session.copy(isFinished = true)
         }
     }
 
-    fun startReview(history: QuizHistory) {
+    fun viewHistory(history: QuizHistory) {
         _uiState.value = QuizUiState.Review(history)
+    }
+
+    fun reviewCurrentSession() {
+        val state = _uiState.value
+        if (state is QuizUiState.ActiveSession && state.isFinished) {
+            val history = QuizHistory(
+                noteId = state.note.id,
+                noteTitle = state.note.title,
+                subject = state.note.subject,
+                score = state.answers.filter { (idx, ans) -> state.questions[idx].correctAnswerIndex == ans }.size,
+                totalQuestions = state.questions.size,
+                createdAt = Clock.System.now().toEpochMilliseconds(),
+                questions = state.questions,
+                userAnswers = state.answers
+            )
+            _uiState.value = QuizUiState.Review(history)
+        }
     }
 
     fun backToHistory() {

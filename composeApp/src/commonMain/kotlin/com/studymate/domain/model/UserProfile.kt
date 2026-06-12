@@ -12,15 +12,20 @@ data class UserProfile(
     val localPhotoPath: String? = null,
     val nim: String = "",
     val major: String = "",
+    val lifeGoals: String = "",
     val currentStreak: Int = 0,
     val lastStudyDate: Long? = null,
     val dailyMantra: String = "Jangan pernah berhenti belajar, karena hidup tidak pernah berhenti mengajar."
 ) {
     val displayName: String
-        get() = localName ?: googleName ?: "User StudyMate"
+        get() = if (!localName.isNullOrBlank()) localName 
+                else if (!googleName.isNullOrBlank()) googleName 
+                else "User StudyMate"
         
     val displayPhoto: String?
-        get() = localPhotoPath ?: googlePhotoUrl
+        get() = if (!localPhotoPath.isNullOrBlank()) localPhotoPath 
+                else if (!googlePhotoUrl.isNullOrBlank()) googlePhotoUrl 
+                else null
 }
 
 @Serializable

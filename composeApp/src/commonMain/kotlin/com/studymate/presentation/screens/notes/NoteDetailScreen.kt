@@ -94,6 +94,7 @@ fun NoteDetailScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { 
@@ -296,7 +297,7 @@ fun AIActionBar(onRefineClick: () -> Unit, isRefining: Boolean, isNewNote: Boole
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = if (isRefining) "Sedang Memproses..." else if (isNewNote) "✨ Ringkas & Jelaskan dengan AI" else "🪄 Refine Dengan AI",
+                text = if (isRefining) "Sedang Memproses..." else if (isNewNote) "✨ Ringkas & Jelaskan dengan AI" else "🪄 Rapikan dengan Gemini AI",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.bodyMedium

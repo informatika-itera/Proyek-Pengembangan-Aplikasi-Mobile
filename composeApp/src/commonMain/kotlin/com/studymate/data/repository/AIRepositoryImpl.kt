@@ -5,14 +5,14 @@ import com.studymate.domain.repository.AIRepository
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class AIRepositoryImpl(
     private val client: HttpClient,
-    private val apiKey: String
+    private val groqApiKey: String
 ) : AIRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -33,7 +33,7 @@ class AIRepositoryImpl(
             
             val response = client.post(url) {
                 contentType(ContentType.Application.Json)
-                header("Authorization", "Bearer $apiKey")
+                header("Authorization", "Bearer $groqApiKey")
                 setBody(GroqRequest(
                     model = "llama-3.3-70b-versatile",
                     messages = listOf(GroqMessage(role = "user", content = prompt))
@@ -56,6 +56,11 @@ class AIRepositoryImpl(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    override suspend fun generateMantra(): Result<String> {
+        val prompt = "Berikan satu kalimat motivasi belajar yang sangat singkat dan inspiratif dalam Bahasa Indonesia."
+        return queryGroq(prompt)
     }
 }
 

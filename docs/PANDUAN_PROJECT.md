@@ -1,10 +1,10 @@
 # 📚 Panduan Project - Pengembangan Aplikasi Mobile
 
-## Informasi Mata Kuliah
+## Informasi Mata Pelajaran
 
 | Item | Detail |
 |------|--------|
-| **Mata Kuliah** | Pengembangan Aplikasi Mobile |
+| **Mata Pelajaran** | Pengembangan Aplikasi Mobile |
 | **Kode** | IF25-22017 |
 | **Program Studi** | Teknik Informatika |
 | **Institusi** | Institut Teknologi Sumatera (ITERA) |
@@ -19,7 +19,7 @@ Project ini bertujuan untuk:
 1. **Memahami arsitektur aplikasi mobile modern** - Clean Architecture + MVVM
 2. **Menguasai Kotlin Multiplatform** - Satu codebase untuk Android & iOS
 3. **Mengimplementasikan best practices** - DI, Repository Pattern, Use Cases
-4. **Mengintegrasikan AI** - Penggunaan API Gemini untuk fitur cerdas
+4. **Mengintegrasikan AI** - Penggunaan API untuk fitur cerdas
 5. **Bekerja dengan Git** - Version control dan kolaborasi tim
 
 ---
@@ -70,8 +70,8 @@ Project ini bertujuan untuk:
 ### Akun yang Dibutuhkan
 
 1. **GitHub Account** - Untuk menyimpan kode project
-2. **Google AI Studio** - Untuk mendapatkan API key Gemini (gratis)
-   - Daftar di: https://aistudio.google.com/
+2. **Groq Cloud** - Untuk mendapatkan API key (gratis tier)
+   - Daftar di: https://console.groq.com/
 
 ---
 
@@ -128,13 +128,13 @@ git checkout -b project/121140007-121140008-121140009-StudyPlanner
 cp local.properties.example local.properties
 
 # Edit file local.properties
-# Tambahkan API key Gemini Anda
+# Tambahkan API key Groq Anda
 ```
 
 Isi `local.properties`:
 ```properties
 sdk.dir=/path/to/android/sdk
-GEMINI_API_KEY=your_api_key_here
+GROQ_API_KEY=your_api_key_here
 ```
 
 ### Step 5: Sync & Build

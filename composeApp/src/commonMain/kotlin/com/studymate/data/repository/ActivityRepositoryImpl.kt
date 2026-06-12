@@ -39,11 +39,38 @@ class ActivityRepositoryImpl(
     override suspend fun recordQuizCompletion() {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
         database.activityQueries.incrementQuizCount(today)
+        updateStreak()
     }
 
     override suspend fun recordNoteCreation() {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
         database.activityQueries.incrementNotesCount(today)
+        updateStreak()
+    }
+
+    private suspend fun updateStreak() {
+        val now = Clock.System.now().toEpochMilliseconds()
+        val profile = database.userProfileQueries.getProfile().executeAsOneOrNull()
+        
+        if (profile != null) {
+            val lastStudyDate = profile.lastStudyDate
+            val todayDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            
+            val lastStudyLocalDate = lastStudyDate?.let { 
+                Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date 
+            }
+
+            if (lastStudyLocalDate == null) {
+                database.userProfileQueries.updateStreak(1, now)
+            } else if (lastStudyLocalDate < todayDate) {
+                val yesterday = todayDate.minus(1, DateTimeUnit.DAY)
+                if (lastStudyLocalDate == yesterday) {
+                    database.userProfileQueries.updateStreak(profile.currentStreak + 1, now)
+                } else {
+                    database.userProfileQueries.updateStreak(1, now)
+                }
+            }
+        }
     }
 
     override suspend fun getMonthlyQuizCount(): Int {

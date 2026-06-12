@@ -13,10 +13,13 @@
 ---
 
 ## Video Demo
-
-![](docs/full_demo_TP.mp4)
-
-*Jika video di atas tidak dapat diputar langsung di browser Anda, Anda dapat mengunduh atau menontonnya secara manual di sini: **[Video Demo (full_demo_TP.mp4)](docs/full_demo_TP.mp4)***
+<p align="center">
+  <a href="https://youtu.be/ZJtZRwx-RVo" target="_blank">
+    <img src="docs/ss_1.jpeg" alt="Watch Demo Video" width="75%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+  </a>
+  <br>
+  <em>Klik gambar di atas untuk menonton video demo aplikasi di YouTube</em>
+</p>
 
 ---
 

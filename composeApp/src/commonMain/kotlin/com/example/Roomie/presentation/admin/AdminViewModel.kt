@@ -76,14 +76,14 @@ class AdminViewModel(
                 val auditLogs = array[4] as List<AuditLog>
                 val filter = array[5] as AdminFilterState
                 
-                val filteredReports = reports.filter { 
-                    (filter.reportStatusFilter == null || it.status == filter.reportStatusFilter) &&
-                    (filter.reportQuery.isEmpty() || it.description.contains(filter.reportQuery, ignoreCase = true) || it.location.contains(filter.reportQuery, ignoreCase = true))
+                val filteredReports = reports.filter { report ->
+                    (filter.reportStatusFilter == null || report.status == filter.reportStatusFilter) &&
+                    (filter.reportQuery.isEmpty() || report.description.contains(filter.reportQuery, ignoreCase = true) || report.location.contains(filter.reportQuery, ignoreCase = true))
                 }.reversed()
 
-                val filteredBookings = bookings.filter {
-                    (filter.bookingStatusFilter == null || it.status == filter.bookingStatusFilter) &&
-                    (filter.bookingQuery.isEmpty() || it.roomName.contains(filter.bookingQuery, ignoreCase = true) || it.subject?.contains(filter.bookingQuery, ignoreCase = true) == true)
+                val filteredBookings = bookings.filter { booking ->
+                    (filter.bookingStatusFilter == null || booking.status == filter.bookingStatusFilter) &&
+                    (filter.bookingQuery.isEmpty() || booking.roomName.contains(filter.bookingQuery, ignoreCase = true) || booking.subject?.contains(filter.bookingQuery, ignoreCase = true) == true)
                 }.reversed()
 
                 AdminUiState.Success(

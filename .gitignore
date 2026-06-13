@@ -49,4 +49,4 @@ native/
 # wrapper/ # Dihapus agar folder gradle/wrapper tidak ter-ignore
 
 # Roomie Custom Secrets
-composeApp/src/commonMain/kotlin/com/example/Roomie/core/util/AiConfig.kt
+# composeApp/src/commonMain/kotlin/com/example/Roomie/core/util/AiConfig.kt

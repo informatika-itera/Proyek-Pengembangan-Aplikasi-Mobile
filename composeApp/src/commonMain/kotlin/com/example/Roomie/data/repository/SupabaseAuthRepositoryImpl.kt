@@ -17,20 +17,30 @@ class SupabaseAuthRepositoryImpl(
 
     override suspend fun login(idNumber: String): Result<User> {
         val trimmedId = idNumber.trim()
+        val email = "$trimmedId@roomie.itera.ac.id"
+        val password = "pin_$trimmedId" 
+        
         return try {
-            val email = "$trimmedId@roomie.itera.ac.id"
-            val password = "pin_$trimmedId" 
+            Napier.d("Supabase Auth: Attempting login for $email")
             
-            Napier.d("Supabase: Attempting login for $email")
-            
-            client.auth.signInWith(Email) {
-                this.email = email
-                this.password = password
+            // 1. Try to Sign In
+            try {
+                client.auth.signInWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
+            } catch (signInException: Exception) {
+                // 2. If Sign In fails (likely user doesn't exist in Auth yet), try Auto-SignUp
+                Napier.d("Supabase Auth: Sign In failed (${signInException.message}), attempting Auto-SignUp for $email")
+                client.auth.signUpWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
             }
 
             val session = client.auth.currentSessionOrNull()
             if (session != null) {
-                Napier.d("Supabase: Login success for $email")
+                Napier.d("Supabase Auth: Success for $email")
                 val role = if (trimmedId.length <= 5) UserRole.ADMIN else UserRole.STUDENT
                 val user = User(
                     id = session.user?.id ?: "",
@@ -41,12 +51,11 @@ class SupabaseAuthRepositoryImpl(
                 userPreferences.saveUser(user)
                 Result.success(user)
             } else {
-                Napier.e("Supabase: Session is null after sign in")
-                Result.failure(Exception("Gagal membuat sesi login"))
+                Result.failure(Exception("Gagal membuat sesi login. Session null."))
             }
         } catch (e: Exception) {
-            Napier.e("Supabase Login Error: ${e.message}", e)
-            Result.failure(Exception("Login gagal: NIM tidak ditemukan atau PIN salah."))
+            Napier.e("Supabase Auth Final Error: ${e.message}", e)
+            Result.failure(Exception("Login gagal: Pastikan koneksi internet stabil dan kredensial benar."))
         }
     }
 

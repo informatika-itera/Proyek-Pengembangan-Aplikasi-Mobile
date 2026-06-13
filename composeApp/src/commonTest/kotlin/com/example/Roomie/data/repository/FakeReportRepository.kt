@@ -23,6 +23,12 @@ class FakeReportRepository : ReportRepository {
         _reports.update { it + report }
     }
     
+    suspend fun deleteReport(reportId: String) {
+        _reports.update { current ->
+            current.filter { it.id != reportId }
+        }
+    }
+    
     fun setReports(reports: List<Report>) {
         _reports.value = reports
     }

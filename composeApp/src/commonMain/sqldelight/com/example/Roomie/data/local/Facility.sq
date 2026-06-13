@@ -53,3 +53,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateRoomStatus:
 UPDATE RoomEntity SET status = ?, borrowerName = ?, maintenanceDescription = ? WHERE id = ?;
+
+deleteBuilding:
+DELETE FROM BuildingEntity WHERE id = ?;
+
+deleteRoom:
+DELETE FROM RoomEntity WHERE id = ?;

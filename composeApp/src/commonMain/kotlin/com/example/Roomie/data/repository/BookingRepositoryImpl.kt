@@ -10,11 +10,10 @@ import com.example.Roomie.domain.repository.BookingRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.realtime.*
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -23,6 +22,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import io.github.aakira.napier.Napier
 
 @Serializable
 data class BookingRemoteDto(
@@ -47,7 +49,6 @@ class BookingRepositoryImpl(
     private val queries = database.bookingQueries
 
     init {
-        // Start background sync if online
         observeRealtimeSync()
     }
 
@@ -56,7 +57,7 @@ class BookingRepositoryImpl(
             networkMonitor.isOnline.collect { online ->
                 if (online) {
                     try {
-                        // 1. Initial Sync
+                        // 1. Initial Sync from Cloud
                         val remoteBookings = supabaseClient.postgrest["bookings"]
                             .select().decodeList<BookingRemoteDto>()
                         
@@ -81,6 +82,8 @@ class BookingRepositoryImpl(
                         val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                             table = "bookings"
                         }
+                        
+                        channel.subscribe()
                         
                         changeFlow.collect { change ->
                             withContext(Dispatchers.IO) {
@@ -112,7 +115,7 @@ class BookingRepositoryImpl(
                                         )
                                     }
                                     is PostgresAction.Delete -> {
-                                        val id = change.oldRecord["id"]?.jsonPrimitive?.content
+                                        val id = change.oldRecord["id"]?.jsonPrimitive?.contentOrNull
                                         if (id != null) queries.deleteBooking(id)
                                     }
                                     else -> {}
@@ -120,7 +123,7 @@ class BookingRepositoryImpl(
                             }
                         }
                     } catch (e: Exception) {
-                        // Silent fail for sync
+                        Napier.e("Realtime Sync Error: ${e.message}", e)
                     }
                 }
             }
@@ -150,22 +153,26 @@ class BookingRepositoryImpl(
     override suspend fun addBooking(booking: Booking): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                // 1. Check local conflict first
+                // 🛡️ CONFLICT CHECK (LOCAL)
                 if (checkConflict(booking.roomId, booking.startTime, booking.endTime)) {
-                    return@withContext Result.failure(Exception("Ruangan sudah dipesan pada waktu tersebut (Local Check)"))
+                    return@withContext Result.failure(Exception("Ruangan ini sudah dipesan pada waktu tersebut."))
                 }
 
-                // 2. Try Remote if online
+                // 🌐 CLOUD SAVE (MANDATORY FOR CROSS-DEVICE)
                 if (networkMonitor.isOnline.value) {
+                    // Double check remote conflict before push
                     val remoteConflict = checkRemoteConflict(booking.roomId, booking.startTime, booking.endTime)
                     if (remoteConflict) {
-                        return@withContext Result.failure(Exception("Ruangan baru saja di-book orang lain di Cloud!"))
+                        return@withContext Result.failure(Exception("Waduh, telat Bre! Baru saja di-book orang lain di Cloud."))
                     }
                     
                     supabaseClient.postgrest["bookings"].insert(booking.toDto())
+                    Napier.d("Booking saved to Cloud: ${booking.id}")
+                } else {
+                    return@withContext Result.failure(Exception("Internet mati bre! Lo harus online buat nge-book ruangan biar orang lain tau."))
                 }
 
-                // 3. Save to Local (Always, as single source of truth for UI)
+                // 💾 LOCAL SAVE (UI Source of Truth)
                 queries.insertBooking(
                     id = booking.id,
                     roomId = booking.roomId,
@@ -178,9 +185,8 @@ class BookingRepositoryImpl(
                 )
                 Result.success(Unit)
             } catch (e: Exception) {
-                // If remote failed but it was a network error, we could still save locally and sync later
-                // For now, let's just return the error
-                Result.failure(e)
+                Napier.e("Add Booking Error: ${e.message}", e)
+                Result.failure(Exception("Gagal menyimpan booking: ${e.message}"))
             }
         }
     }
@@ -259,7 +265,7 @@ class BookingRepositoryImpl(
 
     private fun parseHttpDate(dateStr: String): Long {
         return try {
-            // Format: Wed, 21 Oct 2015 07:28:00 GMT
+            // Wed, 21 Oct 2026 07:28:00 GMT
             val parts = dateStr.split(" ")
             val day = parts[1].toInt()
             val month = when (parts[2]) {
@@ -320,4 +326,3 @@ class BookingRepositoryImpl(
         user_id = userId
     )
 }
-

@@ -6,8 +6,6 @@ import com.example.Roomie.data.local.datastore.UserPreferences
 import com.example.Roomie.domain.model.Report
 import com.example.Roomie.domain.model.ReportStatus
 import com.example.Roomie.domain.usecase.*
-import com.example.Roomie.data.repository.ReportRepositoryImpl
-import com.example.Roomie.domain.repository.ReportRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -28,7 +26,6 @@ class HomeViewModel(
     private val getAllReportsUseCase: GetAllReportsUseCase,
     private val getAllAnnouncementsUseCase: GetAllAnnouncementsUseCase,
     private val performAutomaticCleanupUseCase: PerformAutomaticCleanupUseCase,
-    private val reportRepository: ReportRepository,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -37,12 +34,6 @@ class HomeViewModel(
     init {
         viewModelScope.launch {
             performAutomaticCleanupUseCase()
-        }
-        
-        (reportRepository as? ReportRepositoryImpl)?.let {
-            viewModelScope.launch {
-                it.seedDummyReports()
-            }
         }
         observeDashboardData()
     }

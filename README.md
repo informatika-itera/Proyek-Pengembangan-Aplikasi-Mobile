@@ -21,6 +21,7 @@ BridgeBit adalah aplikasi penerjemah cerdas berbasis AI yang dirancang untuk mem
 
 - **Link Demo Sprint 2:** https://youtube.com/shorts/ngfyzMd6CXk?feature=share
 - **Video Tes Coverage dan UI Polish Test Sprint 4 PAM:** https://youtu.be/OUmG4H25QWI
+- **Final Demo Sprint 5:** https://youtu.be/xQ9w_WuBjTE
 
 ---
 
@@ -227,3 +228,11 @@ Buka file berikut di browser untuk melihat laporan interaktif:
 ```
 build/reports/kover/htmlDebug/index.html
 ```
+
+---
+
+## 📦 Release APK
+
+Aplikasi BridgeBit sudah dapat digunakan dan file `.apk` telah tersedia untuk diunduh. Anda bisa mengakses file APK-nya melalui tautan Google Drive di bawah ini:
+
+[Unduh BridgeBit APK](https://drive.google.com/drive/folders/1A72xfHPWw6eMLpoc5LTFzfRS3jDQmnro?usp=sharing)

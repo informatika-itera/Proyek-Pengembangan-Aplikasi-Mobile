@@ -19,6 +19,9 @@ val localProperties = Properties().apply {
     }
 }
 
+val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)

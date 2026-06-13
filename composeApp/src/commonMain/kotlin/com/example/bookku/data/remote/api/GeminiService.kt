@@ -23,9 +23,9 @@ class GeminiService(private val client: HttpClient) {
     private val json = Json { ignoreUnknownKeys = true }
     
     companion object {
-        // Menggunakan v1 (Stable) - Versi paling kompatibel untuk semua region
-        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1"
-        private const val MODEL = "gemini-1.5-flash" 
+        // Menggunakan v1beta untuk akses model terbaru Gemini 2.0 Flash
+        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+        private const val MODEL = "gemini-2.0-flash-exp"
     }
     
     suspend fun generateContent(

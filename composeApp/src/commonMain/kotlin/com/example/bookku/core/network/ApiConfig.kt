@@ -10,13 +10,6 @@
  * actual: Implementasi spesifik platform (di androidMain/iosMain)
  */
 expect object ApiConfig {
-    /**
-     * Gemini API Key
-     * 
-     * Android: Diambil dari BuildConfig (local.properties)
-     * iOS: Diambil dari Info.plist atau hardcoded (untuk development)
-     */
     val geminiApiKey: String
 }
-
 

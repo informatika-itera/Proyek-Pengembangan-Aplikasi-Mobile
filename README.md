@@ -10,6 +10,10 @@ Project ini dibuat untuk mata kuliah Pengembangan Aplikasi Mobile. Target aktif 
 
 > Disclaimer: aplikasi ini dibuat untuk kebutuhan akademik dan pembelajaran. KelazZz tetap menggunakan autentikasi resmi pengguna Pocket ITERA dan tidak melakukan bypass keamanan, modifikasi sistem kampus, atau akses ke akun pengguna lain.
 
+## Video Demo
+
+Video demo aplikasi: [https://youtu.be/GpRTtH88aHk](https://youtu.be/GpRTtH88aHk)
+
 ## Tim Pengembang
 
 | Nama | NIM | GitHub | Role |
@@ -170,6 +174,24 @@ Use case utama yang digunakan:
 | Profile | Data pengguna, pilihan tema, dan logout |
 
 Catatan: route `Notifikasi` belum menjadi screen aktif di NavHost. Pengingat jadwal tetap berjalan melalui mekanisme notifikasi lokal Android.
+
+## Screenshot Aplikasi
+
+| Login | Home | Rekap Presensi |
+|-------|------|----------------|
+| <img src="https://github.com/user-attachments/assets/d84eeb89-ecc8-4058-adbd-72ee23a0241c" alt="Login" width="220"> | <img src="https://github.com/user-attachments/assets/4eab9f24-50d0-41e8-8535-754a165554e2" alt="Home" width="220"> | <img src="https://github.com/user-attachments/assets/2c48acbf-a726-481e-b465-021f521992d0" alt="Rekap Presensi" width="220"> |
+
+| Presensi QR | Presensi Manual | Jadwal |
+|-------------|-----------------|--------|
+| <img src="https://github.com/user-attachments/assets/053dee52-3a5d-4c33-a6f6-71a26955cf58" alt="Presensi QR" width="220"> | <img src="https://github.com/user-attachments/assets/3839298d-3cd3-4c6e-8070-1c2568d661bc" alt="Presensi Manual" width="220"> | <img src="https://github.com/user-attachments/assets/e54cf9d4-a9ff-4000-84ba-5a5ff744264a" alt="Jadwal" width="220"> |
+
+| Tambah/Edit Jadwal | Detail Jadwal | AI Asisten |
+|--------------------|---------------|------------|
+| <img src="https://github.com/user-attachments/assets/c409b870-f338-4ccf-b0f7-3a2fb3033023" alt="Tambah/Edit Jadwal" width="220"> | <img src="https://github.com/user-attachments/assets/57aaee4a-238c-4224-a9d8-5ed74c7593a0" alt="Detail Jadwal" width="220"> | <img src="https://github.com/user-attachments/assets/9a3e50c1-6da9-489a-956d-6e7dd56ccd47" alt="AI Asisten" width="220"> |
+
+| Profil |
+|--------|
+| <img src="https://github.com/user-attachments/assets/4228d076-325a-4f9d-920f-bdf901545424" alt="Profil" width="220"> |
 
 ## Struktur Proyek
 

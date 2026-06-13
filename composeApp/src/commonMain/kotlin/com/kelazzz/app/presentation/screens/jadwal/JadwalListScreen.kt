@@ -413,7 +413,7 @@ private fun EmptyListState(
             text = if (isFiltered)
                 "Coba cari kata kunci lain atau hapus filter kategori saat ini."
             else
-                "Belum ada agenda terdaftar. Tambahkan tugas, ujian, atau pengingat kelas sekarang.",
+                "Belum ada agenda terdaftar. Tambahkan kelas, tugas, ujian, atau agenda lainnya sekarang.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

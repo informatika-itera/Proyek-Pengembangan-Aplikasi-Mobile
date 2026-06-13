@@ -17,6 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
+val DAYS_OF_WEEK = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu")
+
 class JadwalAddEditViewModel(
     private val repository: JadwalRepository,
     savedStateHandle: SavedStateHandle
@@ -33,7 +38,12 @@ class JadwalAddEditViewModel(
 
     private fun loadJadwalForEdit() {
         if (jadwalId == null) {
-            _uiState.update { it.copy(isLoading = false) }
+            _uiState.update { 
+                it.copy(
+                    isLoading = false,
+                    formTanggal = "Senin"
+                ) 
+            }
             return
         }
         viewModelScope.launch {
@@ -76,7 +86,23 @@ class JadwalAddEditViewModel(
     }
 
     fun onJenisChange(value: JenisJadwal) {
-        _uiState.update { it.copy(formJenis = value) }
+        _uiState.update { state ->
+            val newTanggal = if (value == JenisJadwal.REMINDER) {
+                if (state.formTanggal in DAYS_OF_WEEK) state.formTanggal else "Senin"
+            } else {
+                val isDateValid = runCatching { LocalDate.parse(state.formTanggal) }.isSuccess
+                if (isDateValid) state.formTanggal else {
+                    Clock.System.now()
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                        .date
+                        .toString()
+                }
+            }
+            state.copy(
+                formJenis = value,
+                formTanggal = newTanggal
+            )
+        }
     }
 
     fun onReminderOptionChange(value: ReminderOption) {
@@ -94,7 +120,7 @@ class JadwalAddEditViewModel(
             _uiState.update { it.copy(formError = "Hari harus diisi") }
             return
         }
-        if (state.formReminderOption != ReminderOption.NONE && !isValidSchedulableDateTime(state.formTanggal, state.formWaktu)) {
+        if (state.formReminderOption != ReminderOption.NONE && !isValidSchedulableDateTime(state.formJenis, state.formTanggal, state.formWaktu)) {
             _uiState.update {
                 it.copy(
                     formError = "Pilih tanggal dan waktu mulai agar notifikasi bisa dijadwalkan."
@@ -131,16 +157,21 @@ class JadwalAddEditViewModel(
         }
     }
 
-    private fun isValidSchedulableDateTime(tanggal: String, waktu: String): Boolean {
-        val date = runCatching { LocalDate.parse(tanggal.trim()) }.getOrNull() ?: return false
-        if (date.year !in 2000..2100) return false
-
+    private fun isValidSchedulableDateTime(jenis: JenisJadwal, tanggal: String, waktu: String): Boolean {
         val startTime = waktu.substringBefore("-").trim()
         val timeParts = startTime.split(":")
         if (timeParts.size != 2) return false
         val hour = timeParts[0].toIntOrNull() ?: return false
         val minute = timeParts[1].toIntOrNull() ?: return false
-        return hour in 0..23 && minute in 0..59
+        val isTimeValid = hour in 0..23 && minute in 0..59
+        if (!isTimeValid) return false
+
+        return if (jenis == JenisJadwal.REMINDER) {
+            tanggal.trim() in DAYS_OF_WEEK
+        } else {
+            val date = runCatching { LocalDate.parse(tanggal.trim()) }.getOrNull() ?: return false
+            date.year in 2000..2100
+        }
     }
 }
 

@@ -1,605 +1,305 @@
-# 🏗️ Struktur Kode & Arsitektur
+# Struktur Kode dan Arsitektur
 
-Dokumen ini menjelaskan struktur kode dan arsitektur yang digunakan dalam template project.
-
----
-
-## 📐 Arsitektur: Clean Architecture + MVVM
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        PRESENTATION LAYER                         │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                         UI (Screen)                         │  │
-│  │            Composable functions, UI state rendering         │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                              ▲ │                                  │
-│                    State     │ │ Events                           │
-│                              │ ▼                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                        ViewModel                            │  │
-│  │         StateFlow, event handling, UI state management      │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
-                               ▲ │
-                               │ │ Calls
-                               │ ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                          DOMAIN LAYER                             │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                        Use Cases                            │  │
-│  │               Business logic, orchestration                 │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                              ▲ │                                  │
-│                              │ │                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                  Repository Interface                       │  │
-│  │                    Contract/abstraction                     │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                                                                   │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                       Domain Models                         │  │
-│  │               Pure Kotlin data classes                      │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
-                               ▲ │
-                               │ │ Implements
-                               │ ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                           DATA LAYER                              │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                Repository Implementation                    │  │
-│  │            Coordinates data sources, caching                │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│              ┌───────────────┼───────────────┐                    │
-│              ▼               ▼               ▼                    │
-│  ┌──────────────────┐ ┌──────────────┐ ┌─────────────────┐       │
-│  │   Local Source   │ │ Remote Source│ │   DataStore     │       │
-│  │    (SQLDelight)  │ │    (Ktor)    │ │  (Preferences)  │       │
-│  └──────────────────┘ └──────────────┘ └─────────────────┘       │
-└──────────────────────────────────────────────────────────────────┘
-```
+Dokumen ini menjelaskan struktur kode KelazZz dan batas tanggung jawab tiap layer.
 
 ---
 
-## 📁 Struktur Folder Detail
+## Ringkasan Arsitektur
 
+KelazZz memakai Clean Architecture + MVVM.
+
+```text
+Presentation Layer
+Screens, reusable components, navigation, ViewModel, UI state
+        |
+        v
+Domain Layer
+Domain models, repository interfaces, use cases, validation
+        |
+        v
+Data Layer
+Repository implementations, Pocket API, OpenCode API, SQLDelight, DataStore
 ```
+
+Dependency diarahkan ke dalam:
+- Presentation boleh mengenal Domain.
+- Data mengimplementasikan kontrak dari Domain.
+- Domain tidak bergantung pada UI, database, API, atau Android.
+
+---
+
+## Struktur Folder Utama
+
+```text
 composeApp/src/
-│
-├── commonMain/kotlin/com/example/noteai/    # ← Shared code (95%+)
-│   │
-│   ├── core/                                 # Core utilities
-│   │   ├── di/                               # Dependency Injection
-│   │   │   └── AppModule.kt                  # Koin modules definition
-│   │   │
-│   │   ├── network/                          # Network configuration
-│   │   │   ├── ApiConfig.kt                  # expect: API keys
-│   │   │   └── HttpClientFactory.kt          # Ktor client setup
-│   │   │
-│   │   └── util/                             # Utilities
-│   │       ├── DatabaseDriverFactory.kt      # expect: DB driver
-│   │       └── Extensions.kt                 # Extension functions
-│   │
-│   ├── data/                                 # Data Layer
-│   │   ├── local/
-│   │   │   ├── entity/
-│   │   │   │   └── NoteMapper.kt             # Entity ↔ Domain mappers
-│   │   │   ├── dao/                          # (Generated by SQLDelight)
-│   │   │   └── datastore/
-│   │   │       └── UserPreferences.kt        # DataStore preferences
-│   │   │
-│   │   ├── remote/
-│   │   │   ├── api/
-│   │   │   │   └── OpenCodeGoService.kt          # API service
-│   │   │   └── dto/
-│   │   │       └── OpenCodeGoDto.kt              # Request/Response DTOs
-│   │   │
-│   │   └── repository/
-│   │       ├── NoteRepositoryImpl.kt         # Repository implementation
-│   │       └── AIRepositoryImpl.kt           # AI repository implementation
-│   │
-│   ├── domain/                               # Domain Layer (Pure Kotlin)
-│   │   ├── model/
-│   │   │   └── Note.kt                       # Domain model
-│   │   │
-│   │   ├── repository/
-│   │   │   ├── NoteRepository.kt             # Repository interface
-│   │   │   └── AIRepository.kt               # AI repository interface
-│   │   │
-│   │   └── usecase/
-│   │       └── NoteUseCases.kt               # Business logic
-│   │
-│   ├── presentation/                         # Presentation Layer
-│   │   ├── navigation/
-│   │   │   ├── Routes.kt                     # Navigation routes
-│   │   │   └── AppNavHost.kt                 # Navigation host
-│   │   │
-│   │   ├── screens/
-│   │   │   ├── home/
-│   │   │   │   ├── HomeViewModel.kt
-│   │   │   │   └── HomeScreen.kt
-│   │   │   ├── addnote/
-│   │   │   │   ├── AddNoteViewModel.kt
-│   │   │   │   └── AddNoteScreen.kt
-│   │   │   ├── detail/
-│   │   │   │   ├── NoteDetailViewModel.kt
-│   │   │   │   └── NoteDetailScreen.kt
-│   │   │   └── ai/
-│   │   │       ├── AIAssistantViewModel.kt
-│   │   │       └── AIAssistantScreen.kt
-│   │   │
-│   │   ├── components/
-│   │   │   └── NoteComponents.kt             # Reusable UI components
-│   │   │
-│   │   └── theme/
-│   │       └── Theme.kt                      # Material theme
-│   │
-│   └── App.kt                                # App entry point
-│
-├── commonMain/sqldelight/                    # SQLDelight schema
-│   └── com/example/noteai/
-│       └── Note.sq                           # Database schema & queries
-│
-├── commonTest/kotlin/                        # Shared tests
-│   └── com/example/noteai/
-│       ├── data/repository/
-│       │   └── NoteRepositoryTest.kt
-│       └── presentation/
-│           └── HomeViewModelTest.kt
-│
-├── androidMain/kotlin/                       # Android-specific
-│   └── com/example/noteai/
-│       ├── MainActivity.kt
-│       ├── NoteAIApplication.kt
-│       └── core/
-│           ├── di/AndroidModule.kt           # actual: Android DI
-│           ├── network/ApiConfig.android.kt  # actual: BuildConfig
-│           └── util/DatabaseDriverFactory.android.kt  # actual: Android driver
-│
-└── iosMain/kotlin/                           # iOS-specific
-    └── com/example/noteai/
-        ├── MainViewController.kt
-        └── core/
-            ├── di/IosModule.kt               # actual: iOS DI
-            ├── network/ApiConfig.ios.kt      # actual: Info.plist
-            └── util/DatabaseDriverFactory.ios.kt  # actual: Native driver
+|-- commonMain/
+|   |-- kotlin/com/kelazzz/app/
+|   |   |-- App.kt
+|   |   |-- core/
+|   |   |   |-- network/
+|   |   |   |-- notification/
+|   |   |   `-- util/
+|   |   |-- data/
+|   |   |   |-- local/datastore/
+|   |   |   |-- remote/ai/
+|   |   |   |-- remote/pocket/
+|   |   |   `-- repository/
+|   |   |-- di/
+|   |   |-- domain/
+|   |   |   |-- model/
+|   |   |   |-- repository/
+|   |   |   |-- usecase/
+|   |   |   `-- validation/
+|   |   `-- presentation/
+|   |       |-- components/
+|   |       |-- navigation/
+|   |       |-- screens/
+|   |       |   |-- ai/
+|   |       |   |-- home/
+|   |       |   |-- jadwal/
+|   |       |   |-- kalender/
+|   |       |   |-- login/
+|   |       |   |-- presensi/
+|   |       |   |-- profile/
+|   |       |   `-- rekap/
+|   |       `-- theme/
+|   `-- sqldelight/com/kelazzz/app/data/local/
+|       |-- Jadwal.sq
+|       |-- Presensi.sq
+|       `-- 1.sqm
+|-- androidMain/
+|   |-- AndroidManifest.xml
+|   `-- kotlin/com/kelazzz/app/
+|       |-- MainActivity.kt
+|       |-- KelazZzApplication.kt
+|       |-- core/di/
+|       |-- core/network/
+|       |-- core/notification/
+|       |-- core/util/
+|       |-- data/local/datastore/
+|       `-- presentation/components/
+|-- commonTest/
+|-- androidUnitTest/
+`-- androidInstrumentedTest/
 ```
 
 ---
 
-## 🔑 Penjelasan Setiap Layer
+## Layer Domain
 
-### 1. Domain Layer (Paling Dalam)
+Domain berisi model dan aturan bisnis yang tidak bergantung pada framework.
 
-**Karakteristik:**
-- Pure Kotlin (tidak ada dependency ke framework)
-- Berisi business logic
-- Tidak tahu tentang database atau API
+Isi penting:
 
-**Models (`domain/model/`)**
+| Folder/File | Fungsi |
+|-------------|--------|
+| `domain/model/` | Model seperti `Jadwal`, `Kelas`, `Presensi`, `AttendanceSummary`, `ThemeMode`, `ChatMessage` |
+| `domain/repository/` | Kontrak `AuthRepository`, `JadwalRepository`, `PresensiRepository`, `AIRepository` |
+| `domain/usecase/UseCases.kt` | Use case untuk login, presensi, jadwal, dan AI |
+| `domain/validation/StudentEmailPolicy.kt` | Validasi dan normalisasi email mahasiswa ITERA |
+
+Contoh kontrak repository:
+
 ```kotlin
-// Domain model - representasi data dalam aplikasi
-data class Note(
-    val id: Long = 0,
-    val title: String,
-    val content: String,
-    val category: NoteCategory,
-    // ... pure data, no framework dependencies
-)
-```
-
-**Repository Interface (`domain/repository/`)**
-```kotlin
-// Contract - mendefinisikan operasi yang tersedia
-interface NoteRepository {
-    fun getAllNotes(): Flow<List<Note>>
-    suspend fun insertNote(note: Note): Long
-    // ... tanpa implementation details
-}
-```
-
-**Use Cases (`domain/usecase/`)**
-```kotlin
-// Business logic yang spesifik
-class GetAllNotesUseCase(
-    private val repository: NoteRepository
-) {
-    operator fun invoke(sortBy: NoteSortBy): Flow<List<Note>> {
-        return repository.getAllNotes().map { notes ->
-            // Business logic: sorting, filtering, etc.
-            sortNotes(notes, sortBy)
-        }
-    }
-}
-```
-
-### 2. Data Layer (Tengah)
-
-**Karakteristik:**
-- Implementasi repository
-- Berinteraksi dengan database dan API
-- Mapping antara entity dan domain model
-
-**Entity & Mapper (`data/local/entity/`)**
-```kotlin
-// Mapper: Entity (database) ↔ Domain Model
-fun NoteEntity.toDomain(): Note {
-    return Note(
-        id = id,
-        title = title,
-        // ... mapping
-    )
-}
-```
-
-**Repository Implementation (`data/repository/`)**
-```kotlin
-class NoteRepositoryImpl(
-    private val database: NoteDatabase
-) : NoteRepository {
-    
-    override fun getAllNotes(): Flow<List<Note>> {
-        // Implementation: query database, map to domain
-        return database.noteQueries.getAllNotes()
-            .asFlow()
-            .mapToList()
-            .map { entities -> entities.toDomainList() }
-    }
-}
-```
-
-**Remote API (`data/remote/`)**
-```kotlin
-// DTO: Data Transfer Object untuk API
-@Serializable
-data class OpenCodeChatRequest(
-    val messages: List<OpenCodeChatMessage>,
-    // ... untuk serialization
-)
-
-// Service: Komunikasi dengan API
-class OpenCodeGoService(private val client: HttpClient) {
-    suspend fun generateContent(prompt: String): Result<String> {
-        // API call implementation
-    }
-}
-```
-
-### 3. Presentation Layer (Paling Luar)
-
-**Karakteristik:**
-- UI dengan Compose
-- ViewModel dengan StateFlow
-- Event handling
-
-**ViewModel (`presentation/screens/*/`)**
-```kotlin
-class HomeViewModel(
-    private val getAllNotesUseCase: GetAllNotesUseCase
-) : ViewModel() {
-    
-    // UI State menggunakan StateFlow
-    val uiState: StateFlow<HomeUiState> = getAllNotesUseCase()
-        .map { notes -> HomeUiState.Success(notes) }
-        .stateIn(viewModelScope, ...)
-    
-    // Handle user actions
-    fun onSearchQueryChange(query: String) { ... }
-}
-
-// Sealed interface untuk UI State
-sealed interface HomeUiState {
-    data object Loading : HomeUiState
-    data class Success(val notes: List<Note>) : HomeUiState
-    data class Error(val message: String) : HomeUiState
-}
-```
-
-**Screen (`presentation/screens/*/`)**
-```kotlin
-@Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = koinViewModel()
-) {
-    // Collect state
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
-    // Render based on state
-    when (val state = uiState) {
-        is HomeUiState.Loading -> LoadingIndicator()
-        is HomeUiState.Success -> NotesList(state.notes)
-        is HomeUiState.Error -> ErrorMessage(state.message)
-    }
+interface JadwalRepository {
+    fun getAllJadwal(): Flow<List<Jadwal>>
+    fun getUpcomingJadwal(fromDate: String, limit: Int): Flow<List<Jadwal>>
+    fun getJadwalById(id: Long): Flow<Jadwal?>
+    suspend fun insertJadwal(jadwal: Jadwal): Long
+    suspend fun updateJadwal(jadwal: Jadwal)
+    suspend fun deleteJadwal(id: Long)
 }
 ```
 
 ---
 
-## 🔄 Dependency Flow
+## Layer Data
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    DEPENDENCY DIRECTION                      │
-│                                                              │
-│   Presentation ──────────► Domain ◄────────── Data           │
-│       │                      │                    │          │
-│       │                      │                    │          │
-│   Knows about:           Knows about:        Knows about:    │
-│   - Domain models        - Nothing else      - Domain        │
-│   - Use cases            - Pure Kotlin       - Frameworks    │
-│   - Compose                                  - Database      │
-│   - Navigation                               - Network       │
-│                                                              │
-│   TIDAK knows:           TIDAK knows:        TIDAK knows:    │
-│   - Data layer           - Data layer        - Presentation  │
-│   - Database             - Presentation      - UI            │
-│   - Network              - Frameworks                        │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+Data layer menghubungkan domain dengan sumber data nyata.
+
+Isi penting:
+
+| Folder/File | Fungsi |
+|-------------|--------|
+| `data/remote/pocket/PocketApiService.kt` | Request ke API Pocket ITERA |
+| `data/remote/ai/OpenCodeGoService.kt` | Request ke OpenCode Go API |
+| `data/remote/ai/ChatToolHandler.kt` | Menyediakan konteks lokal untuk AI |
+| `data/local/datastore/UserPreferences.kt` | Token sesi, data user, device info, tema |
+| `data/repository/AuthRepositoryImpl.kt` | Implementasi login/logout dan session |
+| `data/repository/PresensiRepositoryImpl.kt` | Sync kelas, presensi, rekap, dan cache |
+| `data/repository/JadwalRepositoryImpl.kt` | CRUD jadwal dan scheduling reminder |
+| `data/repository/AIRepositoryImpl.kt` | Chat AI dan riwayat percakapan |
+
+SQLDelight:
+- `Jadwal.sq` untuk jadwal dan reminder.
+- `Presensi.sq` untuk kelas, presensi, dan ringkasan kehadiran.
+- Generated database: `KelazZzDatabase`.
+
+DataStore:
+- File Android: `kelazzz.preferences_pb`.
+- Lokasi: internal storage aplikasi.
+- Digunakan untuk session dan theme preference.
+
+---
+
+## Layer Presentation
+
+Presentation berisi UI Compose, ViewModel, UI state, dan navigation.
+
+Screen utama:
+
+| Screen | Fungsi |
+|--------|--------|
+| `login/` | Login mahasiswa Pocket ITERA |
+| `home/` | Dashboard, agenda terdekat, warning kehadiran |
+| `presensi/` | QR scanner dan token manual |
+| `rekap/` | Rekap mata kuliah dan riwayat presensi |
+| `jadwal/` | List, tambah/edit, dan detail jadwal |
+| `kalender/` | Tampilan kalender jadwal |
+| `ai/` | AI Asisten Akademik |
+| `profile/` | Data user, theme switch, logout |
+
+ViewModel bertugas:
+- Mengambil data dari repository/use case.
+- Mengubah Flow menjadi `StateFlow`.
+- Menyimpan form state.
+- Menangani event dari UI.
+- Mengekspos error/loading/success state.
+
+Screen Compose bertugas:
+- Render state.
+- Mengirim event ke ViewModel.
+- Tidak menjalankan business logic langsung.
+
+---
+
+## Dependency Injection
+
+Koin dipakai untuk menyediakan dependency.
+
+| File | Fungsi |
+|------|--------|
+| `di/AppModule.kt` | Root shared modules |
+| `di/DataModule.kt` | HttpClient, services, database, DataStore, repositories |
+| `di/ViewModelModule.kt` | ViewModel injection |
+| `androidMain/core/di/AndroidModule.kt` | Dependency khusus Android |
+
+Alur init Android:
+
+```text
+KelazZzApplication.onCreate()
+        |
+        v
+initKoin(platformModules = listOf(androidModule))
+        |
+        v
+dataModule + viewModelModule + androidModule
 ```
 
 ---
 
-## 🧩 expect/actual Pattern
+## Platform-Specific Code
 
-Pattern untuk kode platform-specific:
+Common code memakai `expect`, Android memakai `actual`.
 
-```kotlin
-// ═══════════════════════════════════════════════════════════
-// commonMain - EXPECT (Declaration only, no implementation)
-// ═══════════════════════════════════════════════════════════
+Contoh:
 
-// File: commonMain/.../ApiConfig.kt
-expect object ApiConfig {
-    val openCodeApiKey: String
-}
+| Common | Android actual |
+|--------|----------------|
+| `ApiConfig.kt` | `ApiConfig.android.kt` membaca `BuildConfig.OPENCODE_API_KEY` |
+| `DatabaseDriverFactory.kt` | `DatabaseDriverFactory.android.kt` memakai `AndroidSqliteDriver` |
+| `DataStoreFactory.kt` | `DataStoreFactory.android.kt` memakai `context.filesDir` |
+| `JadwalNotificationScheduler.kt` | `AndroidJadwalNotificationScheduler.kt` memakai `AlarmManager` |
+| `QrCodeScannerView.kt` | `QrCodeScannerView.android.kt` memakai CameraX + ML Kit |
 
-// ═══════════════════════════════════════════════════════════
-// androidMain - ACTUAL (Android implementation)
-// ═══════════════════════════════════════════════════════════
+Target iOS belum aktif, jadi tidak ada alur build iOS yang dijaga sebagai target final.
 
-// File: androidMain/.../ApiConfig.android.kt
-actual object ApiConfig {
-    actual val openCodeApiKey: String = BuildConfig.OPENCODE_API_KEY
-}
+---
 
-// ═══════════════════════════════════════════════════════════
-// iosMain - ACTUAL (iOS implementation)
-// ═══════════════════════════════════════════════════════════
+## Data Flow Contoh: Tambah Jadwal
 
-// File: iosMain/.../ApiConfig.ios.kt
-actual object ApiConfig {
-    actual val openCodeApiKey: String
-        get() = NSBundle.mainBundle.objectForInfoDictionaryKey("OPENCODE_API_KEY") as? String ?: ""
-}
+```text
+User isi form jadwal
+        |
+JadwalAddEditScreen kirim event ke ViewModel
+        |
+JadwalAddEditViewModel validasi form
+        |
+JadwalRepository.insertJadwal()
+        |
+JadwalRepositoryImpl simpan ke SQLDelight
+        |
+Jika reminder aktif, scheduler Android menjadwalkan notifikasi
+        |
+Flow jadwal emit data baru
+        |
+JadwalListScreen/Home ikut ter-update
 ```
 
 ---
 
-## 💉 Dependency Injection dengan Koin
+## Data Flow Contoh: Sync Presensi
 
-```kotlin
-// ═══════════════════════════════════════════════════════════
-// Module Definitions
-// ═══════════════════════════════════════════════════════════
-
-// Network Module
-val networkModule = module {
-    single { HttpClientFactory.create() }    // Singleton
-    singleOf(::OpenCodeGoService)                // Auto-inject dependencies
-}
-
-// Repository Module
-val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
-    //       ↑ Implementation        ↑ Interface (for injection)
-}
-
-// ViewModel Module
-val viewModelModule = module {
-    viewModelOf(::HomeViewModel)             // Scoped to lifecycle
-    viewModelOf(::AddNoteViewModel)
-}
-
-// ═══════════════════════════════════════════════════════════
-// Initialization
-// ═══════════════════════════════════════════════════════════
-
-// Android
-class NoteAIApplication : Application() {
-    override fun onCreate() {
-        initKoin(platformModules = listOf(androidModule)) {
-            androidContext(this@NoteAIApplication)
-        }
-    }
-}
-
-// iOS
-fun initKoinIOS() {
-    initKoin(platformModules = listOf(iosModule))
-}
-
-// ═══════════════════════════════════════════════════════════
-// Usage in ViewModel/Screen
-// ═══════════════════════════════════════════════════════════
-
-@Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = koinViewModel()  // Auto-injected!
-) {
-    // ...
-}
+```text
+User membuka/sync rekap
+        |
+PresensiViewModel/RekapViewModel memanggil repository
+        |
+PresensiRepositoryImpl mengambil data dari PocketApiService
+        |
+Data remote dipetakan ke domain dan disimpan ke SQLDelight
+        |
+UI membaca cache lokal melalui Flow
 ```
 
 ---
 
-## 🧪 Testing Structure
+## Testing Structure
 
-```kotlin
-// ═══════════════════════════════════════════════════════════
-// Fake Repository untuk Testing
-// ═══════════════════════════════════════════════════════════
+```text
+commonTest/
+|-- domain/model/DomainModelTest.kt
+|-- domain/usecase/UseCasesTest.kt
+|-- domain/validation/StudentEmailPolicyTest.kt
+|-- presentation/ViewModelTest.kt
+`-- testutil/
+    |-- TestFakes.kt
+    `-- TestFixtures.kt
 
-class FakeNoteRepository : NoteRepository {
-    private val notes = MutableStateFlow<List<Note>>(emptyList())
-    
-    override fun getAllNotes(): Flow<List<Note>> = notes
-    
-    override suspend fun insertNote(note: Note): Long {
-        notes.update { it + note.copy(id = nextId++) }
-        return nextId
-    }
-}
+androidUnitTest/
+`-- data/repository/JadwalRepositoryImplTest.kt
 
-// ═══════════════════════════════════════════════════════════
-// Unit Test dengan Turbine (Flow testing)
-// ═══════════════════════════════════════════════════════════
-
-class NoteRepositoryTest {
-    
-    @Test
-    fun `insertNote should add note to list`() = runTest {
-        // Arrange
-        val repository = FakeNoteRepository()
-        
-        // Act
-        repository.insertNote(Note(title = "Test"))
-        
-        // Assert dengan Turbine
-        repository.getAllNotes().test {
-            val notes = awaitItem()
-            assertEquals(1, notes.size)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-}
+androidInstrumentedTest/
+`-- presentation/components/CommonComponentsUiTest.kt
 ```
+
+Jenis test:
+- Domain model dan validation memakai `kotlin.test`.
+- ViewModel memakai `kotlinx-coroutines-test`.
+- Repository jadwal memakai SQLDelight SQLite driver in-memory.
+- UI component test memakai Compose UI Test.
 
 ---
 
-## 📊 Data Flow Example
+## Naming Convention
 
-Contoh: User menambah note baru
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│ 1. USER ACTION                                                 │
-│    User tap "Save" button di AddNoteScreen                     │
-└────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌────────────────────────────────────────────────────────────────┐
-│ 2. SCREEN                                                      │
-│    onClick = { viewModel.saveNote() }                          │
-└────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌────────────────────────────────────────────────────────────────┐
-│ 3. VIEWMODEL                                                   │
-│    fun saveNote() {                                            │
-│        viewModelScope.launch {                                 │
-│            saveNoteUseCase(note)                               │
-│        }                                                       │
-│    }                                                           │
-└────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌────────────────────────────────────────────────────────────────┐
-│ 4. USE CASE                                                    │
-│    suspend operator fun invoke(note: Note): Result<Long> {     │
-│        // Validation                                           │
-│        if (note.isEmpty) return Result.failure(...)            │
-│        // Delegate to repository                               │
-│        return repository.insertNote(note)                      │
-│    }                                                           │
-└────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌────────────────────────────────────────────────────────────────┐
-│ 5. REPOSITORY IMPLEMENTATION                                   │
-│    override suspend fun insertNote(note: Note): Long {         │
-│        val values = note.toEntityValues()                      │
-│        queries.insertNote(...)                                 │
-│        return queries.lastInsertId().executeAsOne()            │
-│    }                                                           │
-└────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌────────────────────────────────────────────────────────────────┐
-│ 6. DATABASE (SQLDelight)                                       │
-│    INSERT INTO NoteEntity (title, content, ...) VALUES (...)   │
-└────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌────────────────────────────────────────────────────────────────┐
-│ 7. FLOW UPDATE                                                 │
-│    getAllNotes query otomatis emit data baru                   │
-│    UI ter-update karena collect StateFlow                      │
-└────────────────────────────────────────────────────────────────┘
-```
+| Jenis | Contoh |
+|-------|--------|
+| Package | `com.kelazzz.app.domain` |
+| Model | `Jadwal`, `Presensi`, `AttendanceSummary` |
+| Repository interface | `JadwalRepository` |
+| Repository implementation | `JadwalRepositoryImpl` |
+| ViewModel | `JadwalAddEditViewModel` |
+| Screen | `JadwalAddEditScreen` |
+| Test | `JadwalRepositoryImplTest` |
 
 ---
 
-## 🎯 Best Practices
+## Prinsip Saat Mengubah Kode
 
-### 1. Naming Conventions
-
-| Type | Convention | Example |
-|------|------------|---------|
-| Package | lowercase | `com.example.noteai.domain` |
-| Class | PascalCase | `NoteRepository`, `HomeViewModel` |
-| Function | camelCase | `getAllNotes()`, `onSaveClick()` |
-| Variable | camelCase | `noteList`, `isLoading` |
-| Constant | SCREAMING_SNAKE | `MAX_TITLE_LENGTH` |
-| File | PascalCase.kt | `NoteRepository.kt` |
-
-### 2. File Organization
-
-```kotlin
-// Urutan dalam file:
-class HomeViewModel(
-    // 1. Constructor parameters
-    private val repository: NoteRepository
-) : ViewModel() {
-    
-    // 2. Constants
-    companion object {
-        private const val DEBOUNCE_MS = 300L
-    }
-    
-    // 3. Private state
-    private val _searchQuery = MutableStateFlow("")
-    
-    // 4. Public state
-    val uiState: StateFlow<HomeUiState> = ...
-    
-    // 5. Public functions
-    fun onSearchQueryChange(query: String) { ... }
-    
-    // 6. Private functions
-    private fun sortNotes(notes: List<Note>): List<Note> { ... }
-}
-```
-
-### 3. UI State Pattern
-
-```kotlin
-// Sealed interface untuk semua kemungkinan state
-sealed interface UiState {
-    data object Loading : UiState
-    data class Success(val data: Data) : UiState
-    data class Error(val message: String) : UiState
-}
-
-// Gunakan when expression untuk handle semua state
-when (val state = uiState) {
-    is UiState.Loading -> LoadingIndicator()
-    is UiState.Success -> Content(state.data)
-    is UiState.Error -> ErrorMessage(state.message)
-}
-```
-
----
-
-*Dokumen ini adalah bagian dari template project Pengembangan Aplikasi Mobile - ITERA*
+- Jangan bypass repository dari ViewModel.
+- Jangan taruh logic API/database di Composable.
+- Jika mengubah model, cek schema SQLDelight, mapper, repository, UI, dan test.
+- Jika menambah dependency, masukkan lewat `gradle/libs.versions.toml`.
+- Jika menambah fitur Android-specific, buat kontrak di common bila perlu dan implementasi di `androidMain`.
+- Update docs jika fitur atau cara menjalankan berubah.

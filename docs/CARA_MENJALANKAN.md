@@ -1,271 +1,225 @@
-# 🚀 Cara Menjalankan NoteAI
+# Cara Menjalankan KelazZz
 
-Panduan lengkap untuk menjalankan template aplikasi **NoteAI** (Kotlin Multiplatform).
+Panduan ini menjelaskan cara setup, build, test, dan menjalankan KelazZz. KelazZz adalah aplikasi Android berbasis Kotlin Multiplatform dan Compose Multiplatform untuk presensi, rekap kehadiran, jadwal akademik, reminder lokal, dan AI asisten akademik mahasiswa ITERA.
 
-> **Status target build:**
-> - ✅ **Android** — jalur utama yang didukung penuh oleh template ini.
-> - ⚠️ **iOS** — kode shared (Kotlin) sudah ter-set untuk target iOS (X64/Arm64/SimulatorArm64),
->   tetapi project Xcode (`iosApp/`) **belum disertakan** di template ini.
->   Lihat bagian *"Menjalankan iOS (lanjutan)"* di bawah jika Anda ingin mencoba target iOS.
+> Status target: Android adalah target aktif. Struktur Kotlin Multiplatform tetap dipakai untuk memisahkan shared logic, tetapi target iOS tidak aktif pada project ini.
 
 ---
 
 ## 1. Prasyarat
 
-| Software           | Versi minimum             | Catatan                                        |
-| ------------------ | ------------------------- | ---------------------------------------------- |
-| **JDK**            | 17 (disarankan 17 / 21)   | Bawaan Android Studio sudah cukup              |
-| **Android Studio** | Ladybug (2024.2.1) atau ↑ | Wajib untuk Compose Multiplatform tooling      |
-| **Android SDK**    | API 34 / 35               | Diinstall via SDK Manager Android Studio       |
-| **Git**            | 2.x                       | Untuk clone & branching                        |
-| **Xcode** (opt.)   | 15.0+                     | Hanya kalau ingin build iOS, **macOS-only**    |
+| Software | Versi/Catatan |
+|----------|---------------|
+| JDK | 17 |
+| Android Studio | Ladybug 2024.2.1 atau lebih baru |
+| Android SDK | compile/target SDK 35 |
+| Git | 2.x |
+| Android device/emulator | Disarankan API 34+ |
 
-Hardware yang nyaman: RAM minimal 8 GB (16 GB lebih lega), free space ±10 GB.
+Hardware yang nyaman: RAM minimal 8 GB, 16 GB lebih baik untuk Gradle dan Android Studio.
 
 ---
 
 ## 2. Clone Repository
 
 ```bash
-git clone https://github.com/informatika-itera/Proyek-Pengembangan-Aplikasi-Mobile.git
-cd Proyek-Pengembangan-Aplikasi-Mobile
+git clone https://github.com/eltoruz/KelazZz.git
+cd KelazZz
 ```
 
-Buat branch project kelompok sesuai aturan di [GIT_WORKFLOW.md](./GIT_WORKFLOW.md):
+Branch project kelompok:
 
 ```bash
-git checkout -b project/121140003-121140004-NamaApp
+git checkout project/123140098-123140077-KelazZz
 ```
+
+Jika clone dari repository kelas/upstream, sesuaikan URL remote dengan repo yang digunakan tim.
 
 ---
 
 ## 3. Setup `local.properties`
 
-File `local.properties` **TIDAK ter-commit** ke repository (sudah di `.gitignore`).
-Setiap orang perlu membuatnya sendiri di root project (sejajar dengan `settings.gradle.kts`).
-
-Cara termudah: copy dari template:
-
-```bash
-cp local.properties.example local.properties
-```
-
-Lalu edit `local.properties`:
+Buat file `local.properties` di root project, sejajar dengan `settings.gradle.kts`.
 
 ```properties
-# Lokasi Android SDK (Android Studio biasanya mengisi otomatis saat sync)
-# macOS  :
-# sdk.dir=/Users/<USER>/Library/Android/sdk
-# Linux  :
-# sdk.dir=/home/<USER>/Android/Sdk
-# Windows:
-# sdk.dir=C\:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
+# Android SDK, biasanya otomatis dibuat Android Studio
+sdk.dir=/path/to/android/sdk
 
-# OpenCode Go API Key (lihat langkah 4)
+# API key untuk AI Asisten
 OPENCODE_API_KEY=your_real_key_here
 ```
 
-> Tanpa `OPENCODE_API_KEY` aplikasi tetap **bisa dibuka**, tetapi fitur AI (ringkas,
-> generate ide, perbaiki tulisan, dll) akan gagal dengan error 401/403.
+Catatan:
+- File `local.properties` tidak boleh di-commit.
+- Tanpa `OPENCODE_API_KEY`, aplikasi tetap bisa dibuka, tetapi fitur AI akan gagal ketika memanggil API.
+- Di CI, key placeholder digunakan agar build tetap berjalan.
 
 ---
 
-## 4. Dapatkan OpenCode Go API Key
+## 4. Mendapatkan OpenCode Go API Key
 
-1. Buka https://opencode.ai/go
-2. Login dan subscribe ke OpenCode Go.
-3. Copy API key dari console OpenCode.
-4. Copy key dan tempel ke `local.properties` di baris `OPENCODE_API_KEY=`.
+1. Buka https://opencode.ai/go.
+2. Login ke akun OpenCode.
+3. Ambil API key dari dashboard/console.
+4. Tempel ke `local.properties` pada `OPENCODE_API_KEY=...`.
 
-> ⚠️ **Jangan share / commit API key.** File `local.properties` sudah di-ignore.
+Jangan membagikan API key di commit, issue, PR, atau screenshot publik.
 
 ---
 
-## 5. Build & Sync via Android Studio (cara yang dianjurkan)
+## 5. Build via Android Studio
 
 1. Buka Android Studio.
-2. **File → Open** → pilih folder root project (`Pryk-PAM`).
+2. Pilih **File > Open** lalu pilih folder root `KelazZz`.
 3. Klik **Trust Project**.
-4. Tunggu Gradle sync selesai. Sync pertama bisa 5–15 menit (download
-   Compose Multiplatform, KMP runtime, dependencies).
-5. Bila ada notifikasi *"Install missing platform"*, klik **Install**.
-
-Saat sync sukses Anda akan melihat run configuration **composeApp** di toolbar.
+4. Tunggu Gradle sync selesai.
+5. Pilih run configuration `composeApp`.
+6. Jalankan ke emulator atau device Android.
 
 ---
 
-## 6. Build dari Terminal (alternatif)
+## 6. Build dari Terminal
 
-Project ini sudah berisi Gradle wrapper. Anda **tidak** perlu menginstall Gradle
-manual — wrapper akan mendownload Gradle 8.9 sendiri.
+Project menggunakan Gradle Wrapper, jadi tidak perlu install Gradle manual.
 
 ```bash
-# Pertama kali (download dependencies + build semua artifact)
+# Build semua target yang aktif
 ./gradlew build
 
-# Build APK debug saja (lebih cepat)
+# Build APK debug
 ./gradlew :composeApp:assembleDebug
 
-# Install ke emulator/device yang sedang aktif
+# Install ke emulator/device aktif
 ./gradlew :composeApp:installDebug
 ```
 
-> Di Windows pakai `gradlew.bat ...` (bukan `./gradlew`).
-
-Generate file SQLDelight (biasanya otomatis, tapi kalau perlu manual):
+Generate interface SQLDelight jika diperlukan:
 
 ```bash
-./gradlew :composeApp:generateCommonMainNoteDatabaseInterface
+./gradlew :composeApp:generateCommonMainKelazZzDatabaseInterface
 ```
 
-> Nama task ini berasal dari konfigurasi di `composeApp/build.gradle.kts`:
-> `sqldelight { databases { create("NoteDatabase") { ... } } }`.
+Database yang digunakan:
+- `KelazZzDatabase`
+- Package generated: `com.kelazzz.app.data.local`
+- File schema: `Jadwal.sq` dan `Presensi.sq`
+- Nama database Android: `kelazzz_v2.db`
 
-Jalankan unit test (commonTest):
+---
+
+## 7. Menjalankan Test dan Coverage
 
 ```bash
 # Semua unit test lokal
 ./gradlew test
 
-# Hanya unit test JVM/Android debug
+# Unit test Android debug
 ./gradlew :composeApp:testDebugUnitTest
 
 # Validasi coverage Sprint 4
 ./gradlew test koverVerify
 
-# Generate laporan coverage HTML
+# Generate report coverage HTML
 ./gradlew koverHtmlReport
+
+# Compile source instrumented UI test
+./gradlew :composeApp:compileDebugAndroidTestSources
 ```
 
----
-
-## 7. Jalankan di Android
-
-### 7.1 Pakai Emulator
-
-1. Android Studio → **Tools → Device Manager → Create Device**.
-2. Pilih device (mis. **Pixel 7**), system image **API 34** atau lebih baru.
-3. Klik **Finish**, lalu **Run** emulator (▶).
-4. Pilih run configuration **composeApp** di toolbar atas.
-5. Klik tombol **Run** (▶) atau tekan **Shift + F10**.
-
-### 7.2 Pakai HP Fisik
-
-1. HP Android → **Settings → About Phone** → ketuk **Build Number** 7×
-   untuk mengaktifkan **Developer Options**.
-2. **Developer Options** → aktifkan **USB debugging**.
-3. Sambungkan HP ke laptop via kabel USB → pilih **Allow** saat dialog muncul.
-4. Pilih device di toolbar Android Studio → **Run** (▶).
-
----
-
-## 8. Menjalankan iOS (lanjutan, opsional)
-
-Template ini **belum menyertakan** folder `iosApp/` dengan project Xcode yang
-siap pakai. Anda punya 2 opsi:
-
-### Opsi A — Pakai KMP Wizard JetBrains
-
-1. Buka https://kmp.jetbrains.com.
-2. Generate template baru "Compose Multiplatform" (Android + iOS).
-3. Copy folder `iosApp/` hasil wizard ke root project ini.
-4. Edit `iosApp/iosApp/iOSApp.swift` agar memanggil `MainViewControllerKt.MainViewController()`
-   dari module `ComposeApp` (lihat dokumentasi inline di
-   `composeApp/src/iosMain/kotlin/com/example/noteai/MainViewController.kt`).
-
-### Opsi B — Build framework saja
-
-Walau belum ada folder `iosApp/`, kode Kotlin Anda tetap bisa dikompilasi
-ke framework iOS:
+Compose UI test penuh membutuhkan emulator atau device:
 
 ```bash
-# Build framework debug untuk simulator Apple Silicon
-./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+./gradlew :composeApp:connectedDebugAndroidTest
 ```
-
-Hasilnya ada di `composeApp/build/bin/iosSimulatorArm64/debugFramework/`.
-
-> **Catatan:** build target iOS hanya berjalan di **macOS** (butuh Kotlin/Native
-> toolchain dan Xcode). Pada Windows/Linux target iOS akan otomatis di-skip.
 
 ---
 
-## 9. Verifikasi Aplikasi Berjalan
+## 8. Menjalankan di Android
 
-Checklist setelah app jalan:
+### Emulator
 
-- [ ] Splash → Home Screen tampil dengan FAB **+**.
-- [ ] Tap **+** → bisa membuat catatan baru (judul + konten).
-- [ ] Catatan baru muncul di daftar Home.
-- [ ] Tap catatan → masuk ke detail screen.
-- [ ] Pin / unpin berjalan; catatan ter-pin pindah ke atas.
-- [ ] Search (ikon 🔍) menyaring berdasarkan judul/konten.
-- [ ] Filter kategori (chip "Semua/Umum/Pekerjaan/...") berfungsi.
-- [ ] Sort menu (ikon ⇅) mengubah urutan.
-- [ ] Hapus dari card Home bekerja.
-- [ ] AI Assistant (ikon ✨) terbuka.
-- [ ] Dengan API key valid → aksi **Ringkas** mengembalikan teks (butuh konten ≥ 50 karakter).
+1. Android Studio > **Tools > Device Manager > Create Device**.
+2. Pilih device, misalnya Pixel 7.
+3. Pilih system image API 34 atau lebih baru.
+4. Jalankan emulator.
+5. Klik **Run** pada configuration `composeApp`.
+
+### HP Fisik
+
+1. Aktifkan Developer Options.
+2. Aktifkan USB debugging.
+3. Sambungkan HP via USB.
+4. Izinkan debugging saat prompt muncul.
+5. Jalankan configuration `composeApp`.
+
+Permission yang dipakai:
+- Internet untuk API Pocket ITERA dan OpenCode Go.
+- Camera untuk QR scanner.
+- Post notifications untuk reminder lokal pada Android 13+.
+
+---
+
+## 9. Checklist Verifikasi Manual
+
+- [ ] Login menggunakan email mahasiswa `@student.itera.ac.id` atau NIM.
+- [ ] Login non-mahasiswa ditolak.
+- [ ] Home menampilkan nama pengguna, agenda terdekat, dan warning kehadiran.
+- [ ] Rekap presensi bisa sync dan menampilkan daftar mata kuliah/riwayat.
+- [ ] Presensi bisa membuka QR scanner dan input token manual.
+- [ ] Jadwal bisa tambah, edit, detail, dan hapus agenda.
+- [ ] Jenis `Kelas` memakai pilihan hari dan reminder mingguan.
+- [ ] Jenis tugas/kuis/ujian/presentasi memakai tanggal biasa.
+- [ ] Reminder lokal bisa dijadwalkan.
+- [ ] AI Asisten bisa mengirim pertanyaan jika `OPENCODE_API_KEY` valid.
+- [ ] Profil menampilkan akun, pilihan tema, dan logout.
 
 ---
 
 ## 10. Troubleshooting Cepat
 
-| Gejala                                                 | Solusi                                                            |
-| ------------------------------------------------------ | ------------------------------------------------------------------ |
-| `SDK location not found`                               | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis. |
-| `OPENCODE_API_KEY` kosong / 401 Unauthorized             | Periksa baris `OPENCODE_API_KEY=...` di `local.properties` lalu rebuild. |
-| `Cannot resolve symbol 'NoteDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
-| Gradle sync lambat sekali pertama kali                 | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil. |
-| `Daemon ... was terminated` saat build                 | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`. |
-| Build error setelah ganti versi                        | `./gradlew clean` lalu rebuild; bila tetap gagal hapus folder `.gradle/` lokal lalu sync ulang. |
-| Error `Plugin com.android.application not found` di Linux/CI | Pastikan punya akses ke repo Google + Maven Central (cek setting proxy/firewall). |
+| Gejala | Solusi |
+|--------|--------|
+| `SDK location not found` | Isi `sdk.dir` di `local.properties` atau buka lewat Android Studio. |
+| AI error 401/403 | Cek `OPENCODE_API_KEY`, lalu rebuild. |
+| SQLDelight generated class tidak ditemukan | Jalankan `./gradlew :composeApp:generateCommonMainKelazZzDatabaseInterface`. |
+| Camera tidak terbuka | Pastikan permission camera diberikan di device/emulator. |
+| Notifikasi tidak muncul | Pastikan permission notification diberikan pada Android 13+. |
+| Gradle sync lambat | Normal pada sync pertama karena dependency KMP cukup besar. |
+| Test coverage gagal | Jalankan `./gradlew test koverVerify --stacktrace` dan cek test yang gagal. |
 
-Lebih lengkap di [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md).
+Lebih lengkap ada di [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
 
 ---
 
 ## 11. File Penting
 
-```
-Pryk-PAM/
-├── local.properties           ← BUAT FILE INI (tidak ter-commit)
-├── local.properties.example   ← Template, di-commit
-├── settings.gradle.kts
-├── build.gradle.kts
-├── gradlew / gradlew.bat      ← Wrapper, dipanggil sebagai ./gradlew
-├── gradle/
-│   ├── libs.versions.toml     ← Daftar versi semua dependency
-│   └── wrapper/
-├── composeApp/
-│   ├── build.gradle.kts
-│   └── src/
-│       ├── commonMain/        ← Kode shared Kotlin
-│       ├── commonMain/sqldelight/  ← Skema DB (Note.sq)
-│       ├── commonTest/        ← Unit test
-│       ├── androidMain/       ← Implementasi spesifik Android
-│       └── iosMain/           ← Implementasi spesifik iOS
-└── docs/                      ← Dokumentasi (file ini ada di sini)
+```text
+KelazZz/
+|-- local.properties                 # Dibuat lokal, tidak di-commit
+|-- settings.gradle.kts
+|-- build.gradle.kts
+|-- gradlew / gradlew.bat
+|-- gradle/libs.versions.toml
+|-- composeApp/
+|   |-- build.gradle.kts
+|   `-- src/
+|       |-- commonMain/kotlin/com/kelazzz/app/
+|       |-- commonMain/sqldelight/com/kelazzz/app/data/local/
+|       |   |-- Jadwal.sq
+|       |   `-- Presensi.sq
+|       |-- commonTest/
+|       |-- androidMain/
+|       |-- androidUnitTest/
+|       `-- androidInstrumentedTest/
+`-- docs/
 ```
 
 ---
 
 ## 12. Tips Pengembangan
 
-- **Live Edit** Compose: aktif by default, edit `@Composable` lalu lihat
-  hasilnya tanpa restart app (selama struktur tidak berubah drastis).
-- **Logcat**: `View → Tool Windows → Logcat` (filter dengan tag `HTTP:` untuk
-  melihat log Ktor karena kita pakai `enableLogging = true`).
-- **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
-- **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
-
----
-
-## Referensi
-
-- [Kotlin Multiplatform docs](https://kotlinlang.org/docs/multiplatform.html)
-- [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
-- [SQLDelight](https://cashapp.github.io/sqldelight/)
-- [Koin DI](https://insert-koin.io/)
-- [Ktor Client](https://ktor.io/docs/welcome.html)
-- [OpenCode Go API](https://opencode.ai/docs/go/)
+- Pull branch terbaru sebelum mulai coding.
+- Jalankan minimal `./gradlew test` sebelum push perubahan logic.
+- Jalankan `./gradlew koverVerify` jika menyentuh test/coverage.
+- Gunakan Logcat untuk debugging API, DataStore, scanner, dan notification.
+- Untuk reset data lokal saat development, uninstall app dari emulator/device lalu install ulang.

@@ -34,8 +34,14 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -109,13 +115,73 @@ fun JadwalAddEditScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Date Field
-                    ScheduleDateField(
-                        value = uiState.formTanggal,
-                        onValueChange = viewModel::onTanggalChange,
-                        isError = uiState.formError != null && uiState.formTanggal.isBlank(),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    // Date or Day Picker
+                    if (uiState.formJenis == JenisJadwal.REMINDER) {
+                        var showDayPickerDialog by remember { mutableStateOf(false) }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showDayPickerDialog = true }
+                        ) {
+                            OutlinedTextField(
+                                value = uiState.formTanggal,
+                                onValueChange = {},
+                                readOnly = true,
+                                enabled = false,
+                                label = { Text("Hari Kelas (Tiap Minggu)") },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledBorderColor = if (uiState.formError != null && uiState.formTanggal.isBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    disabledContainerColor = MaterialTheme.colorScheme.surface
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        if (showDayPickerDialog) {
+                            val daysList = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu")
+                            AlertDialog(
+                                onDismissRequest = { showDayPickerDialog = false },
+                                title = { Text("Pilih Hari Kelas", fontWeight = FontWeight.Bold) },
+                                text = {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        daysList.forEach { day ->
+                                            Text(
+                                                text = day,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontWeight = if (uiState.formTanggal == day) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (uiState.formTanggal == day) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        viewModel.onTanggalChange(day)
+                                                        showDayPickerDialog = false
+                                                    }
+                                                    .padding(vertical = 12.dp, horizontal = 8.dp)
+                                            )
+                                        }
+                                    }
+                                },
+                                confirmButton = {},
+                                dismissButton = {
+                                    TextButton(onClick = { showDayPickerDialog = false }) {
+                                        Text("Batal")
+                                    }
+                                }
+                            )
+                        }
+                    } else {
+                        // Date Field
+                        ScheduleDateField(
+                            value = uiState.formTanggal,
+                            onValueChange = viewModel::onTanggalChange,
+                            isError = uiState.formError != null && uiState.formTanggal.isBlank(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
                     // Time Field
                     ScheduleTimeField(

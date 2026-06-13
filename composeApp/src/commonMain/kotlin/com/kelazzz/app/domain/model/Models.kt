@@ -104,7 +104,7 @@ enum class ReminderOption(val displayName: String, val offsetMinutes: Long?) {
  * Jenis jadwal/pengingat akademik
  */
 enum class JenisJadwal(val displayName: String) {
-    REMINDER("Pengingat"),
+    REMINDER("Kelas"),
     TUGAS("Tugas"),
     UJIAN("Ujian"),
     KUIS("Kuis"),

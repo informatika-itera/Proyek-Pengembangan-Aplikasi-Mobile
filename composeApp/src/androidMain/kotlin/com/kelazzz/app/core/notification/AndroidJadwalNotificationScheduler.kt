@@ -28,19 +28,31 @@ class AndroidJadwalNotificationScheduler(
         }
         val triggerAtMillis = scheduleAtMillis - offsetMinutes * 60_000L
 
-        if (triggerAtMillis <= System.currentTimeMillis()) {
+        val isWeekly = jadwal.jenis == com.kelazzz.app.domain.model.JenisJadwal.REMINDER
+
+        if (triggerAtMillis <= System.currentTimeMillis() && !isWeekly) {
             Log.w(TAG, "Reminder skipped because trigger time is in the past: jadwalId=${jadwal.id}")
             cancel(jadwal.id)
             return
         }
 
         val pendingIntent = createPendingIntent(jadwal, PendingIntent.FLAG_UPDATE_CURRENT)
-        alarmManager.set(
-            AlarmManager.RTC_WAKEUP,
-            triggerAtMillis,
-            pendingIntent
-        )
-        Log.d(TAG, "Reminder scheduled: jadwalId=${jadwal.id}, triggerAtMillis=$triggerAtMillis")
+        if (isWeekly) {
+            alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                AlarmManager.INTERVAL_DAY * 7,
+                pendingIntent
+            )
+            Log.d(TAG, "Weekly reminder scheduled: jadwalId=${jadwal.id}, triggerAtMillis=$triggerAtMillis")
+        } else {
+            alarmManager.set(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent
+            )
+            Log.d(TAG, "One-off reminder scheduled: jadwalId=${jadwal.id}, triggerAtMillis=$triggerAtMillis")
+        }
     }
 
     override suspend fun cancel(jadwalId: Long) {
@@ -79,19 +91,51 @@ class AndroidJadwalNotificationScheduler(
 
     private fun parseScheduleMillis(jadwal: Jadwal): Long? {
         val startTimeText = jadwal.waktu.substringBefore("-").trim()
-        val date = runCatching { DATE_FORMAT.parse(jadwal.tanggal.trim()) }.getOrNull() ?: return null
         val timeParts = startTimeText.split(":")
         val hour = timeParts.getOrNull(0)?.toIntOrNull() ?: return null
         val minute = timeParts.getOrNull(1)?.toIntOrNull() ?: return null
         if (hour !in 0..23 || minute !in 0..59) return null
 
-        return Calendar.getInstance().apply {
-            time = date
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
+        val isWeekly = jadwal.jenis == com.kelazzz.app.domain.model.JenisJadwal.REMINDER
+        if (isWeekly) {
+            val dayOfWeekMap = mapOf(
+                "senin" to Calendar.MONDAY,
+                "selasa" to Calendar.TUESDAY,
+                "rabu" to Calendar.WEDNESDAY,
+                "kamis" to Calendar.THURSDAY,
+                "jumat" to Calendar.FRIDAY,
+                "sabtu" to Calendar.SATURDAY,
+                "minggu" to Calendar.SUNDAY
+            )
+            val targetDay = dayOfWeekMap[jadwal.tanggal.trim().lowercase()] ?: return null
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            val offsetMinutes = jadwal.reminderOffsetMinutes ?: 0L
+            val triggerOffsetMillis = offsetMinutes * 60_000L
+
+            val nowMillis = System.currentTimeMillis()
+            var daysAdded = 0
+            while (calendar.get(Calendar.DAY_OF_WEEK) != targetDay || (calendar.timeInMillis - triggerOffsetMillis) <= nowMillis) {
+                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                daysAdded++
+                if (daysAdded > 14) break
+            }
+            return calendar.timeInMillis
+        } else {
+            val date = runCatching { DATE_FORMAT.parse(jadwal.tanggal.trim()) }.getOrNull() ?: return null
+            return Calendar.getInstance().apply {
+                time = date
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        }
     }
 
     companion object {

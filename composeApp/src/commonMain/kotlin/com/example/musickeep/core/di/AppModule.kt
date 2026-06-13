@@ -19,13 +19,9 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-// ==================== NETWORK MODULE ====================
-
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
 }
-
-// ==================== DATABASE MODULE ====================
 
 val databaseModule = module {
     single {
@@ -34,20 +30,14 @@ val databaseModule = module {
     }
 }
 
-// ==================== PREFERENCES MODULE ====================
-
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
     single { UserPreferences(get()) }
 }
 
-// ==================== REPOSITORY MODULE ====================
-
 val repositoryModule = module {
     singleOf(::MusicRepositoryImpl) bind MusicRepository::class
 }
-
-// ==================== VIEWMODEL MODULE ====================
 
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
@@ -56,8 +46,6 @@ val viewModelModule = module {
     viewModelOf(::SettingsViewModel)
 }
 
-// ==================== SHARED MODULES ====================
-
 val sharedModules = listOf(
     networkModule,
     databaseModule,
@@ -65,8 +53,6 @@ val sharedModules = listOf(
     repositoryModule,
     viewModelModule
 )
-
-// ==================== INIT FUNCTION ====================
 
 fun initKoin(
     platformModules: List<Module> = emptyList(),

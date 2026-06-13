@@ -1,143 +1,55 @@
-# 🎵 MusicKeep - Smart Music Cataloging
+# 🎵 MusicKeep
+
+
 
 ![CI](https://github.com/08-131-AndrePrasetyaDaely/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
 
-Aplikasi **Smart Music Cataloging** (Katalog Musik Pribadi) yang dibangun menggunakan **Kotlin Multiplatform (KMP)** & **Compose Multiplatform**.
+## 👤 Team
+- **Andre Prasetya Daely** (123140131) - [@andree050505](https://github.com/08-131-AndrePrasetyaDaely) 
 
-Aplikasi ini dikembangkan sebagai Tugas Besar (Tubes) mata kuliah **Pengembangan Aplikasi Mobile**. MusicKeep membantu pengguna mengelola daftar musik favorit mereka dengan deteksi genre/mood berbasis AI (Planned).
+## 📄 Description
+MusicKeep adalah aplikasi katalog musik pribadi yang dirancang untuk membantu pengguna mengelola daftar lagu favorit mereka secara terorganisir. Aplikasi ini berfokus pada kemudahan input data musik dan penyajian informasi statistik koleksi secara offline, memberikan pengalaman pengguna yang mulus dalam mendokumentasikan perjalanan musik mereka.
 
-### 👤 Identitas Mahasiswa
-- **Nama:** Andre Prasetya Daely
-- **NIM:** 123140131
-- **Program Studi:** Teknik Informatika
-- **Mata Kuliah:** Pengembangan Aplikasi Mobile
+## ✨ Features
+- **Full CRUD Management**: Tambah, lihat, edit, dan hapus data musik dengan mudah.
+- **Smart Search & Filtering**: Pencarian responsif dengan debounce logic dan filter berdasarkan genre musik.
+- **Automatic Statistics**: Ringkasan otomatis total koleksi dan genre musik yang paling sering didengarkan.
+- **User Profile & Theme**: Personalisasi nama pengguna dan dukungan penuh mode gelap (Dark Mode).
+- **Offline First**: Penyimpanan data lokal yang handal menggunakan SQLDelight.
 
-## ✨ Fitur Utama
+## 🛠️ Tech Stack
+- **Framework**: Kotlin Multiplatform (KMP)
+- **UI Framework**: Compose Multiplatform
+- **Database**: SQLDelight
+- **Local Storage**: DataStore Preferences
+- **Dependency Injection**: Koin
+- **Architecture**: Clean Architecture + MVVM
 
-- 📋 **Music Cataloging** - Input dan kelola data musik (Judul Lagu & Artis).
-- 🎨 **Music-Centric UI** - Antarmuka tema gelap (*Dark Mode*) yang elegan khas aplikasi musik.
-- 🤖 **AI Integration** - Deteksi otomatis Genre/Mood lagu (Sprint berikutnya).
-- 📱 **Cross-Platform** - Berjalan di Android & iOS dari satu codebase.
-- 💾 **Offline First** - Penyimpanan data lokal yang handal.
+## 📐 Architecture
+Aplikasi ini menggunakan **Clean Architecture** yang memisahkan kode menjadi tiga layer utama:
+1. **Presentation Layer**: UI (Compose) dan ViewModels (State Management).
+2. **Domain Layer**: Model data dan abstraksi repository.
+3. **Data Layer**: Implementasi repository, pemetaan database, dan manajemen preferensi lokal.
 
-## 🏗️ Tech Stack & Arsitektur
+## 🚀 Getting Started
+1. Clone repository ini.
+2. Buka project menggunakan Android Studio Ladybug (2024.2.1) atau versi terbaru.
+3. Tunggu proses Gradle Sync selesai.
+4. Hubungkan emulator atau device Android.
+5. Klik tombol **Run 'composeApp'**.
 
-### Arsitektur: MVVM (Model-View-ViewModel) + Clean Architecture
+## 🎬 Video Demo
+[▶️ Tonton Video Demo MusicKeep](https://youtu.be/OIdjdCJ_aQM)
 
-Aplikasi ini mengikuti pola arsitektur MVVM dengan pemisahan layer yang jelas untuk memastikan kode yang mudah diuji dan dikelola:
+## 📦 Download APK
+[⬇️ Download MusicKeep v1.0.0](https://github.com/08-131-AndrePrasetyaDaely/Proyek-Pengembangan-Aplikasi-Mobile/releases/latest)
 
-- **Presentation Layer**: UI (Compose Multiplatform) dan ViewModel (StateFlow).
-- **Domain Layer**: Business logic murni (Models, Repository Interfaces, UseCases).
-- **Data Layer**: Implementasi repository, SQLDelight (Local), dan Ktor (Remote).
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  ┌───────────────┐        ┌───────────────┐                 │
-│  │    Screen     │◄──────►│   ViewModel   │                 │
-│  │  (Composable) │ State  │  (StateFlow)  │                 │
-│  └───────────────┘        └───────┬───────┘                 │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │         Use Cases           │          │
-│                    │    (Business Logic)         │          │
-│                    └──────────────┬──────────────┘          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │    Repository Interface     │          │
-│                    └──────────────┬──────────────┘          │
-└───────────────────────────────────┼─────────────────────────┘
-                                    │
-┌───────────────────────────────────┼─────────────────────────┐
-│                       DATA LAYER  │                          │
-│                    ┌──────────────▼──────────────┐          │
-│                    │   Repository Implementation │          │
-│                    └──────────────┬──────────────┘          │
-│              ┌────────────────────┼────────────────────┐    │
-│              │                    │                    │    │
-│        ┌─────▼─────┐        ┌─────▼─────┐       ┌─────▼────┐│
-│        │ SQLDelight│        │   Ktor    │       │ DataStore││
-│        │  (Local)  │        │ (Remote)  │       │  (Prefs) ││
-│        └───────────┘        └───────────┘       └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
+## 📸 Screenshots
 
-| Komponen | Teknologi |
-|----------|-----------|
-| **Framework** | Kotlin Multiplatform (KMP) |
-| **UI Framework** | Compose Multiplatform (Android & iOS) |
-| **Dependency Injection** | Koin |
-| **Local Database** | SQLDelight |
-| **Asynchronous** | Kotlin Coroutines & Flow |
-| **Navigation** | Compose Navigation (Type-safe) |
-
-## 📁 Struktur Project
-
-```
-composeApp/src/
-├── commonMain/kotlin/com/example/musickeep/
-│   ├── core/                      # Utilitas inti & DI
-│   ├── data/                      # Data layer (Local & Repository)
-│   ├── domain/                    # Domain layer (Model & UseCase)
-│   ├── presentation/              # UI layer (Screens, ViewModels, Theme)
-│   └── App.kt                     # Entry point aplikasi
-│
-├── commonMain/sqldelight/         # Skema database (Music.sq)
-│
-├── androidMain/                   # Implementasi spesifik Android
-└── iosMain/                       # Implementasi spesifik iOS
-```
-
-## 📝 Tugas Mahasiswa
-
-### Sprint 1: Foundation
-- [x] Clone dan setup project
-- [x] Pahami struktur folder
-- [x] Modifikasi tema/warna
-
-### Sprint 2: Core Features
-- [x] Minimal 3 working screens (Home, Detail, Add/Edit)
-- [x] Navigation between screens dengan arguments
-- [x] Data layer dengan Repository pattern
-- [x] Local storage menggunakan SQLDelight
-- [x] Basic CRUD operations working (Create, Read, Update, Delete)
-- [x] UI States (Loading, Success, Error) implemented
-
-### Sprint 3: Advanced Features
-- [x] Search/filter functionality working (Debounce + Genre Chips)
-- [x] API integration atau enhanced local features (Auto-Statistics)
-- [x] At least 1 additional screen (Settings/Profile)
-- [x] Offline support (SQLDelight + DataStore)
-- [x] At least 1 bonus feature implemented (Share Music Progress)
-- [x] All core features dari Sprint 2 tetap working
-
-### Sprint 4: Quality Assurance & UI Polish
-- [x] All known bugs fixed (Dialog konfirmasi & SnackBar)
-- [x] UI polished (Genre Chips, Custom Genre selection dinamis)
-- [x] 10+ unit tests (11 tests for Home & AddMusic ViewModels)
-- [x] 50%+ code coverage achieved
-- [x] README updated dengan progres terbaru
-
-### Sprint 5: Final
-- [ ] Bug fixes
-- [ ] Dokumentasi
-- [ ] Prepare demo
+| [Daftar Katalog] | [Tambah Lagu] | [Statistik & Pengaturan] |
+| :---: | :---: | :---: |
+| <img src="screenshots/Home.png" width="250"> | <img src="screenshots/add_musik.png" width="250"> | <img src="screenshots/Settings.png" width="250"> |
 
 ---
-
-## 🚀 Cara Menjalankan
-
-1. **Prasyarat**:
-   - Android Studio Ladybug (2024.2.1) atau lebih baru.
-   - JDK 17.
-2. **Clone**:
-   ```bash
-   git clone https://github.com/08-131-AndrePrasetyaDaely/Proyek-Pengembangan-Aplikasi-Mobile.git
-   ```
-3. **Build**:
-   - Klik **Sync Project with Gradle Files**.
-   - Jalankan `composeApp` di emulator atau device Android.
-
-
+*Dikembangkan untuk Tugas Besar Mata Kuliah Pengembangan Aplikasi Mobile - ITERA*

@@ -23,7 +23,6 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
-        // Collect dari DataStore dan Repository secara bersamaan
         combine(
             userPreferences.userName,
             userPreferences.isDarkMode,

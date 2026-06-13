@@ -1,0 +1,6 @@
+
+
+home.png          -> (Halaman daftar musik)
+add_music.png     -> (Halaman tambah musik)
+settings.png      -> (Halaman statistik & pengaturan)
+

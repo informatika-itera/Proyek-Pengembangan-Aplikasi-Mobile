@@ -42,7 +42,6 @@ class HomeViewModel(
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         
-        // Implementasi Debounce: Tunggu 300ms sebelum melakukan query ke database
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(300)

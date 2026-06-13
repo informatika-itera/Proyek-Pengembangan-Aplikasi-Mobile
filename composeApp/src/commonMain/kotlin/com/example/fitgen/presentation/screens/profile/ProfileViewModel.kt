@@ -15,17 +15,21 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val name: String = "",
     val age: String = "",
+    val gender: String = "",
     val height: String = "",
     val weight: String = "",
     val goal: String = "",
-    val weightHistory: List<Double> = emptyList(), // Menampung data riwayat berat badan
+    val profileImageBytes: ByteArray? = null,
+    val weightHistory: List<Double> = emptyList(),
     val nameError: String? = null,
     val ageError: String? = null,
+    val genderError: String? = null,
     val heightError: String? = null,
     val weightError: String? = null,
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val isDarkMode: Boolean = false
 )
 
 class ProfileViewModel(
@@ -45,6 +49,24 @@ class ProfileViewModel(
 
     init {
         loadProfile()
+        viewModelScope.launch {
+            userPreferences.isDarkMode.collect { mode ->
+                _uiState.update { it.copy(isDarkMode = mode) }
+            }
+        }
+        viewModelScope.launch {
+            userPreferences.userProfileImageBase64.collect { base64 ->
+                if (base64 != null) {
+                    try {
+                        @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
+                        val bytes = kotlin.io.encoding.Base64.decode(base64)
+                        _uiState.update { it.copy(profileImageBytes = bytes) }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
     }
 
     private fun loadProfile() {
@@ -52,7 +74,6 @@ class ProfileViewModel(
             val profile = userPreferences.userProfile.first()
             val currentWeight = profile.weightKg
 
-            // Membuat tren data awal berdasarkan berat badan yang tersimpan
             val initialHistory = if (currentWeight > 0.0) {
                 listOf(currentWeight - 2.0, currentWeight - 1.5, currentWeight - 0.5, currentWeight)
             } else emptyList()
@@ -61,6 +82,7 @@ class ProfileViewModel(
                 it.copy(
                     name = profile.name,
                     age = if (profile.age > 0) profile.age.toString() else "",
+                    gender = profile.gender,
                     height = if (profile.heightCm > 0.0) profile.heightCm.toString() else "",
                     weight = if (currentWeight > 0.0) currentWeight.toString() else "",
                     weightHistory = initialHistory,
@@ -80,6 +102,10 @@ class ProfileViewModel(
         _uiState.update { it.copy(age = value, ageError = error) }
     }
 
+    fun onGenderChange(value: String) {
+        _uiState.update { it.copy(gender = value, genderError = if (value.isBlank()) "Jenis kelamin harus dipilih" else null) }
+    }
+
     fun onHeightChange(value: String) {
         val error = validateDouble(value, "Tinggi badan")
         _uiState.update { it.copy(height = value, heightError = error) }
@@ -94,17 +120,29 @@ class ProfileViewModel(
         _uiState.update { it.copy(goal = value) }
     }
 
+    fun onProfileImageChange(bytes: ByteArray?) {
+        _uiState.update { it.copy(profileImageBytes = bytes) }
+    }
+
+    fun toggleDarkMode(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferences.setDarkMode(enabled)
+        }
+    }
+
     fun saveProfile() {
         val state = _uiState.value
 
         val nameErr = if (state.name.isBlank()) "Nama tidak boleh kosong" else null
+        val genderErr = if (state.gender.isBlank()) "Jenis kelamin harus dipilih" else null
         val heightErr = validateDouble(state.height, "Tinggi badan")
         val weightErr = validateDouble(state.weight, "Berat badan")
 
-        if (nameErr != null || heightErr != null || weightErr != null) {
+        if (nameErr != null || genderErr != null || heightErr != null || weightErr != null) {
             _uiState.update {
                 it.copy(
                     nameError = nameErr,
+                    genderError = genderErr,
                     heightError = heightErr,
                     weightError = weightErr
                 )
@@ -115,20 +153,31 @@ class ProfileViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
 
-            val newWeight = state.weight.trim().toDoubleOrNull() ?: 0.0
-            val profile = UserProfile(
+            val w = state.weight.trim().toDoubleOrNull() ?: 0.0
+            val h = state.height.trim().toDoubleOrNull() ?: 0.0
+            val profileToSave = UserProfile(
                 name = state.name.trim(),
                 age = state.age.trim().toIntOrNull() ?: 0,
-                heightCm = state.height.trim().toDoubleOrNull() ?: 0.0,
-                weightKg = newWeight,
+                gender = state.gender,
+                heightCm = h,
+                weightKg = w,
                 goal = state.goal
             )
 
-            userPreferences.saveUserProfile(profile)
+            userPreferences.saveUserProfile(profileToSave)
 
-            // Masukkan angka berat badan baru ke dalam daftar grafik secara langsung
+            if (state.profileImageBytes != null) {
+                try {
+                    @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
+                    val base64 = kotlin.io.encoding.Base64.encode(state.profileImageBytes)
+                    userPreferences.saveUserProfileImageBase64(base64)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
             val updatedHistory = state.weightHistory.toMutableList().apply {
-                if (newWeight > 0.0) add(newWeight)
+                if (w > 0.0) add(w)
             }
 
             delay(500)
@@ -143,14 +192,22 @@ class ProfileViewModel(
         }
     }
 
-    fun resetSuccessState() {
+    fun resetSaveSuccess() {
         _uiState.update { it.copy(saveSuccess = false) }
+    }
+
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            userPreferences.logout()
+            onSuccess()
+        }
     }
 
     private fun validateInt(value: String, fieldName: String): String? {
         if (value.isBlank()) return "$fieldName tidak boleh kosong"
         val intVal = value.toIntOrNull() ?: return "$fieldName harus berupa angka"
         if (intVal <= 0) return "$fieldName harus lebih dari 0"
+        if (fieldName == "Umur" && intVal > 120) return "$fieldName maksimal 120"
         return null
     }
 
@@ -158,6 +215,8 @@ class ProfileViewModel(
         if (value.isBlank()) return "$fieldName tidak boleh kosong"
         val doubleVal = value.toDoubleOrNull() ?: return "$fieldName harus berupa angka"
         if (doubleVal <= 0) return "$fieldName harus lebih dari 0"
+        if (fieldName == "Berat badan" && doubleVal > 500) return "$fieldName maksimal 500 kg"
+        if (fieldName == "Tinggi badan" && doubleVal > 300) return "$fieldName maksimal 300 cm"
         return null
     }
 }

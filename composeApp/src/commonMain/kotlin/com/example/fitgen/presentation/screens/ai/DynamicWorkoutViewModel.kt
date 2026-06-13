@@ -14,16 +14,18 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import com.example.fitgen.domain.usecase.GetExerciseGifUseCase
+import com.example.fitgen.domain.repository.CustomRoutineRepository
+import com.example.fitgen.domain.model.RoutineExercise
 
 // ==================== ENUMS / DATA ====================
 
-enum class EquipmentChip(val label: String, val emoji: String) {
-    NO_EQUIPMENT("Tanpa Alat", "🏠"),
-    DUMBBELL("Dumbbell", "🏋️"),
-    BARBELL("Barbel", "🔩"),
-    RESISTANCE_BAND("Resistance Band", "〰️"),
-    KETTLEBELL("Kettlebell", "⚾"),
-    GYM_FULL("Gym Lengkap", "🏢")
+enum class EquipmentChip(val label: String) {
+    NO_EQUIPMENT("Tanpa Alat"),
+    DUMBBELL("Dumbbell"),
+    BARBELL("Barbel"),
+    RESISTANCE_BAND("Resistance Band"),
+    KETTLEBELL("Kettlebell"),
+    GYM_FULL("Gym Lengkap")
 }
 
 enum class DurationChip(val label: String, val minutes: Int) {
@@ -35,13 +37,13 @@ enum class DurationChip(val label: String, val minutes: Int) {
     MIN_60("60 Menit", 60)
 }
 
-enum class GoalChip(val label: String, val emoji: String) {
-    FAT_BURN("Bakar Lemak", "🔥"),
-    MUSCLE_BUILD("Bangun Otot", "💪"),
-    CARDIO("Kardio", "❤️"),
-    STRENGTH("Kekuatan", "🦾"),
-    FLEXIBILITY("Fleksibilitas", "🧘"),
-    ENDURANCE("Daya Tahan", "⚡")
+enum class GoalChip(val label: String) {
+    FAT_BURN("Bakar Lemak"),
+    MUSCLE_BUILD("Bangun Otot"),
+    CARDIO("Kardio"),
+    STRENGTH("Kekuatan"),
+    FLEXIBILITY("Fleksibilitas"),
+    ENDURANCE("Daya Tahan")
 }
 
 enum class LevelChip(val label: String) {
@@ -81,7 +83,8 @@ sealed interface DynamicWorkoutEvent {
 
 class DynamicWorkoutViewModel(
     private val aiRepository: AIRepository,
-    private val getExerciseGifUseCase: GetExerciseGifUseCase
+    private val getExerciseGifUseCase: GetExerciseGifUseCase,
+    private val customRoutineRepository: CustomRoutineRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DynamicWorkoutUiState())
@@ -174,5 +177,36 @@ class DynamicWorkoutViewModel(
 
     fun clearResult() {
         _uiState.update { it.copy(result = null, error = null) }
+    }
+
+    fun saveToCustomRoutine(routineName: String) {
+        val currentResult = _uiState.value.result ?: return
+        if (routineName.isBlank()) return
+
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+                // 1. Create the routine
+                val routineId = customRoutineRepository.insertRoutine(routineName)
+                
+                // 2. Add each exercise
+                currentResult.forEach { item ->
+                    val exercise = RoutineExercise(
+                        routineId = routineId,
+                        name = item.englishName,
+                        bodyPart = "AI Generated",
+                        gifUrl = item.gifUrl ?: "",
+                        instructions = item.description
+                    )
+                    customRoutineRepository.addExerciseToRoutine(routineId, exercise)
+                }
+                
+                _uiState.update { it.copy(isLoading = false) }
+                _events.emit(DynamicWorkoutEvent.ShowSnackbar("Berhasil disimpan ke Latihan Custom!"))
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false) }
+                _events.emit(DynamicWorkoutEvent.ShowSnackbar("Gagal menyimpan: ${e.message}"))
+            }
+        }
     }
 }

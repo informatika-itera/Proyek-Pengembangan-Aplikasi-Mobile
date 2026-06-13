@@ -59,6 +59,13 @@ fun AIAssistantScreen(
         viewModel.setInitialText(initialText)
     }
     
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
+    
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -129,8 +136,6 @@ fun AIAssistantScreen(
                 placeholder = { Text("Masukkan teks di sini...") },
                 minLines = 4,
                 maxLines = 8,
-                isError = uiState.error != null,
-                supportingText = uiState.error?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
             

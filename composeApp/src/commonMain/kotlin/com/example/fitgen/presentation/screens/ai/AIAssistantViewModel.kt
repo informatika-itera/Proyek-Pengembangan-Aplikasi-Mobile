@@ -27,6 +27,7 @@ class AIAssistantViewModel(
     }
     fun onInputTextChange(text: String) { _uiState.update { it.copy(inputText = text, error = null) } }
     fun onActionSelected(action: AIAction) { _uiState.update { it.copy(selectedAction = action) } }
+    fun clearError() { _uiState.update { it.copy(error = null) } }
 
     fun executeAction() {
         val state = _uiState.value

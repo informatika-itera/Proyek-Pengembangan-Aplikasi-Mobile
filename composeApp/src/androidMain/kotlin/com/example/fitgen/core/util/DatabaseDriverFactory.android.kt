@@ -15,10 +15,17 @@ actual class DatabaseDriverFactory(
     private val context: Context
 ) {
     actual fun createDriver(): SqlDriver {
-        return AndroidSqliteDriver(
+        val driver = AndroidSqliteDriver(
             schema = FitGenDatabase.Schema,
             context = context,
             name = "fitgen.db"
         )
+        try {
+            driver.execute(null, "CREATE TABLE IF NOT EXISTS CustomRoutineEntity (id INTEGER PRIMARY KEY AUTOINCREMENT, nama_rutinitas TEXT NOT NULL, created_at INTEGER NOT NULL);", 0)
+            driver.execute(null, "CREATE TABLE IF NOT EXISTS RoutineExerciseEntity (id INTEGER PRIMARY KEY AUTOINCREMENT, routine_id INTEGER NOT NULL, nama_gerakan TEXT NOT NULL, body_part TEXT NOT NULL, gif_url TEXT NOT NULL, instructions TEXT NOT NULL, FOREIGN KEY(routine_id) REFERENCES CustomRoutineEntity(id) ON DELETE CASCADE);", 0)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return driver
     }
 }

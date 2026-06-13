@@ -1,5 +1,6 @@
 package com.example.fitgen.domain.repository
 
+import com.example.fitgen.domain.model.Exercise
 import com.example.fitgen.domain.model.WorkoutLog
 import kotlinx.coroutines.flow.Flow
 
@@ -20,6 +21,12 @@ interface WorkoutRepository {
      * @return ID dari workout log yang baru saja disimpan.
      */
     suspend fun insertWorkout(workout: WorkoutLog): Long
+
+    /**
+     * Menambahkan exercise ke dalam WorkoutLog hari ini (jika ada).
+     * Jika exercise terakhir sama, akan menambah jumlah sets.
+     */
+    suspend fun addExerciseToTodayLog(exercise: Exercise, catatanDurasi: String)
 
     /**
      * Memperbarui workout log yang sudah ada beserta daftar gerakannya.

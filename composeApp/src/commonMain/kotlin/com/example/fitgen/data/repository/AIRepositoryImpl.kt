@@ -95,7 +95,7 @@ class AIRepositoryImpl(
         ).map { it.trim().removeSurrounding("\"") }
     }
 
-    // UPDATE: Terhubung langsung ke Gemini Vision API
+    // UPDATE: Terhubung langsung ke Gemini Vision API (Karena Groq Vision sudah decommissioned)
     override suspend fun analyzeImage(prompt: String, imageBytes: ByteArray): String {
         // Instruksi tegas agar AI hanya membalas dengan format JSON yang bisa di-parsing, termasuk nama makanan!
         val strictPrompt = """

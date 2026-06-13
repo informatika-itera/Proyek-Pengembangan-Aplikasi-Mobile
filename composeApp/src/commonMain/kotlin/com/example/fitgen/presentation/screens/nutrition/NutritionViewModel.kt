@@ -6,6 +6,10 @@ import com.example.fitgen.domain.model.MealLog
 import com.example.fitgen.domain.model.MealType
 import com.example.fitgen.domain.usecase.GetDailyCaloriesUseCase
 import com.example.fitgen.domain.usecase.LogMealUseCase
+import com.example.fitgen.domain.usecase.GetDailyWaterGlassesUseCase
+import com.example.fitgen.domain.usecase.AddWaterGlassUseCase
+import com.example.fitgen.domain.usecase.RemoveWaterGlassUseCase
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +23,10 @@ data class NutritionUiState(
     val todayMeals: List<MealLog> = emptyList(),
     val totalCaloriesToday: Int = 0,
     val calorieTarget: Int = 2000,
+    val totalProtein: Double = 0.0,
+    val totalCarbs: Double = 0.0,
+    val totalFat: Double = 0.0,
+    val waterGlasses: Int = 0,
     val errorMessage: String? = null
 ) {
     val calorieProgress: Float
@@ -29,13 +37,19 @@ data class NutritionUiState(
 
 class NutritionViewModel(
     private val getDailyCaloriesUseCase: GetDailyCaloriesUseCase,
-    private val logMealUseCase: LogMealUseCase
+    private val logMealUseCase: LogMealUseCase,
+    private val getDailyWaterGlassesUseCase: GetDailyWaterGlassesUseCase,
+    private val addWaterGlassUseCase: AddWaterGlassUseCase,
+    private val removeWaterGlassUseCase: RemoveWaterGlassUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NutritionUiState())
     val uiState: StateFlow<NutritionUiState> = _uiState.asStateFlow()
 
-    init { observeTodayMeals() }
+    init { 
+        observeTodayMeals() 
+        observeWaterGlasses()
+    }
 
     private fun observeTodayMeals() {
         getDailyCaloriesUseCase()
@@ -45,6 +59,9 @@ class NutritionViewModel(
                         isLoading          = false,
                         todayMeals         = meals,
                         totalCaloriesToday = getDailyCaloriesUseCase.calculateTotal(meals),
+                        totalProtein       = meals.sumOf { m -> m.proteinG },
+                        totalCarbs         = meals.sumOf { m -> m.karbohidratG },
+                        totalFat           = meals.sumOf { m -> m.lemakG },
                         errorMessage       = null
                     )
                 }
@@ -55,9 +72,36 @@ class NutritionViewModel(
             .launchIn(viewModelScope)
     }
 
+    private fun observeWaterGlasses() {
+        getDailyWaterGlassesUseCase()
+            .onEach { glasses ->
+                _uiState.update { it.copy(waterGlasses = glasses) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun addWater() {
+        viewModelScope.launch {
+            addWaterGlassUseCase()
+        }
+    }
+
+    fun removeWater() {
+        viewModelScope.launch {
+            removeWaterGlassUseCase()
+        }
+    }
+
     fun deleteMeal(mealId: Long) {
         _uiState.update { state ->
-            state.copy(todayMeals = state.todayMeals.filter { it.id != mealId })
+            val updatedMeals = state.todayMeals.filter { it.id != mealId }
+            state.copy(
+                todayMeals = updatedMeals,
+                totalCaloriesToday = getDailyCaloriesUseCase.calculateTotal(updatedMeals),
+                totalProtein       = updatedMeals.sumOf { m -> m.proteinG },
+                totalCarbs         = updatedMeals.sumOf { m -> m.karbohidratG },
+                totalFat           = updatedMeals.sumOf { m -> m.lemakG }
+            )
         }
     }
 

@@ -40,6 +40,15 @@ getWorkoutLogById:
 SELECT * FROM WorkoutLogEntity
 WHERE id = ?;
 
+getLatestWorkoutLog:
+SELECT * FROM WorkoutLogEntity
+ORDER BY id DESC LIMIT 1;
+
+updateWorkoutLogCatatan:
+UPDATE WorkoutLogEntity
+SET catatan = ?
+WHERE id = ?;
+
 -- Queries for ExerciseEntity
 
 insertExercise:
@@ -53,3 +62,8 @@ WHERE workout_log_id = ?;
 deleteExercisesByWorkoutLogId:
 DELETE FROM ExerciseEntity
 WHERE workout_log_id = ?;
+
+updateExerciseSets:
+UPDATE ExerciseEntity
+SET sets = ?
+WHERE id = ?;

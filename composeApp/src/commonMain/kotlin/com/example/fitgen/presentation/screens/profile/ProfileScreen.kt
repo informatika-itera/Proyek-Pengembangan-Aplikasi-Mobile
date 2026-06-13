@@ -1,6 +1,7 @@
 package com.example.fitgen.presentation.screens.profile
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,29 +11,37 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -44,22 +53,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fitgen.presentation.components.FitGenPrimaryButton
 import com.example.fitgen.presentation.components.FitGenTextField
+import com.preat.peekaboo.image.picker.toImageBitmap
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.roundToInt
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
+    onLogoutSuccess: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,7 +86,7 @@ fun ProfileScreen(
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
             snackbarHostState.showSnackbar("Profil berhasil disimpan!")
-            viewModel.resetSuccessState()
+            viewModel.resetSaveSuccess()
         }
     }
 
@@ -76,22 +94,42 @@ fun ProfileScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                modifier = Modifier.height(90.dp),
                 title = {
-                    Text(
-                        "Profil Pengguna",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            "Profil Pengguna",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 20.dp)
+                        )
+                    }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        IconButton(onClick = onNavigateBack, modifier = Modifier.padding(bottom = 20.dp)) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        }
+                    }
+                },
+                actions = {
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        IconButton(onClick = onNavigateToEditProfile, modifier = Modifier.padding(bottom = 20.dp)) {
+                            Icon(Icons.Outlined.Edit, contentDescription = "Edit Profil")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -109,39 +147,40 @@ fun ProfileScreen(
                 contentPadding = PaddingValues(20.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+                // Hero Section
                 item {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(contentAlignment = Alignment.BottomEnd) {
-                            Box(
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                                    .clickable { /* TODO: Trigger photo upload */ },
-                                contentAlignment = Alignment.Center
-                            ) {
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                .padding(4.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (uiState.profileImageBytes != null) {
+                                val imageBitmap = remember(uiState.profileImageBytes) {
+                                    uiState.profileImageBytes?.toImageBitmap()
+                                }
+                                imageBitmap?.let {
+                                    Image(
+                                        bitmap = it,
+                                        contentDescription = "Profile Photo",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            } else {
                                 Icon(
                                     Icons.Outlined.Person,
                                     contentDescription = null,
-                                    modifier = Modifier.size(50.dp),
+                                    modifier = Modifier.size(60.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Edit,
-                                    contentDescription = "Upload Foto",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         }
@@ -152,61 +191,75 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
 
+                // Profile Info Red Card
                 item {
-                    Row(
+                    Card(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF800000) // Maroon
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Card(
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Total Calories",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("1,250",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                ProfileInfoItem("Usia", "${uiState.age.ifBlank { "--" }} Thn")
+                                ProfileInfoItem("Gender", uiState.gender.ifBlank { "--" })
                             }
-                        }
-                        Card(
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Active Minutes",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("45",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                ProfileInfoItem("Berat", "${uiState.weight.ifBlank { "--" }} kg")
+                                ProfileInfoItem("Tinggi", "${uiState.height.ifBlank { "--" }} cm")
                             }
                         }
                     }
                 }
 
+                // App Settings
+                item {
+                    Text(
+                        "Pengaturan Aplikasi",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Mode Gelap (Dark Mode)", style = MaterialTheme.typography.bodyLarge)
+                            Switch(
+                                checked = uiState.isDarkMode,
+                                onCheckedChange = { viewModel.toggleDarkMode(it) }
+                            )
+                        }
+                    }
+                }
+
+                // Body Metrics
                 item {
                     val weightKgs = uiState.weight.toDoubleOrNull() ?: 0.0
                     val heightCms = uiState.height.toDoubleOrNull() ?: 0.0
@@ -214,7 +267,7 @@ fun ProfileScreen(
                         weightKgs / ((heightCms / 100) * (heightCms / 100))
                     } else 0.0
 
-                    Text("Body Metrics",
+                    Text("Metrik Tubuh",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold)
@@ -227,7 +280,7 @@ fun ProfileScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Weight Tracker", style = MaterialTheme.typography.titleMedium)
+                            Text("Riwayat Berat Badan", style = MaterialTheme.typography.titleMedium)
                             Spacer(modifier = Modifier.height(16.dp))
                             Box(
                                 modifier = Modifier
@@ -237,11 +290,10 @@ fun ProfileScreen(
                                     .background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
-                                // Menggunakan data riwayat asli dari UiState
                                 if (uiState.weightHistory.isNotEmpty()) {
                                     SimpleWeightChart(weightHistory = uiState.weightHistory)
                                 } else {
-                                    Text("Isi profil untuk melihat grafik", color = Color.Gray)
+                                    Text("Belum ada data berat badan", color = Color.Gray)
                                 }
                             }
                         }
@@ -256,61 +308,50 @@ fun ProfileScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("BMI Indicator", style = MaterialTheme.typography.titleMedium)
+                            Text("Indikator BMI", style = MaterialTheme.typography.titleMedium)
                             Spacer(modifier = Modifier.height(16.dp))
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(100.dp)
+                                    .height(140.dp)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
                                 BmiGaugeMeter(bmi = bmi)
                             }
-                        }                    }
-                }
-
-                item {
-                    Text("Identitas Dasar",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FitGenTextField(
-                        value = uiState.name,
-                        onValueChange = viewModel::onNameChange,
-                        label = "Nama Lengkap"
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        FitGenTextField(
-                            value = uiState.height,
-                            onValueChange = viewModel::onHeightChange,
-                            label = "Tinggi (cm)",
-                            modifier = Modifier.weight(1f)
-                        )
-                        FitGenTextField(
-                            value = uiState.weight,
-                            onValueChange = viewModel::onWeightChange,
-                            label = "Berat (kg)",
-                            modifier = Modifier.weight(1f)
-                        )
+                        }
                     }
                 }
 
                 item {
-                    FitGenPrimaryButton(
-                        text = if (uiState.isSaving) "Menyimpan..." else "Simpan Profil",
-                        onClick = viewModel::saveProfile,
-                        enabled = !uiState.isSaving
-                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = {
+                            viewModel.logout {
+                                onLogoutSuccess()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Keluar (Logout)",
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun SimpleWeightChart(weightHistory: List<Double>) {
@@ -372,20 +413,81 @@ fun BmiGaugeMeter(bmi: Double) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = if (bmi > 0) ((bmi * 10.0).roundToInt() / 10.0).toString() else "--",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = gaugeColor
-        )
+        Box(
+            modifier = Modifier.size(160.dp, 70.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val strokeWidth = 14.dp.toPx()
+                val topLeft = Offset(strokeWidth / 2, strokeWidth / 2)
+                val canvasSize = Size(size.width - strokeWidth, (size.height * 2) - strokeWidth)
+
+                drawArc(
+                    color = Color.LightGray.copy(alpha = 0.3f),
+                    startAngle = 180f,
+                    sweepAngle = 180f,
+                    useCenter = false,
+                    topLeft = topLeft,
+                    size = canvasSize,
+                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                )
+
+                if (bmi > 0.0) {
+                    val maxBmiValue = 40.0
+                    val minBmiValue = 15.0
+                    val clampedBmi = bmi.coerceIn(minBmiValue, maxBmiValue)
+                    val progress = (clampedBmi - minBmiValue) / (maxBmiValue - minBmiValue)
+                    val targetSweepAngle = (progress * 180f).toFloat()
+
+                    drawArc(
+                        color = gaugeColor,
+                        startAngle = 180f,
+                        sweepAngle = targetSweepAngle,
+                        useCenter = false,
+                        topLeft = topLeft,
+                        size = canvasSize,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                }
+            }
+
+            Text(
+                text = if (bmi > 0) ((bmi * 10.0).roundToInt() / 10.0).toString() else "--",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (bmi > 0.0) gaugeColor else Color.Gray,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = category,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun ProfileInfoItem(label: String, value: String) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.7f)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
         )
     }
 }

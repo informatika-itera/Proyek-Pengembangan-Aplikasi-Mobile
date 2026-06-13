@@ -1,7 +1,9 @@
 package com.example.fitgen.presentation.screens.nutrition
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,6 +23,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -27,13 +33,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,12 +49,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fitgen.domain.model.MealType
-import com.example.fitgen.core.util.rememberCameraLauncher // Pastikan import ini sesuai dengan lokasi file CameraLauncher kamu
+import com.example.fitgen.core.util.rememberCameraLauncher
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,8 +68,9 @@ fun AddMealScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    val maroon = Color(0xFF800000)
 
-    // Inisialisasi peluncur kamera
     val cameraLauncher = rememberCameraLauncher { imageBytes ->
         if (imageBytes != null) {
             viewModel.analyzeFoodWithAI(imageBytes)
@@ -79,12 +90,36 @@ fun AddMealScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambah Makanan") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali")
+                modifier = Modifier.height(90.dp),
+                title = {
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Scan Makananmu",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 20.dp)
+                        )
                     }
-                }
+                },
+                navigationIcon = {
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        IconButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.padding(bottom = 20.dp)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali")
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -93,114 +128,178 @@ fun AddMealScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value         = uiState.namaMakanan,
-                onValueChange = viewModel::onNamaChanged,
-                label         = { Text("Nama Makanan *") },
-                modifier      = Modifier.fillMaxWidth(),
-                singleLine    = true
-            )
-            OutlinedTextField(
-                value           = uiState.kaloriInput,
-                onValueChange   = viewModel::onKaloriChanged,
-                label           = { Text("Kalori (kkal) *") },
-                modifier        = Modifier.fillMaxWidth(),
-                singleLine      = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-            Row(
+            // HERO CARD FOR AI SCANNER
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = maroon.copy(alpha = 0.05f)),
+                border = BorderStroke(1.dp, maroon.copy(alpha = 0.2f))
             ) {
-                OutlinedTextField(
-                    value           = uiState.proteinInput,
-                    onValueChange   = viewModel::onProteinChanged,
-                    label           = { Text("Protein (g)") },
-                    modifier        = Modifier.weight(1f),
-                    singleLine      = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
-                OutlinedTextField(
-                    value           = uiState.karbohidratInput,
-                    onValueChange   = viewModel::onKarbohidratChanged,
-                    label           = { Text("Karbo (g)") },
-                    modifier        = Modifier.weight(1f),
-                    singleLine      = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .background(maroon.copy(alpha = 0.1f), CircleShape)
+                            .padding(8.dp)
+                            .background(maroon, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CameraAlt,
+                            contentDescription = "Kamera",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Scan dengan AI",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = maroon
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Foto makananmu dan biarkan AI mengenali dan menghitung kalorinya secara otomatis!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Button(
+                        onClick = { cameraLauncher() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = maroon),
+                        enabled = !uiState.isLoading
+                    ) {
+                        Icon(Icons.Default.CameraAlt, "Scan")
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = if (uiState.isLoading) "Menganalisis..." else "Buka Kamera",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
             }
-            OutlinedTextField(
-                value           = uiState.lemakInput,
-                onValueChange   = viewModel::onLemakChanged,
-                label           = { Text("Lemak (g)") },
-                modifier        = Modifier.fillMaxWidth(),
-                singleLine      = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-            )
-            MealTypeDropdown(
-                selected = uiState.jenisMakan,
-                onSelect = viewModel::onJenisMakanChanged,
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            // ==========================================
-            // KODE SCANNER AI
-            // ==========================================
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Pemisah Visual "ATAU"
+            // DIVIDER
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
                 Text(
-                    text = " ATAU ",
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    text = "Atau Input Manual",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            // MANUAL INPUT SECTION
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    OutlinedTextField(
+                        value = uiState.namaMakanan,
+                        onValueChange = viewModel::onNamaChanged,
+                        label = { Text("Nama Makanan *") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    OutlinedTextField(
+                        value = uiState.kaloriInput,
+                        onValueChange = viewModel::onKaloriChanged,
+                        label = { Text("Total Kalori (kkal) *") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.proteinInput,
+                            onValueChange = viewModel::onProteinChanged,
+                            label = { Text("Protein (g)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        OutlinedTextField(
+                            value = uiState.karbohidratInput,
+                            onValueChange = viewModel::onKarbohidratChanged,
+                            label = { Text("Karbo (g)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = uiState.lemakInput,
+                        onValueChange = viewModel::onLemakChanged,
+                        label = { Text("Lemak (g)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    MealTypeDropdown(
+                        selected = uiState.jenisMakan,
+                        onSelect = viewModel::onJenisMakanChanged,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tombol Scanner AI
-            OutlinedButton(
-                onClick = { cameraLauncher() }, // Memanggil fungsi kamera di sini
+            // SAVE BUTTON
+            Button(
+                onClick = viewModel::saveMeal,
+                enabled = uiState.namaMakanan.isNotBlank() && !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFFE91E63) // Warna pink/maroon accent
-                ),
-                border = BorderStroke(1.dp, Color(0xFFE91E63)),
-                enabled = !uiState.isLoading // Matikan tombol saat AI sedang memproses
+                    .height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = maroon)
             ) {
-                Icon(
-                    imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Scan Makanan",
-                    modifier = Modifier.size(24.dp)
+                Text(
+                    text = if (uiState.isLoading) "Memproses..." else "Simpan Makanan",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                // Ubah teks agar interaktif
-                Text(text = if (uiState.isLoading) "Menganalisis..." else "Scan Makanan dengan AI")
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            // ==========================================
-
-            Button(
-                onClick  = viewModel::saveMeal,
-                enabled  = uiState.namaMakanan.isNotBlank() && !uiState.isLoading,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (uiState.isLoading) "Menyimpan..." else "Simpan Makanan")
-            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -214,25 +313,28 @@ private fun MealTypeDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
-        expanded         = expanded,
+        expanded = expanded,
         onExpandedChange = { expanded = !expanded },
-        modifier         = modifier
+        modifier = modifier
     ) {
         OutlinedTextField(
-            value         = selected.label,
+            value = selected.label,
             onValueChange = {},
-            readOnly      = true,
-            label         = { Text("Jenis Makan") },
-            trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier      = Modifier.fillMaxWidth().menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable, enabled = true)
+            readOnly = true,
+            label = { Text("Waktu Makan") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable, enabled = true),
+            shape = RoundedCornerShape(12.dp)
         )
         ExposedDropdownMenu(
-            expanded         = expanded,
+            expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
             MealType.entries.forEach { type ->
                 DropdownMenuItem(
-                    text    = { Text(type.label) },
+                    text = { Text(type.label) },
                     onClick = { onSelect(type); expanded = false }
                 )
             }

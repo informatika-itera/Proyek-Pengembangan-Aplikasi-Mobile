@@ -13,6 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class WorkoutRepositoryImpl(private val database: FitGenDatabase) : WorkoutRepository {
 
@@ -77,6 +80,50 @@ class WorkoutRepositoryImpl(private val database: FitGenDatabase) : WorkoutRepos
             }
 
             workoutLogId
+        }
+
+    override suspend fun addExerciseToTodayLog(exercise: Exercise, catatanDurasi: String) =
+        withContext(Dispatchers.Default) {
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toEpochDays().toLong()
+            val latestLog = queries.getLatestWorkoutLog().executeAsOneOrNull()
+
+            if (latestLog != null && latestLog.tanggal == today) {
+                // Log for today exists
+                val exercises = queries.getExercisesForWorkoutLog(latestLog.id).executeAsList()
+                val lastExercise = exercises.lastOrNull()
+
+                if (lastExercise != null && lastExercise.nama == exercise.nama) {
+                    // Consecutive same exercise -> update sets
+                    queries.updateExerciseSets(
+                        id = lastExercise.id,
+                        sets = lastExercise.sets + exercise.sets.toLong()
+                    )
+                } else {
+                    // Not consecutive or different exercise -> insert new exercise
+                    queries.insertExercise(
+                        workout_log_id = latestLog.id,
+                        nama = exercise.nama,
+                        sets = exercise.sets.toLong(),
+                        reps = exercise.reps.toLong(),
+                        beban = exercise.beban
+                    )
+                }
+
+                // Append duration to catatan
+                val newCatatan = if (latestLog.catatan.isBlank()) catatanDurasi else latestLog.catatan + "\n" + catatanDurasi
+                queries.updateWorkoutLogCatatan(catatan = newCatatan, id = latestLog.id)
+            } else {
+                // Create new log for today
+                queries.insertWorkoutLog(tanggal = today, catatan = catatanDurasi)
+                val newLogId = queries.lastInsertWorkoutLogId().executeAsOne()
+                queries.insertExercise(
+                    workout_log_id = newLogId,
+                    nama = exercise.nama,
+                    sets = exercise.sets.toLong(),
+                    reps = exercise.reps.toLong(),
+                    beban = exercise.beban
+                )
+            }
         }
 
     override suspend fun updateWorkout(workout: WorkoutLog) =

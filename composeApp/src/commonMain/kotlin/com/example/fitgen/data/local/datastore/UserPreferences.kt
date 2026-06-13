@@ -37,15 +37,20 @@ class UserPreferences(
         // --- Sprint 3: User Profile ---
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_AGE = intPreferencesKey("user_age")
+        val USER_GENDER = stringPreferencesKey("user_gender")
         val USER_HEIGHT = doublePreferencesKey("user_height")
         val USER_WEIGHT = doublePreferencesKey("user_weight")
         val USER_GOAL = stringPreferencesKey("user_goal")
+        val USER_PROFILE_IMAGE_BASE64 = stringPreferencesKey("user_profile_image_base64")
         
         // --- Sprint 4: Streak & Hydration ---
         val LAST_LOGIN_DATE = longPreferencesKey("last_login_date")
         val CURRENT_STREAK = intPreferencesKey("current_streak")
         val LAST_HYDRATION_DATE = longPreferencesKey("last_hydration_date")
         val WATER_GLASSES = intPreferencesKey("water_glasses")
+        
+        // --- Sprint 5: Challenges ---
+        val COMPLETED_CHALLENGE_DAYS = stringPreferencesKey("completed_challenge_days")
     }
     
     // ==================== DARK MODE ====================
@@ -147,6 +152,7 @@ class UserPreferences(
         UserProfile(
             name = prefs[Keys.USER_NAME] ?: "",
             age = prefs[Keys.USER_AGE] ?: 0,
+            gender = prefs[Keys.USER_GENDER] ?: "",
             heightCm = prefs[Keys.USER_HEIGHT] ?: 0.0,
             weightKg = prefs[Keys.USER_WEIGHT] ?: 0.0,
             goal = prefs[Keys.USER_GOAL] ?: ""
@@ -160,9 +166,33 @@ class UserPreferences(
         dataStore.edit { prefs ->
             prefs[Keys.USER_NAME] = profile.name
             prefs[Keys.USER_AGE] = profile.age
+            prefs[Keys.USER_GENDER] = profile.gender
             prefs[Keys.USER_HEIGHT] = profile.heightCm
             prefs[Keys.USER_WEIGHT] = profile.weightKg
             prefs[Keys.USER_GOAL] = profile.goal
+        }
+    }
+
+    /**
+     * Menghapus semua preferensi user (Logout / Reset)
+     */
+    suspend fun logout() {
+        dataStore.edit { prefs ->
+            prefs.clear()
+        }
+    }
+    
+    val userProfileImageBase64: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_PROFILE_IMAGE_BASE64]
+    }
+    
+    suspend fun saveUserProfileImageBase64(base64: String?) {
+        dataStore.edit { prefs ->
+            if (base64 == null) {
+                prefs.remove(Keys.USER_PROFILE_IMAGE_BASE64)
+            } else {
+                prefs[Keys.USER_PROFILE_IMAGE_BASE64] = base64
+            }
         }
     }
     
@@ -185,6 +215,22 @@ class UserPreferences(
         dataStore.edit { prefs ->
             prefs[Keys.LAST_HYDRATION_DATE] = lastDate
             prefs[Keys.WATER_GLASSES] = glasses
+        }
+    }
+
+    // ==================== CHALLENGES ====================
+    val completedChallengeDays: Flow<Set<String>> = dataStore.data.map { prefs ->
+        val savedString = prefs[Keys.COMPLETED_CHALLENGE_DAYS] ?: ""
+        if (savedString.isEmpty()) emptySet() else savedString.split(",").toSet()
+    }
+
+    suspend fun markChallengeDayCompleted(challengeId: String, day: Int) {
+        dataStore.edit { prefs ->
+            val savedString = prefs[Keys.COMPLETED_CHALLENGE_DAYS] ?: ""
+            val currentSet = if (savedString.isEmpty()) emptySet() else savedString.split(",").toSet()
+            val newSet = currentSet.toMutableSet()
+            newSet.add("${challengeId}_$day")
+            prefs[Keys.COMPLETED_CHALLENGE_DAYS] = newSet.joinToString(",")
         }
     }
 }

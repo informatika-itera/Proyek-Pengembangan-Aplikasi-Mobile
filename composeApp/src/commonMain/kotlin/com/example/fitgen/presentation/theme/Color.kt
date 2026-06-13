@@ -52,13 +52,13 @@ val ErrorContainerDark      = Color(0xFF93000A)
 val OnErrorContainerDark    = Color(0xFFFFDAD6)
 
 // ==================== LIGHT MODE — Background & Surface ====================
-val BackgroundLight         = Color(0xFFF5F0F0) // #F5F0F0 — soft warm gray
-val OnBackgroundLight       = Color(0xFF1C1C1C) // #1C1C1C — dark charcoal
-val SurfaceLight            = Color(0xFFEDE8E8) // #EDE8E8 — light mode surface
-val OnSurfaceLight          = Color(0xFF1C1C1C) // #1C1C1C — dark charcoal
-val SurfaceVariantLight     = Color(0xFFF5DDDA)
+val BackgroundLight         = Color(0xFFFFFFFF) // putih murni
+val OnBackgroundLight       = Color(0xFF1C1C1C) // dark charcoal
+val SurfaceLight            = Color(0xFFFFFFFF) // putih bersih untuk card
+val OnSurfaceLight          = Color(0xFF1C1C1C) // dark charcoal
+val SurfaceVariantLight     = Color(0xFFF5F0E8) // cream sangat tipis
 val OnSurfaceVariantLight   = Color(0xFF534341)
-val OutlineLight            = Color(0xFF857371)
+val OutlineLight            = Color(0xFFD6CFC8)
 
 // ==================== DARK MODE — Background & Surface ====================
 val BackgroundDark          = Color(0xFF1A0000) // #1A0000 — very deep maroon-black

@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 class GeminiService(private val client: HttpClient) {
 
     private val apiKey = BuildKonfig.GEMINI_API_KEY
-    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
+    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
     suspend fun analyzeImage(prompt: String, imageBytes: ByteArray): String {
         try {
@@ -57,7 +57,14 @@ class GeminiService(private val client: HttpClient) {
             }
 
         } catch (e: Exception) {
-            throw Exception("${e.message}")
+            val msg = e.message ?: ""
+            if (msg.contains("resolve host", ignoreCase = true) || 
+                msg.contains("UnknownHostException", ignoreCase = true) || 
+                msg.contains("ConnectException", ignoreCase = true) ||
+                msg.contains("failed to connect", ignoreCase = true)) {
+                throw Exception("Tidak ada koneksi internet. Silakan periksa jaringan Anda.")
+            }
+            throw e
         }
     }
 }

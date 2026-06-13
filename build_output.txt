@@ -1,0 +1,62 @@
+﻿Starting a Gradle Daemon, 2 incompatible and 6 stopped Daemons could not be reused, use --status for details
+Calculating task graph as configuration cache cannot be reused because file 'composeApp\build.gradle.kts' has changed.
+Type-safe project accessors is an incubating feature.
+> Task :composeApp:preBuild UP-TO-DATE
+> Task :composeApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :composeApp:preDebugBuild UP-TO-DATE
+> Task :composeApp:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForAndroidDebug NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForAndroidDebug NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidDebug NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForAndroidDebug NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :composeApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :composeApp:generateComposeResClass UP-TO-DATE
+> Task :composeApp:generateCommonMainFitGenDatabaseInterface UP-TO-DATE
+> Task :composeApp:generateDebugResValues UP-TO-DATE
+> Task :composeApp:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:transformCommonMainDependenciesMetadata UP-TO-DATE
+> Task :composeApp:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :composeApp:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :composeApp:generateDebugResources UP-TO-DATE
+> Task :composeApp:extractDeepLinksDebug UP-TO-DATE
+> Task :composeApp:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :composeApp:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :composeApp:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :composeApp:packageDebugResources UP-TO-DATE
+> Task :composeApp:parseDebugLocalResources UP-TO-DATE
+> Task :composeApp:generateBuildKonfig
+> Task :composeApp:mapDebugSourceSetPaths UP-TO-DATE
+> Task :composeApp:checkDebugAarMetadata UP-TO-DATE
+> Task :composeApp:mergeDebugResources UP-TO-DATE
+> Task :composeApp:processDebugMainManifest FROM-CACHE
+> Task :composeApp:processDebugManifest FROM-CACHE
+> Task :composeApp:processDebugManifestForPackage FROM-CACHE
+> Task :composeApp:processDebugResources FROM-CACHE
+> Task :composeApp:compileCommonMainKotlinMetadata
+> Task :composeApp:compileDebugKotlinAndroid
+
+> Task :composeApp:compileCommonMainKotlinMetadata
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/commonMain/kotlin/com/example/fitgen/core/network/ApiConfig.kt:12:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/commonMain/kotlin/com/example/fitgen/core/util/DatabaseDriverFactory.kt:15:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/commonMain/kotlin/com/example/fitgen/data/local/datastore/DataStoreFactory.kt:19:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+
+> Task :composeApp:compileDebugKotlinAndroid
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/androidMain/kotlin/com/example/fitgen/core/network/ApiConfig.android.kt:9:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/androidMain/kotlin/com/example/fitgen/core/util/DatabaseDriverFactory.android.kt:14:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/androidMain/kotlin/com/example/fitgen/data/local/datastore/DataStoreFactory.android.kt:11:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/commonMain/kotlin/com/example/fitgen/core/network/ApiConfig.kt:12:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/commonMain/kotlin/com/example/fitgen/core/util/DatabaseDriverFactory.kt:15:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///C:/Users/anisa/OneDrive/Documents/TUBES-PAM/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/src/commonMain/kotlin/com/example/fitgen/data/local/datastore/DataStoreFactory.kt:19:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. You can use -Xexpect-actual-classes flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.7/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 6m 13s
+24 actionable tasks: 3 executed, 4 from cache, 17 up-to-date
+Configuration cache entry stored.

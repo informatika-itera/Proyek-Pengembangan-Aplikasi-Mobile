@@ -13,10 +13,11 @@ package com.example.fitgen.domain.model
 data class UserProfile(
     val name: String = "",
     val age: Int = 0,
+    val gender: String = "",
     val heightCm: Double = 0.0,
     val weightKg: Double = 0.0,
     val goal: String = ""
 ) {
     val isComplete: Boolean
-        get() = name.isNotBlank() && age > 0 && heightCm > 0.0 && weightKg > 0.0 && goal.isNotBlank()
+        get() = name.isNotBlank() && age > 0 && gender.isNotBlank() && heightCm > 0.0 && weightKg > 0.0
 }

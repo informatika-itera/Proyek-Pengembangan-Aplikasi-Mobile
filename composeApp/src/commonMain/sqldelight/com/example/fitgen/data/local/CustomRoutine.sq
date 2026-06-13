@@ -1,0 +1,59 @@
+CREATE TABLE IF NOT EXISTS CustomRoutineEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nama_rutinitas TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS RoutineExerciseEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    routine_id INTEGER NOT NULL,
+    nama_gerakan TEXT NOT NULL,
+    body_part TEXT NOT NULL,
+    gif_url TEXT NOT NULL,
+    instructions TEXT NOT NULL,
+    FOREIGN KEY(routine_id) REFERENCES CustomRoutineEntity(id) ON DELETE CASCADE
+);
+
+-- Queries for CustomRoutineEntity
+
+insertRoutine:
+INSERT INTO CustomRoutineEntity(nama_rutinitas, created_at)
+VALUES (?, ?);
+
+lastInsertRoutineId:
+SELECT last_insert_rowid();
+
+updateRoutineName:
+UPDATE CustomRoutineEntity
+SET nama_rutinitas = ?
+WHERE id = ?;
+
+deleteRoutineById:
+DELETE FROM CustomRoutineEntity
+WHERE id = ?;
+
+getAllRoutines:
+SELECT * FROM CustomRoutineEntity
+ORDER BY created_at DESC;
+
+getRoutineById:
+SELECT * FROM CustomRoutineEntity
+WHERE id = ?;
+
+-- Queries for RoutineExerciseEntity
+
+insertRoutineExercise:
+INSERT INTO RoutineExerciseEntity(routine_id, nama_gerakan, body_part, gif_url, instructions)
+VALUES (?, ?, ?, ?, ?);
+
+getExercisesForRoutine:
+SELECT * FROM RoutineExerciseEntity
+WHERE routine_id = ?;
+
+deleteRoutineExerciseById:
+DELETE FROM RoutineExerciseEntity
+WHERE id = ?;
+
+deleteExercisesByRoutineId:
+DELETE FROM RoutineExerciseEntity
+WHERE routine_id = ?;

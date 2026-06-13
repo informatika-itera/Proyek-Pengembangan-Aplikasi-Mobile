@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 
 @Composable
 fun WeightTrackerChart(weights: List<Float>) {
@@ -90,7 +91,7 @@ fun BmiGauge(bmi: Float) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "BMI: ${"%.1f".format(bmi)}",
+            text = "BMI: ${(bmi * 10).roundToInt() / 10.0}",
             style = MaterialTheme.typography.titleMedium
         )
         Spacer(modifier = Modifier.height(4.dp))

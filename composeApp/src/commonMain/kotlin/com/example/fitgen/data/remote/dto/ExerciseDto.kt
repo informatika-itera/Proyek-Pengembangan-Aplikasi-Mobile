@@ -7,6 +7,7 @@ data class ExerciseDto(
     val bodyPart: String? = null,
     val equipment: String? = null,
     val gifUrl: String? = null,
+    val imageUrls: List<String> = emptyList(),
     val id: String? = null,
     val name: String? = null,
     val target: String? = null,

@@ -45,6 +45,7 @@
     <string name="color_blue">Biru</string>
     <string name="color_purple">Ungu</string>
     <string name="color_pink">Pink</string>
+    <color name="ic_background_color">#FFFFFF</color>
     
     <!-- Add/Edit Note Screen -->
     <string name="add_note_title">Catatan Baru</string>

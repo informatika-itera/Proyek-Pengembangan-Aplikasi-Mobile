@@ -11,7 +11,8 @@ Program Studi Teknik Informatika Institut Teknologi Sumatera (ITERA)
 | 123140119 |Prima Agusta Sembering |
 | 123140127 |Muhammad Daffansyah Desuandi|
 
-
+## Demo Aplikasi
+[Klik Video Demo](https://youtu.be/8JoY_hdxS-Y)
 ## Tentang Aplikasi
 
 Feelia adalah aplikasi jurnal harian berbasis AI yang membantu pengguna mencatat perasaan, memahami kondisi emosional, dan memantau tren mood dari waktu ke waktu.  
@@ -87,6 +88,31 @@ Mendukung tampilan dark mode untuk meningkatkan kenyamanan pengguna.
 ## 3. Run Application
 Klik tombol Run (ikon segitiga hijau).
 
+---
+
+## 🧪 Testing
+
+### Menjalankan Unit Tests
+
+```bash
+./gradlew test
+```
+
+### Menjalankan UI Tests (Instrumented)
+
+```bash
+./gradlew connectedAndroidTest
+```
+
+> Pastikan emulator atau device sudah terhubung sebelum menjalankan UI tests.
+
+### Menjalankan Coverage Report
+
+```bash
+./gradlew koverHtmlReport
+```
+
+Hasil report tersedia di:
 ## 👨‍🏫 Dosen Pengampu
 ### Muhammad Habib Algifari, S.Kom., M.TI.
 [GitHub: mh4Scripts](https://github.com/mh4Scripts)

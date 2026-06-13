@@ -84,11 +84,21 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
-        
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+        }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.androidxTestJunit)
+                implementation(libs.androidxEspressoCore)
+                implementation(libs.androidxComposeUiTestJunit4)
+                implementation(libs.androidxComposeUiTestManifest)
+            }
         }
         
         androidMain.dependencies {
@@ -96,6 +106,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
+//            implementation(libs.androidx.activity.compose)
         }
         
         iosMain.dependencies {
@@ -104,6 +115,8 @@ kotlin {
         }
     }
 }
+
+
 
 android {
     namespace = "com.example.Feelia"

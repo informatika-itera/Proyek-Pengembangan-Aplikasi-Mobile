@@ -163,17 +163,17 @@ fun AddNoteScreen(
                     shape = RoundedCornerShape(16.dp)
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+//                Spacer(modifier = Modifier.height(20.dp))
 
-                // Pilih emosi manual
-                Text(
-                    text = "Kamu merasa...",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+//                // Pilih emosi manual
+//                Text(
+//                    text = "Kamu merasa...",
+//                    style = MaterialTheme.typography.titleSmall,
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
 
-                Spacer(modifier = Modifier.height(12.dp))
-                Spacer(modifier = Modifier.height(8.dp))
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Spacer(modifier = Modifier.height(8.dp))
 
                 AnimatedVisibility(visible = uiState.isDetectingEmotion) {
                     Row(
@@ -216,10 +216,10 @@ fun AddNoteScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                EmotionSelector(
-                    selectedEmotion = uiState.emotion,
-                    onEmotionSelected = viewModel::onEmotionChange
-                )
+//                EmotionSelector(
+//                    selectedEmotion = uiState.emotion,
+//                    onEmotionSelected = viewModel::onEmotionChange
+//                )
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -227,44 +227,44 @@ fun AddNoteScreen(
     }
 }
 
-@Composable
-private fun EmotionSelector(
-    selectedEmotion: Emotion,
-    onEmotionSelected: (Emotion) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        Emotion.entries.forEach { emotion ->
-            val isSelected = emotion == selectedEmotion
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (isSelected) Color(emotion.colorHex)
-                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                    .border(
-                        width = if (isSelected) 2.dp else 0.dp,
-                        color = if (isSelected) MaterialTheme.colorScheme.primary
-                        else Color.Transparent,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .clickable { onEmotionSelected(emotion) }
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
-            ) {
-                Text(text = emotion.emoji, style = MaterialTheme.typography.headlineMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = emotion.displayName,
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
+//@Composable
+//private fun EmotionSelector(
+//    selectedEmotion: Emotion,
+//    onEmotionSelected: (Emotion) -> Unit
+//) {
+//    Row(
+//        modifier = Modifier.fillMaxWidth(),
+//        horizontalArrangement = Arrangement.SpaceEvenly
+//    ) {
+//        Emotion.entries.forEach { emotion ->
+//            val isSelected = emotion == selectedEmotion
+//            Column(
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                modifier = Modifier
+//                    .clip(RoundedCornerShape(12.dp))
+//                    .background(
+//                        if (isSelected) Color(emotion.colorHex)
+//                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+//                    )
+//                    .border(
+//                        width = if (isSelected) 2.dp else 0.dp,
+//                        color = if (isSelected) MaterialTheme.colorScheme.primary
+//                        else Color.Transparent,
+//                        shape = RoundedCornerShape(12.dp)
+//                    )
+//                    .clickable { onEmotionSelected(emotion) }
+//                    .padding(horizontal = 10.dp, vertical = 8.dp)
+//            ) {
+//                Text(text = emotion.emoji, style = MaterialTheme.typography.headlineMedium)
+//                Spacer(modifier = Modifier.height(4.dp))
+//                Text(
+//                    text = emotion.displayName,
+//                    style = MaterialTheme.typography.labelSmall,
+//                    textAlign = TextAlign.Center,
+//                    color = if (isSelected) MaterialTheme.colorScheme.primary
+//                    else MaterialTheme.colorScheme.onSurfaceVariant
+//                )
+//            }
+//        }
+//    }
+//}

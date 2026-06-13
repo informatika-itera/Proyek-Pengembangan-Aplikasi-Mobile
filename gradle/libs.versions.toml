@@ -13,6 +13,10 @@ okio = "3.9.1"
 lifecycle = "2.8.3"
 navigation = "2.8.0-alpha10"
 coil = "3.0.4"
+compose = "1.7.8"
+androidxTestJunit = "1.1.5"
+espresso = "3.5.1"
+activityCompose = "1.9.2"
 
 # Testing
 turbine = "1.2.0"
@@ -64,6 +68,12 @@ coil-network-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", v
 # Testing
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+
+androidxTestJunit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestJunit" }
+androidxEspressoCore = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+androidxComposeUiTestJunit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
+androidxComposeUiTestManifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
+androidx-activity-compose = { group = "androidx.activity",  name = "activity-compose", version.ref = "activityCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

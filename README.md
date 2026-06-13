@@ -14,7 +14,7 @@
 
 ## Video Demo
 <p align="center">
-  <a href="https://youtu.be/ZJtZRwx-RVo" target="_blank">
+  <a href="https://youtu.be/Ylobb7jtKnE" target="_blank">
     <img src="docs/ss_1.jpeg" alt="Watch Demo Video" width="220" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
   </a>
   <br>

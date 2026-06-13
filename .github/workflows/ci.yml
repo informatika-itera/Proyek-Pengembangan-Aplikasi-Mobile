@@ -17,15 +17,15 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      # Langkah yang sudah diperbaiki tanpa drama tanda kutip
       - name: Create Mock local.properties for Build
         run: echo GEMINI_API_KEY=mock_api_key_for_ci > local.properties
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Run All Unit Tests
-        run: ./gradlew test
+
+      - name: Run Unit Tests (Debug Variant)
+        run: ./gradlew testDebugUnitTest
 
       - name: Compile and Build Debug APK
         run: ./gradlew assembleDebug

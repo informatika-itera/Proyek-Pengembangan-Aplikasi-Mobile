@@ -185,6 +185,9 @@ fun HomeScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Tambah Transaksi")
             }
+
+
+
         }
     ) { paddingValues ->
         Column(
@@ -661,6 +664,7 @@ private fun TransactionsList(transactions: List<Transaction>, onTransactionClick
                 onDeleteClick = { onDeleteClick(transaction.id) }
             )
         }
+
     }
 }
 
@@ -681,4 +685,19 @@ private fun formatAmount(amount: Double): String {
     val formatted = result.reversed().toString()
 
     return if (isNegative) "-$formatted" else formatted
+}
+
+@Composable
+fun VersionDisplayComponent(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Version 1.0.0", // Dibuat statis agar aman dari error compiler iOS
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }

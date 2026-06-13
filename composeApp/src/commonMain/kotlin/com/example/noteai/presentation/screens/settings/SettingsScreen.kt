@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.AlertDialog
@@ -36,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -76,6 +78,7 @@ fun SettingsScreen(
     val clipboardManager = LocalClipboardManager.current
     
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -120,19 +123,42 @@ fun SettingsScreen(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Terminal,
-                            contentDescription = null,
-                            modifier = Modifier.size(36.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        IconButton(
+                            onClick = {},
+                            enabled = false,
+                            modifier = Modifier.size(40.dp)
+                        ) { }
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Terminal,
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        
+                        IconButton(
+                            onClick = { showEditProfileDialog = true },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Profil",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.height(12.dp))
@@ -145,7 +171,7 @@ fun SettingsScreen(
                     )
                     
                     Text(
-                        text = "Tim Pengembang Kelompok:",
+                        text = "Profil Pengguna",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -154,9 +180,17 @@ fun SettingsScreen(
                     Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    DeveloperInfoRow(name = "Andika Rahman Pratama", nim = "123140090")
-                    Spacer(modifier = Modifier.height(4.dp))
-                    DeveloperInfoRow(name = "Muhammad Farhan Muzakhi", nim = "123140075")
+                    if (uiState.userName.isNotBlank()) {
+                        DeveloperInfoRow(name = uiState.userName, nim = uiState.userNim)
+                    } else {
+                        Text(
+                            text = "Profil belum diisi.\nKlik ikon pensil untuk mengisi nama dan NIM kamu.",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
@@ -243,7 +277,7 @@ fun SettingsScreen(
                     // Dark Mode Setting
                     SettingItem(
                         icon = Icons.Default.DarkMode,
-                        title = "Tema Gelap (Hacker Vibe)",
+                        title = "Tema Gelap",
                         description = "Gunakan tema gelap neon terminal default",
                         action = {
                             Switch(
@@ -323,6 +357,53 @@ fun SettingsScreen(
             },
             dismissButton = {
                 OutlinedButton(onClick = { showDeleteDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
+
+    // Edit Profile Dialog
+    if (showEditProfileDialog) {
+        var name by remember { mutableStateOf(uiState.userName) }
+        var nim by remember { mutableStateOf(uiState.userNim) }
+
+        AlertDialog(
+            onDismissRequest = { showEditProfileDialog = false },
+            title = { Text("Edit Profil Saya") },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Nama Lengkap") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = nim,
+                        onValueChange = { nim = it },
+                        label = { Text("NIM") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateUserProfile(name, nim)
+                        showEditProfileDialog = false
+                    }
+                ) {
+                    Text("Simpan")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showEditProfileDialog = false }) {
                     Text("Batal")
                 }
             }

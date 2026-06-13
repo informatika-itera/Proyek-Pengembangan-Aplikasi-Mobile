@@ -2,6 +2,27 @@
 
 **Vulnerability Tracker & Bug Bounty Journal**
 
+---
+
+## Demo Aplikasi
+
+[![Demo VulnLog - YouTube](https://img.shields.io/badge/▶%20Tonton%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/A3gAJEfBPaI)
+
+> **Klik untuk menonton video demo lengkap aplikasi VulnLog**
+
+---
+
+## Tim Pengembang
+
+| Nama | NIM | Role |
+|------|-----|------|
+| Andika Rahman Pratama | 123140090 | Developer |
+| Muhammad Farhan Muzakhi | 123140075 | Developer |
+
+> Program Studi Teknik Informatika · Institut Teknologi Sumatera (ITERA)
+
+---
+
 VulnLog adalah aplikasi mobile untuk mencatat dan mengelola temuan vulnerability saat bug bounty hunting. Dibangun dengan Kotlin Multiplatform (KMP) dan Compose Multiplatform, app ini bisa dipakai di Android dan iOS dari satu codebase.
 
 Kenapa bikin ini? Karena kebanyakan bug hunter masih catat temuan di Notion/Google Docs yang formatnya berantakan. VulnLog hadir sebagai jurnal terstruktur yang bisa langsung track status temuan dari "Found" sampai "Paid".
@@ -30,6 +51,13 @@ Kenapa bikin ini? Karena kebanyakan bug hunter masih catat temuan di Notion/Goog
 
 ### 6. Dark Mode
 - Default dark theme dengan aksen neon green (terminal aesthetic).
+
+### 7. Profil Pengguna
+- Isi dan simpan nama serta NIM langsung dari halaman Pengaturan.
+- Data tersimpan secara lokal dan persisten.
+
+### 8. Ekspor Data
+- Ekspor seluruh catatan temuan dalam format JSON untuk keperluan dokumentasi atau laporan.
 
 ## Arsitektur
 
@@ -64,11 +92,11 @@ composeApp/src/commonMain/kotlin/com/example/noteai/
 
 | Sprint | Fokus | Status |
 |--------|-------|--------|
-| Sprint 1 | Project setup, tema cybersecurity, README | ✓ Selesai |
-| Sprint 2 | CRUD vulnerability, severity system | ✓ Selesai |
-| Sprint 3 | Search, filter, status tracking, Settings/Profile | ✓ Selesai |
-| Sprint 4 | Unit & UI testing, UI Polish, Bug Fixing | ✓ Selesai |
-| Sprint 5 | Final Preparation & Demo UAS | In Progress |
+| Sprint 1 | Project setup, tema cybersecurity, README | ✅ Selesai |
+| Sprint 2 | CRUD vulnerability, severity system | ✅ Selesai |
+| Sprint 3 | Search, filter, status tracking, Settings/Profile | ✅ Selesai |
+| Sprint 4 | Unit & UI testing, UI Polish, Bug Fixing | ✅ Selesai |
+| Sprint 5 | Final Preparation & Demo UAS | ✅ Selesai |
 
 ## Setup
 
@@ -90,7 +118,7 @@ cp local.properties.example local.properties
 
 Dapatkan API key di: [Google AI Studio](https://aistudio.google.com)
 
-## 🧪 Pengujian & Testing (Sprint 4)
+## 🧪 Pengujian & Testing
 
 Proyek ini dilengkapi dengan pengujian otomatis menggunakan pustaka pengujian standar Kotlin Multiplatform (`kotlin.test`), Turbine untuk pengujian Flow/StateFlow, dan coroutines test dispatcher.
 
@@ -111,13 +139,3 @@ Atau Anda dapat mengeklik kanan folder `commonTest` di Android Studio dan memili
   - Validasi query input pencarian dan fungsionalitas debounce 300ms.
   - Pengujian filter terintegrasi berbasis Severity tingkat tinggi.
 
----
-
-## Tim Pengembang
-
-| Nama | NIM | Role |
-|------|-----|------|
-| Andika Rahman Pratama | 123140090 | Developer |
-| Muhammad Farhan Muzakhi | 123140075 | Developer |
-
-Program Studi Teknik Informatika - Institut Teknologi Sumatera (ITERA)

@@ -32,8 +32,9 @@ class SettingsViewModel(
         viewModelScope.launch {
             combine(
                 repository.getAllNotes(),
-                userPreferences.isDarkMode
-            ) { notes, isDarkMode ->
+                userPreferences.isDarkMode,
+                userPreferences.userProfile
+            ) { notes, isDarkMode, profile ->
                 val totalCount = notes.size
                 val criticalCount = notes.count { it.severity == VulnSeverity.CRITICAL }
                 val highCount = notes.count { it.severity == VulnSeverity.HIGH }
@@ -54,11 +55,19 @@ class SettingsViewModel(
                     paidCount = paidCount,
                     resolvedCount = resolvedCount,
                     isDarkMode = isDarkMode,
-                    exportJson = exportData
+                    exportJson = exportData,
+                    userName = profile.name,
+                    userNim = profile.nim
                 )
             }.collect { newState ->
                 _uiState.value = newState
             }
+        }
+    }
+
+    fun updateUserProfile(name: String, nim: String) {
+        viewModelScope.launch {
+            userPreferences.saveUserProfile(name, nim)
         }
     }
 
@@ -118,7 +127,9 @@ data class SettingsUiState(
     val paidCount: Int = 0,
     val resolvedCount: Int = 0,
     val isDarkMode: Boolean = true,
-    val exportJson: String = ""
+    val exportJson: String = "",
+    val userName: String = "",
+    val userNim: String = ""
 )
 
 sealed interface SettingsEvent {

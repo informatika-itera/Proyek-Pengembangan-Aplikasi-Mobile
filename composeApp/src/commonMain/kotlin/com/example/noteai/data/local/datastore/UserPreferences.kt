@@ -29,6 +29,8 @@ class UserPreferences(
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val USER_NAME = stringPreferencesKey("user_name")
+        val USER_NIM = stringPreferencesKey("user_nim")
     }
 
     // ==================== DARK MODE ====================
@@ -120,4 +122,34 @@ class UserPreferences(
             prefs[Keys.ONBOARDING_COMPLETED] = true
         }
     }
+
+    // ==================== USER PROFILE ====================
+
+    /**
+     * Observe profil pengguna (nama dan NIM/ID yang bisa diinput sendiri)
+     */
+    val userProfile: Flow<UserProfile> = dataStore.data.map { prefs ->
+        UserProfile(
+            name = prefs[Keys.USER_NAME] ?: "",
+            nim = prefs[Keys.USER_NIM] ?: ""
+        )
+    }
+
+    /**
+     * Simpan profil pengguna
+     */
+    suspend fun saveUserProfile(name: String, nim: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.USER_NAME] = name
+            prefs[Keys.USER_NIM] = nim
+        }
+    }
 }
+
+/**
+ * Data class untuk menampung data profil pengguna aplikasi
+ */
+data class UserProfile(
+    val name: String,
+    val nim: String
+)

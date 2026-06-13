@@ -19,7 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studymate.presentation.theme.BackgroundDark
+import com.studymate.presentation.theme.BackgroundLight
 import com.studymate.presentation.theme.PrimaryLight
 import com.studymate.Res
 import com.studymate.app_logo
@@ -59,16 +59,17 @@ fun SplashScreen(onNavigateToHome: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (showITLogo) Color.White else BackgroundDark),
+            .background(if (showITLogo) Color.White else BackgroundLight),
         contentAlignment = Alignment.Center
     ) {
         if (showITLogo) {
-            // Teknik Informatika Logo - Full Width (No Fade-in, just be there)
+            // Teknik Informatika Logo - use almost full width so it appears larger on phones
             Image(
                 painter = painterResource(Res.drawable.logo_if_itera),
                 contentDescription = "IF Itera Logo",
                 modifier = Modifier
-                    .fillMaxWidth(0.85f),
+                    .fillMaxWidth(0.95f) // Increased for better visibility
+                    .padding(8.dp),
                 contentScale = ContentScale.Fit
             )
         } else {
@@ -77,11 +78,13 @@ fun SplashScreen(onNavigateToHome: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                // Make StudyMate logo size responsive to screen width
                 Image(
                     painter = painterResource(Res.drawable.app_logo),
                     contentDescription = "StudyMate Logo",
                     modifier = Modifier
-                        .size(180.dp)
+                        .fillMaxWidth(0.75f) // Increased from 0.65f
+                        .aspectRatio(1f)
                         .alpha(dolphinAlpha.value)
                         .graphicsLayer {
                             translationY = logoOffsetY.value
@@ -107,7 +110,7 @@ fun SplashScreen(onNavigateToHome: () -> Unit) {
                     Text(
                         text = "Belajar Cerdas, Raih Prestasi 🎓",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White.copy(alpha = 0.6f),
+                        color = Color.Black.copy(alpha = 0.6f),
                         fontWeight = FontWeight.Medium
                     )
                 }

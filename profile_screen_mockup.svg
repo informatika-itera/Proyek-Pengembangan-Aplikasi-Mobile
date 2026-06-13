@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2400" viewBox="0 0 1080 2400">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#ff5fa0"/>
+      <stop offset="100%" stop-color="#9b3be0"/>
+    </linearGradient>
+    <style>
+      .bg { fill: #F6F7FB; }
+      .card { fill: white; stroke: rgba(20,20,30,0.04); rx:20; }
+      .title { font: 700 44px 'Inter', Arial, sans-serif; fill: #0D0D0D; }
+      .subtitle { font: 500 28px 'Inter', Arial, sans-serif; fill: #333; }
+      .muted { font: 400 20px 'Inter', Arial, sans-serif; fill: #6b6f76; }
+      .smallmuted { font: 400 16px 'Inter', Arial, sans-serif; fill: #8b8f96; }
+      .pill { font: 600 18px 'Inter', Arial, sans-serif; fill: white; }
+      .navtext { font: 400 20px 'Inter', Arial, sans-serif; fill: #7a7f88; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect class="bg" width="1080" height="2400" rx="0"/>
+
+  <!-- Header row: left empty, centered title, theme icon right -->
+  <rect x="40" y="70" width="1000" height="120" fill="transparent" />
+  <!-- Title centered -->
+  <text x="540" y="150" class="title" text-anchor="middle">Profil Saya</text>
+  <!-- Theme (moon) icon on the right -->
+  <g transform="translate(980,90) scale(1.05)">
+    <circle cx="0" cy="0" r="34" fill="#ffffff" stroke="#e6e7eb"/>
+    <path d="M-8,-6 a26,26 0 0,0 22,34 18,18 0 1,1 -22,-34z" fill="#3b3f46"/>
+  </g>
+
+  <!-- Top area - profile card -->
+  <g transform="translate(60,210)">
+    <rect width="960" height="560" rx="28" class="card"/>
+
+    <!-- Avatar: replaced with add-photo placeholder and small edit pencil -->
+    <g transform="translate(70,70)">
+      <circle cx="120" cy="120" r="120" fill="#EDEFF7" stroke="#e0e3ee"/>
+      <!-- silhouette slightly replaced by camera placeholder -->
+      <rect x="80" y="120" width="80" height="60" rx="10" fill="#d1d6ee" />
+      <circle cx="120" cy="100" r="28" fill="#d1d6ee" />
+      <!-- camera lens -->
+      <circle cx="120" cy="100" r="10" fill="#b6bddb" />
+      <!-- add-photo + sign -->
+      <g transform="translate(210,210)">
+        <circle cx="0" cy="0" r="34" fill="#6b6f76" />
+        <path d="M-12,0 L12,0 M0,-12 L0,12" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+      </g>
+      <!-- edit pencil small overlay (bottom-right) -->
+      <g transform="translate(210,210)">
+        <circle cx="0" cy="0" r="26" fill="#ffffff" stroke="#e6e7eb"/>
+        <path d="M-6,6 L6,-6" stroke="#9b3be0" stroke-width="4" stroke-linecap="round"/>
+        <path d="M-3,6 L6,-3" stroke="#9b3be0" stroke-width="4" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- Name + edit icon -->
+    <g transform="translate(330,100)">
+      <text x="0" y="40" class="title">Tengku Hafid Diraputra</text>
+      <!-- small pencil at end of name -->
+      <g transform="translate(520,8)">
+        <rect x="-28" y="-28" width="56" height="56" rx="12" fill="#ffffff" stroke="#e9e7f7"/>
+        <path d="M-6,6 L6,-6" stroke="#ff5fa0" stroke-width="4" stroke-linecap="round"/>
+        <path d="M-3,6 L6,-3" stroke="#ff5fa0" stroke-width="4" stroke-linecap="round"/>
+      </g>
+
+      <!-- Life Goals ribbon (magenta gradient) -->
+      <g transform="translate(0,70)">
+        <rect x="0" y="0" width="740" height="72" rx="18" fill="url(#g1)" />
+        <text x="28" y="48" class="pill">Live Goals: Lulus IPK 3.8+</text>
+        <!-- small icons (edit + trash) to the right inside ribbon -->
+        <g transform="translate(640,36)">
+          <!-- edit pencil circle -->
+          <circle cx="0" cy="0" r="18" fill="rgba(255,255,255,0.15)"/>
+          <path d="M-6,6 L6,-6" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <path d="M-3,6 L6,-3" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(688,36)">
+          <!-- trash icon circle -->
+          <circle cx="0" cy="0" r="18" fill="rgba(255,255,255,0.15)"/>
+          <path d="M-6,-2 L6,-2 M-4,-2 L-3,8 M0,-2 L0,8 M4,-2 L3,8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+        </g>
+      </g>
+
+      <!-- Deadline ribbon under goals (magenta card) -->
+      <g transform="translate(0,160)">
+        <rect x="0" y="0" width="820" height="120" rx="20" fill="#ff79a8"/>
+        <g transform="translate(24,18)">
+          <circle cx="54" cy="42" r="34" fill="#ffdfe9"/>
+          <text x="120" y="52" class="subtitle">TUBES PAM</text>
+          <text x="120" y="86" class="smallmuted">DL akhir</text>
+        </g>
+        <!-- pill right -->
+        <rect x="680" y="30" width="120" height="56" rx="28" fill="#fff"/>
+        <text x="740" y="68" text-anchor="middle" class="muted">6 Jam Lagi</text>
+      </g>
+
+    </g>
+
+  </g>
+
+  <!-- Heatmap Activity Card -->
+  <g transform="translate(60,820)">
+    <rect width="960" height="260" rx="20" class="card"/>
+    <text x="28" y="56" class="subtitle">Aktivitas Belajar</text>
+    <!-- small heatmap squares -->
+    <g transform="translate(32,90)">
+      <!-- 7x5 grid of squares -->
+      <g fill="#eef0f6">
+        <!-- lighter squares -->
+        <!-- generate squares -->
+        <!-- row 0 -->
+        <g>
+          <!-- use small loop-like manual positioning -->
+          <rect x="0" y="0" width="28" height="28" rx="6" />
+          <rect x="36" y="0" width="28" height="28" rx="6" />
+          <rect x="72" y="0" width="28" height="28" rx="6" />
+          <rect x="108" y="0" width="28" height="28" rx="6" />
+          <rect x="144" y="0" width="28" height="28" rx="6" />
+          <rect x="180" y="0" width="28" height="28" rx="6" />
+        </g>
+        <!-- row 1 -->
+        <g transform="translate(0,36)">
+          <rect x="0" y="0" width="28" height="28" rx="6" />
+          <rect x="36" y="0" width="28" height="28" rx="6" />
+          <rect x="72" y="0" width="28" height="28" rx="6" />
+          <rect x="108" y="0" width="28" height="28" rx="6" />
+          <rect x="144" y="0" width="28" height="28" rx="6" />
+          <rect x="180" y="0" width="28" height="28" rx="6" />
+        </g>
+        <!-- row 2 (few filled on right) -->
+        <g transform="translate(0,72)">
+          <rect x="0" y="0" width="28" height="28" rx="6" />
+          <rect x="36" y="0" width="28" height="28" rx="6" />
+          <rect x="72" y="0" width="28" height="28" rx="6" />
+          <rect x="108" y="0" width="28" height="28" rx="6" fill="#9b3be0"/>
+          <rect x="144" y="0" width="28" height="28" rx="6" fill="#6b6f76"/>
+          <rect x="180" y="0" width="28" height="28" rx="6" fill="#3b3f46"/>
+        </g>
+      </g>
+
+      <!-- legend -->
+      <text x="360" y="24" class="smallmuted">Kurang</text>
+      <g transform="translate(450,4)">
+        <rect x="0" y="0" width="20" height="20" rx="4" fill="#eef0f6"/>
+        <rect x="28" y="0" width="20" height="20" rx="4" fill="#9b3be0"/>
+        <rect x="56" y="0" width="20" height="20" rx="4" fill="#3b3f46"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Achievements / trophies card -->
+  <g transform="translate(60,1120)">
+    <text x="0" y="46" class="subtitle">Pencapaian (Kuis 30 Hari)</text>
+    <g transform="translate(0,60)">
+      <g transform="translate(20,0)">
+        <circle cx="80" cy="80" r="72" fill="#fff" stroke="#e9eaf0"/>
+        <circle cx="240" cy="80" r="72" fill="#fff" stroke="#e9eaf0"/>
+        <circle cx="400" cy="80" r="72" fill="#fff" stroke="#e9eaf0"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom navigation bar -->
+  <g transform="translate(0,2100)">
+    <rect x="0" y="0" width="1080" height="300" fill="#ffffff" stroke="#e6e7eb"/>
+    <g transform="translate(84,40)">
+      <!-- Home -->
+      <g transform="translate(0,40)">
+        <path d="M0,0 L48,0 L48,48 L0,48 Z" fill="#7a7f88"/>
+        <text x="24" y="84" class="navtext" text-anchor="middle">Home</text>
+      </g>
+      <g transform="translate(180,40)">
+        <rect x="0" y="0" width="48" height="48" fill="#7a7f88"/>
+        <text x="24" y="84" class="navtext" text-anchor="middle">Notes</text>
+      </g>
+      <g transform="translate(360,40)">
+        <rect x="0" y="0" width="48" height="48" fill="#7a7f88"/>
+        <text x="24" y="84" class="navtext" text-anchor="middle">Quiz</text>
+      </g>
+      <g transform="translate(540,40)">
+        <rect x="0" y="0" width="48" height="48" fill="#7a7f88"/>
+        <text x="24" y="84" class="navtext" text-anchor="middle">Planner</text>
+      </g>
+      <!-- Profile (active) -->
+      <g transform="translate(720,20)">
+        <rect x="-10" y="-10" width="88" height="88" rx="20" fill="url(#g1)" />
+        <text x="34" y="84" class="navtext" fill="#9b3be0">Profile</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- small copyright / note -->
+  <text x="540" y="2380" text-anchor="middle" class="smallmuted">Mockup dibuat berdasarkan image_25.png — dimodifikasi sesuai permintaan</text>
+</svg>

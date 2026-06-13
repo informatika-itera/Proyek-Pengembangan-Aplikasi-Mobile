@@ -41,6 +41,7 @@ fun QuizScreen(
     val history by viewModel.history.collectAsState()
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("StudyMate Quiz 🧠", fontWeight = FontWeight.Bold) },
@@ -60,17 +61,25 @@ fun QuizScreen(
                     HistoryContent(
                         history = history,
                         onNewQuiz = onNavigateToSelectNote,
-                        onDeleteHistory = { viewModel.deleteHistory(it) }
+                        onDeleteHistory = { viewModel.deleteHistory(it) },
+                        onViewHistory = { viewModel.viewHistory(it) }
                     )
                 }
                 is QuizUiState.Loading -> {
                     LoadingView("AI sedang merancang soal dari catatanmu...")
                 }
+                is QuizUiState.Review -> {
+                    QuizReviewView(
+                        history = state.history,
+                        onBack = { viewModel.backToHistory() }
+                    )
+                }
                 is QuizUiState.ActiveSession -> {
                     if (state.isFinished) {
                         QuizResultView(
                             session = state,
-                            onFinish = { viewModel.backToHistory() }
+                            onFinish = { viewModel.backToHistory() },
+                            onReview = { viewModel.reviewCurrentSession() }
                         )
                     } else {
                         QuizActiveView(
@@ -93,7 +102,8 @@ fun QuizScreen(
 private fun HistoryContent(
     history: List<QuizHistory>,
     onNewQuiz: () -> Unit,
-    onDeleteHistory: (Long) -> Unit
+    onDeleteHistory: (Long) -> Unit,
+    onViewHistory: (QuizHistory) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Top section with New Quiz Button
@@ -135,7 +145,11 @@ private fun HistoryContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(history) { item ->
-                    HistoryItem(item, onDelete = { onDeleteHistory(item.id) })
+                    HistoryItem(
+                        item = item, 
+                        onDelete = { onDeleteHistory(item.id) },
+                        onClick = { onViewHistory(item) }
+                    )
                 }
             }
         }
@@ -143,7 +157,11 @@ private fun HistoryContent(
 }
 
 @Composable
-private fun HistoryItem(item: QuizHistory, onDelete: () -> Unit) {
+private fun HistoryItem(
+    item: QuizHistory, 
+    onDelete: () -> Unit,
+    onClick: () -> Unit
+) {
     val date = remember(item.createdAt) {
         val instant = Instant.fromEpochMilliseconds(item.createdAt)
         val dt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -151,7 +169,7 @@ private fun HistoryItem(item: QuizHistory, onDelete: () -> Unit) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -238,9 +256,145 @@ private fun QuizActiveView(
 }
 
 @Composable
+private fun QuizReviewView(
+    history: QuizHistory,
+    onBack: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            tonalElevation = 2.dp,
+            shadowElevation = 2.dp
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Review: ${history.noteTitle}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Skor Akhir: ${history.score} / ${history.totalQuestions}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.weight(1f).fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(history.questions.size) { index ->
+                val question = history.questions[index]
+                val userAnswer = history.userAnswers[index]
+                val isCorrect = userAnswer == question.correctAnswerIndex
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isCorrect) 
+                            SuccessStreak.copy(alpha = 0.1f) 
+                        else 
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                    ),
+                    border = BorderStroke(
+                        1.dp, 
+                        if (isCorrect) SuccessStreak else MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Soal ${index + 1}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = question.question,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        question.options.forEachIndexed { optIdx, option ->
+                            val isUserChoice = optIdx == userAnswer
+                            val isCorrectChoice = optIdx == question.correctAnswerIndex
+                            
+                            val backgroundColor = when {
+                                isCorrectChoice -> SuccessStreak.copy(alpha = 0.2f)
+                                isUserChoice && !isCorrect -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                                else -> Color.Transparent
+                            }
+                            
+                            val textColor = when {
+                                isCorrectChoice -> SuccessStreak
+                                isUserChoice && !isCorrect -> MaterialTheme.colorScheme.error
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
+
+                            Surface(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                color = backgroundColor,
+                                shape = RoundedCornerShape(8.dp),
+                                border = if (isUserChoice || isCorrectChoice) 
+                                    BorderStroke(1.dp, textColor) 
+                                else null
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = when {
+                                            isCorrectChoice -> Icons.Default.CheckCircle
+                                            isUserChoice && !isCorrect -> Icons.Default.Cancel
+                                            else -> Icons.Default.RadioButtonUnchecked
+                                        },
+                                        contentDescription = null,
+                                        tint = textColor,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = option,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = if (isUserChoice || isCorrectChoice) textColor else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "Penjelasan:",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = question.explanation,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun QuizResultView(
     session: QuizUiState.ActiveSession,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    onReview: () -> Unit
 ) {
     val score = session.answers.filter { (idx, ans) -> 
         session.questions[idx].correctAnswerIndex == ans 
@@ -262,6 +416,19 @@ private fun QuizResultView(
         Spacer(modifier = Modifier.height(48.dp))
         
         Button(
+            onClick = onReview,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ) {
+            Icon(Icons.Default.Visibility, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Review Jawaban", fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
             onClick = onFinish,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp)

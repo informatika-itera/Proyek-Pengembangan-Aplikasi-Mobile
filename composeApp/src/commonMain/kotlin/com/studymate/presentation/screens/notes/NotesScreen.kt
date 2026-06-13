@@ -45,6 +45,7 @@ fun NotesScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             Surface(
                 color = MaterialTheme.colorScheme.background,
@@ -115,7 +116,7 @@ fun SearchBar(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier,
-        placeholder = { Text("Cari catatan atau mata kuliah...") },
+        placeholder = { Text("Cari catatan atau mata pelajaran...") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         trailingIcon = {
             if (query.isNotEmpty()) {

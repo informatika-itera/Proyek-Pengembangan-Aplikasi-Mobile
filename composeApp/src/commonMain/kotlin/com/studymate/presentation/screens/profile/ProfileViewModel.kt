@@ -12,15 +12,15 @@ import com.studymate.domain.repository.AuthRepository
 import com.studymate.domain.repository.ReminderRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlin.math.ceil
+import kotlinx.datetime.*
 
 data class ProfileState(
     val user: UserProfile? = null,
     val heatmap: List<ActivityDay> = emptyList(),
     val monthlyQuizCount: Int = 0,
     val isLoading: Boolean = false,
-    val closestReminder: Reminder? = null
+    val closestReminder: Reminder? = null,
+    val timeRemaining: String = ""
 ) {
     val achievementTier: AchievementTier
         get() = when {
@@ -41,6 +41,10 @@ class ProfileViewModel(
     private val _uiState = MutableStateFlow(ProfileState())
     val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
 
+    // Observe reminders via a StateFlow to ensure updates are received reliably
+    private val remindersFlow: StateFlow<List<Reminder>> = reminderRepository.getAllReminders()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         loadProfile()
         loadHeatmap()
@@ -58,7 +62,7 @@ class ProfileViewModel(
     }
 
     private fun loadHeatmap() {
-        activityRepository.getActivityHeatmap(30)
+        activityRepository.getActivityHeatmap(130) // Load roughly 18 weeks (126 days)
             .onEach { heatmap ->
                 _uiState.update { it.copy(heatmap = heatmap) }
             }
@@ -72,27 +76,76 @@ class ProfileViewModel(
         }
     }
 
-    // Observe reminders via a StateFlow to ensure updates are received reliably
-    private val remindersFlow: StateFlow<List<Reminder>> by lazy {
-        reminderRepository.getAllReminders()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    }
-
     private fun observeReminders() {
         remindersFlow
             .onEach { reminders ->
-                val now = Clock.System.now().toEpochMilliseconds()
+                val now = Clock.System.now()
+                val nowMs = now.toEpochMilliseconds()
+                
                 val closestReminder = reminders
-                    .filter { !it.isCompleted && it.dueDate > now }
+                    .filter { (!it.isCompleted) && (it.dueDate > nowMs) }
                     .minByOrNull { it.dueDate }
-                _uiState.update { it.copy(closestReminder = closestReminder) }
+                
+                val timeStr = closestReminder?.let { calculateTimeRemaining(it.dueDate, now) } ?: ""
+                
+                _uiState.update { it.copy(closestReminder = closestReminder, timeRemaining = timeStr) }
             }
             .launchIn(viewModelScope)
     }
 
-    fun updateProfile(name: String, major: String, nim: String) {
+    private fun calculateTimeRemaining(dueDate: Long, now: Instant): String {
+        val dueInstant = Instant.fromEpochMilliseconds(dueDate)
+        val nowLocal = now.toLocalDateTime(TimeZone.currentSystemDefault())
+        val dueLocal = dueInstant.toLocalDateTime(TimeZone.currentSystemDefault())
+        
+        val diff = dueInstant - now
+        
+        return when {
+            dueLocal.date == nowLocal.date -> {
+                val hours = diff.toComponents { _, hours, _, _, _ -> hours }
+                if (hours > 0) "$hours Jam Lagi" else "Segera"
+            }
+            dueLocal.date == nowLocal.date.plus(1, DateTimeUnit.DAY) -> "Besok"
+            else -> {
+                val days = diff.toComponents { days, _, _, _, _ -> days }
+                "$days Hari"
+            }
+        }
+    }
+
+    fun updateProfile(name: String, major: String, nim: String, lifeGoals: String) {
         viewModelScope.launch {
-            profileRepository.updateLocalProfile(name, null, nim, major)
+            val currentUser = uiState.value.user
+            profileRepository.updateLocalProfile(
+                name = name,
+                photoPath = currentUser?.localPhotoPath,
+                nim = nim,
+                major = major,
+                lifeGoals = lifeGoals
+            )
+        }
+    }
+
+    fun updateProfilePhoto(path: String?) {
+        viewModelScope.launch {
+            val currentUser = uiState.value.user
+            profileRepository.updateLocalProfile(
+                name = currentUser?.localName ?: currentUser?.googleName,
+                photoPath = path,
+                nim = currentUser?.nim,
+                major = currentUser?.major,
+                lifeGoals = currentUser?.lifeGoals
+            )
+        }
+    }
+
+    fun deleteProfilePhoto() {
+        updateProfilePhoto(null)
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.signOut()
         }
     }
 

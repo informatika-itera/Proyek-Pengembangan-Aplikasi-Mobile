@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,10 +22,13 @@ import com.studymate.domain.model.Note
 fun SelectNoteForQuizScreen(
     viewModel: QuizViewModel,
     onNavigateBack: () -> Unit,
+    onNavigateToAdvanced: () -> Unit,
     onNoteSelected: (Note) -> Unit
 ) {
     val notes by viewModel.notes.collectAsState()
     var sortBySubject by remember { mutableStateOf(false) }
+    var selectedNoteForDialog by remember { mutableStateOf<Note?>(null) }
+    var questionCount by remember { mutableFloatStateOf(5f) }
     
     val sortedNotes = remember(notes, sortBySubject) {
         if (sortBySubject) {
@@ -35,6 +39,7 @@ fun SelectNoteForQuizScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Pilih Catatan untuk Quiz") },
@@ -44,6 +49,13 @@ fun SelectNoteForQuizScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToAdvanced) {
+                        Icon(
+                            Icons.Default.Lightbulb,
+                            contentDescription = "Advanced Quiz",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = { sortBySubject = !sortBySubject }) {
                         Icon(
                             Icons.Default.Sort, 
@@ -68,11 +80,52 @@ fun SelectNoteForQuizScreen(
                 items(sortedNotes) { note ->
                     NoteSelectionItem(
                         note = note,
-                        onClick = { onNoteSelected(note) }
+                        onClick = { selectedNoteForDialog = note }
                     )
                 }
             }
         }
+    }
+
+    if (selectedNoteForDialog != null) {
+        AlertDialog(
+            onDismissRequest = { selectedNoteForDialog = null },
+            title = { Text("Pengaturan Quiz") },
+            text = {
+                Column {
+                    Text("Pilih jumlah soal untuk catatan: ${selectedNoteForDialog?.title}")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Jumlah Soal: ${questionCount.toInt()}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Slider(
+                        value = questionCount,
+                        onValueChange = { questionCount = it },
+                        valueRange = 3f..15f,
+                        steps = 11
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val note = selectedNoteForDialog
+                    if (note != null) {
+                        viewModel.startQuiz(note, questionCount.toInt())
+                        onNoteSelected(note)
+                    }
+                    selectedNoteForDialog = null
+                }) {
+                    Text("Mulai")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { selectedNoteForDialog = null }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }
 

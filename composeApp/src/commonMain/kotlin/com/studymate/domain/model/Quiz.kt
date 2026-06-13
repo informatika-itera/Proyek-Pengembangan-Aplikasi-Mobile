@@ -10,7 +10,9 @@ data class QuizHistory(
     val subject: String,
     val score: Int,
     val totalQuestions: Int,
-    val createdAt: Long
+    val createdAt: Long,
+    val questions: List<QuizQuestion> = emptyList(),
+    val userAnswers: Map<Int, Int> = emptyMap()
 )
 
 @Serializable

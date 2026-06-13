@@ -42,9 +42,9 @@ object ApiConstants {
             """.trimIndent()
         }
 
-        fun generateQuiz(subject: String, title: String, noteContent: String): String {
+        fun generateQuiz(subject: String, title: String, noteContent: String, count: Int = 5): String {
             return """
-                Buatlah 5 soal pilihan ganda (soal HOTS - Higher Order Thinking Skills) berdasarkan materi berikut.
+                Buatlah $count soal pilihan ganda (soal HOTS - Higher Order Thinking Skills) berdasarkan materi berikut.
                 
                 PRIORITAS SUMBER (Urutan Kepentingan):
                 1. Mata Kuliah: $subject
@@ -52,6 +52,7 @@ object ApiConstants {
                 3. Isi Catatan: $noteContent
                 
                 Instruksi Penting:
+                - Buat tepat $count soal.
                 - Soal harus menantang dan menguji pemahaman konsep, bukan sekadar hafalan.
                 - Output harus dalam format JSON murni.
                 - Struktur JSON: { "questions": [{ "question": "", "options": ["", "", "", ""], "correct": 0, "explanation": "" }] }

@@ -1,16 +1,22 @@
 package com.studymate.data.remote.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class QuizResponseDto(
-    val questions: List<QuizItemDto>
+data class QuizItemDto(
+    @SerialName("question")
+    val question: String,
+    @SerialName("options")
+    val options: List<String>,
+    @SerialName("correct")
+    val correct: Int,
+    @SerialName("explanation")
+    val explanation: String
 )
 
 @Serializable
-data class QuizItemDto(
-    val question: String,
-    val options: List<String>,
-    val correct: Int,
-    val explanation: String
+data class QuizResponseDto(
+    @SerialName("questions")
+    val questions: List<QuizItemDto>
 )

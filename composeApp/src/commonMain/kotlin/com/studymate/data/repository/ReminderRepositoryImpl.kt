@@ -2,6 +2,7 @@ package com.studymate.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.studymate.core.util.NotificationScheduler
 import com.studymate.data.local.StudyMateDatabase
 import com.studymate.domain.model.Reminder
 import com.studymate.domain.repository.ReminderRepository
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class ReminderRepositoryImpl(
-    private val database: StudyMateDatabase
+    private val database: StudyMateDatabase,
+    private val notificationScheduler: NotificationScheduler? = null
 ) : ReminderRepository {
     private val queries = database.reminderQueries
 
@@ -40,7 +42,9 @@ class ReminderRepositoryImpl(
             dueDate = reminder.dueDate,
             createdAt = reminder.createdAt
         )
-        return queries.lastInsertId().executeAsOne()
+        val id = queries.lastInsertId().executeAsOne()
+        notificationScheduler?.scheduleReminder(id, reminder.title, reminder.dueDate)
+        return id
     }
 
     override suspend fun deleteReminder(id: Long) {

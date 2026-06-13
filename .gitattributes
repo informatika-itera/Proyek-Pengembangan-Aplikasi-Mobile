@@ -1,3 +1,36 @@
+# Force GitHub Linguist to treat the repository as Kotlin for language stats
+# This makes GitHub show only Kotlin as the detected language.
+# Use specific exceptions so documentation and build files are correctly classified.
+
+# Treat everything as Kotlin by default
+/* linguist-language=Kotlin
+
+# Mark common non-source folders as generated so they don't count towards language
+/build/** linguist-generated
+/gradle/** linguist-generated
+/gradle-wrapper.jar linguist-generated
+/gradle/wrapper/** linguist-generated
+/gradlew linguist-generated
+/gradlew.bat linguist-generated
+/.gradle/** linguist-generated
+
+# Treat docs and metadata as documentation
+/docs/** linguist-documentation
+/.github/** linguist-documentation
+/*.md linguist-documentation
+/README.md linguist-documentation
+
+# Treat config files and others as generated or documentation to avoid being picked up
+/*.properties linguist-generated
+/*.yml linguist-generated
+/*.yaml linguist-generated
+/*.xml linguist-generated
+/*.json linguist-generated
+
+# Explicitly ensure source tree under composeApp is recognized (redundant but explicit)
+/composeApp/src/** linguist-language=Kotlin
+
+# Keep binary file handling (images/jars) as binary entries
 *.jar binary
 *.png binary
 *.jpg binary

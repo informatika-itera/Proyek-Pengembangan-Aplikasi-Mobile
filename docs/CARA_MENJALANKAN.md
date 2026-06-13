@@ -61,21 +61,21 @@ Lalu edit `local.properties`:
 # Windows:
 # sdk.dir=C\:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
 
-# Google Gemini API Key (lihat langkah 4)
-GEMINI_API_KEY=AIzaSy....your_real_key....
+# Google Groq API Key (lihat langkah 4)
+GROQ_API_KEY=gsk_....your_real_key....
 ```
 
-> Tanpa `GEMINI_API_KEY` aplikasi tetap **bisa dibuka**, tetapi fitur AI (ringkas,
+> Tanpa `GROQ_API_KEY` aplikasi tetap **bisa dibuka**, tetapi fitur AI (ringkas,
 > generate ide, perbaiki tulisan, dll) akan gagal dengan error 401/403.
 
 ---
 
-## 4. Dapatkan Gemini API Key
+## 4. Dapatkan Groq API Key
 
-1. Buka https://aistudio.google.com
-2. Login dengan akun Google.
-3. Klik **Get API Key** → **Create API Key** → pilih project (atau buat baru).
-4. Copy key dan tempel ke `local.properties` di baris `GEMINI_API_KEY=`.
+1. Buka https://console.groq.com
+2. Login atau daftar akun.
+3. Klik **API Keys** → **Create API Key**.
+4. Copy key dan tempel ke `local.properties` di baris `GROQ_API_KEY=`.
 
 > ⚠️ **Jangan share / commit API key.** File `local.properties` sudah di-ignore.
 
@@ -207,7 +207,7 @@ Checklist setelah app jalan:
 | Gejala                                                 | Solusi                                                            |
 | ------------------------------------------------------ | ------------------------------------------------------------------ |
 | `SDK location not found`                               | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis. |
-| `GEMINI_API_KEY` kosong / 401 Unauthorized             | Periksa baris `GEMINI_API_KEY=...` di `local.properties` lalu rebuild. |
+| `GROQ_API_KEY` kosong / 401 Unauthorized             | Periksa baris `GROQ_API_KEY=...` di `local.properties` lalu rebuild. |
 | `Cannot resolve symbol 'NoteDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
 | Gradle sync lambat sekali pertama kali                 | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil. |
 | `Daemon ... was terminated` saat build                 | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`. |
@@ -262,5 +262,5 @@ Pryk-PAM/
 - [SQLDelight](https://cashapp.github.io/sqldelight/)
 - [Koin DI](https://insert-koin.io/)
 - [Ktor Client](https://ktor.io/docs/welcome.html)
-- [Google Gemini API](https://ai.google.dev/docs)
+- [Groq API](https://console.groq.com/docs)
 

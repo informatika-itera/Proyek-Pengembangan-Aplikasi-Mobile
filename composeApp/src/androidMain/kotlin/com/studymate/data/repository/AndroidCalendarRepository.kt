@@ -21,7 +21,8 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
                 CalendarContract.Events.EVENT_LOCATION,
                 CalendarContract.Events.DTSTART,
                 CalendarContract.Events.DTEND,
-                CalendarContract.Events.DISPLAY_COLOR
+                CalendarContract.Events.DISPLAY_COLOR,
+                CalendarContract.Events.CALENDAR_DISPLAY_NAME
             )
 
             val cursor = context.contentResolver.query(
@@ -34,6 +35,10 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
 
             cursor?.use {
                 while (it.moveToNext()) {
+                    val calName = it.getString(7) ?: ""
+                    val isHoliday = calName.contains("Holiday", ignoreCase = true) || 
+                                   calName.contains("Libur", ignoreCase = true)
+                    
                     events.add(
                         CalendarEvent(
                             id = it.getLong(0).toString(),
@@ -43,7 +48,8 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
                             startTime = it.getLong(4),
                             endTime = it.getLong(5),
                             color = String.format("#%06X", 0xFFFFFF and it.getInt(6)),
-                            isGoogleEvent = true
+                            isGoogleEvent = true,
+                            isHoliday = isHoliday
                         )
                     )
                 }
@@ -73,7 +79,7 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
     }
 
     private fun getPrimaryCalendarId(): Long? {
-        val projection = arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.IS_PRIMARY)
+        val projection = arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_NAME)
         val cursor = context.contentResolver.query(
             CalendarContract.Calendars.CONTENT_URI,
             projection,
@@ -81,12 +87,16 @@ class AndroidCalendarRepository(private val context: Context) : CalendarReposito
             null,
             null
         )
+        var firstId: Long? = null
         cursor?.use {
-            while (it.moveToNext()) {
-                if (it.getInt(1) == 1) return it.getLong(0)
+            if (it.moveToFirst()) {
+                firstId = it.getLong(0)
+                do {
+                    if (it.getInt(1) == 1) return it.getLong(0)
+                } while (it.moveToNext())
             }
         }
-        return null
+        return firstId
     }
 
     override suspend fun deleteEvent(eventId: String): Result<Unit> = withContext(Dispatchers.IO) {

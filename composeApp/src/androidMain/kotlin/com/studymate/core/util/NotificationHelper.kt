@@ -9,7 +9,7 @@ import androidx.work.*
 import com.studymate.R
 import java.util.concurrent.TimeUnit
 
-class NotificationHelper(private val context: Context) {
+class NotificationHelper(private val context: Context) : NotificationScheduler {
     companion object {
         const val CHANNEL_ID = "studymate_reminders"
         const val CHANNEL_NAME = "StudyMate Reminders"
@@ -33,7 +33,7 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    fun scheduleReminder(id: Long, title: String, dueDate: Long) {
+    override fun scheduleReminder(id: Long, title: String, dueDate: Long) {
         val now = System.currentTimeMillis()
         
         // Days to notify: 3, 2, and 1 day before

@@ -5,12 +5,14 @@ CREATE TABLE QuizHistoryEntity (
     subject TEXT NOT NULL,
     score INTEGER NOT NULL,
     totalQuestions INTEGER NOT NULL,
-    createdAt INTEGER NOT NULL
+    createdAt INTEGER NOT NULL,
+    serializedQuestions TEXT NOT NULL DEFAULT '[]',
+    serializedAnswers TEXT NOT NULL DEFAULT '{}'
 );
 
 insertHistory:
-INSERT INTO QuizHistoryEntity(noteId, noteTitle, subject, score, totalQuestions, createdAt)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO QuizHistoryEntity(noteId, noteTitle, subject, score, totalQuestions, createdAt, serializedQuestions, serializedAnswers)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAllHistory:
 SELECT * FROM QuizHistoryEntity ORDER BY createdAt DESC;

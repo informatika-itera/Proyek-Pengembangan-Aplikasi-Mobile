@@ -1,0 +1,1 @@
+ALTER TABLE UserProfileEntity ADD COLUMN lifeGoals TEXT NOT NULL DEFAULT '';

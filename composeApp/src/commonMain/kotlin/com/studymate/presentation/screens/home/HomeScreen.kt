@@ -16,9 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,11 +31,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studymate.domain.model.Note
-import com.studymate.domain.model.UserProfile
 import com.studymate.presentation.theme.*
 import com.studymate.Res
 import com.studymate.app_logo
-import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -51,6 +47,7 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { onNavigateToNoteDetail(-1L) },
@@ -72,11 +69,9 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             // 1. Header with glassmorphism feel
-            val successState = uiState as? HomeUiState.Success
             HomeHeader(
-                userName = successState?.userName ?: "User",
-                userProfile = successState?.userProfile,
-                onProfileClick = onNavigateToProfile
+                userName = (uiState as? HomeUiState.Success)?.userName ?: "User",
+                onNavigateToProfile = onNavigateToProfile
             )
 
             when (val state = uiState) {
@@ -92,7 +87,7 @@ fun HomeScreen(
                     // 3. Mantra Harian Widget
                     MantraWidget(
                         mantra = state.dailyMantra,
-                        onRollClick = viewModel::refreshMantra
+                        onRefresh = { viewModel.refreshMantra() }
                     )
 
                     // 4. Recent Notes Section
@@ -121,11 +116,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeHeader(
-    userName: String,
-    userProfile: UserProfile?,
-    onProfileClick: () -> Unit
-) {
+fun HomeHeader(userName: String, onNavigateToProfile: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -134,7 +125,7 @@ fun HomeHeader(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(PrimaryLight.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -142,7 +133,7 @@ fun HomeHeader(
                 Image(
                     painter = painterResource(Res.drawable.app_logo),
                     contentDescription = "Mascot",
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(56.dp)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -164,29 +155,18 @@ fun HomeHeader(
         Surface(
             modifier = Modifier
                 .size(48.dp)
-                .shadow(4.dp, CircleShape)
                 .clip(CircleShape)
-                .clickable { onProfileClick() },
-            color = MaterialTheme.colorScheme.surface,
+                .clickable { onNavigateToProfile() },
+            color = PrimaryLight.copy(alpha = 0.2f),
             border = BorderStroke(2.dp, PrimaryLight)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                val photoUrl = userProfile?.displayPhoto
-                if (photoUrl != null) {
-                    AsyncImage(
-                        model = photoUrl,
-                        contentDescription = "Profile",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = PrimaryLight.copy(alpha = 0.6f)
-                    )
-                }
+                Text(
+                    userName.take(1).uppercase(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryLight
+                )
             }
         }
     }
@@ -233,7 +213,7 @@ fun StudyStreakCard(streakDays: Int) {
                     Box(contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = streakDays.toString(),
+                                "$streakDays",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -249,7 +229,7 @@ fun StudyStreakCard(streakDays: Int) {
             }
             Spacer(modifier = Modifier.height(20.dp))
             LinearProgressIndicator(
-                progress = { 0.8f },
+                progress = 0.8f,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(10.dp)
@@ -295,8 +275,8 @@ fun RecentNotesSection(notes: List<Note>, onNoteClick: (Note) -> Unit) {
 fun NoteCard(note: Note, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .width(220.dp)
-            .height(160.dp)
+            .widthIn(min = 140.dp, max = 200.dp)
+            .heightIn(min = 140.dp, max = 200.dp)
             .shadow(4.dp, RoundedCornerShape(24.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
@@ -354,10 +334,7 @@ fun NoteCard(note: Note, onClick: () -> Unit) {
 }
 
 @Composable
-fun MantraWidget(
-    mantra: String,
-    onRollClick: () -> Unit
-) {
+fun MantraWidget(mantra: String, onRefresh: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -393,17 +370,18 @@ fun MantraWidget(
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            FilledTonalIconButton(
-                onClick = onRollClick,
-                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = AIColorLight.copy(alpha = 0.12f),
-                    contentColor = AIColorLight
-                )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = onRefresh,
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(AIColorLight.copy(alpha = 0.1f), CircleShape)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Roll mantra"
+                    Icons.Default.Sync,
+                    contentDescription = "Refresh Mantra",
+                    tint = AIColorLight,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }

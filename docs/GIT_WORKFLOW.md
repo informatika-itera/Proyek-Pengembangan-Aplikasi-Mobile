@@ -336,7 +336,7 @@ git push --force-with-lease
 ```
 * abc1234 feat: add AI summarize feature
 * def5678 test: add unit tests for AIRepository
-* ghi9012 feat: implement Gemini API integration
+* ghi9012 feat: implement Groq API integration
 * jkl3456 refactor: extract AI logic to use case
 * mno7890 feat: add task detail screen
 * pqr1234 fix: resolve navigation crash

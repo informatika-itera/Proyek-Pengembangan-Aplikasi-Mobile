@@ -29,6 +29,7 @@ class AuthRepositoryImpl(
                 localPhotoPath = existing?.localPhotoPath,
                 nim = existing?.nim ?: "",
                 major = existing?.major ?: "",
+                lifeGoals = existing?.lifeGoals ?: "",
                 currentStreak = existing?.currentStreak ?: 0,
                 lastStudyDate = existing?.lastStudyDate,
                 dailyMantra = existing?.dailyMantra ?: "Semangat Belajar!"
@@ -43,6 +44,7 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun signOut() {
+        userProfileRepository.clearProfile()
         _currentUser.value = null
     }
 }

@@ -49,6 +49,12 @@ class CalendarViewModel(
         _uiState.update { it.copy(selectedDate = date) }
     }
 
+    fun selectDateAndTab(date: LocalDate, isMonthly: Boolean) {
+        _uiState.update { it.copy(selectedDate = date) }
+        // We'll handle tab selection in the UI based on this if needed, 
+        // but the ViewModel just updates the date for now.
+    }
+
     fun addEvent(title: String, description: String?, startTime: Long, endTime: Long) {
         viewModelScope.launch {
             val event = CalendarEvent(
@@ -72,6 +78,32 @@ class CalendarViewModel(
                 createdAt = Clock.System.now().toEpochMilliseconds()
             )
             reminderRepository.insertReminder(reminder)
+        }
+    }
+
+    fun navigatePrev(isMonthly: Boolean) {
+        val unit = if (isMonthly) DateTimeUnit.MONTH else DateTimeUnit.DAY
+        val prevDate = _uiState.value.selectedDate.minus(1, unit)
+        _uiState.update { it.copy(selectedDate = prevDate) }
+    }
+
+    fun navigateNext(isMonthly: Boolean) {
+        val unit = if (isMonthly) DateTimeUnit.MONTH else DateTimeUnit.DAY
+        val nextDate = _uiState.value.selectedDate.plus(1, unit)
+        _uiState.update { it.copy(selectedDate = nextDate) }
+    }
+
+    fun deleteEvent(eventId: String) {
+        viewModelScope.launch {
+            calendarRepository.deleteEvent(eventId).onSuccess {
+                loadEvents()
+            }
+        }
+    }
+
+    fun deleteReminder(reminderId: Long) {
+        viewModelScope.launch {
+            reminderRepository.deleteReminder(reminderId)
         }
     }
 }

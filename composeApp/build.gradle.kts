@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,7 +12,7 @@ plugins {
     alias(libs.plugins.sqldelight)
 }
 
-// Load local.properties for API keys
+// Load local.properties for API keys and Signing Configurations
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
@@ -27,7 +28,7 @@ kotlin {
         }
     }
 
-    // Target iOS dimatikan sementara agar menghentikan error DefaultArtifactPublicationSet di Windows
+    // Target iOS disabled temporarily to stop DefaultArtifactPublicationSet error on Windows
     /*
     listOf(
         iosX64(),
@@ -109,11 +110,21 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.noteai"
+    namespace = "com.example.movein"
     compileSdk = 35
 
+    // Menambahkan konfigurasi Signing Key secara aman dari local.properties untuk Sprint 5
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("my-release-key.jks") // Letakkan file .jks ini di root folder proyek nanti
+            storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD", "")
+            keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS", "")
+            keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD", "")
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.example.noteai"
+        applicationId = "com.example.movein" // Diubah dari movein menjadi movein agar rapi
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -135,7 +146,9 @@ android {
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release") // Menghubungkan ke signing key release
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -156,7 +169,8 @@ android {
 sqldelight {
     databases {
         create("NoteDatabase") {
-            packageName.set("com.example.noteai.data.local")
+            // Diubah agar hasil generator otomatis SQLDelight masuk ke package movein yang baru
+            packageName.set("com.example.movein.data.local")
         }
     }
 }

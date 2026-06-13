@@ -15,6 +15,10 @@ Aplikasi ini dirancang untuk membantu pengguna tetap aktif, produktif, dan memil
 
 ---
 
+## Demonstrasi Aplikasi MoveIn
+
+**Link Youtube : https://youtu.be/osOMGAx2U6U?si=jL2OJUy7P6WyCAAX**
+
 # Team Members
 
 | Nama                | NIM       | GitHub                   |
@@ -200,10 +204,17 @@ composeApp/
 | CI test integration | ✅ Done | Workflow GitHub Actions diperbarui agar menjalankan build dan unit test secara otomatis. |
 
 ## Sprint 5 — Final Preparation
-
-* Final testing
-* Presentation preparation
-* Final documentation
+### Completion Checklist
+| Task | Status | Description |
+| :--- | :---: | :--- |
+| Final Bug Fixing | ✅ Done | Semua bug sisa pada integrasi Koin, SQLite, Auth flow, dan state management telah dibersihkan sehingga aplikasi stabil tanpa crash. |
+| Presentation Slides (PDF/PPTX) | ✅ Done | Slide presentasi telah disusun sesuai standar komponen (Problem, Solution, Tech Stack, Live Demo, Architecture Diagram, & Challenges). |
+| Demo Script & Practice | ✅ Done | Script simulasi demo berdurasi 3 menit telah ditulis dan dipraktikkan bersama tim minimal 2 kali untuk sinkronisasi live-clik emulator. |
+| Build Release APK | ✅ Done | Proses Keystore generation dan konfigurasi signingConfigs di gradle selesai. Signed Release APK telah berhasil di-compile melalui `./gradlew assembleRelease`. |
+| App Versioning | ✅ Done | Menerapkan Semantic Versioning (MAJOR.MINOR.PATCH) dengan konfigurasi versionCode 1 dan versionName "1.0.0" pada build.gradle.kts. |
+| Finalize README | ✅ Done | Dokumentasi README MoveIn telah dilengkapi dengan visual folder structure, tech stack, cara setup/run, serta tautan unduhan file APK. |
+| Video Backup Recording | ✅ Done | Rekaman video backup jalannya aplikasi telah disiapkan sebagai antisipasi jika terjadi kendala teknis (lost connection/lag) pada layar proyektor saat Demo Day. |
+| Submission E-Learning | ✅ Done | Seluruh berkas deliverable berupa tautan GitHub Repo aktif, file PDF/PPTX Slide, dan Signed APK telah diunggah ke portal e-learning ITERA sebelum deadline. |
 
 ---
 
@@ -211,12 +222,12 @@ composeApp/
 
 | Minggu ke- | Aktivitas | Penanggung Jawab |
 | :---: | :--- | :--- |
-| **W11** | Sprint 1: Project setup & rancangan arsitektur | Raisya |
-| **W12** | Sprint 2: Core feature (UI, Navigation, Data Layer lokal) | Ardani |
-| **W13** | Sprint 3: Advanced feature (Ktor Client / API integration & Gemini AI) | Raisya |
-| **W14** | Sprint 4: Polish UI, handle error state, dan Unit Testing | Ardani |
-| **W15** | Sprint 5: Final preparation, bug fixing, dan optimasi aplikasi | Raisya |
-| **W16** | UAS: Final Demo Day presentasi proyek | Ardani & Raisya |
+| **W11** | Sprint 1: Project setup & rancangan arsitektur | Raisya & Ardani|
+| **W12** | Sprint 2: Core feature (UI, Navigation, Data Layer lokal) | Raisya & Ardani |
+| **W13** | Sprint 3: Advanced feature (Ktor Client / API integration & Gemini AI) | Raisya & Ardani |
+| **W14** | Sprint 4: Polish UI, handle error state, dan Unit Testing | Raisya & Ardani |
+| **W15** | Sprint 5: Final preparation, bug fixing, dan optimasi aplikasi | Raisya & Ardani |
+| **W16** | UAS: Final Demo Day presentasi proyek | Raisya & Ardani |
 
 
 # Setup Project
@@ -230,7 +241,7 @@ git clone https://github.com/Kaizenix/123140169-123140186-MoveIn.git
 ## Open Project
 
 * Open project menggunakan Android Studio
-* Sync Gradle
+* Sync Gradlea2
 * Run pada emulator atau device Android
 
 ---
@@ -238,8 +249,9 @@ git clone https://github.com/Kaizenix/123140169-123140186-MoveIn.git
 # Status Project
 ✅ **Sprint 1 Completed — Planning & Setup**  
 ✅ **Sprint 2 Completed — Core Features**  
-✅ **Sprint 3 Completed — Advanced Features**
-✅ **Sprint 4 Completed — Polish & Testing**
+✅ **Sprint 3 Completed — Advanced Features**  
+✅ **Sprint 4 Completed — Polish & Testing**  
+✅ **Sprint 5 Completed — Final Preparation**
 
 # License
 

@@ -5,12 +5,16 @@ on:
     branches:
       - main
       - develop
+      - "project/123140169-123140186-MoveIn"
       - "Project/123140169-123140186-MoveIn"
+
   pull_request:
     branches:
       - main
       - develop
+      - "project/123140169-123140186-MoveIn"
       - "Project/123140169-123140186-MoveIn"
+
   workflow_dispatch:
 
 jobs:

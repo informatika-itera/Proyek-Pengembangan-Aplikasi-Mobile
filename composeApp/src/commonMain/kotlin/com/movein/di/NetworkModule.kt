@@ -42,6 +42,9 @@ val networkModule = module {
     }
 
     single<GeminiApiService> {
-        GeminiApiServiceImpl(get())
+        GeminiApiServiceImpl(
+            client = get(),
+            apiKey = get()
+        )
     }
 }

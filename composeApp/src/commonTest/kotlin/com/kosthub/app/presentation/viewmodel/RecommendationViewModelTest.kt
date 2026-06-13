@@ -47,8 +47,8 @@ class RecommendationViewModelTest {
         viewModel.generateRecommendation(sampleKosts)
 
         val state = viewModel.state.value
-        // Should show default recommendations from kost data
-        assertTrue(state is RecommendationState.Idle)
+        // Should show default recommendations from kost data (not error, not idle)
+        assertTrue(state is RecommendationState.Success, "Expected Success with defaults but got $state")
     }
 
     @Test

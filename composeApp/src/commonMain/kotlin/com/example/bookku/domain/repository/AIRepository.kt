@@ -10,6 +10,7 @@ interface AIRepository {
     suspend fun chat(message: String): Result<String>
     fun chatStream(message: String, systemPrompt: String? = null): Flow<String>
     suspend fun suggestTitle(content: String): Result<String>
+    suspend fun debugCheckApi(): String
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

@@ -71,4 +71,8 @@ class AIRepositoryImpl(
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         ).map { it.trim().removeSurrounding("\"") }
     }
+
+    override suspend fun debugCheckApi(): String {
+        return geminiService.debugCheckApi()
+    }
 }

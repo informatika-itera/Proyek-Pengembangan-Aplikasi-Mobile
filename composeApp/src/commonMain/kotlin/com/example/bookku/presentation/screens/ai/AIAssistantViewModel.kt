@@ -61,6 +61,16 @@ class AIAssistantViewModel(
     fun executeAction() {
         val state = _uiState.value
         
+        // Fitur Diagnostik Rahasia: Jika input adalah "debug", cek kesehatan API
+        if (state.inputText.lowercase().trim() == "debug") {
+            _uiState.update { it.copy(isLoading = true, error = null, result = "Memulai Diagnostik...") }
+            viewModelScope.launch {
+                val debugResult = aiRepository.debugCheckApi()
+                _uiState.update { it.copy(isLoading = false, result = debugResult) }
+            }
+            return
+        }
+        
         if (state.inputText.isBlank()) {
             _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
             return

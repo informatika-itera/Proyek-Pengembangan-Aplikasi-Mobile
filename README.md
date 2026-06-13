@@ -12,9 +12,9 @@ Aplikasi rekomendasi resep masakan berbasis AI yang membantu pengguna menemukan 
 ## 👥 Team
 
 | NIM | Nama | Role |
-|-----|------|------|
+|-----|------|---|
 | 123140133 | Silvia | @Silvia-vyA |
-| 123140180 | Mega Zayyani | @github-username |
+| 123140180 | Mega Zayyani | @01-123140180-MegaZayyani |
 
 ## 📝 Description
 
@@ -125,9 +125,9 @@ Laporan coverage dapat dilihat di `composeApp/build/reports/kover/html/index.htm
 
 Output APK berada di `composeApp/build/outputs/apk/release/composeApp-release.apk`.
 
-## 📦 Download
+## 📹 Link video demo
 
-[Link ke APK release atau Play Store]
+https://youtu.be/POT6TuyMJ84
 
 ## 📸 Screenshots
 

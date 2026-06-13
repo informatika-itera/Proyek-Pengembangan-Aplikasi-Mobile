@@ -2,6 +2,8 @@
 
 **KostHub** adalah aplikasi mobile multiplatform yang dirancang untuk membantu mahasiswa menemukan dan mengelola informasi indekos di sekitar kampus ITERA menggunakan algoritma klasterisasi untuk rekomendasi yang lebih baik.
 
+[![Video Title](https://img.youtube.com/vi/nD37NPDyscY/0.jpg)](https://www.youtube.com/watch?v=nD37NPDyscY)
+
 ## Tim
 
 - **Nashrullah Fathul Qoriib** (122140162)
@@ -69,11 +71,11 @@ Aplikasi ini memenuhi standar wajib proyek akhir:
 
 *Fokus: Build dan Kesiapan Demo Day* 
 
-- [ ] Pembersihan kode akhir dan perbaikan bug minor.
-- [ ] Pembuatan *Signed Release APK* untuk demonstrasi.
-- [ ] Penyusunan slide presentasi (Masalah, Solusi, Arsitektur).
-- [ ] Penulisan naskah demo dan latihan presentasi tim.
-- [ ] Pembuatan video *backup* demonstrasi aplikasi.
+- [x] Pembersihan kode akhir dan perbaikan bug minor.
+- [x] Pembuatan *Signed Release APK* untuk demonstrasi.
+- [x] Penyusunan slide presentasi (Masalah, Solusi, Arsitektur).
+- [x] Penulisan naskah demo dan latihan presentasi tim.
+- [x] Pembuatan video *backup* demonstrasi aplikasi.
 
 ## Setup Instructions
 
@@ -96,21 +98,21 @@ cp local.properties.example local.properties
 3. **Build & Test**:
 Gunakan Gradle wrapper untuk memastikan konsistensi:
 ```bash
-[cite_start]./gradlew test            # Menjalankan unit tests [cite: 1409]
-[cite_start]./gradlew assembleDebug   # Membuat build debug untuk Android [cite: 2119]
+./gradlew test            # Menjalankan unit tests [cite: 1409]
+./gradlew assembleDebug   # Membuat build debug untuk Android [cite: 2119]
 
 ```
 
 4. **Cek Coverage** (Opsional):
 ```bash
-[cite_start]./gradlew koverHtmlReport # Melihat laporan test coverage [cite: 1411]
+./gradlew koverHtmlReport # Melihat laporan test coverage [cite: 1411]
 
 ```
 ---
 
 **Link PPT**
 
-Dokumen Presentsai: https://drive.google.com/file/d/1dMTVopQ4wyXBhfEKIJxR0JMs1EWPwI8D/view?usp=sharing
+Dokumen Presentasi: https://drive.google.com/file/d/1dMTVopQ4wyXBhfEKIJxR0JMs1EWPwI8D/view?usp=sharing
 
 **Link Demonstrasi**
 

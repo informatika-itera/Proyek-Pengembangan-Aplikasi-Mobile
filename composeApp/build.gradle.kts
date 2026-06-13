@@ -109,6 +109,13 @@ android {
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
     }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
     
     packaging {
         resources {

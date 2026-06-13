@@ -29,6 +29,62 @@ class UserPreferences(
         val DEFAULT_CATEGORY = stringPreferencesKey("default_category")
         val SHOW_PREVIEW = booleanPreferencesKey("show_preview")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val USER_NAME = stringPreferencesKey("user_name")
+        val USER_EMAIL = stringPreferencesKey("user_email")
+        val PUSH_NOTIFICATIONS = booleanPreferencesKey("push_notifications")
+        val EMAIL_NOTIFICATIONS = booleanPreferencesKey("email_notifications")
+        val LANGUAGE = stringPreferencesKey("language")
+    }
+    
+    // ==================== USER INFO ====================
+    
+    val userName: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_NAME] ?: "Jane Cooper"
+    }
+    
+    val userEmail: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.USER_EMAIL] ?: "janeper01@gmail.com"
+    }
+    
+    suspend fun updateProfile(name: String, email: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.USER_NAME] = name
+            prefs[Keys.USER_EMAIL] = email
+        }
+    }
+    
+    // ==================== NOTIFICATIONS ====================
+    
+    val isPushNotificationsEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.PUSH_NOTIFICATIONS] ?: true
+    }
+    
+    suspend fun setPushNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.PUSH_NOTIFICATIONS] = enabled
+        }
+    }
+    
+    val isEmailNotificationsEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.EMAIL_NOTIFICATIONS] ?: false
+    }
+    
+    suspend fun setEmailNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.EMAIL_NOTIFICATIONS] = enabled
+        }
+    }
+    
+    // ==================== LANGUAGE ====================
+    
+    val language: Flow<String> = dataStore.data.map { prefs ->
+        prefs[Keys.LANGUAGE] ?: "English"
+    }
+    
+    suspend fun setLanguage(language: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LANGUAGE] = language
+        }
     }
     
     // ==================== DARK MODE ====================

@@ -16,11 +16,15 @@ import com.example.rosea.domain.repository.CartRepository
 import com.example.rosea.data.repository.CartRepositoryImpl
 import com.example.rosea.domain.repository.OrderRepository
 import com.example.rosea.data.repository.OrderRepositoryImpl
+import com.example.rosea.domain.repository.AddressRepository
+import com.example.rosea.data.repository.AddressRepositoryImpl
 import com.example.rosea.domain.usecase.OrderSyncManager
 import com.example.rosea.presentation.screens.ai.AIAssistantViewModel
 import com.example.rosea.presentation.screens.home.HomeViewModel
 import com.example.rosea.presentation.screens.detail.DetailViewModel
 import com.example.rosea.presentation.screens.cart.CartViewModel
+import com.example.rosea.presentation.screens.profile.ProfileViewModel
+import com.example.rosea.presentation.screens.profile.AddressViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -52,6 +56,7 @@ val repositoryModule = module {
     single<CartRepository> { CartRepositoryImpl(get()) }
     singleOf(::AIRepositoryImpl) bind AIRepository::class
     single<OrderRepository> { OrderRepositoryImpl(get()) }
+    single<AddressRepository> { AddressRepositoryImpl(get()) }
 }
 
 val useCaseModule = module {
@@ -63,6 +68,8 @@ val viewModelModule = module {
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::DetailViewModel)
     viewModelOf(::CartViewModel)
+    viewModelOf(::ProfileViewModel)
+    viewModelOf(::AddressViewModel)
 }
 
 val sharedModules = listOf(

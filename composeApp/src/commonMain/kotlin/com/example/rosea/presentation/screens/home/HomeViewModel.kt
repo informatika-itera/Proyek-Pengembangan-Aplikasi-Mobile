@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rosea.domain.model.Product
 import com.example.rosea.domain.repository.ProductRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class HomeViewModel(
     private val productRepository: ProductRepository
 ) : ViewModel() {
@@ -18,6 +19,9 @@ class HomeViewModel(
     private val _selectedCategory = MutableStateFlow<String?>(null)
     val selectedCategory = _selectedCategory.asStateFlow()
 
+    private val _selectedTab = MutableStateFlow("Latest")
+    val selectedTab = _selectedTab.asStateFlow()
+
     private val _sortOrder = MutableStateFlow(SortOrder.NONE)
     val sortOrder = _sortOrder.asStateFlow()
 
@@ -27,22 +31,34 @@ class HomeViewModel(
             .debounce(300L) // Fitur Lanjutan: Debounce menahan panggilan selama 300ms
             .distinctUntilChanged(),
         _selectedCategory,
+        _selectedTab,
         _sortOrder
-    ) { query, category, sort ->
-        Triple(query, category, sort)
-    }.flatMapLatest { (query, category, sort) ->
+    ) { query, category, tab, sort ->
+        DataState(query, category, tab, sort)
+    }.flatMapLatest { state ->
         val productFlow = when {
-            !category.isNullOrBlank() -> productRepository.getProductsByCategory(category)
-            query.isNotBlank() -> productRepository.searchProducts(query)
+            !state.category.isNullOrBlank() -> productRepository.getProductsByCategory(state.category)
+            state.query.isNotBlank() -> productRepository.searchProducts(state.query)
             else -> productRepository.getAllProducts()
         }
 
         productFlow.map { products ->
-            val processedList = when (sort) {
-                SortOrder.PRICE_LOW_TO_HIGH -> products.sortedBy { it.price }
-                SortOrder.PRICE_HIGH_TO_LOW -> products.sortedByDescending { it.price }
-                SortOrder.NONE -> products
+            var processedList = products
+
+            // Logika Tab (Dummy Logic for demo)
+            processedList = when (state.tab) {
+                "Popular" -> processedList.sortedByDescending { it.id % 3 == 0L } // Dummy: id kelipatan 3 dianggap populer
+                "Promo" -> processedList.filter { it.price < 200000 } // Dummy: harga < 200rb dianggap promo
+                else -> processedList.sortedByDescending { it.createdAt } // Latest
             }
+
+            // Logika Sort manual jika ada
+            processedList = when (state.sort) {
+                SortOrder.PRICE_LOW_TO_HIGH -> processedList.sortedBy { it.price }
+                SortOrder.PRICE_HIGH_TO_LOW -> processedList.sortedByDescending { it.price }
+                SortOrder.NONE -> processedList
+            }
+            
             HomeUiState.Success(processedList)
         }
     }.stateIn(
@@ -59,9 +75,20 @@ class HomeViewModel(
         _selectedCategory.value = category
     }
 
+    fun onTabSelect(tab: String) {
+        _selectedTab.value = tab
+    }
+
     fun onSortOrderChange(order: SortOrder) {
         _sortOrder.value = order
     }
+
+    private data class DataState(
+        val query: String,
+        val category: String?,
+        val tab: String,
+        val sort: SortOrder
+    )
 }
 
 sealed interface HomeUiState {

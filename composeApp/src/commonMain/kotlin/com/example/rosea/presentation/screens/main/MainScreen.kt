@@ -31,8 +31,12 @@ data class BottomNavItem(
 )
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    startDestination: String = Routes.HOME
+) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     val items = listOf(
         BottomNavItem("Home", Icons.Default.Home, Routes.HOME),
@@ -41,18 +45,38 @@ fun MainScreen() {
         BottomNavItem("Profil", Icons.Default.Person, Routes.PROFILE)
     )
 
+    // Daftar rute yang menyembunyikan bottom bar
+    val hideBottomBarRoutes = listOf(
+        Routes.ONBOARDING,
+        Routes.AI_ASSISTANT,
+        Routes.EDIT_PROFILE,
+        Routes.SETTINGS,
+        Routes.SECURITY,
+        Routes.ABOUT,
+        Routes.TERMS,
+        Routes.HELP_SUPPORT,
+        Routes.NOTIFICATIONS,
+        Routes.VOUCHERS,
+        Routes.HISTORY,
+        Routes.ADDRESS_MANAGEMENT
+    )
+    
+    val showBottomBar = currentRoute !in hideBottomBarRoutes
+
     Scaffold(
         bottomBar = {
-            FloatingBottomNavigation(
-                items = items,
-                navController = navController
-            )
+            if (showBottomBar) {
+                FloatingBottomNavigation(
+                    items = items,
+                    navController = navController
+                )
+            }
         }
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            startDestination = Routes.HOME,
-            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
+            startDestination = startDestination,
+            modifier = Modifier.padding(bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp)
         )
     }
 }
@@ -68,16 +92,16 @@ fun FloatingBottomNavigation(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, bottom = 4.dp, top = 0.dp) // Padding bawah sangat tipis (4dp)
-            .navigationBarsPadding() // Menghormati area gesture sistem
+            .padding(start = 24.dp, end = 24.dp, bottom = 4.dp, top = 0.dp)
+            .navigationBarsPadding()
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp), // Sedikit lebih ramping (60dp)
+                .height(60.dp),
             shape = RoundedCornerShape(30.dp),
             color = Color.White,
-            shadowElevation = 3.dp, // Bayangan sangat tipis dan halus
+            shadowElevation = 3.dp,
             tonalElevation = 0.dp,
             border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
         ) {

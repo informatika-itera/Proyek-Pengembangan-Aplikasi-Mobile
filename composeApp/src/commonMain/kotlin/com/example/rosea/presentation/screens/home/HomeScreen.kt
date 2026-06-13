@@ -1,8 +1,8 @@
 package com.example.rosea.presentation.screens.home
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +45,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -80,7 +82,10 @@ fun HomeScreen(
             }
 
             item(span = { GridItemSpan(2) }) {
-                ProductTabs()
+                ProductTabs(
+                    selectedTab = selectedTab,
+                    onTabSelected = viewModel::onTabSelect
+                )
             }
 
             when (val state = uiState) {
@@ -160,7 +165,7 @@ private fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit) {
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 1.dp,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
     ) {
@@ -193,8 +198,38 @@ private fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit) {
 
 @Composable
 private fun FlashSaleBanner() {
-    val gradient = Brush.horizontalGradient(
-        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+    val infiniteTransition = rememberInfiniteTransition(label = "bannerTransition")
+    
+    // 1. Shimmer/Movement Gradient Animation
+    val xOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(5000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "xOffset"
+    )
+
+    // 2. Subtle Float Animation for the Banner Content
+    val floatAnim by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2500, easing = SinusoidalEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "floatAnim"
+    )
+
+    val gradient = Brush.linearGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.primaryContainer
+        ),
+        start = Offset(xOffset - 500f, 0f),
+        end = Offset(xOffset + 500f, 500f)
     )
     
     Surface(
@@ -205,11 +240,17 @@ private fun FlashSaleBanner() {
         color = MaterialTheme.colorScheme.primary
     ) {
         Box(modifier = Modifier.fillMaxSize().background(gradient)) {
+            // Animated Background Circles
             Canvas(modifier = Modifier.fillMaxSize()) {
                 drawCircle(
                     color = Color.White.copy(alpha = 0.1f),
                     radius = 300f,
-                    center = Offset(size.width * 0.9f, size.height * 0.2f)
+                    center = Offset(size.width * 0.85f, size.height * 0.2f + floatAnim)
+                )
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.05f),
+                    radius = 150f,
+                    center = Offset(size.width * 0.15f, size.height * 0.8f - floatAnim)
                 )
             }
 
@@ -217,6 +258,9 @@ private fun FlashSaleBanner() {
                 modifier = Modifier
                     .padding(24.dp)
                     .align(Alignment.CenterStart)
+                    .graphicsLayer {
+                        translationY = -floatAnim // Subtle floating effect
+                    }
             ) {
                 Surface(
                     color = Color.White.copy(alpha = 0.2f),
@@ -233,15 +277,18 @@ private fun FlashSaleBanner() {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Glow Up With\nNatural Rose",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
-                    color = Color.White,
-                    lineHeight = 28.sp
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        lineHeight = 28.sp
+                    ),
+                    color = Color.White
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Surface(
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.clickable { }
+                    modifier = Modifier.clickable { },
+                    shadowElevation = 4.dp
                 ) {
                     Text(
                         text = "Shop Now",
@@ -253,6 +300,11 @@ private fun FlashSaleBanner() {
             }
         }
     }
+}
+
+// Custom Easing for smooth floating effect
+private val SinusoidalEasing = Easing { fraction ->
+    (1f - kotlin.math.cos(fraction * kotlin.math.PI.toFloat())) / 2f
 }
 
 @Composable
@@ -286,9 +338,9 @@ private fun CategorySection(selectedCategory: String?, onCategorySelected: (Stri
                     Surface(
                         modifier = Modifier.size(72.dp),
                         shape = RoundedCornerShape(20.dp),
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                         shadowElevation = if (isSelected) 4.dp else 1.dp,
-                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer)
+                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
                     ) {
                         Icon(
                             imageVector = category.icon,
@@ -310,9 +362,11 @@ private fun CategorySection(selectedCategory: String?, onCategorySelected: (Stri
 }
 
 @Composable
-private fun ProductTabs() {
+private fun ProductTabs(
+    selectedTab: String,
+    onTabSelected: (String) -> Unit
+) {
     val tabs = listOf("Latest", "Popular", "Promo")
-    var selectedTab by remember { mutableStateOf(0) }
 
     Row(
         modifier = Modifier
@@ -320,10 +374,10 @@ private fun ProductTabs() {
             .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        tabs.forEachIndexed { index, title ->
-            val isSelected = selectedTab == index
+        tabs.forEach { title ->
+            val isSelected = selectedTab == title
             Surface(
-                modifier = Modifier.clickable { selectedTab = index },
+                modifier = Modifier.clickable { onTabSelected(title) },
                 color = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                 shape = RoundedCornerShape(12.dp),
                 border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
@@ -332,7 +386,7 @@ private fun ProductTabs() {
                     text = title,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                    color = if (isSelected) Color.White else Color.Gray
+                    color = if (isSelected) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }
         }
@@ -346,7 +400,7 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 1.dp
     ) {
         Column {
@@ -369,7 +423,7 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                         .size(32.dp)
                         .align(Alignment.TopEnd),
                     shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.9f)
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.FavoriteBorder,

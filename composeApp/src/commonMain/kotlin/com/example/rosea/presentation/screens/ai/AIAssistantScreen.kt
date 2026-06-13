@@ -2,10 +2,11 @@ package com.example.rosea.presentation.screens.ai
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
@@ -30,14 +31,17 @@ fun AIAssistantScreen(
     val messages by viewModel.messages.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
-    val scrollState = rememberScrollState()
+    val listState = rememberLazyListState()
 
-    // Auto-scroll ke bawah saat pesan baru bertambah
-    LaunchedEffect(messages.size, isLoading) {
-        scrollState.animateScrollTo(scrollState.maxValue)
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
     }
 
     Scaffold(
+        // Gunakan insets nol untuk menghindari jarak ganda (hanging)
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
@@ -63,31 +67,26 @@ fun AIAssistantScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
+                .imePadding() // Menempel ke keyboard secara akurat
         ) {
-            // Chat Display Area
-            Box(
+            LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    messages.forEach { msg ->
-                        ChatBubble(msg)
-                    }
+                items(messages) { msg ->
+                    ChatBubble(msg)
+                }
 
-                    if (isLoading) {
+                if (isLoading) {
+                    item {
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                                .padding(8.dp)
+                            modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
@@ -99,17 +98,17 @@ fun AIAssistantScreen(
                 }
             }
 
-            // Input Area
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 4.dp, // Mengurangi sedikit agar lebih clean
+                tonalElevation = 2.dp,
                 shadowElevation = 8.dp,
                 color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp) // Padding dikurangi sedikit
-                        .imePadding(), // HAPUS .navigationBarsPadding() di sini karena sudah ada di MainScreen
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        // Gunakan windowInsetsPadding untuk navigasi bar saat keyboard tutup
+                        .windowInsetsPadding(WindowInsets.navigationBars),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
@@ -117,7 +116,7 @@ fun AIAssistantScreen(
                         onValueChange = { inputText = it },
                         modifier = Modifier
                             .weight(1f)
-                            .clip(CircleShape),
+                            .clip(RoundedCornerShape(24.dp)),
                         placeholder = { Text("Tanyakan sesuatu...") },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -130,23 +129,29 @@ fun AIAssistantScreen(
                     
                     Spacer(modifier = Modifier.width(12.dp))
                     
-                    FloatingActionButton(
+                    IconButton(
                         onClick = {
                             if (inputText.isNotBlank() && !isLoading) {
                                 viewModel.sendMessage(inputText)
                                 inputText = ""
                             }
                         },
-                        containerColor = if (inputText.isNotBlank() && !isLoading) 
-                            MaterialTheme.colorScheme.primary 
-                        else 
-                            MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        shape = CircleShape,
-                        modifier = Modifier.size(48.dp),
-                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp)
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (inputText.isNotBlank() && !isLoading) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.surfaceVariant
+                            )
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Kirim", modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send, 
+                            contentDescription = "Kirim", 
+                            tint = if (inputText.isNotBlank()) Color.White else Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }

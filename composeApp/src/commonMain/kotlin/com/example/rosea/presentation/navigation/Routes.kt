@@ -1,6 +1,7 @@
 package com.example.rosea.presentation.navigation
 
 object Routes {
+    const val ONBOARDING = "onboarding"
     const val HOME = "home"
     const val AI_ASSISTANT = "ai_assistant"
     const val DETAIL = "detail/{productId}"
@@ -14,6 +15,11 @@ object Routes {
     const val EDIT_PROFILE = "edit_profile"
     const val ADDRESS_MANAGEMENT = "address_management"
     const val HELP_SUPPORT = "help_support"
+    
+    // Additional Settings Routes
+    const val SECURITY = "security"
+    const val ABOUT = "about"
+    const val TERMS = "terms"
 
     // Fungsi bantuan untuk mengirim ID
     fun createDetailRoute(productId: Long): String {

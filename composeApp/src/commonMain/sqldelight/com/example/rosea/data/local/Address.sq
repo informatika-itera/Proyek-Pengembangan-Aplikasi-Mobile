@@ -1,0 +1,27 @@
+CREATE TABLE AddressEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT NOT NULL,
+    receiverName TEXT NOT NULL,
+    phoneNumber TEXT NOT NULL,
+    fullAddress TEXT NOT NULL,
+    isDefault INTEGER NOT NULL DEFAULT 0
+);
+
+getAllAddresses:
+SELECT * FROM AddressEntity;
+
+getAddressById:
+SELECT * FROM AddressEntity WHERE id = ?;
+
+insertAddress:
+INSERT OR REPLACE INTO AddressEntity (id, label, receiverName, phoneNumber, fullAddress, isDefault)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteAddress:
+DELETE FROM AddressEntity WHERE id = ?;
+
+updateDefaultAddress:
+UPDATE AddressEntity SET isDefault = 0 WHERE isDefault = 1;
+
+setDefaultAddress:
+UPDATE AddressEntity SET isDefault = 1 WHERE id = ?;

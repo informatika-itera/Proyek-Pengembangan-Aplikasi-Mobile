@@ -14,9 +14,7 @@ import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +26,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileScreen(
@@ -40,11 +40,15 @@ fun ProfileScreen(
     onNavigateToHistory: () -> Unit,
     onNavigateToAddress: () -> Unit,
     onNavigateToHelp: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    viewModel: ProfileViewModel = koinViewModel()
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    
+    val userName by viewModel.userName.collectAsStateWithLifecycle()
+    val userEmail by viewModel.userEmail.collectAsStateWithLifecycle()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -57,6 +61,8 @@ fun ProfileScreen(
                 .padding(padding)
         ) {
             ProfileHeaderSection(
+                userName = userName,
+                userEmail = userEmail,
                 onNavigateBack = onNavigateBack,
                 onNavigateToCart = onNavigateToCart,
                 onNavigateToNotifications = onNavigateToNotifications,
@@ -85,6 +91,8 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileHeaderSection(
+    userName: String,
+    userEmail: String,
     onNavigateBack: () -> Unit,
     onNavigateToCart: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -181,7 +189,7 @@ private fun ProfileHeaderSection(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "Jane Cooper",
+                    text = userName,
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -189,7 +197,7 @@ private fun ProfileHeaderSection(
                 )
                 
                 Text(
-                    text = "janeper01@gmail.com",
+                    text = userEmail,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     maxLines = 1,
@@ -226,7 +234,7 @@ private fun ProfileHeaderSection(
 @Composable
 private fun RowScope.ActionCard(icon: ImageVector, label: String, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier.weight(1f).aspectRatio(1f),
+        modifier = Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(24.dp)).clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         color = Color.White,
         shadowElevation = 2.dp,
@@ -234,8 +242,7 @@ private fun RowScope.ActionCard(icon: ImageVector, label: String, onClick: () ->
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.clickable { onClick() }
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = icon,
@@ -290,14 +297,13 @@ private fun MenuListItem(
     val iconBg = if (isDestructive) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
     
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
         shadowElevation = 1.dp,
     ) {
         Row(
             modifier = Modifier
-                .clickable { onClick() }
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

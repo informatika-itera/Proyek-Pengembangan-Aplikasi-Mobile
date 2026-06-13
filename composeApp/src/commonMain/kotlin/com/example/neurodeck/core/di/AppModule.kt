@@ -17,6 +17,7 @@ import com.example.neurodeck.domain.usecase.CalculateNextReviewUseCase
 import com.example.neurodeck.presentation.screens.decklibrary.DeckLibraryViewModel
 import com.example.neurodeck.presentation.screens.editprofile.EditProfileViewModel
 import com.example.neurodeck.presentation.screens.aichat.AIChatViewModel
+import com.example.neurodeck.presentation.screens.notifications.NotificationsViewModel
 import com.example.neurodeck.presentation.screens.stats.StatsViewModel
 import com.example.neurodeck.presentation.screens.profile.ProfileViewModel
 import com.example.neurodeck.presentation.screens.studysession.StudySessionViewModel
@@ -129,6 +130,7 @@ val viewModelModule = module {
             userPreferencesRepository = get(),
             deckRepository = get(),
             reviewRecordRepository = get(),
+            reminderScheduler = get(),
         )
     }
     viewModel {
@@ -144,6 +146,14 @@ val viewModelModule = module {
             deckRepository = get(),
             cardRepository = get(),
             reviewRecordRepository = get(),
+        )
+    }
+
+    // Notifikasi — deck siap dipelajari
+    viewModel {
+        NotificationsViewModel(
+            deckRepository = get(),
+            cardRepository = get(),
         )
     }
 }

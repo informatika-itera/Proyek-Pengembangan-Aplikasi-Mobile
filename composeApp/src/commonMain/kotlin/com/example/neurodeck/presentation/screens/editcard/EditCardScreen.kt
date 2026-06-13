@@ -19,16 +19,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.neurodeck.presentation.components.ErrorMessage
 import com.example.neurodeck.presentation.components.LoadingIndicator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -41,6 +48,8 @@ fun EditCardScreen(
     viewModel: EditCardViewModel = koinViewModel { parametersOf(cardId) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -56,25 +65,49 @@ fun EditCardScreen(
                 },
             )
         },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    shape = RoundedCornerShape(12.dp),
+                )
+            }
+        },
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
         ) {
+            // Capture ke local val supaya null-check bisa smart-cast (hindari !! → cegah NPE).
+            val errorMessage = uiState.errorMessage
+
             when {
                 uiState.isLoading -> LoadingIndicator()
 
-                uiState.errorMessage != null && uiState.front.isEmpty() -> {
-                    // Error saat load — tampil full-screen
-                    ErrorMessage(message = uiState.errorMessage!!)
+                errorMessage != null && uiState.front.isEmpty() -> {
+                    ErrorMessage(message = errorMessage)
                 }
 
                 else -> EditCardForm(
                     uiState = uiState,
                     onFrontChange = viewModel::onFrontChange,
                     onBackChange = viewModel::onBackChange,
-                    onSave = { viewModel.saveCard(onSuccess = onSaved) },
+                    onSave = {
+                        viewModel.saveCard(onSuccess = {
+                            // Snackbar jalan paralel (tidak blok navigasi)
+                            scope.launch {
+                                snackbarHostState.showSnackbar("✅ Kartu berhasil diperbarui!")
+                            }
+                            // Navigasi balik setelah jeda singkat biar popup sempat kelihatan
+                            scope.launch {
+                                delay(600)
+                                onSaved()
+                            }
+                        })
+                    },
                 )
             }
         }
@@ -94,7 +127,7 @@ private fun EditCardForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        //FRONT (Pertanyaan)
+        // FRONT (Pertanyaan)
         Text(
             text = "Pertanyaan",
             style = MaterialTheme.typography.titleMedium,
@@ -110,7 +143,7 @@ private fun EditCardForm(
             enabled = !uiState.isSaving,
         )
 
-        // BACK (Jawaban
+        // BACK (Jawaban)
         Text(
             text = "Jawaban",
             style = MaterialTheme.typography.titleMedium,

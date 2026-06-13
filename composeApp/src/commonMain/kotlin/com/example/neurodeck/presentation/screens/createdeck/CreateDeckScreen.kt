@@ -16,42 +16,41 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.neurodeck.presentation.components.SectionTitle
-import com.example.neurodeck.presentation.navigation.AppTopBar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
-
-/**
- *   @param onBack            User tap back arrow → popBackStack.
- *   @param onSavedManual     Deck saved + user pilih MANUAL → navigate ke
- *                            CardList(deckId) untuk add card manually.
- *   @param onSavedAIGenerate Deck saved + user pilih AI → navigate ke
- *                            ImportGenerate(deckId).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateDeckScreen(
@@ -61,30 +60,53 @@ fun CreateDeckScreen(
     viewModel: CreateDeckViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
     var selectedMethod by remember { mutableStateOf(GenerationMethod.Manual) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Buat Deck Baru",
-                canNavigateBack = true,
-                onNavigationClick = onBack,
+            TopAppBar(
+                title = { Text("Buat Deck Baru") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali",
+                        )
+                    }
+                },
             )
         },
-    ) { padding ->
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    shape = RoundedCornerShape(12.dp),
+                )
+            }
+        },
+    ) { paddingValues ->
         Column(
             modifier = Modifier
+                .padding(paddingValues)
                 .fillMaxSize()
-                .padding(padding)
+                .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SectionTitle(text = "Informasi Deck")
-
+            // JUDUL
+            Text(
+                text = "Judul Deck",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = viewModel::onTitleChange,
-                label = { Text("Judul Deck *") },
+                label = { Text("Tulis judul deck di sini") },
                 placeholder = { Text("Contoh: Kalkulus UAS, Bahasa Inggris TOEFL") },
                 singleLine = true,
                 supportingText = {
@@ -97,13 +119,17 @@ fun CreateDeckScreen(
                 },
                 isError = uiState.title.isNotEmpty() &&
                         uiState.title.trim().length < CreateDeckUiState.MIN_TITLE_LENGTH,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isSaving,
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // DESKRIPSI
+            Text(
+                text = "Deskripsi",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 8.dp),
+            )
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::onDescriptionChange,
@@ -114,19 +140,18 @@ fun CreateDeckScreen(
                 supportingText = {
                     Text("${uiState.description.length} / ${CreateDeckUiState.MAX_DESCRIPTION_LENGTH}")
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isSaving,
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SectionTitle(text = "Cara Buat Kartu")
-
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+            // CARA BUAT KARTU
+            Text(
+                text = "Cara Buat Kartu",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 MethodOptionCard(
                     title = "Manual",
                     description = "Buat kartu satu per satu (front + back) sendiri.",
@@ -134,7 +159,6 @@ fun CreateDeckScreen(
                     selected = selectedMethod == GenerationMethod.Manual,
                     onClick = { selectedMethod = GenerationMethod.Manual },
                 )
-
                 MethodOptionCard(
                     title = "AI Generate ✨",
                     description = "Paste teks materi → AI bikin 5-15 kartu otomatis.",
@@ -144,59 +168,61 @@ fun CreateDeckScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
             // ERROR MESSAGE
-            uiState.errorMessage?.let { msg ->
+            uiState.errorMessage?.let { error ->
                 Text(
-                    text = msg,
-                    color = MaterialTheme.colorScheme.error,
+                    text = error,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.error,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // SUBMIT BUTTON
+            // SAVE BUTTON
             Button(
                 onClick = {
                     viewModel.saveDeck { deckId ->
-                        when (selectedMethod) {
-                            GenerationMethod.Manual -> onSavedManual(deckId)
-                            GenerationMethod.AIGenerate -> onSavedAIGenerate(deckId)
+                        // Snackbar jalan paralel (tidak blok navigasi)
+                        scope.launch {
+                            snackbarHostState.showSnackbar("✅ Deck berhasil dibuat!")
+                        }
+                        // Navigasi setelah jeda singkat biar popup sempat kelihatan
+                        scope.launch {
+                            delay(600)
+                            when (selectedMethod) {
+                                GenerationMethod.Manual -> onSavedManual(deckId)
+                                GenerationMethod.AIGenerate -> onSavedAIGenerate(deckId)
+                            }
                         }
                     }
                 },
                 enabled = uiState.canSave,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(14.dp),
-                contentPadding = PaddingValues(vertical = 14.dp),
+                contentPadding = PaddingValues(horizontal = 32.dp, vertical = 14.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 if (uiState.isSaving) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.padding(end = 8.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Menyimpan...")
                 } else {
-                    Text("Lanjutkan")
+                    Icon(Icons.Default.Check, contentDescription = null)
+                    Text(
+                        text = "Lanjutkan",
+                        modifier = Modifier.padding(start = 8.dp),
+                        fontWeight = FontWeight.SemiBold,
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
-// SUPPORTING TYPES & COMPOSABLES
-private enum class GenerationMethod {
-    Manual,
-    AIGenerate,
-}
+private enum class GenerationMethod { Manual, AIGenerate }
 
 @Composable
 private fun MethodOptionCard(
@@ -210,20 +236,14 @@ private fun MethodOptionCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surface
-            },
+            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surface,
         ),
         shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(
             width = if (selected) 2.dp else 1.dp,
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outline
-            },
+            color = if (selected) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.outline,
         ),
     ) {
         Row(
@@ -231,19 +251,14 @@ private fun MethodOptionCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(8.dp),
+                modifier = Modifier.size(48.dp).padding(8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (selected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
+                    tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp),
                 )
             }
@@ -253,21 +268,15 @@ private fun MethodOptionCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
+                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

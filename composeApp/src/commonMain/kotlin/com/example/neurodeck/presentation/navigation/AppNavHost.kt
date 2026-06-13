@@ -7,11 +7,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,6 +41,7 @@ import com.example.neurodeck.presentation.screens.editcard.EditCardScreen
 import com.example.neurodeck.presentation.screens.editprofile.EditProfileScreen
 import com.example.neurodeck.presentation.screens.home.HomeScreen
 import com.example.neurodeck.presentation.screens.importgenerate.ImportGenerateScreen
+import com.example.neurodeck.presentation.screens.notifications.NotificationsScreen
 import com.example.neurodeck.presentation.screens.profile.ProfileScreen
 import com.example.neurodeck.presentation.screens.stats.StatsScreen
 import com.example.neurodeck.presentation.screens.studysession.StudySessionScreen
@@ -59,6 +66,7 @@ fun AppNavHost(
     val isMainTab = currentRoute in mainRoutes
     val showChrome = isMainTab
 
+
     // ROOT WRAPPER: ModalNavigationDrawer
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -81,6 +89,16 @@ fun AppNavHost(
                         title = resolveTopBarTitle(currentRoute),
                         canNavigateBack = false,
                         onNavigationClick = openDrawer,
+                        actions = {
+                            IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
+                                BadgedBox(badge = { Badge() }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Notifications,
+                                        contentDescription = "Notifikasi",
+                                    )
+                                }
+                            }
+                        },
                     )
                 }
             },
@@ -216,7 +234,7 @@ fun AppNavHost(
                     )
                 }
 
-                 // IMPORT GENERATE (AI flashcard generation)
+                // IMPORT GENERATE (AI flashcard generation)
                 composable(
                     route = Screen.ImportGenerate.route,
                     arguments = listOf(
@@ -257,6 +275,16 @@ fun AppNavHost(
                     EditProfileScreen(
                         onBack = { navController.popBackStack() },
                         onSaved = { navController.popBackStack() },
+                    )
+                }
+
+                // NOTIFICATIONS — daftar deck siap dipelajari
+                composable(route = Screen.Notifications.route) {
+                    NotificationsScreen(
+                        onBack = { navController.popBackStack() },
+                        onStudyDeck = { deckId ->
+                            navController.navigate(Screen.StudySession.createRoute(deckId))
+                        },
                     )
                 }
 

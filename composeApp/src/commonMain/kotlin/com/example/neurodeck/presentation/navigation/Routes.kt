@@ -81,6 +81,12 @@ sealed class Screen(val route: String) {
     data object EditProfile : Screen("edit_profile")
 
     /**
+     * Layar Notifikasi — daftar deck yang siap dipelajari (ada kartu due).
+     * Diakses dari ikon lonceng di TopBar (semua main tab).
+     */
+    data object Notifications : Screen("notifications")
+
+    /**
      * Form create deck (langkah pertama: nama + deskripsi + pilih cara generate).
      * Diakses dari Decks tab via FAB.
      */

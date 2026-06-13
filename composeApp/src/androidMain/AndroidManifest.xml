@@ -4,6 +4,9 @@
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Notifikasi pengingat belajar harian (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".NeuroDeckApplication"
         android:allowBackup="true"

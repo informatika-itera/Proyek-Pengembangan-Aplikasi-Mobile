@@ -19,14 +19,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -39,6 +46,8 @@ fun AddCardScreen(
     viewModel: AddCardViewModel = koinViewModel { parametersOf(deckId) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -53,6 +62,16 @@ fun AddCardScreen(
                     }
                 },
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    shape = RoundedCornerShape(12.dp),
+                )
+            }
         },
     ) { paddingValues ->
         Column(
@@ -79,7 +98,7 @@ fun AddCardScreen(
                 enabled = !uiState.isSaving,
             )
 
-            //BACK CARD (Jawaban)
+            // BACK CARD (Jawaban)
             Text(
                 text = "Jawaban",
                 style = MaterialTheme.typography.titleMedium,
@@ -97,7 +116,7 @@ fun AddCardScreen(
                 enabled = !uiState.isSaving,
             )
 
-            //ERROR MESSAGE
+            // ERROR MESSAGE
             uiState.errorMessage?.let { error ->
                 Text(
                     text = error,
@@ -106,10 +125,22 @@ fun AddCardScreen(
                 )
             }
 
-            //SAVE BUTTON
+            // SAVE BUTTON
             Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
-                    onClick = { viewModel.saveCard(onSuccess = onSaved) },
+                    onClick = {
+                        viewModel.saveCard(onSuccess = {
+                            // Snackbar jalan paralel (tidak blok navigasi)
+                            scope.launch {
+                                snackbarHostState.showSnackbar("✅ Kartu berhasil ditambahkan!")
+                            }
+                            // Navigasi balik setelah jeda singkat biar popup sempat kelihatan
+                            scope.launch {
+                                delay(600)
+                                onSaved()
+                            }
+                        })
+                    },
                     enabled = uiState.canSave,
                     shape = RoundedCornerShape(14.dp),
                     contentPadding = PaddingValues(horizontal = 32.dp, vertical = 14.dp),

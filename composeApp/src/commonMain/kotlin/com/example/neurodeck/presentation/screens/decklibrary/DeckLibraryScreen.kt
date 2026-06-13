@@ -1,5 +1,7 @@
 package com.example.neurodeck.presentation.screens.decklibrary
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,11 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -33,7 +31,11 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -41,9 +43,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,13 +57,9 @@ import com.example.neurodeck.presentation.components.EmptyState
 import com.example.neurodeck.presentation.components.ErrorMessage
 import com.example.neurodeck.presentation.components.LoadingIndicator
 import com.example.neurodeck.presentation.theme.NeurodeckTheme
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- *   @param onDeckClick           User tap deck card → navigate ke CardList.
- *   @param onCreateDeck          User tap FAB "Buat Deck" → CreateDeck screen.
- *   @param onImportGenerate      User tap "AI Generate" → ImportGenerate (deckId=0).
- */
 @Composable
 fun DeckLibraryScreen(
     onDeckClick: (deckId: Long) -> Unit,
@@ -69,22 +69,21 @@ fun DeckLibraryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    // Edit dialog state (lokal)
     var deckToEdit by remember { mutableStateOf<Deck?>(null) }
 
+    // Tidak pakai Scaffold — TopAppBar sudah dihandle AppNavHost (main tab)
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             // SEARCH BAR
-            if (uiState !is DeckLibraryUiState.Empty &&
-                uiState !is DeckLibraryUiState.Loading
-            ) {
+            if (uiState !is DeckLibraryUiState.Empty && uiState !is DeckLibraryUiState.Loading) {
                 SearchBar(
                     query = searchQuery,
                     onQueryChange = viewModel::onSearchQueryChange,
                     onClear = viewModel::clearSearch,
                 )
-
                 AIGenerateBanner(onClick = onImportGenerate)
             }
 
@@ -110,14 +109,19 @@ fun DeckLibraryScreen(
                     decks = state.decks,
                     onDeckClick = onDeckClick,
                     onEditClick = { deck -> deckToEdit = deck },
-                    onDeleteClick = viewModel::deleteDeck,
+                    onDeleteClick = { deckId, title ->
+                        viewModel.deleteDeck(deckId)
+                        scope.launch {
+                            snackbarHostState.showSnackbar("🗑️ Deck \"$title\" berhasil dihapus")
+                        }
+                    },
                 )
 
                 is DeckLibraryUiState.Error -> ErrorMessage(message = state.message)
             }
         }
 
-        // FAB Create Deck
+        // FAB
         ExtendedFloatingActionButton(
             onClick = onCreateDeck,
             modifier = Modifier
@@ -126,6 +130,21 @@ fun DeckLibraryScreen(
             icon = { Icon(Icons.Default.Add, contentDescription = null) },
             text = { Text("Buat Deck") },
         )
+
+        // SNACKBAR — manual di pojok bawah (tidak pakai Scaffold supaya tidak double padding)
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp), // di atas bottom nav bar
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                shape = RoundedCornerShape(12.dp),
+            )
+        }
     }
 
     // EDIT DIALOG
@@ -136,12 +155,15 @@ fun DeckLibraryScreen(
             onConfirm = { title, description ->
                 viewModel.updateDeck(deck, title, description)
                 deckToEdit = null
+                scope.launch {
+                    snackbarHostState.showSnackbar("✅ Deck \"$title\" berhasil diperbarui!")
+                }
             },
         )
     }
 }
 
-// PRIVATE COMPOSABLES
+// ── Private composables ───────────────────────────────────────────────────────
 
 @Composable
 private fun SearchBar(
@@ -166,10 +188,7 @@ private fun SearchBar(
         trailingIcon = if (query.isNotEmpty()) {
             {
                 IconButton(onClick = onClear) {
-                    Icon(
-                        Icons.Default.Clear,
-                        contentDescription = "Hapus pencarian",
-                    )
+                    Icon(Icons.Default.Clear, contentDescription = "Hapus pencarian")
                 }
             }
         } else null,
@@ -179,7 +198,7 @@ private fun SearchBar(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-            unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
         ),
     )
 }
@@ -216,13 +235,13 @@ private fun AIGenerateBanner(onClick: () -> Unit) {
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "AI Generate Kartu",
+                    "AI Generate Kartu",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                 )
                 Text(
-                    text = "Paste materi → AI bikin flashcard otomatis",
+                    "Paste materi → AI bikin flashcard otomatis",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.9f),
                 )
@@ -232,10 +251,7 @@ private fun AIGenerateBanner(onClick: () -> Unit) {
 }
 
 @Composable
-private fun NoSearchResultsState(
-    query: String,
-    onClearSearch: () -> Unit,
-) {
+private fun NoSearchResultsState(query: String, onClearSearch: () -> Unit) {
     EmptyState(
         emoji = "🔍",
         title = "Tidak Ditemukan",
@@ -250,15 +266,10 @@ private fun DeckList(
     decks: List<Deck>,
     onDeckClick: (Long) -> Unit,
     onEditClick: (Deck) -> Unit,
-    onDeleteClick: (Long) -> Unit,
+    onDeleteClick: (Long, String) -> Unit,
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(
-            start = 16.dp,
-            end = 16.dp,
-            top = 8.dp,
-            bottom = 96.dp,
-        ),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(items = decks, key = { it.id }) { deck ->
@@ -266,7 +277,7 @@ private fun DeckList(
                 deck = deck,
                 onClick = { onDeckClick(deck.id) },
                 onEdit = { onEditClick(deck) },
-                onDelete = { onDeleteClick(deck.id) },
+                onDelete = { onDeleteClick(deck.id, deck.title) },
             )
         }
     }
@@ -281,34 +292,22 @@ private fun DeckCard(
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    val iconBrush = if (deck.id % 2L == 0L) {
-        NeurodeckTheme.extras.deckBrushPrimary
-    } else {
-        NeurodeckTheme.extras.deckBrushPink
-    }
+    val iconBrush = if (deck.id % 2L == 0L) NeurodeckTheme.extras.deckBrushPrimary
+    else NeurodeckTheme.extras.deckBrushPink
 
     OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shape = RoundedCornerShape(18.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(iconBrush),
+                modifier = Modifier.size(46.dp).clip(RoundedCornerShape(14.dp)).background(iconBrush),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -318,44 +317,25 @@ private fun DeckCard(
                     modifier = Modifier.size(24.dp),
                 )
             }
-
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = deck.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                )
+                Text(deck.title, style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold, maxLines = 1)
                 if (deck.description.isNotBlank()) {
-                    Text(
-                        text = deck.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        modifier = Modifier.padding(top = 2.dp),
-                    )
+                    Text(deck.description, style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
+                        modifier = Modifier.padding(top = 2.dp))
                 }
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "${deck.cardCount} kartu",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text("${deck.cardCount} kartu", style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-
             IconButton(onClick = onEdit) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Edit Deck",
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+                Icon(Icons.Default.Edit, contentDescription = "Edit Deck",
+                    tint = MaterialTheme.colorScheme.primary)
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Hapus Deck",
-                    tint = MaterialTheme.colorScheme.error,
-                )
+                Icon(Icons.Default.Delete, contentDescription = "Hapus Deck",
+                    tint = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -365,25 +345,16 @@ private fun DeckCard(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text("Hapus Deck?") },
             text = {
-                Text(
-                    "Deck \"${deck.title}\" dan semua kartunya akan dihapus permanen. " +
-                            "Tindakan ini tidak bisa di-undo.",
-                )
+                Text("Deck \"${deck.title}\" dan semua kartunya akan dihapus permanen. " +
+                        "Tindakan ini tidak bisa di-undo.")
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirm = false
-                        onDelete()
-                    },
-                ) {
+                TextButton(onClick = { showDeleteConfirm = false; onDelete() }) {
                     Text("Hapus", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Batal")
-                }
+                TextButton(onClick = { showDeleteConfirm = false }) { Text("Batal") }
             },
         )
     }
@@ -424,9 +395,7 @@ private fun DeckFormDialog(
             TextButton(
                 onClick = { onConfirm(title, description) },
                 enabled = title.isNotBlank(),
-            ) {
-                Text(if (isEditMode) "Simpan" else "Buat")
-            }
+            ) { Text(if (isEditMode) "Simpan" else "Buat") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Batal") }

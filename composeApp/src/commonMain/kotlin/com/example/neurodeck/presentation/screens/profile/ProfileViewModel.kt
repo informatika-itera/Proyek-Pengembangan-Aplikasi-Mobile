@@ -2,8 +2,10 @@ package com.example.neurodeck.presentation.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.neurodeck.domain.model.ReminderSettings
 import com.example.neurodeck.domain.model.ThemeMode
 import com.example.neurodeck.domain.model.UserProfile
+import com.example.neurodeck.domain.reminder.ReminderScheduler
 import com.example.neurodeck.domain.repository.DeckRepository
 import com.example.neurodeck.domain.repository.ReviewRecordRepository
 import com.example.neurodeck.domain.repository.UserPreferencesRepository
@@ -40,6 +42,7 @@ data class ProfileUiState(
     val streakDays: Int = 0,
     val isLoading: Boolean = true,
     val snackbarMessage: String? = null,
+    val reminderSettings: ReminderSettings = ReminderSettings(),
 )
 
 /**
@@ -66,6 +69,7 @@ class ProfileViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val deckRepository: DeckRepository,
     private val reviewRecordRepository: ReviewRecordRepository,
+    private val reminderScheduler: ReminderScheduler,
 ) : ViewModel() {
 
     private val _snackbar = MutableStateFlow<String?>(null)
@@ -97,7 +101,8 @@ class ProfileViewModel(
         userPreferencesRepository.observeThemeMode(),
         achievementsFlow,
         _snackbar,
-    ) { profile, themeMode, achievements, snackbarMsg ->
+        userPreferencesRepository.observeReminderSettings(),
+    ) { profile, themeMode, achievements, snackbarMsg, reminderSettings ->
         ProfileUiState(
             profile = profile,
             themeMode = themeMode,
@@ -107,6 +112,7 @@ class ProfileViewModel(
             streakDays = achievements.streakDays,
             isLoading = false,
             snackbarMessage = snackbarMsg,
+            reminderSettings = reminderSettings,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -122,8 +128,41 @@ class ProfileViewModel(
         viewModelScope.launch {
             try {
                 userPreferencesRepository.setThemeMode(mode)
+                val label = when (mode) {
+                    ThemeMode.Light -> "Light"
+                    ThemeMode.Dark -> "Dark"
+                    ThemeMode.System -> "System"
+                }
+                _snackbar.value = "✅ Mode tampilan diubah ke $label"
             } catch (e: Exception) {
-                _snackbar.value = "Gagal mengganti theme: ${e.message ?: "unknown"}"
+                _snackbar.value = "Gagal mengganti tema: ${e.message ?: "unknown"}"
+            }
+        }
+    }
+
+    /**
+     * Atur reminder belajar harian.
+     *
+     * Persist setting ke DataStore, lalu jadwalkan/batalkan notifikasi via
+     * [ReminderScheduler]. Saat enabled → schedule; saat disabled → cancel.
+     */
+    fun setReminder(enabled: Boolean, hour: Int, minute: Int) {
+        viewModelScope.launch {
+            try {
+                userPreferencesRepository.setReminderSettings(
+                    ReminderSettings(enabled = enabled, hour = hour, minute = minute),
+                )
+                if (enabled) {
+                    reminderScheduler.schedule(hour, minute)
+                    val time = hour.toString().padStart(2, '0') + ":" +
+                            minute.toString().padStart(2, '0')
+                    _snackbar.value = "🔔 Pengingat belajar diatur jam $time"
+                } else {
+                    reminderScheduler.cancel()
+                    _snackbar.value = "Pengingat belajar dimatikan"
+                }
+            } catch (e: Exception) {
+                _snackbar.value = "Gagal atur pengingat: ${e.message ?: "unknown"}"
             }
         }
     }

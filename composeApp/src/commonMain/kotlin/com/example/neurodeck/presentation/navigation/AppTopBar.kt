@@ -181,4 +181,5 @@ private val SubScreenTitles: Map<String, String> = mapOf(
     "edit_profile"     to "Edit Profil",
     "settings"         to "Pengaturan",
     "about"            to "Tentang Aplikasi",
+    "notifications"    to "Notifikasi",
 )

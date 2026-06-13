@@ -1,5 +1,6 @@
 package com.example.neurodeck.domain.repository
 
+import com.example.neurodeck.domain.model.ReminderSettings
 import com.example.neurodeck.domain.model.ThemeMode
 import com.example.neurodeck.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +39,12 @@ interface UserPreferencesRepository {
 
     /** Save theme mode (Light/Dark/System). */
     suspend fun setThemeMode(mode: ThemeMode)
+
+    /** Stream pengaturan reminder belajar harian (enabled + jam + menit). */
+    fun observeReminderSettings(): Flow<ReminderSettings>
+
+    /** Save pengaturan reminder belajar harian. */
+    suspend fun setReminderSettings(settings: ReminderSettings)
 
     /**
      * Reset all preferences ke default state. Dipakai di Profile tab

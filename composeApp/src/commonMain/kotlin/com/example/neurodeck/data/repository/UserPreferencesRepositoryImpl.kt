@@ -2,9 +2,12 @@ package com.example.neurodeck.data.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.neurodeck.domain.model.ReminderSettings
 import com.example.neurodeck.domain.model.ThemeMode
 import com.example.neurodeck.domain.model.UserProfile
 import com.example.neurodeck.domain.repository.UserPreferencesRepository
@@ -42,6 +45,9 @@ class UserPreferencesRepositoryImpl(
         val AVATAR_URI = stringPreferencesKey("user_avatar_uri")
         val MEMBER_SINCE = longPreferencesKey("user_member_since")  // epoch millis
         val THEME_MODE = stringPreferencesKey("settings_theme_mode")
+        val REMINDER_ENABLED = booleanPreferencesKey("settings_reminder_enabled")
+        val REMINDER_HOUR = intPreferencesKey("settings_reminder_hour")
+        val REMINDER_MINUTE = intPreferencesKey("settings_reminder_minute")
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -88,6 +94,26 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { prefs ->
             prefs[Keys.THEME_MODE] = mode.name
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // REMINDER
+    // ════════════════════════════════════════════════════════════════════════
+
+    override fun observeReminderSettings(): Flow<ReminderSettings> = dataStore.data.map { prefs ->
+        ReminderSettings(
+            enabled = prefs[Keys.REMINDER_ENABLED] ?: false,
+            hour = prefs[Keys.REMINDER_HOUR] ?: ReminderSettings.DEFAULT_HOUR,
+            minute = prefs[Keys.REMINDER_MINUTE] ?: ReminderSettings.DEFAULT_MINUTE,
+        )
+    }
+
+    override suspend fun setReminderSettings(settings: ReminderSettings) {
+        dataStore.edit { prefs ->
+            prefs[Keys.REMINDER_ENABLED] = settings.enabled
+            prefs[Keys.REMINDER_HOUR] = settings.hour
+            prefs[Keys.REMINDER_MINUTE] = settings.minute
         }
     }
 

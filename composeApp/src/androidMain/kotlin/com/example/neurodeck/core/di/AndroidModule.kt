@@ -1,7 +1,9 @@
 package com.example.neurodeck.core.di
 
+import com.example.neurodeck.core.reminder.AndroidReminderScheduler
 import com.example.neurodeck.core.util.DatabaseDriverFactory
 import com.example.neurodeck.data.local.datastore.DataStoreFactory
+import com.example.neurodeck.domain.reminder.ReminderScheduler
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -11,8 +13,10 @@ import org.koin.dsl.module
  * Menyediakan dependencies yang membutuhkan `Context`:
  * - DatabaseDriverFactory: untuk SQLDelight driver
  * - DataStoreFactory     : untuk lokasi file preferences
+ * - ReminderScheduler    : penjadwal notifikasi via WorkManager
  */
 val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { DataStoreFactory(androidContext()) }
+    single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
 }

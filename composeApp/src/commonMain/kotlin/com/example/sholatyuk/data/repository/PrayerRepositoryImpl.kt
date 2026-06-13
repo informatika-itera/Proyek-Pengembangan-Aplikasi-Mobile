@@ -17,7 +17,6 @@ class PrayerRepositoryImpl(
     private val queries = database.prayerTimeQueries
 
     override fun getPrayerTimeByDate(date: LocalDate): Flow<PrayerTime?> = flow {
-        // Gunakan executeAsList().firstOrNull() untuk menghindari crash jika ada data duplikat
         val result = queries.getPrayerTimeByDate(date.toString()).executeAsList().firstOrNull()
         emit(result?.toDomain())
     }
@@ -27,7 +26,6 @@ class PrayerRepositoryImpl(
         longitude: Double,
         date: LocalDate
     ): Result<PrayerTime> {
-        // Gunakan executeAsList().firstOrNull() untuk menghindari crash
         val cached = queries.getPrayerTimeByDate(date.toString()).executeAsList().firstOrNull()
         if (cached != null) {
             return Result.success(cached.toDomain())
@@ -36,13 +34,16 @@ class PrayerRepositoryImpl(
         return aladhanService.getTimingsByLocation(latitude, longitude).fold(
             onSuccess = { response ->
                 val timings = response.data.timings
+                val hijri = response.data.date.hijri
+                val hijriDateStr = "${hijri.month.en} ${hijri.day}, ${hijri.year} AH"
 
                 val newPrayerTime = PrayerTime(
                     id = 0L,
                     date = date,
+                    hijriDate = hijriDateStr,
                     imsak = timings.imsak,
                     fajr = timings.fajr,
-                    sunrise = "-",
+                    sunrise = timings.sunrise,
                     dhuhr = timings.dhuhr,
                     asr = timings.asr,
                     maghrib = timings.maghrib,

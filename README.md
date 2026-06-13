@@ -1,47 +1,51 @@
 # 🌙 SholatYuk - Aplikasi Islam Lengkap
 
-Aplikasi **Islam modern** yang membantu umat Muslim menjalankan ibadah dengan lebih mudah, tepat, dan khusyuk. Dibangun menggunakan **Kotlin Multiplatform (KMP)** & **Compose Multiplatform**.
+Aplikasi **Islam modern** yang membantu umat Muslim menjalankan ibadah dengan lebih mudah, tepat, dan khusyuk. Dibangun menggunakan **Kotlin Multiplatform (KMP)** & **Compose Multiplatform** untuk pengalaman lintas platform yang optimal.
 
 Aplikasi ini dikembangkan sebagai Tugas Besar (Tubes) mata kuliah **Pengembangan Aplikasi Mobile** - Institut Teknologi Sumatera (ITERA).
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green?logo=android" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin" alt="Kotlin"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue" alt="License"/>
+</p>
+
 ---
 
-## 👥 Identitas Mahasiswa
+## 👥 Tim Pengembang
 
-| Item | Detail |
-|------|--------|
-| **Nama** | Bayu Brigas Novaldi |
-| **NIM** | 123140072 |
-| **Nama** | Gilang Surya Agung |
-| **NIM** | 123140187 |
-| **Program Studi** | Teknik Informatika |
-| **Mata Kuliah** | Pengembangan Aplikasi Mobile |
-| **Institusi** | Institut Teknologi Sumatera (ITERA) |
+| Nama | NIM | Peran Utama |
+|------|-----|-------------|
+| **Bayu Brigas Novaldi** | 123140072 | Domain Layer, Data Layer, SQLDelight Schemas, Repository Implementations |
+| **Gilang Surya Agung** | 123140187 | Presentation Layer, UI/UX Components, Navigation Compose, Theming & Animations |
+
+**Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
+**Institut:** Institut Teknologi Sumatera (ITERA)
 
 ---
 
 ## ✨ Fitur Utama
 
-- 🕌 **Jadwal Sholat Akurat** - Jadwal sholat 5 waktu berdasarkan lokasi GPS
-- 🧭 **Arah Kiblat** - Penunjuk arah kiblat otomatis menggunakan GPS
-- 📿 **Dzikir & Doa** - Kumpulan dzikir pagi/petang, setelah sholat, dan doa sehari-hari
-- 🤖 **IslamAI** - Asisten cerdas untuk menjawab pertanyaan seputar Islam
-- 📖 **Al-Quran** - Baca Al-Quran digital (Coming Soon)
-- 🔔 **Notifikasi Adzan** - Pengingat waktu sholat dengan suara adzan (Coming Soon)
+- 🕌 **Jadwal Sholat Akurat** - Jadwal sholat 5 waktu otomatis berdasarkan lokasi GPS (Aladhan API) dengan dukungan *offline cache*.
+- 🧭 **Arah Kiblat** - Penunjuk arah kiblat otomatis menggunakan sensor kompas internal dan kalkulasi trigonometri koordinat Kakbah.
+- 📿 **Dzikir & Doa** - Kumpulan dzikir pagi/petang, setelah sholat, dan doa sehari-hari lengkap dengan fitur *Search* dan *Filter* kategori.
+- 🤖 **IslamAI** - Asisten cerdas berbasis Google Gemini API untuk menjawab berbagai pertanyaan seputar Islam langsung di dalam aplikasi.
+- 📝 **Catatan Kajian** - Fitur manajemen rangkuman atau catatan pengajian dengan operasi CRUD (Create, Read, Update, Delete) berbasis database lokal.
+- 🔔 **Notifikasi Adzan** - Pengingat waktu sholat otomatis dengan penjadwalan latar belakang (*background task*).
+- 🌓 **Mode Gelap/Terang** - Adaptasi tema sistem secara otomatis.
 
 ---
 
 ## 🛠 Tech Stack & Arsitektur
 
-### Arsitektur: MVVM + Clean Architecture
+### Arsitektur: Clean Architecture (MVVM)
+Aplikasi menerapkan standar industri dengan pemisahan *layer* yang ketat:
 
-Aplikasi mengikuti pola arsitektur MVVM dengan pemisahan layer yang jelas:
+- **Presentation Layer**: UI (Compose Multiplatform) dan ViewModel (StateFlow dengan pola Unidirectional Data Flow).
+- **Domain Layer**: Business logic murni (Models, Repository Interfaces, UseCases).
+- **Data Layer**: Integrasi API (Ktor Client), Lokal Database (SQLDelight), dan DataStore (Preferences).
 
-- **Presentation Layer**: UI (Compose Multiplatform) dan ViewModel (StateFlow)
-- **Domain Layer**: Business logic murni (Models, Repository Interfaces, UseCases)
-- **Data Layer**: Implementasi repository, SQLDelight (Local), dan Ktor (Remote)
-
-```
+```text
 ┌─────────────────────────────────────────┐
 │           PRESENTATION LAYER            │
 │  ┌──────────────┐    ┌───────────────┐  │
@@ -84,13 +88,16 @@ Aplikasi mengikuti pola arsitektur MVVM dengan pemisahan layer yang jelas:
 | **Asynchronous** | Kotlin Coroutines & Flow |
 | **Navigation** | Compose Navigation (Type-safe) |
 | **Preferences** | DataStore |
-| **AI** | Google Gemini API |
+| **AI Integration** | Google Gemini API |
 
 ---
 
 ## 📁 Struktur Project
 
-```
+<details>
+<summary>Klik untuk melihat struktur direktori</summary>
+
+```text
 composeApp/src/
 ├── commonMain/kotlin/com/example/sholatyuk/
 │   ├── core/                    # Utilitas inti & DI
@@ -111,7 +118,7 @@ composeApp/src/
 │   │   ├── screens/             # Screens & ViewModels
 │   │   │   ├── home/            # Home screen
 │   │   │   ├── prayer/          # Jadwal sholat screen
-│   │   │   └── kajian/          # Dzikir & Doa screen
+│   │   │   └── kajian/          # Catatan kajian screen
 │   │   └── theme/               # Material 3 theme
 │   └── App.kt                   # Entry point
 ├── commonMain/sqldelight/       # SQLDelight schemas
@@ -119,127 +126,84 @@ composeApp/src/
 │   ├── Dzikir.sq
 │   ├── PrayerTime.sq
 │   ├── ChatHistory.sq
+│   ├── KajianNote.sq
 │   └── TasbihCount.sq
 ├── androidMain/                 # Android-specific implementations
 └── iosMain/                     # iOS-specific implementations
 ```
+</details>
 
 ---
 
 ## 📅 Sprint Progress
 
-### ✅ Sprint 1: Foundation (Minggu 11)
-- [x] Clone dan setup project
-- [x] Pahami struktur folder Clean Architecture
-- [x] Setup Koin DI
-- [x] Setup CI/CD Pipeline (GitHub Actions)
-- [x] Modifikasi tema/warna sesuai SholatYuk
-
-### ✅ Sprint 2: Core Features (Minggu 12)
-- [x] Minimal 3 screens (Home, Prayer, Dzikir & Doa)
-- [x] Navigation antar screen dengan Bottom Navigation
-- [x] Data layer dengan Repository pattern
-- [x] Local storage menggunakan SQLDelight
-- [x] SQLDelight schema (Doa, Dzikir, PrayerTime, ChatHistory, TasbihCount)
-- [x] Mapper layer (DoaMapper, DzikirMapper, PrayerTimeMapper, ChatMessageMapper)
-- [x] Domain models (Doa, Dzikir, PrayerTime, ChatMessage, QiblaInfo)
-- [x] Repository interfaces & implementations
-- [x] UI States (Loading, Success, Error) implemented
-- [x] Material 3 theming konsisten
-
-### ⬜ Sprint 3: Advanced Features (Minggu 13)
-- [ ] Integrasi GPS untuk jadwal sholat otomatis (Aladhan API)
-- [ ] Arah kiblat dengan kompas GPS
-- [ ] Notifikasi adzan tepat waktu
-- [ ] Search & filter doa/dzikir
-- [ ] Offline support (cache-first)
-- [ ] IslamAI chat screen lengkap
-
-### ⬜ Sprint 4: Polish & Testing (Minggu 14)
-- [ ] Bug fixes & UI polish
-- [ ] Animasi dan transisi halus
-- [ ] Unit tests (minimal 10)
-- [ ] UI tests (minimal 3)
-- [ ] Tasbih digital dengan counter
-- [ ] Widget layar utama
-
-### ⬜ Sprint 5: Final (Minggu 15)
-- [ ] Aplikasi stabil tanpa crash
-- [ ] Release APK
-- [ ] README lengkap & dokumentasi
-- [ ] Slide presentasi
-- [ ] Video demo backup
+| Sprint | Target Utama | Status |
+| :--- | :--- | :---: |
+| **Sprint 1** | Planning, Clean Architecture Setup, Koin DI, CI/CD | ✅ |
+| **Sprint 2** | UI Screens (Home, Prayer, Dzikir), Navigasi, SQLDelight (Local Storage), MVVM Implementation | ✅ |
+| **Sprint 3** | Aladhan API (Jadwal Sholat & GPS), Kompas Kiblat, Offline-first Cache, Gemini AI (IslamAI) | ✅ |
+| **Sprint 4** | Bug Fixes, UI Polish (Animasi, Tema), Unit Tests & Instrumentation | ✅ |
+| **Sprint 5** | Stabilitas Aplikasi, Release APK, Dokumentasi Lengkap, Demo Preparation | ✅ |
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🚀 Setup & Cara Menjalankan
 
 ### Prasyarat
 - Android Studio Ladybug (2024.2.1) atau lebih baru
 - JDK 17
 - Git
 
-### Setup
+### Langkah Setup
 
-1. **Clone repository:**
+**1. Clone repository:**
 ```bash
 git clone https://github.com/bayybrigas04/Proyek-Pengembangan-Aplikasi-Mobile.git
 cd Proyek-Pengembangan-Aplikasi-Mobile
 git checkout project/123140072-123140187-SholatYuk
 ```
 
-2. **Setup API Key:**
+**2. Setup API Key:**
+Buat file `local.properties` di root direktori project:
 ```bash
 cp local.properties.example local.properties
 ```
-Edit `local.properties`:
+Edit `local.properties` dengan text editor pilihan Anda:
 ```properties
 sdk.dir=/path/to/android/sdk
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
-Dapatkan API key gratis di: https://aistudio.google.com/
+> Dapatkan API key gratis di: [Google AI Studio](https://aistudio.google.com/)
 
-3. **Build:**
+**3. Build Project:**
 ```bash
 ./gradlew :composeApp:assembleDebug
 ```
 
-4. **Run:**
-   Buka di Android Studio → klik **Run** (▶) atau:
+**4. Run di Android:**
+Buka di Android Studio → klik tombol **Run** (▶) pada toolbar, atau melalui terminal:
 ```bash
 ./gradlew :composeApp:installDebug
 ```
 
 ---
 
-## 📱 Screenshots
+## 📸 Screenshots & Demo
 
-> Coming soon - akan ditambahkan setelah Sprint 3
+*(Catatan: Silakan sesuaikan tautan gambar dan video di bawah ini dengan sumber asli Anda)*
 
----
-
-## 🔑 Fitur Mendatang
-
-| Fitur | Sprint |
-|-------|--------|
-| GPS auto-detect lokasi | Sprint 3 |
-| Integrasi Aladhan API | Sprint 3 |
-| Arah kiblat dengan kompas | Sprint 3 |
-| Notifikasi adzan | Sprint 3 |
-| IslamAI chat lengkap | Sprint 3 |
-| Tasbih digital | Sprint 4 |
-| Al-Quran reader | Sprint 4 |
-| Widget home screen | Sprint 4 |
+| Home & Jadwal | Fitur Dzikir & Doa | Kompas Kiblat | Asisten IslamAI |
+| :---: | :---: | :---: | :---: |
+| <img width="720" height="1604" alt="Screenshot_2026-06-12-23-19-18-64_9163410356b4ba3c803fd7552b7b9a71" src="https://github.com/user-attachments/assets/326586d6-3412-46dd-9604-4344444e89cb" />
+ | <img width="720" height="1604" alt="Screenshot_2026-06-12-23-19-22-36_9163410356b4ba3c803fd7552b7b9a71" src="https://github.com/user-attachments/assets/74e0842d-8f17-4028-9bce-f5517a648cb1" />
+ | <img width="720" height="1604" alt="Screenshot_2026-06-12-23-19-42-90_9163410356b4ba3c803fd7552b7b9a71" src="https://github.com/user-attachments/assets/2e52e730-9954-49c2-b4cf-5ef4014ccc68" />
+ | <img width="720" height="1604" alt="Screenshot_2026-06-12-23-19-29-17_9163410356b4ba3c803fd7552b7b9a71" src="https://github.com/user-attachments/assets/7202bece-1ed9-4f2a-870d-2fe825bc075e" />
+ |
 
 ---
-
-## 👨‍💻 Pengembang
-
-| Nama | NIM | Kontribusi |
-|------|-----|------------|
-| Bayu Brigas Novaldi | 123140072 | Domain Layer, Data Layer, SQLDelight, Repository |
-| Gilang Surya Agung | 123140187 | Presentation Layer, UI/UX, Navigation, Theming |
-
+[![Demo SholatYuk](https://img.shields.io/badge/▶%20Demo%20Video-YouTube-red?style=for-the-badge&logo=youtube)](https://s.itera.id/PAM-VIDEO-DEMO)
 ---
 
-*Proyek ini adalah bagian dari Tugas Besar mata kuliah Pengembangan Aplikasi Mobile - ITERA*
+## 📄 Lisensi
+
+MIT License — dibuat untuk keperluan pembelajaran Pengembangan Aplikasi Mobile ITERA.

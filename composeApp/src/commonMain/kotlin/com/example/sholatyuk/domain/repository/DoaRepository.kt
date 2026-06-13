@@ -11,5 +11,8 @@ interface DoaRepository {
     fun getFavoriteDoa(): Flow<List<Doa>>
     fun getDoaById(id: Long): Flow<Doa?>
     suspend fun toggleFavorite(id: Long)
-    suspend fun seedInitialData()
+
+    // Fungsi ini menggantikan seedInitialData() untuk menarik data dari API
+    // dan menyimpannya secara offline ke SQLDelight
+    suspend fun syncDoaFromApi()
 }

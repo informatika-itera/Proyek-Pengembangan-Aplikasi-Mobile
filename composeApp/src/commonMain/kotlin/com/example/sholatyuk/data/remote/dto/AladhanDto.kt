@@ -1,6 +1,6 @@
 package com.example.sholatyuk.data.remote.dto
 
-import kotlinx.serialization.SerialName // Tambahkan import ini
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,11 +17,11 @@ data class AladhanData(
     val meta: AladhanMeta
 )
 
-// Peringatan kuning akan hilang dengan menggunakan @SerialName
 @Serializable
 data class PrayerTimings(
     @SerialName("Imsak") val imsak: String,
     @SerialName("Fajr") val fajr: String,
+    @SerialName("Sunrise") val sunrise: String,
     @SerialName("Dhuhr") val dhuhr: String,
     @SerialName("Asr") val asr: String,
     @SerialName("Maghrib") val maghrib: String,
@@ -30,7 +30,38 @@ data class PrayerTimings(
 
 @Serializable
 data class AladhanDate(
-    val readable: String
+    val readable: String,
+    val hijri: HijriDate
+)
+
+@Serializable
+data class HijriDate(
+    val date: String,
+    val format: String,
+    val day: String,
+    val weekday: HijriWeekday,
+    val month: HijriMonth,
+    val year: String,
+    val designation: Designation
+)
+
+@Serializable
+data class HijriWeekday(
+    val en: String,
+    val ar: String? = null
+)
+
+@Serializable
+data class HijriMonth(
+    val number: Int,
+    val en: String,
+    val ar: String? = null
+)
+
+@Serializable
+data class Designation(
+    val abbreviated: String,
+    val expanded: String
 )
 
 @Serializable

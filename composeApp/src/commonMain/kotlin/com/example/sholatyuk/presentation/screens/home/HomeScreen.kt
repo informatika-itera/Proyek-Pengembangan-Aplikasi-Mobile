@@ -350,14 +350,14 @@ fun HeaderSection(userName: String = "Umar Faruq", onProfileClick: () -> Unit = 
     ) {
         Column {
             Text(
-                text = "BEKAL ISLAM",
+                text = "SholatYuk",
                 color = (if (isLightMode) Color.Black else TextWhite).copy(alpha = 0.8f),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 letterSpacing = 0.5.sp
             )
             Text(
-                text = "الإسلام",
+                text = "SholatYuk",
                 color = if (isLightMode) Color.Black else TextWhite,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold

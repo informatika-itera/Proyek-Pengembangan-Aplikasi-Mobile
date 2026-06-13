@@ -9,9 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 
 class PrayerViewModel(
     private val prayerRepository: PrayerRepository,
@@ -25,9 +23,9 @@ class PrayerViewModel(
         loadPrayerTimes()
     }
 
-    fun loadPrayerTimes() {
+    fun loadPrayerTimes(date: LocalDate = _uiState.value.selectedDate) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, selectedDate = date) }
 
             val hasPermission = locationService.hasLocationPermission()
             if (!hasPermission) {
@@ -39,12 +37,10 @@ class PrayerViewModel(
 
             val location = locationService.getCurrentLocation()
             if (location != null) {
-                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-
                 prayerRepository.fetchAndSavePrayerTime(
                     latitude = location.latitude,
                     longitude = location.longitude,
-                    date = today
+                    date = date
                 ).fold(
                     onSuccess = { data ->
                         _uiState.update { it.copy(isLoading = false, prayerTime = data) }
@@ -59,5 +55,15 @@ class PrayerViewModel(
                 }
             }
         }
+    }
+
+    fun onPreviousDate() {
+        val prevDate = _uiState.value.selectedDate.minus(1, DateTimeUnit.DAY)
+        loadPrayerTimes(prevDate)
+    }
+
+    fun onNextDate() {
+        val nextDate = _uiState.value.selectedDate.plus(1, DateTimeUnit.DAY)
+        loadPrayerTimes(nextDate)
     }
 }

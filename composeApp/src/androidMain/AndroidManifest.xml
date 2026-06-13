@@ -27,6 +27,14 @@
             </intent-filter>
         </activity>
 
+        <!--
+            BroadcastReceiver untuk menerima alarm adzan dari AlarmManager.
+            exported="false" = hanya bisa dipanggil dari dalam app sendiri (lebih aman).
+        -->
+        <receiver
+            android:name=".android.scheduler.AdzanReceiver"
+            android:exported="false" />
+
     </application>
 
 </manifest>

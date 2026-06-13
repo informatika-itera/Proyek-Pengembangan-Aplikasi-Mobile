@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sholatyuk.core.location.LocationService
 import com.example.sholatyuk.domain.repository.PrayerRepository
+import com.example.sholatyuk.domain.usecase.prayer.ScheduleAdzanUseCase // Import yang ditambahkan
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,8 @@ import kotlinx.datetime.toLocalDateTime
 
 class HomeViewModel(
     private val prayerRepository: PrayerRepository,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    private val scheduleAdzanUseCase: ScheduleAdzanUseCase // Parameter baru untuk notifikasi
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -43,7 +45,7 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // 1. Cek izin lokasi yang SEKARANG SUDAH ASLI!
+            // 1. Cek izin lokasi
             val hasPermission = locationService.hasLocationPermission()
             if (!hasPermission) {
                 _uiState.update {
@@ -52,28 +54,29 @@ class HomeViewModel(
                 return@launch
             }
 
-            // 2. Ambil kordinat GPS dari HP secara otomatis
+            // 2. Ambil kordinat GPS
             val location = locationService.getCurrentLocation()
             if (location != null) {
                 val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-                // 3. Ambil jadwal dari Repository berdasarkan titik pengguna berdiri
+                // 3. Ambil jadwal dari Repository
                 prayerRepository.fetchAndSavePrayerTime(
                     latitude = location.latitude,
                     longitude = location.longitude,
                     date = today
                 ).fold(
                     onSuccess = { data ->
-                        // Timpa "Asia/Jakarta" dengan nama kota dari GPS
                         val updatedData = data.copy(cityName = location.city ?: data.cityName)
                         _uiState.update { it.copy(isLoading = false, prayerTime = updatedData) }
+
+                        // 4. JADWALKAN NOTIFIKASI DI SINI! (Background task)
+                        launch { scheduleAdzanUseCase(updatedData) }
                     },
                     onFailure = { exception ->
                         _uiState.update { it.copy(isLoading = false, error = exception.message) }
                     }
                 )
             } else {
-                // 👇 JIKA GPS MATI, MUNCULKAN POP-UP!
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -85,12 +88,10 @@ class HomeViewModel(
         }
     }
 
-    // 👇 Fungsi untuk dipanggil oleh tombol "Buka Pengaturan" di UI
     fun onOpenGpsSettings() {
         locationService.openLocationSettings()
     }
 
-    // 👇 Fungsi untuk menutup Pop-up
     fun dismissGpsDialog() {
         _uiState.update { it.copy(showGpsDialog = false) }
     }

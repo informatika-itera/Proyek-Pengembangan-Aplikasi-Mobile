@@ -2,6 +2,7 @@ package com.example.sholatyuk.presentation.screens.doa
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable // <-- Import baru ditambahkan agar kartu bisa diklik
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// Import yang ditambahkan:
+import com.example.sholatyuk.domain.model.Doa
 import com.example.sholatyuk.presentation.screens.home.BottomNavigationBar
 import com.example.sholatyuk.presentation.theme.*
 import com.example.sholatyuk.presentation.screens.profile.ProfileViewModel
@@ -31,6 +34,7 @@ fun DoaScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToShalat: () -> Unit = {},
     onNavigateToIslamAI: () -> Unit = {},
+    onNavigateToDetail: (Long) -> Unit = {}, // <-- Baris ini ditambahkan
     viewModel: DoaViewModel = koinViewModel(),
     profileViewModel: ProfileViewModel = koinViewModel()
 ) {
@@ -100,12 +104,12 @@ fun DoaScreen(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
                     placeholder = { Text("Cari doa (misal: tidur, masjid)...", color = Color.Gray) },
-                    leadingIcon = { 
+                    leadingIcon = {
                         Icon(
-                            Icons.Default.Search, 
-                            contentDescription = "Search", 
+                            Icons.Default.Search,
+                            contentDescription = "Search",
                             tint = if (isLightModeEnabled) DeepBlue else AccentYellow
-                        ) 
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -161,7 +165,7 @@ fun DoaScreen(
                 if (doaList.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
                         Text(
-                            "Doa tidak ditemukan.", 
+                            "Doa tidak ditemukan.",
                             color = (if (isLightModeEnabled) Color.Black else TextWhite).copy(alpha = 0.5f)
                         )
                     }
@@ -171,7 +175,12 @@ fun DoaScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(doaList) { doa ->
-                            DoaCard(doa, isLightModeEnabled)
+                            // <-- Diperbarui: Tambahkan fungsi onClick di sini
+                            DoaCard(
+                                doa = doa,
+                                isLightMode = isLightModeEnabled,
+                                onClick = { onNavigateToDetail(doa.id.toLong()) }
+                            )
                         }
                         item { Spacer(modifier = Modifier.height(16.dp)) }
                     }
@@ -181,10 +190,13 @@ fun DoaScreen(
     }
 }
 
+// <-- Diperbarui: Tambahkan parameter onClick dan modifier .clickable
 @Composable
-fun DoaCard(doa: Doa, isLightMode: Boolean) {
+fun DoaCard(doa: Doa, isLightMode: Boolean, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }, // Ini yang membuat kartu bereaksi saat disentuh
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isLightMode) Color.White else CardBackground

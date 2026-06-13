@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDate
 data class PrayerTime(
     val id: Long = 0,
     val date: LocalDate,
+    val hijriDate: String = "",
     val fajr: String,       // Subuh
     val sunrise: String,    // Terbit
     val dhuhr: String,      // Dzuhur
@@ -19,6 +20,7 @@ data class PrayerTime(
 )
 
 enum class PrayerName(val displayName: String) {
+    IMSAK("Imsak"),
     FAJR("Subuh"),
     SUNRISE("Terbit"),
     DHUHR("Dzuhur"),

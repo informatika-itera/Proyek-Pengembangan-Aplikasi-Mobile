@@ -26,4 +26,8 @@ sealed interface Route {
 
     @Serializable
     data object Qibla : Route
+
+    // Rute baru untuk halaman detail doa
+    @Serializable
+    data class DoaDetail(val id: Long) : Route
 }

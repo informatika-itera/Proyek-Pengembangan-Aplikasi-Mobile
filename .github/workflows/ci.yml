@@ -9,7 +9,7 @@ on:
     branches: [ 'project/123140062_123140132_InventRa' ]
 
 jobs:
-  # --- JOB 1: BUILD ANDROID (Cepat) ---
+  # --- JOB 1: BUILD ANDROID ---
   build-android:
     name: Build Android
     runs-on: ubuntu-latest
@@ -30,44 +30,20 @@ jobs:
           echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> local.properties
 
       - name: Build Android Release APK
-        run: ./gradlew :composeApp:assembleRelease --no-daemon --quiet
+        run: ./gradlew :composeApp:assembleRelease --no-daemon
 
-      - name: Upload Android APK
+      - name: Prepare APK for Upload
+        run: |
+          mkdir -p release-artifacts
+          cp composeApp/build/outputs/apk/release/InventRa-release.apk release-artifacts/InventRa-Android.apk
+
+      - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
         with:
           name: InventRa-Android
-          path: composeApp/build/outputs/apk/release/*.apk
+          path: release-artifacts/
 
-  # --- JOB 2: RELEASE ANDROID DULUAN (Hanya menunggu Job 1) ---
-  release-android:
-    name: Release Android APK
-    needs: [build-android]
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download Android APK
-        uses: actions/download-artifact@v4
-        with:
-          name: InventRa-Android
-          path: .
-
-      - name: Create/Update Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "*.apk"
-          name: "InventRa v${{ github.ref_name }}"
-          body: |
-            ## 📦 InventRa Release
-            - **Android:** APK sudah tersedia di bawah.
-            - **iOS:** Sedang diproses (akan muncul otomatis jika selesai).
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # --- JOB 3: BUILD IOS (Lama) ---
+  # --- JOB 2: BUILD IOS ---
   build-ios:
     name: Build iOS
     runs-on: macos-latest
@@ -86,38 +62,64 @@ jobs:
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
 
       - name: Build iOS Framework
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64 --no-daemon --quiet
+        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64 --no-daemon
 
       - name: Zip iOS Framework
         run: |
           cd composeApp/build/bin/iosArm64/releaseFramework/
           zip -r ../../../../InventRa-iOS-Framework.zip .
           
-      - name: Upload iOS Framework
+      - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: InventRa-iOS
           path: InventRa-iOS-Framework.zip
 
-  # --- JOB 4: UPDATE RELEASE DENGAN IOS (Menunggu Job 2 & 3) ---
-  update-release-with-ios:
-    name: Add iOS to Release
-    needs: [build-ios, release-android]
-    if: startsWith(github.ref, 'refs/tags/v')
+  # --- JOB 3: UNIFIED RELEASE (Android & iOS) ---
+  publish-release:
+    name: Publish Release
+    needs: [build-android, build-ios]
+    if: github.event_name == 'push' # Berjalan di push branch maupun tag
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download iOS Framework
+      - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: InventRa-iOS
-          path: .
+          path: assets
+          merge-multiple: true
 
-      - name: Append iOS to Release
+      - name: Determine Release Type
+        id: info
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "title=InventRa Release ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "title=InventRa Latest (Auto-Build)" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create/Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "*.zip"
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ steps.info.outputs.tag }}
+          name: ${{ steps.info.outputs.title }}
+          files: |
+            assets/InventRa-Android.apk
+            assets/InventRa-iOS-Framework.zip
+          body: |
+            ## 🚀 InventRa Automatic Release
+            Berikut adalah hasil build terbaru dari sistem CI/CD.
+            
+            - **Trigger:** `${{ github.ref_name }}`
+            - **Commit:** `${{ github.sha }}`
+            
+            *Catatan: File iOS saat ini berupa Framework .zip untuk diimport ke Xcode.*
+          prerelease: ${{ steps.info.outputs.prerelease }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

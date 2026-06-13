@@ -22,15 +22,15 @@
 
 | Splash | Login | Dashboard |
 |:---:|:---:|:---:|
-| ![Splash](docs/screenshots/splash.png) | ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+| ![Splash](docs/screenshots/Splash.jpeg) | ![Login](docs/screenshots/Login.jpeg) | ![Dashboard](docs/screenshots/Dashboard.jpeg) |
 
 | Catalog | Item Detail | History |
 |:---:|:---:|:---:|
-| ![Catalog](docs/screenshots/catalog.png) | ![Detail](docs/screenshots/detail.png) | ![History](docs/screenshots/history.png) |
+| ![Catalog](docs/screenshots/Catalog.jpeg) | ![Detail](docs/screenshots/ItemDetail.jpeg) | ![History](docs/screenshots/History.jpeg) |
 
 | AI Assistant | Profile | Dark Mode |
 |:---:|:---:|:---:|
-| ![AI](docs/screenshots/ai.png) | ![Profile](docs/screenshots/profile.png) | ![Dark](docs/screenshots/dark.png) |
+| ![AI](docs/screenshots/AIAssistant.jpeg) | ![Profile](docs/screenshots/Profile.jpeg) | ![Dark](docs/screenshots/DarkMode.jpeg) |
 
 ---
 
@@ -110,29 +110,11 @@ Aplikasi ini mengimplementasikan **Clean Architecture** (Data, Domain, Presentat
 
 ---
 
-## 📲 Download & Setup
-
-### User
-1. Unduh **InventRa.apk** dari halaman [Releases](https://github.com/MNAUFALFAKMAL/InventRa/releases).
-2. Instal di perangkat Android (API 24+).
-
-### Developer
-1. Clone repo: `git clone https://github.com/MNAUFALFAKMAL/InventRa.git`
-2. Tambahkan API Keys di `local.properties`:
-```properties
-GEMINI_API_KEY=your_key
-SUPABASE_URL=your_url
-SUPABASE_ANON_KEY=your_key
-```
-3. Run via Android Studio atau `./gradlew :composeApp:installDebug`
-
----
-
 ## 🎥 Demo Video
 
-| Phase | Link |
-|--------|------|
-| **Final Release** | [Google Drive Link](https://drive.google.com/file/d/1-H1Nh0JPQjPFbAODvzFAu8Zf7AJ7mHbc/view?usp=drive_link) |
+| Phase | Link | QR Code |
+|-------|------|:-------:|
+| **Final Release** | [YouTube Video](https://s.itera.id/123140062-123140132-InventRa) | ![QR Code Video](docs/screenshots/qrcode_123140062-123140132-InventRa.png) |
 
 ---
 

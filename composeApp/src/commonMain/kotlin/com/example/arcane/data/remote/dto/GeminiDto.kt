@@ -2,11 +2,11 @@ package com.example.arcane.data.remote.dto
 
 import kotlinx.serialization.Serializable
 
-// ==================== REQUEST ====================
 
 @Serializable
 data class GeminiRequest(
     val contents: List<GeminiContent>,
+    val systemInstruction: GeminiContent? = null,
     val generationConfig: GenerationConfig? = null,
     val safetySettings: List<SafetySetting>? = null
 )
@@ -36,7 +36,6 @@ data class SafetySetting(
     val threshold: String
 )
 
-// ==================== RESPONSE ====================
 
 @Serializable
 data class GeminiResponse(
@@ -72,7 +71,6 @@ data class GeminiError(
     val status: String
 )
 
-// ==================== HELPER EXTENSIONS ====================
 
 fun GeminiResponse.getTextContent(): String? {
     return candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text

@@ -17,21 +17,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -39,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,33 +57,100 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import androidx.compose.runtime.rememberCoroutineScope
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
+import com.preat.peekaboo.image.picker.SelectionMode
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val favoriteGenre by viewModel.favoriteGenre.collectAsStateWithLifecycle()
     val readingGoal by viewModel.readingGoal.collectAsStateWithLifecycle()
+    val profilePhotoPath by viewModel.profilePhotoPath.collectAsStateWithLifecycle()
 
-    var profilePictureUrl by remember { mutableStateOf("") }
     var showEditProfileDialog by remember { mutableStateOf(false) }
+    var showPhotoOptions by remember { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
+    val imagePicker = rememberImagePickerLauncher(
+        selectionMode = SelectionMode.Single,
+        scope = coroutineScope,
+        onResult = { byteArrays ->
+            byteArrays.firstOrNull()?.let { viewModel.updateProfilePhoto(it) }
+        }
+    )
+
+    // Bottom sheet pilihan foto
+    if (showPhotoOptions) {
+        ModalBottomSheet(
+            onDismissRequest = { showPhotoOptions = false },
+            sheetState = rememberModalBottomSheetState()
+        ) {
+            Column(
+                modifier = Modifier.padding(bottom = 32.dp)
+            ) {
+                Text(
+                    text = "Foto Profil",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+                ListItem(
+                    headlineContent = { Text("Ambil dari Kamera") },
+                    leadingContent = {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable {
+                        showPhotoOptions = false
+                        imagePicker.launch()
+                    }
+                )
+                ListItem(
+                    headlineContent = { Text("Pilih dari Galeri") },
+                    leadingContent = {
+                        Icon(Icons.Default.Photo, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable {
+                        showPhotoOptions = false
+                        imagePicker.launch()
+                    }
+                )
+                if (profilePhotoPath.isNotBlank()) {
+                    ListItem(
+                        headlineContent = {
+                            Text("Hapus Foto", color = MaterialTheme.colorScheme.error)
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            viewModel.clearProfilePhoto()
+                            showPhotoOptions = false
+                        }
+                    )
+                }
+            }
+        }
+    }
 
     if (showEditProfileDialog) {
         EditProfileDialog(
             initialName = userName,
             initialGenre = favoriteGenre,
             initialGoal = readingGoal.toString(),
-            initialPhotoUrl = profilePictureUrl,
-            onConfirm = { name, genre, goal, photoUrl ->
+            onConfirm = { name, genre, goal ->
                 viewModel.updateUserName(name)
                 viewModel.updateFavoriteGenre(genre)
                 goal.toIntOrNull()?.let { viewModel.updateReadingGoal(it) }
-                profilePictureUrl = photoUrl
                 showEditProfileDialog = false
             },
             onDismiss = { showEditProfileDialog = false }
@@ -89,18 +161,16 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Pengaturan",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    Column {
+                        Text(
+                            text = "Pengaturan",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -116,8 +186,9 @@ fun SettingsScreen(
             ProfileHeader(
                 userName = userName.ifBlank { "Pembaca Arcane" },
                 favoriteGenre = favoriteGenre.ifBlank { "Belum diatur" },
-                profilePictureUrl = profilePictureUrl,
-                onEditClick = { showEditProfileDialog = true }
+                profilePhotoPath = profilePhotoPath,
+                onEditClick = { showEditProfileDialog = true },
+                onPhotoClick = { showPhotoOptions = true }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -184,8 +255,9 @@ fun SettingsScreen(
 private fun ProfileHeader(
     userName: String,
     favoriteGenre: String,
-    profilePictureUrl: String,
-    onEditClick: () -> Unit
+    profilePhotoPath: String,
+    onEditClick: () -> Unit,
+    onPhotoClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -199,25 +271,46 @@ private fun ProfileHeader(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.BottomEnd
             ) {
-                if (profilePictureUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = profilePictureUrl,
-                        contentDescription = "Foto Profil",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Text(
-                        text = userName.take(1).uppercase(),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable { onPhotoClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (profilePhotoPath.isNotBlank()) {
+                        AsyncImage(
+                            model = profilePhotoPath,
+                            contentDescription = "Foto Profil",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Text(
+                            text = userName.take(1).uppercase(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+                
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable { onPhotoClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah Foto",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
@@ -236,7 +329,11 @@ private fun ProfileHeader(
             )
 
             TextButton(onClick = onEditClick) {
-                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
                 Spacer(modifier = Modifier.size(4.dp))
                 Text("Edit Profil")
             }
@@ -249,18 +346,16 @@ private fun EditProfileDialog(
     initialName: String,
     initialGenre: String,
     initialGoal: String,
-    initialPhotoUrl: String,
-    onConfirm: (String, String, String, String) -> Unit,
+    onConfirm: (String, String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(initialName) }
     var genre by remember { mutableStateOf(initialGenre) }
     var goal by remember { mutableStateOf(initialGoal) }
-    var photoUrl by remember { mutableStateOf(initialPhotoUrl) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Profil Terpadu", fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Edit Profil", fontWeight = FontWeight.Bold) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -292,20 +387,11 @@ private fun EditProfileDialog(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = photoUrl,
-                    onValueChange = { photoUrl = it },
-                    label = { Text("URL Foto Profil") },
-                    placeholder = { Text("Masukkan link gambar internet") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(name, genre, goal, photoUrl) }) {
-                Text("Simpan Semua", color = MaterialTheme.colorScheme.primary)
+            TextButton(onClick = { onConfirm(name, genre, goal) }) {
+                Text("Simpan", color = MaterialTheme.colorScheme.primary)
             }
         },
         dismissButton = {
@@ -319,30 +405,100 @@ private fun EditProfileDialog(
 @Composable
 private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
     Column {
-        Text(text = title.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-        Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant)) { content() }
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) { content() }
     }
 }
 
 @Composable
-private fun SettingsItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit = {}, showArrow: Boolean = true) {
-    Row(modifier = Modifier.fillMaxWidth().clickable(enabled = showArrow) { onClick() }.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
+private fun SettingsItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit = {},
+    showArrow: Boolean = true
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = showArrow) { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         }
-        if (showArrow) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)) }
+        if (showArrow) {
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+            )
+        }
     }
 }
 
 @Composable
-private fun SettingsSwitchItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
+private fun SettingsSwitchItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -60,6 +61,7 @@ import com.example.arcane.presentation.components.LoadingIndicator
 import com.example.arcane.presentation.components.StatusBadge
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.filled.Check
+import com.example.arcane.domain.model.Folder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +73,8 @@ fun BookDetailScreen(
     viewModel: BookDetailViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val allFolders by viewModel.allFolders.collectAsStateWithLifecycle()
+    val bookFolders by viewModel.bookFolders.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -102,18 +106,26 @@ fun BookDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Detail Buku",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Column {
+                        Text(
+                            text = "Detail Buku",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Informasi lengkap buku",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
@@ -149,10 +161,13 @@ fun BookDetailScreen(
             is BookDetailUiState.Success -> {
                 BookDetailContent(
                     book = state.book,
+                    allFolders = allFolders,
+                    bookFolders = bookFolders,
                     modifier = Modifier.padding(paddingValues),
                     onStatusChange = viewModel::updateStatus,
                     onSaveNotes = viewModel::saveNotesAndRating,
-                    onNavigateToResearch = onNavigateToResearch
+                    onNavigateToResearch = onNavigateToResearch,
+                    onToggleFolder = viewModel::toggleFolder
                 )
             }
         }
@@ -311,9 +326,12 @@ private fun NotInLibraryContent(
 @Composable
 private fun BookDetailContent(
     book: Book,
+    allFolders: List<Folder>,
+    bookFolders: List<Folder>,
     onStatusChange: (ReadingStatus) -> Unit,
     onSaveNotes: (String, Int?) -> Unit,
     onNavigateToResearch: (String, String) -> Unit,
+    onToggleFolder: (Folder) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var notes by remember(book.notes) { mutableStateOf(book.notes) }
@@ -449,6 +467,32 @@ private fun BookDetailContent(
                     Text(
                         text = status.displayName,
                         style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+        }
+
+        if (allFolders.isNotEmpty()) {
+            SectionTitle("Koleksi Folder")
+            androidx.compose.foundation.layout.FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                allFolders.forEach { folder ->
+                    val isSelected = bookFolders.any { it.id == folder.id }
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onToggleFolder(folder) },
+                        label = { Text(folder.name) },
+                        leadingIcon = if (isSelected) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        } else null
                     )
                 }
             }

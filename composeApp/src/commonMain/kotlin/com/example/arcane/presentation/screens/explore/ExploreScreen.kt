@@ -1,6 +1,8 @@
 package com.example.arcane.presentation.screens.explore
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,21 +11,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,13 +41,27 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
-    onNavigateBack: () -> Unit,
     onNavigateToBook: (String) -> Unit,
+    initialQuery: String = "",
     viewModel: ExploreViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedGenre by viewModel.selectedGenre.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+
+    LaunchedEffect(initialQuery) {
+        if (initialQuery.isNotBlank()) {
+            viewModel.onSearchQueryChange(initialQuery)
+        }
+    }
+
+    val isCurrentlyOffline = when (val state = uiState) {
+        is ExploreUiState.Initial -> state.isOffline
+        is ExploreUiState.Success -> state.isOffline
+        is ExploreUiState.Empty -> state.isOffline
+        else -> false
+    }
 
     Scaffold(
         topBar = {
@@ -63,11 +81,7 @@ fun ExploreScreen(
                         )
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
-                    }
-                },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -79,7 +93,6 @@ fun ExploreScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Search bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = viewModel::onSearchQueryChange,
@@ -93,18 +106,10 @@ fun ExploreScreen(
                 singleLine = true
             )
 
-            // Genre chips
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    FilterChip(
-                        selected = selectedGenre == null,
-                        onClick = { viewModel.onGenreSelected(null) },
-                        label = { Text("Semua") }
-                    )
-                }
                 items(BOOK_GENRES) { genre ->
                     FilterChip(
                         selected = selectedGenre == genre,
@@ -114,36 +119,83 @@ fun ExploreScreen(
                 }
             }
 
-            // Content
-            when (val state = uiState) {
-                is ExploreUiState.Initial -> {
-                    EmptyState(
-                        title = "Temukan Literatur",
-                        message = "Cari jutaan buku atau pilih genre favoritmu."
+            if (isCurrentlyOffline) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Mode Offline: Menampilkan buku yang tersimpan di perpustakaan",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
-                is ExploreUiState.Loading -> LoadingIndicator()
-                is ExploreUiState.Success -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(state.books) { book ->
-                            BookCard(
-                                book = book,
-                                onClick = { onNavigateToBook(book.googleBookId) }
-                            )
+            }
+
+            // 🔥 FIX COMPILER: PullToRefreshBox resmi terpasang dengan parameter isRefreshing & onRefresh dinamis seutuhnya lahh!
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refreshExplore(searchQuery, selectedGenre) },
+                modifier = Modifier.fillMaxSize().weight(1f)
+            ) {
+                when (val state = uiState) {
+                    is ExploreUiState.Initial -> {
+                        EmptyState(
+                            title = "Temukan Literatur",
+                            message = "Cari jutaan buku atau pilih genre favoritmu."
+                        )
+                    }
+                    is ExploreUiState.Loading -> {
+                        if (state == ExploreUiState.Loading) LoadingIndicator()
+                    }
+                    is ExploreUiState.Success -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(state.books) { book ->
+                                BookCard(
+                                    book = book,
+                                    onClick = { onNavigateToBook(book.googleBookId) }
+                                )
+                            }
                         }
                     }
-                }
-                is ExploreUiState.Empty -> {
-                    EmptyState(
-                        title = "Buku Tidak Ditemukan",
-                        message = "Coba gunakan kata kunci atau genre lain."
-                    )
-                }
-                is ExploreUiState.Error -> {
-                    ErrorState(message = state.message)
+                    // 🔥 FIX UX OFFLINE: Memastikan area Empty dan Error menggunakan LazyColumn full-size agar tarikan swipe gesture terdeteksi sempurna
+                    is ExploreUiState.Empty -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            item {
+                                EmptyState(
+                                    title = "Buku Tidak Ditemukan",
+                                    message = "Coba gunakan kata kunci atau genre lain."
+                                )
+                            }
+                        }
+                    }
+                    is ExploreUiState.Error -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            item {
+                                ErrorState(message = state.message)
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlinx.kover") version "0.8.3"
 }
 
 val localProperties = Properties().apply {
@@ -73,6 +74,9 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+
+            implementation(libs.peekaboo.ui)
+            implementation(libs.peekaboo.image.picker)
         }
 
         commonTest.dependencies {
@@ -91,6 +95,15 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqldelight.native.driver)
+        }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.ui.test.junit4)
+                implementation(libs.ui.test.manifest)
+                implementation("io.insert-koin:koin-test:4.0.0")
+                implementation("io.insert-koin:koin-android-test:4.0.0")
+            }
         }
     }
 }
@@ -113,7 +126,6 @@ android {
             ?: localProperties.getProperty("GOOGLE_BOOKS_API_KEY", "")
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
-
         buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$googleBooksKey\"")
     }
 
@@ -147,6 +159,38 @@ sqldelight {
     databases {
         create("ArcaneDatabase") {
             packageName.set("com.example.arcane.data.local")
+        }
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "*.di.*",
+                    "*.BuildConfig",
+                    "*_Factory*",
+                    "*ComposableSingletons*",
+                    "*.ArcaneDatabase*",
+                    "*.ArcaneDatabase",
+                    "com.example.arcane.data.remote.*",
+                    "com.example.arcane.data.local.*",
+                    "com.example.arcane.data.repository.*",
+                    "com.example.arcane.presentation.components.*",
+                    "com.example.arcane.presentation.navigation.*",
+                    "com.example.arcane.presentation.screens.ai.*",
+                    "com.example.arcane.presentation.screens.letterbox.*",
+                    "com.example.arcane.presentation.screens.settings.*",
+                    "com.example.arcane.presentation.screens.home.HomeScreen*",
+                    "com.example.arcane.presentation.screens.explore.ExploreScreen*",
+                    "com.example.arcane.presentation.screens.bookdetail.BookDetailScreen*",
+                    "com.example.arcane.presentation.theme.*",
+                    "com.example.arcane.core.*",
+                    "*.MainActivity*",
+                    "composeapp.generated.*"
+                )
+            }
         }
     }
 }

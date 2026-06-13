@@ -64,8 +64,6 @@ fun AIAssistantScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    // Cek apakah ada konteks buku dari BookDetailScreen
     val hasBookContext = !initialText.isNullOrBlank()
 
     LaunchedEffect(initialText) {
@@ -120,6 +118,7 @@ fun AIAssistantScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0), // ← tambahkan ini
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )

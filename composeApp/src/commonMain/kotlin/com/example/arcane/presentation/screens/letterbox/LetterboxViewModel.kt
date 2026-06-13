@@ -6,6 +6,8 @@ import com.example.arcane.domain.model.Book
 import com.example.arcane.domain.model.ReadingStatus
 import com.example.arcane.domain.repository.AIRepository
 import com.example.arcane.domain.repository.BookRepository
+import com.example.arcane.domain.repository.FolderRepository
+import com.example.arcane.domain.model.Folder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,10 +17,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+
+@kotlinx.serialization.Serializable
+data class AIRecommendationBook(
+    val title: String,
+    val author: String,
+    val coverUrl: String,
+    val genres: List<String>,
+    val shortDescription: String
+)
 
 class LetterboxViewModel(
     private val repository: BookRepository,
-    private val aiRepository: AIRepository
+    private val aiRepository: AIRepository,
+    private val folderRepository: FolderRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<LetterboxUiState> = repository
@@ -34,13 +47,51 @@ class LetterboxViewModel(
             initialValue = LetterboxUiState.Loading
         )
 
-    // State untuk review per buku
+    val folders: StateFlow<List<Folder>> = folderRepository
+        .getAllFolders()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     private val _reviewStates = MutableStateFlow<Map<String, ReviewState>>(emptyMap())
     val reviewStates: StateFlow<Map<String, ReviewState>> = _reviewStates.asStateFlow()
 
-    // State untuk rekomendasi
-    private val _recommendationState = MutableStateFlow<RecommendationState>(RecommendationState.Idle)
+    private val _recommendationState = MutableStateFlow<RecommendationState>(cachedRecommendationState)
     val recommendationState: StateFlow<RecommendationState> = _recommendationState.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    fun refreshLetterboxData() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            kotlinx.coroutines.delay(800)
+            _isRefreshing.value = false
+
+        }
+    }
+
+    fun createFolder(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            folderRepository.createFolder(name.trim())
+        }
+    }
+
+    fun deleteFolder(id: Long) {
+        viewModelScope.launch {
+            folderRepository.deleteFolder(id)
+        }
+    }
+
+    fun updateFolder(id: Long, newName: String) {
+        if (newName.isBlank()) return
+        viewModelScope.launch {
+            folderRepository.updateFolderName(id, newName.trim())
+        }
+    }
 
     fun generateReview(book: Book) {
         viewModelScope.launch {
@@ -68,29 +119,65 @@ class LetterboxViewModel(
 
     fun getRecommendations(books: List<Book>) {
         viewModelScope.launch {
-            _recommendationState.value = RecommendationState.Loading
+            updateRecommendationState(RecommendationState.Loading)
             val bookTitles = books.joinToString(", ") { it.title }
+
+            val jsonPrompt = """
+                Berdasarkan buku-buku berikut yang sudah aku baca: $bookTitles.
+                Rekomendasikan 5 buku fiksi atau literatur lain yang memiliki keterikatan tema serupa.
+                Kembalikan hasil dalam bentuk JSON Array murni tanpa kata pembuka, tanpa kata penutup, dan tanpa bungkus markdown seperti ```json ```. 
+                Struktur objek JSON harus memiliki field persis seperti ini:
+                [
+                  {
+                    "title": "Judul Buku",
+                    "author": "Nama Penulis",
+                    "coverUrl": "URL Gambar Sampul",
+                    "genres": ["Genre1", "Genre2"],
+                    "shortDescription": "Alasan singkat rekomendasi dalam Bahasa Indonesia"
+                  }
+                ]
+            """.trimIndent()
+
             val result = aiRepository.chat(
                 bookTitle = "Rekomendasi Buku",
                 bookDescription = "Buku yang sudah dibaca: $bookTitles",
-                question = "Berdasarkan buku-buku berikut yang sudah aku baca: $bookTitles. Rekomendasikan 5 buku lain yang mungkin aku sukai beserta alasan singkatnya dalam Bahasa Indonesia."
+                question = jsonPrompt
             )
+
             result
-                .onSuccess { recommendation ->
-                    _recommendationState.value = RecommendationState.Success(recommendation)
+                .onSuccess { jsonString ->
+                    try {
+                        val cleanJson = jsonString
+                            .replace("```json", "")
+                            .replace("```", "")
+                            .trim()
+
+                        val parsedBooks = Json.decodeFromString<List<AIRecommendationBook>>(cleanJson)
+                        updateRecommendationState(RecommendationState.Success(parsedBooks))
+                    } catch (e: Exception) {
+                        updateRecommendationState(RecommendationState.Error("Gagal memproses struktur data AI."))
+                    }
                 }
                 .onFailure { error ->
-                    _recommendationState.value = RecommendationState.Error(error.message ?: "Gagal mendapat rekomendasi")
+                    updateRecommendationState(RecommendationState.Error(error.message ?: "Gagal mendapat rekomendasi"))
                 }
         }
     }
 
     fun dismissRecommendation() {
-        _recommendationState.value = RecommendationState.Idle
+        updateRecommendationState(RecommendationState.Idle)
+    }
+
+    private fun updateRecommendationState(state: RecommendationState) {
+        cachedRecommendationState = state
+        _recommendationState.value = state
+    }
+
+    companion object {
+        private var cachedRecommendationState: RecommendationState = RecommendationState.Idle
     }
 }
 
-// State untuk review per buku
 sealed interface ReviewState {
     data object Idle : ReviewState
     data object Loading : ReviewState
@@ -98,11 +185,10 @@ sealed interface ReviewState {
     data class Error(val message: String) : ReviewState
 }
 
-// State untuk rekomendasi
 sealed interface RecommendationState {
     data object Idle : RecommendationState
     data object Loading : RecommendationState
-    data class Success(val recommendation: String) : RecommendationState
+    data class Success(val recommendations: List<AIRecommendationBook>) : RecommendationState
     data class Error(val message: String) : RecommendationState
 }
 

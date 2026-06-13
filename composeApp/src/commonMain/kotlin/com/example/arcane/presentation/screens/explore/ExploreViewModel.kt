@@ -29,11 +29,14 @@ class ExploreViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _selectedGenre = MutableStateFlow<String?>(null)
+    private val _selectedGenre = MutableStateFlow<String?>("Fiction")
     val selectedGenre: StateFlow<String?> = _selectedGenre.asStateFlow()
 
-    private val _uiState = MutableStateFlow<ExploreUiState>(ExploreUiState.Initial)
+    private val _uiState = MutableStateFlow<ExploreUiState>(ExploreUiState.Initial(isOffline = false))
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
         _searchQuery
@@ -45,7 +48,7 @@ class ExploreViewModel(
                 } else if (_selectedGenre.value != null) {
                     searchBooks(_selectedGenre.value!!)
                 } else {
-                    searchBooks("")
+                    searchBooks("Fiction")
                 }
             }
             .launchIn(viewModelScope)
@@ -56,13 +59,21 @@ class ExploreViewModel(
     }
 
     fun onGenreSelected(genre: String?) {
-        _selectedGenre.value = genre
-        if (genre != null) {
-            searchBooks(genre)
-        } else if (_searchQuery.value.isNotBlank()) {
-            searchBooks(_searchQuery.value)
-        } else {
-            _uiState.value = ExploreUiState.Initial
+        val targetGenre = genre ?: "Fiction"
+        _selectedGenre.value = targetGenre
+        searchBooks(targetGenre)
+    }
+
+    fun refreshExplore(query: String, genre: String?) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            if (query.isNotBlank()) {
+                searchBooks(query)
+            } else {
+                searchBooks(genre ?: "Fiction")
+            }
+            kotlinx.coroutines.delay(500)
+            _isRefreshing.value = false
         }
     }
 
@@ -72,43 +83,30 @@ class ExploreViewModel(
             try {
                 val results = repository.searchBooks(query)
                 _uiState.value = if (results.isEmpty()) {
-                    ExploreUiState.Empty
+                    ExploreUiState.Empty(isOffline = false)
                 } else {
-                    ExploreUiState.Success(results)
+                    ExploreUiState.Success(results, isOffline = false)
                 }
             } catch (e: Exception) {
                 try {
-                    val allLocalBooks = repository.getAllBooks().first()
+                    val localBooks = repository.getAllBooks().first()
 
-                    if (allLocalBooks.isNotEmpty()) {
-                        val currentGenre = _selectedGenre.value
+                    if (localBooks.isNotEmpty()) {
+                        val currentGenre = _selectedGenre.value ?: "Fiction"
 
-                        if (currentGenre != null) {
-                            val filteredBooks = allLocalBooks.filter { book ->
-                                book.categories.any {
-                                    it.contains(
-                                        currentGenre,
-                                        ignoreCase = true
-                                    )
-                                } ||
-                                        book.description.contains(
-                                            currentGenre,
-                                            ignoreCase = true
-                                        ) ||
-                                        query.contains(book.title, ignoreCase = true)
-                            }
+                        val filteredBooks = localBooks.filter { book ->
+                            book.categories.any { it.contains(currentGenre, ignoreCase = true) } ||
+                                    book.description.contains(currentGenre, ignoreCase = true) ||
+                                    query.contains(book.title, ignoreCase = true)
+                        }
 
-                            if (filteredBooks.isNotEmpty()) {
-                                _uiState.value = ExploreUiState.Success(filteredBooks)
-                            } else {
-                                _uiState.value = ExploreUiState.Empty
-                            }
+                        if (filteredBooks.isNotEmpty()) {
+                            _uiState.value = ExploreUiState.Success(filteredBooks, isOffline = true)
                         } else {
-                            _uiState.value = ExploreUiState.Success(allLocalBooks)
+                            _uiState.value = ExploreUiState.Empty(isOffline = true)
                         }
                     } else {
-                        _uiState.value =
-                            ExploreUiState.Error("Koneksi terputus. Tidak ada koleksi lokal.")
+                        _uiState.value = ExploreUiState.Error("Koneksi terputus. Perpustakaan lokal kamu masih kosong.")
                     }
                 } catch (localException: Exception) {
                     _uiState.value = ExploreUiState.Error("Gagal memuat data offline")
@@ -119,9 +117,9 @@ class ExploreViewModel(
 }
 
 sealed interface ExploreUiState {
-    data object Initial : ExploreUiState
+    data class Initial(val isOffline: Boolean = false) : ExploreUiState
     data object Loading : ExploreUiState
-    data class Success(val books: List<Book>) : ExploreUiState
-    data object Empty : ExploreUiState
+    data class Success(val books: List<Book>, val isOffline: Boolean = false) : ExploreUiState
+    data class Empty(val isOffline: Boolean = false) : ExploreUiState
     data class Error(val message: String) : ExploreUiState
 }

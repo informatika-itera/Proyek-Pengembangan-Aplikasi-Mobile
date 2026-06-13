@@ -10,6 +10,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -21,17 +22,20 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val repository: BookRepository
 ) : ViewModel() {
-    
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-    
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val _selectedStatus = MutableStateFlow<ReadingStatus?>(null)
     val selectedStatus: StateFlow<ReadingStatus?> = _selectedStatus
-    
+
     private val _isLoading = MutableStateFlow(false)
-    
+
     private val debouncedSearchQuery = _searchQuery.debounce(300)
-    
+
     val uiState: StateFlow<HomeUiState> = combine(
         debouncedSearchQuery,
         _selectedStatus
@@ -48,14 +52,14 @@ class HomeViewModel(
         val filteredBooks = if (query.isBlank()) {
             books
         } else {
-            books.filter { 
-                it.title.contains(query, ignoreCase = true) || 
-                it.authorsFormatted.contains(query, ignoreCase = true) 
+            books.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                        it.authorsFormatted.contains(query, ignoreCase = true)
             }
         }
-        
+
         _isLoading.value = false
-        
+
         if (filteredBooks.isEmpty()) {
             HomeUiState.Empty
         } else {
@@ -69,17 +73,25 @@ class HomeViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState.Loading
     )
-    
+
+    fun refreshData() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            refresh()
+            kotlinx.coroutines.delay(500)
+            _isRefreshing.value = false
+        }
+    }
+
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
-    
+
     fun onStatusSelected(status: ReadingStatus?) {
         _selectedStatus.value = status
     }
-    
+
     fun refresh() {
-        // Trigger refresh by updating status or query if needed
         val current = _selectedStatus.value
         _selectedStatus.value = current
     }
@@ -93,7 +105,8 @@ class HomeViewModel(
 
 sealed interface HomeUiState {
     data object Loading : HomeUiState
-    data class Success(val books: List<Book>) : HomeUiState
+    val books: List<Book> get() = emptyList()
+    data class Success(override val books: List<Book>) : HomeUiState
     data object Empty : HomeUiState
     data class Error(val message: String) : HomeUiState
 }

@@ -1,0 +1,50 @@
+CREATE TABLE FolderEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    createdAt INTEGER NOT NULL
+);
+
+CREATE TABLE BookFolderCrossRef (
+    bookId INTEGER NOT NULL,
+    folderId INTEGER NOT NULL,
+    PRIMARY KEY (bookId, folderId),
+    FOREIGN KEY (bookId) REFERENCES BookEntity(id) ON DELETE CASCADE,
+    FOREIGN KEY (folderId) REFERENCES FolderEntity(id) ON DELETE CASCADE
+);
+
+-- Folders CRUD
+
+insertFolder:
+INSERT INTO FolderEntity (name, createdAt)
+VALUES (?, ?);
+
+getAllFolders:
+SELECT * FROM FolderEntity ORDER BY name ASC;
+
+getFolderById:
+SELECT * FROM FolderEntity WHERE id = ?;
+
+deleteFolder:
+DELETE FROM FolderEntity WHERE id = ?;
+
+updateFolderName:
+UPDATE FolderEntity SET name = ? WHERE id = ?;
+
+-- BookFolderCrossRef Operations
+
+addBookToFolder:
+INSERT OR IGNORE INTO BookFolderCrossRef (bookId, folderId)
+VALUES (?, ?);
+
+removeBookFromFolder:
+DELETE FROM BookFolderCrossRef WHERE bookId = ? AND folderId = ?;
+
+getFoldersForBook:
+SELECT FolderEntity.* FROM FolderEntity
+INNER JOIN BookFolderCrossRef ON FolderEntity.id = BookFolderCrossRef.folderId
+WHERE BookFolderCrossRef.bookId = ?;
+
+getBooksInFolder:
+SELECT BookEntity.* FROM BookEntity
+INNER JOIN BookFolderCrossRef ON BookEntity.id = BookFolderCrossRef.bookId
+WHERE BookFolderCrossRef.folderId = ?;

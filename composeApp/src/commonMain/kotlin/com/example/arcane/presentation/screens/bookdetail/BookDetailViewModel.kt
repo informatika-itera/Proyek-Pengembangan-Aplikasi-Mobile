@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.arcane.domain.model.Book
 import com.example.arcane.domain.model.ReadingStatus
+import com.example.arcane.domain.model.Folder
 import com.example.arcane.domain.repository.BookRepository
+import com.example.arcane.domain.repository.FolderRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -14,7 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BookDetailViewModel(
-    private val repository: BookRepository
+    private val repository: BookRepository,
+    private val folderRepository: FolderRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<BookDetailUiState>(BookDetailUiState.Loading)
@@ -23,10 +26,29 @@ class BookDetailViewModel(
     private val _events = MutableSharedFlow<BookDetailEvent>()
     val events: SharedFlow<BookDetailEvent> = _events.asSharedFlow()
 
+    private val _allFolders = MutableStateFlow<List<Folder>>(emptyList())
+    val allFolders: StateFlow<List<Folder>> = _allFolders.asStateFlow()
+
+    private val _bookFolders = MutableStateFlow<List<Folder>>(emptyList())
+    val bookFolders: StateFlow<List<Folder>> = _bookFolders.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            folderRepository.getAllFolders().collect { folders ->
+                _allFolders.value = folders
+            }
+        }
+    }
+
     fun loadBook(googleBookId: String, localId: Long) {
         viewModelScope.launch {
             _uiState.value = BookDetailUiState.Loading
             if (localId > 0) {
+                viewModelScope.launch {
+                    folderRepository.getFoldersForBook(localId).collect { folders ->
+                        _bookFolders.value = folders
+                    }
+                }
                 repository.getBookById(localId).collect { book ->
                     _uiState.value = book?.let {
                         BookDetailUiState.Success(it)
@@ -37,7 +59,6 @@ class BookDetailViewModel(
                 if (localBook != null) {
                     _uiState.value = BookDetailUiState.Success(localBook)
                 } else {
-                    // Fetch dari Google Books API by ID
                     val remoteBook = repository.getBookDetail(googleBookId)
                     _uiState.value = if (remoteBook != null) {
                         BookDetailUiState.NotInLibrary(remoteBook)
@@ -75,6 +96,21 @@ class BookDetailViewModel(
             viewModelScope.launch {
                 repository.updateBookNotesAndRating(currentState.book.id, notes, rating)
                 _events.emit(BookDetailEvent.ShowSnackbar("Catatan berhasil disimpan"))
+            }
+        }
+    }
+
+    fun toggleFolder(folder: Folder) {
+        val currentState = _uiState.value
+        if (currentState is BookDetailUiState.Success) {
+            val bookId = currentState.book.id
+            viewModelScope.launch {
+                val isCurrentlyInFolder = _bookFolders.value.any { it.id == folder.id }
+                if (isCurrentlyInFolder) {
+                    folderRepository.removeBookFromFolder(bookId, folder.id)
+                } else {
+                    folderRepository.addBookToFolder(bookId, folder.id)
+                }
             }
         }
     }

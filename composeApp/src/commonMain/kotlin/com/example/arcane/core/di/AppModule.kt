@@ -10,8 +10,10 @@ import com.example.arcane.data.remote.api.GeminiService
 import com.example.arcane.data.remote.api.GoogleBooksService
 import com.example.arcane.data.repository.AIRepositoryImpl
 import com.example.arcane.data.repository.BookRepositoryImpl
+import com.example.arcane.data.repository.FolderRepositoryImpl
 import com.example.arcane.domain.repository.AIRepository
 import com.example.arcane.domain.repository.BookRepository
+import com.example.arcane.domain.repository.FolderRepository
 import com.example.arcane.domain.usecase.BookUseCases
 import com.example.arcane.domain.usecase.DeleteBookUseCase
 import com.example.arcane.domain.usecase.GetBookshelfUseCase
@@ -24,6 +26,7 @@ import com.example.arcane.presentation.screens.explore.ExploreViewModel
 import com.example.arcane.presentation.screens.bookdetail.BookDetailViewModel
 import com.example.arcane.presentation.screens.ai.AIAssistantViewModel
 import com.example.arcane.presentation.screens.settings.SettingsViewModel
+import com.example.arcane.presentation.screens.folder.FolderDetailViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -54,6 +57,7 @@ val preferencesModule = module {
 val repositoryModule = module {
     singleOf(::BookRepositoryImpl) bind BookRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    singleOf(::FolderRepositoryImpl) bind FolderRepository::class
 }
 
 val useCaseModule = module {
@@ -82,6 +86,7 @@ val viewModelModule = module {
     viewModelOf(::AIAssistantViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::LetterboxViewModel)
+    viewModelOf(::FolderDetailViewModel)
 }
 
 val sharedModules = listOf(

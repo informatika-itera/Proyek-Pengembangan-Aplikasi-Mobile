@@ -23,8 +23,8 @@ class GeminiService(private val client: HttpClient) {
     private val json = Json { ignoreUnknownKeys = true }
     
     companion object {
-        // Menggunakan v1beta (Lebih stabil untuk Flash 1.5 dan streaming SSE)
-        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+        // Menggunakan v1 (Stable) - Versi paling kompatibel untuk semua region
+        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1"
         private const val MODEL = "gemini-1.5-flash" 
     }
     
@@ -32,10 +32,15 @@ class GeminiService(private val client: HttpClient) {
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
-        val apiKey = ApiConfig.geminiApiKey
+        // Tambahkan .trim() untuk memastikan tidak ada spasi di API Key
+        val apiKey = ApiConfig.geminiApiKey.trim()
         
         if (apiKey.isBlank() || apiKey == "null") {
             throw Exception("API Key kosong. Masukkan kunci valid di local.properties dan REBUILD project.")
+        }
+
+        if (!apiKey.startsWith("AIza")) {
+            throw Exception("Format API Key salah! Kunci Gemini HARUS diawali dengan 'AIza'. Perbaiki di local.properties.")
         }
 
         val request = GeminiRequest(
@@ -69,12 +74,12 @@ class GeminiService(private val client: HttpClient) {
                 throw Exception("Server AI: $serverMsg")
             }
         }
-    }.getOrElse { e ->
+    }.recoverCatching { e ->
         val msg = e.message ?: ""
         if (msg.contains("Unable to resolve host") || msg.contains("No address associated")) {
-            Result.failure(Exception("Koneksi Internet Error: Emulator Anda tidak terhubung ke internet. Mohon lakukan 'Cold Boot' pada Emulator Anda melaui Device Manager."))
+            throw Exception("Koneksi Internet Error: Emulator Anda tidak terhubung ke internet. Mohon lakukan 'Cold Boot' pada Emulator Anda melaui Device Manager.")
         } else {
-            Result.failure(e)
+            throw e
         }
     }
 
@@ -82,7 +87,7 @@ class GeminiService(private val client: HttpClient) {
         prompt: String,
         systemPrompt: String? = null
     ): Flow<String> = flow {
-        val apiKey = ApiConfig.geminiApiKey
+        val apiKey = ApiConfig.geminiApiKey.trim()
         
         if (apiKey.isBlank() || apiKey == "null") {
             throw Exception("API Key tidak ditemukan.")
@@ -119,7 +124,7 @@ class GeminiService(private val client: HttpClient) {
                         if (text != null) {
                             emit(text)
                         }
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         // Skip malformed JSON
                     }
                 }

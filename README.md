@@ -1,5 +1,5 @@
 # 📱 EduMate
-![CI](https://github.com/tinyDevill/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/tinyDevill/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/android-ci.yml/badge.svg)
 
 ## 👥 Team
 - Abi Sholihan (Lead) - @tinyDevill

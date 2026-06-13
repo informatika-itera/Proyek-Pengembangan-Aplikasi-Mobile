@@ -5,9 +5,16 @@ interface AIRepository {
     suspend fun generateIdeas(topic: String): Result<List<String>>
     suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>
     suspend fun translate(text: String, targetLanguage: String): Result<String>
-    suspend fun chat(message: String, systemPrompt: String? = null): Result<String>
+    suspend fun chat(
+        message: String,
+        history: List<Pair<String, Boolean>> = emptyList(),
+        systemPrompt: String? = null
+    ): Result<String>
 
     suspend fun suggestTitle(content: String): Result<String>
+
+
+
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

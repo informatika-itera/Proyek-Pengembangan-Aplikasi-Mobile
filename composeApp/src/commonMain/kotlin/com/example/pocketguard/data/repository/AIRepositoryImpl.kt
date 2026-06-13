@@ -76,10 +76,15 @@ class AIRepositoryImpl(
         )
     }
 
-    override suspend fun chat(message: String, systemPrompt: String?): Result<String> {
+    override suspend fun chat(
+        message: String,
+        history: List<Pair<String, Boolean>>,
+        systemPrompt: String?
+    ): Result<String> {
         return geminiService.generateContent(
             prompt = message,
-            systemPrompt = systemPrompt
+            systemPrompt = systemPrompt,
+            history = history
         )
     }
 

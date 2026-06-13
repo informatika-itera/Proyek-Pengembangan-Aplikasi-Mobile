@@ -17,18 +17,19 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 class GeminiService(private val client: HttpClient) {
-    
+
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
         private const val MODEL = "gemini-3.5-flash"
     }
-    
+
     suspend fun generateContent(
         prompt: String,
-        systemPrompt: String? = null
+        systemPrompt: String? = null,
+        history: List<Pair<String, Boolean>> = emptyList()
     ): Result<String> = runCatching {
         val contents = mutableListOf<GeminiContent>()
-        
+
         if (systemPrompt != null) {
             contents.add(
                 GeminiContent(
@@ -43,14 +44,24 @@ class GeminiService(private val client: HttpClient) {
                 )
             )
         }
-        
+
+        // 👇 PERBAIKAN: Blok ini ditambahkan agar AI membaca riwayat percakapan sebelumnya
+        history.forEach { (text, isUser) ->
+            contents.add(
+                GeminiContent(
+                    parts = listOf(GeminiPart(text = text)),
+                    role = if (isUser) "user" else "model"
+                )
+            )
+        }
+
         contents.add(
             GeminiContent(
                 parts = listOf(GeminiPart(text = prompt)),
                 role = "user"
             )
         )
-        
+
         val request = GeminiRequest(
             contents = contents,
             generationConfig = GenerationConfig(
@@ -60,17 +71,17 @@ class GeminiService(private val client: HttpClient) {
         )
 
         val url = "$BASE_URL/models/$MODEL:generateContent"
-        
-        val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
+
+        val response: GeminiResponse = client.post(url) {
             contentType(ContentType.Application.Json)
             parameter("key", ApiConfig.geminiApiKey)
             setBody(request)
         }.body()
-        
+
         response.getErrorMessage()?.let { errorMsg ->
             throw Exception(errorMsg)
         }
-        
+
         response.getTextContent() ?: throw Exception("Respons kosong dari AI")
     }
 }

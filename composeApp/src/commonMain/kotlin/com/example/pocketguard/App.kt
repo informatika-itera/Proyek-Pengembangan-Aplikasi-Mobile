@@ -12,9 +12,11 @@ import androidx.compose.runtime.getValue
 @Composable
 fun App(viewModel: SettingsViewModel = koinViewModel ()) {
     val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+
     KoinContext {
         PocketGuardTheme(darkTheme = isDarkMode) {
-            AppNavHost()
+                AppNavHost()
+
         }
     }
 }

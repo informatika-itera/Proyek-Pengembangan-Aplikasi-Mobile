@@ -34,6 +34,8 @@ import com.example.pocketguard.presentation.components.EmptyState
 import com.example.pocketguard.presentation.components.ErrorState
 import com.example.pocketguard.presentation.components.LoadingIndicator
 import com.example.pocketguard.presentation.components.TransactionCard
+import com.example.pocketguard.presentation.components.BudgetProgressBar
+import com.example.pocketguard.presentation.components.SetBudgetDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 /* =====================================================================
@@ -61,23 +63,37 @@ fun HomeScreen(
     var showSearch by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
     var showAddBottomSheet by remember { mutableStateOf(false) }
+    var showBudgetDialog by remember { mutableStateOf(false) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Data transaksi untuk Summary Section (otomatis terfilter per bulan oleh ViewModel)
     val currentFilteredTransactions = when (val state = uiState) {
         is HomeUiState.Success -> state.transactions
         else -> emptyList()
     }
 
-    // Ekstrak saldo absolut (keseluruhan) dari state
     val absoluteBalance = when (val state = uiState) {
         is HomeUiState.Success -> state.totalBalance
         is HomeUiState.Empty -> state.totalBalance
         else -> 0.0
     }
+    val budgetLimit = when (val state = uiState) {
+        is HomeUiState.Success -> state.budgetLimit
+        is HomeUiState.Empty -> state.budgetLimit
+        else -> 0.0
+    }
+    val budgetExpense = when (val state = uiState) {
+        is HomeUiState.Success -> state.budgetExpense
+        is HomeUiState.Empty -> state.budgetExpense
+        else -> 0.0
+    }
 
-    // Ekstrak data bulan dari state
+    val activeBudgetMonth = when (val state = uiState) {
+        is HomeUiState.Success -> state.activeBudgetMonth
+        is HomeUiState.Empty -> state.activeBudgetMonth
+        else -> ""
+    }
+
     val availableMonths = when (val state = uiState) {
         is HomeUiState.Success -> state.availableMonths
         is HomeUiState.Empty -> state.availableMonths
@@ -88,6 +104,17 @@ fun HomeScreen(
         is HomeUiState.Success -> state.selectedMonth
         is HomeUiState.Empty -> state.selectedMonth
         else -> null
+    }
+
+    if (showBudgetDialog) {
+        SetBudgetDialog(
+            currentBudget = budgetLimit,
+            onDismiss = { showBudgetDialog = false },
+            onSave = { newLimit ->
+                viewModel.updateBudgetLimit(newLimit)
+                showBudgetDialog = false
+            }
+        )
     }
 
     if (showAddBottomSheet) {
@@ -168,7 +195,11 @@ fun HomeScreen(
             // ===== SUMMARY CARD =====
             SummarySection(
                 filteredTransactions = currentFilteredTransactions,
-                absoluteBalance = absoluteBalance
+                absoluteBalance = absoluteBalance,
+                budgetLimit = budgetLimit,
+                budgetExpense = budgetExpense,
+                activeBudgetMonth = activeBudgetMonth,
+                onEditBudgetClick = { showBudgetDialog = true } // 🛠️ PERBAIKAN: Typo onBudgetClick diperbaiki
             )
 
             // ===== FILTER BULAN DINAMIS =====
@@ -490,8 +521,14 @@ private fun CategoryQuickButton(
  * SUMMARY COMPONENTS
  * ===================================================================== */
 @Composable
-private fun SummarySection(filteredTransactions: List<Transaction>, absoluteBalance: Double) {
-    // Pemasukan & Pengeluaran HANYA dihitung dari transaksi yang terfilter (bulan ini)
+private fun SummarySection(
+    filteredTransactions: List<Transaction>,
+    absoluteBalance: Double,
+    budgetLimit: Double,
+    budgetExpense: Double,
+    activeBudgetMonth: String,
+    onEditBudgetClick: () -> Unit
+) {
     val monthlyIncome = filteredTransactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
     val monthlyExpense = filteredTransactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
 
@@ -520,7 +557,7 @@ private fun SummarySection(filteredTransactions: List<Transaction>, absoluteBala
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Rp ${formatAmount(absoluteBalance)}", // Menggunakan Saldo Keseluruhan
+                    text = "Rp ${formatAmount(absoluteBalance)}",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -593,7 +630,18 @@ private fun SummarySection(filteredTransactions: List<Transaction>, absoluteBala
                     }
                 }
             }
-        }
+        } // 🛠️ PERBAIKAN: Kurung tutup Row ada di sini
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 🛠️ PERBAIKAN: BudgetProgressBar sekarang berada di luar Row, langsung di dalam Column
+        BudgetProgressBar(
+            totalExpense = budgetExpense,
+            budgetLimit = budgetLimit,
+            monthLabel = activeBudgetMonth,
+            onEditClick = onEditBudgetClick,
+
+        )
     }
 }
 

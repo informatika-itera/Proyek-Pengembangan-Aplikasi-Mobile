@@ -1,15 +1,23 @@
 package com.example.pocketguard.presentation
 
 import app.cash.turbine.test
+import com.example.pocketguard.data.local.datastore.UserPreferences // ➕ Import UserPreferences
 import com.example.pocketguard.data.repository.FakeTransactionRepository
 import com.example.pocketguard.domain.model.Transaction
 import com.example.pocketguard.domain.model.TransactionCategory
 import com.example.pocketguard.domain.model.TransactionType
 import com.example.pocketguard.domain.usecase.DeleteTransactionUseCase
 import com.example.pocketguard.domain.usecase.GetAllTransactionsUseCase
-import com.example.pocketguard.domain.usecase.TransactionSortBy
 import com.example.pocketguard.presentation.screens.home.HomeUiState
 import com.example.pocketguard.presentation.screens.home.HomeViewModel
+
+// ➕ Import tambahan untuk kebutuhan Fake DataStore
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -35,6 +43,7 @@ class HomeViewModelTest {
     private lateinit var repository: FakeTransactionRepository
     private lateinit var getAllTransactionsUseCase: GetAllTransactionsUseCase
     private lateinit var deleteTransactionUseCase: DeleteTransactionUseCase
+    private lateinit var userPreferences: UserPreferences // ➕ Tambahkan variabel preferensi
     private lateinit var viewModel: HomeViewModel
 
     @BeforeTest
@@ -45,9 +54,13 @@ class HomeViewModelTest {
         getAllTransactionsUseCase = GetAllTransactionsUseCase(repository)
         deleteTransactionUseCase = DeleteTransactionUseCase(repository)
 
+        // ➕ Inisialisasi preferensi menggunakan FakeDataStore (In-Memory RAM)
+        userPreferences = UserPreferences(FakeDataStore())
+
         viewModel = HomeViewModel(
             getAllTransactionsUseCase = getAllTransactionsUseCase,
-            deleteTransactionUseCase = deleteTransactionUseCase
+            deleteTransactionUseCase = deleteTransactionUseCase,
+            userPreferences = userPreferences // ➕ Lewatkan parameter yang diminta ke constructor
         )
     }
 
@@ -123,7 +136,6 @@ class HomeViewModelTest {
     @Test
     fun `month filter should filter transactions`() = runTest {
         // Arrange
-        // createTestTransaction menggunakan Clock.System.now() secara default
         repository.insertTransaction(createTestTransaction("Gaji Bulan Ini"))
 
         viewModel.uiState.test {
@@ -185,5 +197,21 @@ class HomeViewModelTest {
             type = TransactionType.EXPENSE,
             createdAt = Clock.System.now().toEpochMilliseconds()
         )
+    }
+}
+
+/**
+ * ➕ FAKE DATASTORE UNTUK KEBUTUHAN UNIT TESTING MULTIPLATFORM (COMMON TEST)
+ * Berjalan murni di memori RAM tanpa melakukan penulisan file fisik pada storage.
+ */
+class FakeDataStore : DataStore<Preferences> {
+    private val _data = MutableStateFlow(emptyPreferences())
+    override val data: Flow<Preferences> = _data
+
+    override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+        val current = _data.value
+        val newPrefs = transform(current)
+        _data.value = newPrefs
+        return newPrefs
     }
 }

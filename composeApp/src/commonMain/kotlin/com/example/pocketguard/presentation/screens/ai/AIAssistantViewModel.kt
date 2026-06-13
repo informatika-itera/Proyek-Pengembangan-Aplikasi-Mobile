@@ -43,29 +43,38 @@ class AIAssistantViewModel(
     fun sendMessage(prompt: String) {
         if (prompt.isBlank()) return
 
+        // 1. Tambahkan pesan user ke layar terlebih dahulu
         val currentMessages = _uiState.value.messages.toMutableList()
         currentMessages.add(ChatMessage(text = prompt, isUser = true))
 
         _uiState.update { it.copy(messages = currentMessages, isLoading = true, error = null) }
 
         viewModelScope.launch {
-            // Mengambil data dan memproses semuanya di dalam blok coroutine yang sama
+            // 2. Tarik Data Database
             val transactions = transactionRepository.getAllTransactions().first()
             val transactionSummary = transactions.joinToString(separator = "\n") { transaction ->
                 "- ${formatTimestamp(transaction.createdAt)}: ${transaction.description} (Rp ${transaction.amount}) - Kategori: ${transaction.category.displayName}"
             }
 
-            val userPrompt = """
-                Berikut adalah riwayat transaksi keuangan saya saat ini:
-                $transactionSummary
+            // 3. Sisipkan Data ke System Prompt agar AI selalu tahu saldo tanpa mengotori chat
+            val fullSystemPrompt = """
+                ${SystemPrompts.FINANCIAL_ASSISTANT}
                 
-                Pertanyaan/Perintah saya:
-                "$prompt"
+                DATA TRANSAKSI PENGGUNA SAAT INI UNTUK DIJADIKAN REFERENSI:
+                $transactionSummary
             """.trimIndent()
 
+            // 👇 INILAH KUNCI INGATANNYA: Mengekstrak riwayat chat di layar
+            val chatHistory = _uiState.value.messages
+                .dropLast(1) // Membuang pesan terakhir agar tidak dikirim ganda
+                .filter { !it.text.startsWith("Maaf, terjadi kesalahan") } // Abaikan pesan error
+                .map { Pair(it.text, it.isUser) }
+
+            // 4. Kirim semua paket lengkap ke API
             val result = aiRepository.chat(
-                message = userPrompt,
-                systemPrompt = SystemPrompts.FINANCIAL_ASSISTANT
+                message = prompt, // Pesan baru
+                history = chatHistory, // Ingatan percakapan sebelumnya
+                systemPrompt = fullSystemPrompt // Kepribadian + Database
             )
 
             result.onSuccess { aiResponse ->

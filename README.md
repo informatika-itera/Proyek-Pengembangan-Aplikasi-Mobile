@@ -1,95 +1,120 @@
 # SoundLetter 🎵✉️
+*Express your emotions anonymously with the perfect soundtrack.*
 
-*SoundLetter* adalah aplikasi mobile inovatif yang menggabungkan ekspresi emosional melalui pesan anonim dengan integrasi musik. Terinspirasi dari tren "Send the Song", aplikasi ini memungkinkan pengguna untuk mengirimkan "surat digital" yang dilengkapi dengan lagu sebagai representasi perasaan mereka kepada orang lain secara anonim.
+SoundLetter adalah aplikasi mobile **Kotlin Multiplatform (KMP)** inovatif yang menggabungkan ekspresi emosional melalui pesan anonim dengan integrasi musik pintar. Terinspirasi dari tren "Send the Song", SoundLetter memungkinkan pengguna mengirimkan "surat digital" yang dilengkapi dengan lagu sebagai representasi perasaan mereka secara anonim di platform Android dan iOS.
+
+[![Download APK](https://img.shields.io/badge/Download-APK-green?style=for-the-badge&logo=android)](https://drive.google.com/file/d/134SwvWaqlfksseD-An112zAO_0rF5MI8/view?usp=sharing)
+
+---
+
+## 📺 Video Demo
+Klik thumbnail di bawah ini untuk melihat demo aplikasi SoundLetter di YouTube:
+
+[![Tonton Video Demo](https://img.youtube.com/vi/QGcQY_dNWg/0.jpg)](https://youtu.be/QGXcQY_dNWg?si=6Es0jr8UJNRlS316)
+
+---
+
+## 📸 Tampilan Aplikasi
+
+| Halaman | Light Mode | Dark Mode |
+| :--- | :---: | :---: |
+| **Home** | <img src="Screenshot/Home%20LM.jpg" width="200"> | <img src="Screenshot/Home%20DM.jpg" width="200"> |
+| **Search** | <img src="Screenshot/Search%20LM.jpg" width="200"> | <img src="Screenshot/Search%20DM.jpg" width="200"> |
+| **Input Data** | <img src="Screenshot/Input%20data%20LM.jpg" width="200"> | <img src="Screenshot/Input%20data%20DM.jpg" width="200"> |
+| **History** | <img src="Screenshot/History%20LM.jpg" width="200"> | <img src="Screenshot/History%20DM.jpg" width="200"> |
+| **Setting** | <img src="Screenshot/Setting%20LM.jpg" width="200"> | <img src="Screenshot/Setting%20DM.jpg" width="200"> |
 
 ---
 
 ## 🚀 Fitur Utama
 
-### 1. Anonymous Messaging (Compose)
-Pengguna dapat mengirimkan pesan atau curhatan secara anonim tanpa perlu pendaftaran akun. Form terdiri dari nama penerima, isi pesan, dan identitas pengirim (opsional).
+### 1. Anonymous Messaging
+Sampaikan perasaan Anda tanpa hambatan. Pengguna dapat mengirimkan pesan atau "curhatan" secara anonim. Form pengiriman dirancang minimalis, hanya membutuhkan nama penerima dan isi pesan, sementara identitas pengirim tetap terjaga kerahasiaannya.
 
-### 2. AI Song Recommender (Powered by Gemini AI)
-Fitur unggulan yang menggunakan *Artificial Intelligence (Gemini API)* untuk menganalisis sentimen dan isi pesan pengguna, kemudian memberikan rekomendasi lagu yang paling relevan secara otomatis sebelum pesan dikirim.
+### 2. Mood-Driven AI Recommender (Gemini 2.5 Flash Lite)
+Fitur unggulan yang menggunakan **Gemini 2.5 Flash Lite** untuk menganalisis sentimen dan isi pesan pengguna secara real-time. AI bertugas mengekstrak "Mood" atau "Genre Tags" dari teks curhatan, yang kemudian digunakan untuk mencari lagu paling relevan secara otomatis.
 
-### 3. Music Integration (Spotify API)
-Integrasi dengan *Spotify Web API* untuk mencari metadata lagu, menampilkan album art, dan memberikan pratinjau lagu yang dipilih oleh pengirim atau disarankan oleh AI.
+### 3. Indie Music Integration (Jamendo API)
+Integrasi dengan **Jamendo API** menggunakan parameter `fuzzytags` untuk mendapatkan metadata lagu berdasarkan mood yang dihasilkan AI.
+*   **Native Audio Player:** Pemutar musik kustom yang terintegrasi langsung di dalam aplikasi.
+*   **Vinyl Animation:** Antarmuka pemutar musik estetik dengan animasi piringan hitam (Vinyl) yang berputar saat lagu dimainkan.
 
-### 4. Global Feed & Search
-* *Global Feed:* Menampilkan daftar pesan terbaru dari pengguna lain secara publik dalam desain kartu yang estetik.
-* *Inbox Search:* Memungkinkan pengguna mencari pesan yang ditujukan khusus untuk nama mereka menggunakan fitur pencarian dinamis.
-
-### 5. Aesthetic UI/UX (Techno-Modern Style)
-Antarmuka dikembangkan menggunakan *Material 3* dengan tema *Dark Mode, gradasi biru elektrik, dan gaya *Glassmorphism untuk memberikan kesan futuristik dan modern.
+### 4. Global Feed & Interactive Search
+*   **Global Feed:** Menampilkan daftar pesan terbaru secara publik dengan desain kartu *Glassmorphism*.
+*   **Inbox Search:** Fitur pencarian dinamis untuk menemukan pesan berdasarkan nama penerima atau potongan lirik lagu.
 
 ---
 
-## 🛠️ Arsitektur & Teknologi
+## 🛠️ Arsitektur & Tech Stack
 
-Aplikasi ini dibangun dengan standar pengembangan industri modern untuk memenuhi kriteria akademik mata kuliah Pengembangan Aplikasi Mobile:
+Aplikasi ini dibangun dengan standar industri **Clean Architecture** (Domain, Data, Presentation) untuk memastikan kode yang *scalable* dan mudah diuji.
 
-* *Language:* Kotlin
-* *UI Framework:* Jetpack Compose (Declarative UI)
-* *Architecture:* MVVM (Model-View-ViewModel) + Clean Architecture
-* *Dependency Injection:* Koin
-* *Asynchronous & State:* Kotlin Coroutines & StateFlow
-* *Database & Backend:*
-    * *Firebase Firestore:* Penyimpanan data pesan secara real-time.
-    * *Room Database:* Penyimpanan lokal untuk fitur bookmark/favorit pesan.
-* *Networking:* Retrofit & OkHttp (untuk akses Spotify & Gemini API).
-* *AI Engine:* Google Generative AI SDK (Gemini Pro).
+*   **Multiplatform Engine:** [Kotlin Multiplatform (KMP)](https://kotlinlang.org/docs/multiplatform.html)
+*   **UI Framework:** Compose Multiplatform (Android & iOS)
+*   **Dependency Injection:** Koin
+*   **Networking:** Ktor Client (Content Negotiation, Logging, & MockEngine)
+*   **Local Database:** SQLDelight (Type-safe SQL)
+*   **Asynchronous:** Kotlin Coroutines & StateFlow
+*   **Build Config:** BuildKonfig (Safe API Key Management)
+*   **Testing:** Kover, Turbine, & Compose UI Test
+
+---
+
+## 🏆 Kualitas Kode & Pengujian
+SoundLetter menjamin stabilitas melalui pengujian menyeluruh:
+
+*   **Unit Testing:** **31+ Unit Tests (Passed)** mencakup Business Logic pada ViewModel dan Repository menggunakan *Ktor MockEngine* dan *Turbine*.
+*   **UI Testing:** Implementasi otomatisasi pengujian antarmuka menggunakan *ComposeTestRule* untuk validasi interaksi user.
+*   **Code Coverage (Kover):**
+    *   **Class Coverage:** 68.3%
+    *   **ViewModel Line Coverage:** 97% (Menjamin logika UI state yang sangat stabil).
+
+![Hasil Coverage](Screenshot/Hasil%20Coverage.jpeg)
 
 ---
 
 ## 📂 Struktur Proyek Utama
 
-Proyek ini mengikuti struktur Clean Architecture untuk memastikan kode yang mudah diuji (testable) dan dikelola:
 ```
-com.soundletter.app/
-├── data/                # Data Layer
-│   ├── remote/          # API Service (Spotify, Gemini, Firebase)
-│   ├── local/           # Room Database & DAOs
-│   └── repository/      # Implementasi Repository
-├── domain/              # Domain Layer (Business Logic)
-│   ├── model/           # Data Classes (POJO)
-│   └── repository/      # Interface Repository
-├── ui/                  # Presentation Layer
-│   ├── theme/           # Color, Type, Shape (Material 3 Customization)
-│   ├── components/      # Reusable UI Components
-│   ├── screen/          # Screens (Home, Compose, Detail, Search)
-│   └── viewmodel/       # Logic & State Management (StateFlow)
-├── di/                  # Dependency Injection Modules (Koin)
-└── utils/               # Helper classes & Extensions
+composeApp/src/commonMain/kotlin/com/soundletter/app/
+├── data/                # Data Layer (Ktor API, SQLDelight, Implementasi Repository)
+├── domain/              # Domain Layer (Business Logic & Interface Repository)
+├── presentation/        # Presentation Layer (UI & ViewModels)
+│   ├── components/      # Reusable UI (Vinyl Animation, Audio Player)
+│   ├── navigation/      # Compose Navigation Multiplatform
+│   └── screens/         # Feature Screens (Home, Compose, Search, History)
+└── di/                  # Dependency Injection Modules (Koin)
 ```
 
 ---
 
-## ⚙️ Cara Menjalankan Proyek
+## ⚙️ Cara Setup & Menjalankan Proyek
 
-### Clone Repository
+### 1. Clone Repository
 ```bash
 git clone https://github.com/15-040-GianIvander/SoundLetter.git
 ```
 
-### Konfigurasi API Key
-- Dapatkan Gemini API Key dari Google AI Studio.
-- Dapatkan Spotify Client ID & Secret dari Spotify Developer Dashboard.
-- Tambahkan key tersebut ke dalam file `local.properties`.
+### 2. Konfigurasi API Key
+Dapatkan API Key dan masukkan ke dalam file `local.properties` di root project:
+```properties
+GEMINI_API_KEY=your_gemini_api_key_here
+JAMENDO_CLIENT_ID=your_jamendo_client_id_here
+```
 
-### Firebase Setup
-- Tambahkan file `google-services.json` ke folder `app/`.
-
-### Build Project
-- Buka proyek di Android Studio Ladybug atau versi terbaru.
-- Lakukan Sync Gradle.
-- Jalankan aplikasi pada emulator atau perangkat fisik.
+### 3. Build & Run
+*   Buka proyek di **Android Studio Ladybug** atau versi terbaru.
+*   Lakukan **Gradle Sync**.
+*   Jalankan target `composeApp` untuk Android.
+*   Untuk iOS, buka `iosApp/iosApp.xcworkspace` melalui Xcode atau jalankan langsung dari Android Studio jika plugin KMP terpasang.
 
 ---
 
-## 👥 Pengembang Utama
+## 👥 Tim Pengembang (Kelompok Sprint 4)
 
-Aplikasi ini dikembangkan sebagai Proyek Tugas Besar Mata Kuliah Pengembangan Aplikasi Mobile oleh Kelompok:
+* **(123140027) ATALIE SALSABILA — Project Architect & Documentation Lead**
+* **(123140039) MUHAMMAD DZAKY — Lead UI/UX Developer & Quality Assurance**
+* **(123140040) GIAN IVANDER — Systems Integrator & Core Logic Developer**
 
-- (123140027) ATALIE SALSABILA  
-- (123140039) MUHAMMAD DZAKY  
-- (123140040) GIAN IVANDER  
+---
+Copyright © 2024 SoundLetter Team.

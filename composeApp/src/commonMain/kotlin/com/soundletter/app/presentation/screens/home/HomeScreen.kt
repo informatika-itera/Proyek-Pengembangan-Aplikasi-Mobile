@@ -7,14 +7,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -41,8 +45,9 @@ fun HomeScreen(
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF) // Black vs Sky Blue Light
+    val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
     val primaryTextColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
+    val fabBackgroundColor = Color(0xFF007ACC)
 
     Scaffold(
         containerColor = backgroundColor,
@@ -50,7 +55,8 @@ fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToCompose,
-                containerColor = primaryTextColor,
+                // Fix: Warna biru yang konsisten untuk kontras tinggi di kedua mode
+                containerColor = fabBackgroundColor,
                 contentColor = Color.White
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Compose")
@@ -62,15 +68,35 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Text(
-                text = "SoundLetter",
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 32.dp),
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    color = primaryTextColor,
-                    letterSpacing = 1.5.sp
+            // Header with Navigation Actions
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "SoundLetter",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = primaryTextColor,
+                        letterSpacing = 1.5.sp
+                    )
                 )
-            )
+                
+                Row {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Search, contentDescription = "Search", tint = primaryTextColor)
+                    }
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(Icons.Default.History, contentDescription = "History", tint = primaryTextColor)
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = primaryTextColor)
+                    }
+                }
+            }
 
             when (val state = uiState) {
                 is UiState.Loading -> LoadingView()
@@ -110,8 +136,6 @@ fun HomeScreen(
 
 @Composable
 fun MessageCard(message: Note, isDarkMode: Boolean, onClick: () -> Unit) {
-    val cardColor = if (isDarkMode) Color(0xFF1E1E1E) else Color.White
-    
     GlassCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -126,15 +150,21 @@ fun MessageCard(message: Note, isDarkMode: Boolean, onClick: () -> Unit) {
             ) {
                 Text(
                     text = "To: ${message.recipient}",
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = if (isDarkMode) Color.White else Color(0xFF007ACC)
-                    )
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = message.sender,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Gray
+                    color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -144,7 +174,8 @@ fun MessageCard(message: Note, isDarkMode: Boolean, onClick: () -> Unit) {
                     lineHeight = 20.sp,
                     color = if (isDarkMode) Color.White.copy(alpha = 0.9f) else Color.Black
                 ),
-                maxLines = 3
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
             if (!message.songTitle.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -156,13 +187,27 @@ fun MessageCard(message: Note, isDarkMode: Boolean, onClick: () -> Unit) {
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = message.songTitle,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Medium,
-                            color = if (isDarkMode) Color(0xFF00BFFF) else Color(0xFF007ACC)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = message.songTitle ?: "",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDarkMode) Color(0xFF00BFFF) else Color(0xFF007ACC)
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                    )
+                        if (!message.songArtist.isNullOrBlank()) {
+                            Text(
+                                text = message.songArtist ?: "",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = if (isDarkMode) Color.White.copy(alpha = 0.6f) else Color.Gray
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
             }
         }

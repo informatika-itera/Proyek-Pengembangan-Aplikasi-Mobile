@@ -22,10 +22,20 @@ class HomeScreenViewModel(
     fun loadLetters() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            // Menggunakan getGlobalLetters() agar menampilkan data dummy "user lain"
-            letterRepository.getGlobalLetters()
-                .catch { e -> _uiState.value = UiState.Error(e.message ?: "Unknown Error") }
-                .collect { letters -> _uiState.value = UiState.Success(letters) }
+            
+            // Menggabungkan flow dari surat lokal dan global, diurutkan descending (terbaru di atas)
+            combine(
+                letterRepository.getLetters(),
+                letterRepository.getGlobalLetters()
+            ) { local, global ->
+                (local + global).sortedByDescending { it.createdAt }
+            }
+            .catch { e -> 
+                _uiState.value = UiState.Error(e.message ?: "Unknown Error") 
+            }
+            .collect { combinedLetters -> 
+                _uiState.value = UiState.Success(combinedLetters) 
+            }
         }
     }
 }

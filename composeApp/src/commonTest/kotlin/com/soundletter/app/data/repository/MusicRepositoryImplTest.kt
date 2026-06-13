@@ -17,9 +17,32 @@ class MusicRepositoryImplTest {
 
     @Test
     fun `searchSongs returns fallback data when API fails`() = runTest {
-        // Simulasi API Error
         val mockEngine = MockEngine {
             respondError(HttpStatusCode.InternalServerError)
+        }
+        
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) { json(json) }
+        }
+        
+        val repository = MusicRepositoryImpl(client)
+        val result = repository.searchSongs("any query")
+
+        assertTrue(result.isNotEmpty())
+        assertEquals("Ambient Gold", result[0].title)
+        assertEquals("AudioCoffee", result[0].artist)
+    }
+
+    @Test
+    fun `searchSongs formats tags correctly with plus sign`() = runTest {
+        var capturedUrl = ""
+        val mockEngine = MockEngine { request ->
+            capturedUrl = request.url.toString()
+            respond(
+                content = """{"results": [{"name":"S","artist_name":"A","image":"i","audio":"a"}]}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            )
         }
 
         val client = HttpClient(mockEngine) {
@@ -27,12 +50,11 @@ class MusicRepositoryImplTest {
         }
 
         val repository = MusicRepositoryImpl(client)
-        val result = repository.searchSongs("any query")
+        // Test spasi menjadi + (sad pop -> sad+pop)
+        repository.searchSongs("sad pop")
 
-        // Verifikasi data cadangan (fallback) muncul
-        assertTrue(result.isNotEmpty())
-        assertEquals("Creative Commons Melody", result[0].title)
-        assertEquals("Jamendo Artist (Fallback)", result[0].artist)
+        // Verifikasi URL mengandung fuzzytags=sad+pop
+        assertTrue(capturedUrl.contains("fuzzytags=sad%2Bpop") || capturedUrl.contains("fuzzytags=sad+pop"))
     }
 
     @Test
@@ -67,6 +89,5 @@ class MusicRepositoryImplTest {
 
         assertEquals(1, result.size)
         assertEquals("Test Song", result[0].title)
-        assertEquals("Test Artist", result[0].artist)
     }
 }

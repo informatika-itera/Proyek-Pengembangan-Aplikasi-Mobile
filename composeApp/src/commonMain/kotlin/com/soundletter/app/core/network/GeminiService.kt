@@ -22,20 +22,23 @@ data class GeminiResponse(val candidates: List<GeminiCandidate>? = null)
 @Serializable
 data class GeminiCandidate(val content: GeminiContent)
 
-class GeminiService(private val httpClient: HttpClient) {
-    private val apiKey = ApiConfig.geminiApiKey.trim().replace("\"", "").replace("'", "")
+class GeminiService(
+    private val httpClient: HttpClient,
+    // Memungkinkan penyuntikkan fake_key saat pengujian agar tidak masuk mode fallback
+    private val apiKeyOverride: String? = null
+) {
+    private val apiKey = apiKeyOverride ?: ApiConfig.geminiApiKey.trim().replace("\"", "").replace("'", "")
     
-    // Perbaikan URL: Menggunakan model Gemini 1.5 Flash yang stabil
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
     suspend fun getSongRecommendations(message: String): String {
-        if (apiKey.isBlank() || apiKey.startsWith("YOUR_")) return "Chill Acoustic"
+        // Logika bypass jika key belum diatur atau masih default
+        if (apiKey.isBlank() || apiKey.startsWith("YOUR_")) return "chill"
 
         val prompt = """
-            User message: "$message"
-            Recommend ONE popular song that matches this mood.
-            Format: Artist - Title
-            Strictly ONLY output the Artist - Title.
+            Berdasarkan teks ini, berikan maksimal 2 kata kunci genre atau mood dalam bahasa Inggris yang dipisahkan oleh spasi (contoh: sad acoustic, happy pop, chill, dark rock). HANYA kembalikan kata kunci tersebut tanpa teks tambahan apa pun.
+            
+            Teks: "$message"
         """.trimIndent()
 
         val request = GeminiRequest(contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = prompt)))))
@@ -49,15 +52,13 @@ class GeminiService(private val httpClient: HttpClient) {
 
             if (response.status.isSuccess()) {
                 val body: GeminiResponse = response.body()
-                val result = body.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
-                result?.trim() ?: "Acoustic Mood"
+                // Menghasilkan output bersih seperti "sad lofi"
+                body.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text?.trim()?.lowercase() ?: "chill"
             } else {
-                println("GEMINI_LOG: API Error ${response.status}")
-                "Acoustic Mood"
+                "chill"
             }
         } catch (e: Exception) {
-            println("GEMINI_LOG: Exception ${e.message}")
-            "Relaxing Music"
+            "ambient"
         }
     }
 }

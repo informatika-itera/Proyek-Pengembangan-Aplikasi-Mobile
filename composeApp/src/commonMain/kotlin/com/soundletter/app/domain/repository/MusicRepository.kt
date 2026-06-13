@@ -3,5 +3,8 @@ package com.soundletter.app.domain.repository
 import com.soundletter.app.domain.model.MusicTrack
 
 interface MusicRepository {
-    suspend fun searchSongs(query: String): List<MusicTrack>
+    /**
+     * Mencari lagu berdasarkan mood atau genre tags (fuzzy search).
+     */
+    suspend fun searchSongs(mood: String): List<MusicTrack>
 }

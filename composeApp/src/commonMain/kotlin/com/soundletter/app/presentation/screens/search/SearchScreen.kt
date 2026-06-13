@@ -35,6 +35,7 @@ fun SearchScreen(
     val searchState by viewModel.searchState.collectAsState()
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
 
+    // Adaptive colors for background and search bar
     val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
     val primaryColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
 
@@ -67,11 +68,11 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search Bar Polish
+            // Search Bar Polish with higher contrast in Light Mode
             OutlinedTextField(
                 value = query,
                 onValueChange = { viewModel.onQueryChange(it) },
-                placeholder = { Text("Ketik nama penerima...", color = Color.Gray) },
+                placeholder = { Text("Ketik nama penerima...", color = if (isDarkMode) Color.Gray else Color.DarkGray) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = primaryColor) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -80,8 +81,8 @@ fun SearchScreen(
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = primaryColor.copy(alpha = 0.3f),
-                    focusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.White,
+                    unfocusedBorderColor = primaryColor.copy(alpha = 0.5f),
+                    focusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.1f) else Color.White,
                     unfocusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.White,
                     focusedTextColor = if (isDarkMode) Color.White else Color.Black,
                     unfocusedTextColor = if (isDarkMode) Color.White else Color.Black

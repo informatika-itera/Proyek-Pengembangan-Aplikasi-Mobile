@@ -27,21 +27,19 @@ class MusicRepositoryImpl(
     private val httpClient: HttpClient
 ) : MusicRepository {
 
-    override suspend fun searchSongs(query: String): List<MusicTrack> {
+    override suspend fun searchSongs(mood: String): List<MusicTrack> {
         return try {
-            println("JAMENDO_LOG: Searching for '$query'...")
+            val formattedTags = mood.trim().replace(" ", "+")
             
             val response: JamendoResponse = httpClient.get("https://api.jamendo.com/v3.0/tracks/") {
-                // Menggunakan ApiConfig sebagai jembatan tunggal ke BuildKonfig
                 parameter("client_id", ApiConfig.jamendoClientId)
                 parameter("format", "json")
                 parameter("limit", "10")
-                parameter("search", query)
+                parameter("fuzzytags", formattedTags)
+                parameter("boost", "popularity_month")
             }.body()
 
-            if (response.results.isEmpty()) {
-                throw Exception("Track not found")
-            }
+            if (response.results.isEmpty()) throw Exception("No tracks found")
 
             response.results.map { track ->
                 MusicTrack(
@@ -52,13 +50,12 @@ class MusicRepositoryImpl(
                 )
             }
         } catch (e: Exception) {
-            println("JAMENDO_LOG: Error: ${e.message}")
-            // FALLBACK: Jaminan data selalu muncul meski API mati
+            // Fallback dengan lagu Jamendo yang valid jika API error
             listOf(
                 MusicTrack(
-                    title = "Creative Commons Melody",
-                    artist = "Jamendo Artist (Fallback)",
-                    previewUrl = "https://prod-1.storage.jamendo.com/download/track/1885566/mp32/",
+                    title = "Ambient Gold",
+                    artist = "AudioCoffee",
+                    previewUrl = "https://www.jamendo.com/track/1885903/get/stream",
                     albumArtUrl = "https://picsum.photos/seed/music/300/300"
                 )
             )

@@ -29,7 +29,7 @@ class ComposeViewModelTest {
     private lateinit var fakeMusicRepo: FakeMusicRepository
     private lateinit var geminiService: GeminiService
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @BeforeTest
     fun setup() {
@@ -39,7 +39,7 @@ class ComposeViewModelTest {
 
         val mockEngine = MockEngine { _ ->
             respond(
-                content = ByteReadChannel("""{"candidates": [{"content": {"parts": [{"text": "chill lofi"}]}}]}"""),
+                content = ByteReadChannel("""{"candidates": [{"content": {"parts": [{"text": "happy pop"}]}}]}"""),
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
             )
@@ -49,8 +49,8 @@ class ComposeViewModelTest {
                 json(Json { ignoreUnknownKeys = true })
             }
         }
-        geminiService = GeminiService(mockHttpClient)
 
+        geminiService = GeminiService(mockHttpClient, "fake_key")
         viewModel = ComposeViewModel(fakeLetterRepo, fakeMusicRepo, geminiService)
     }
 
@@ -60,7 +60,7 @@ class ComposeViewModelTest {
     }
 
     @Test
-    fun `updateInputState works correctly`() = runTest {
+    fun `updateInputState works correctly`() {
         viewModel.onRecipientChange("Gian")
         viewModel.onSenderChange("Sender")
         viewModel.onMessageChange("Hello")
@@ -77,50 +77,37 @@ class ComposeViewModelTest {
         viewModel.onMessageChange("Hello")
 
         viewModel.state.test {
-            // 1. Tangkap initial state dulu
-            val initial = awaitItem()
-            assertEquals(UiState.Idle, initial.sendStatus)
-
-            // 2. Panggil fungsi SETELAH awaitItem pertama
+            assertEquals(UiState.Idle, awaitItem().sendStatus)
             viewModel.sendSoundLetter()
-
-            // 3. Tangkap Loading & Success
             assertIs<UiState.Loading>(awaitItem().sendStatus)
-
             val successState = awaitItem().sendStatus
             assertIs<UiState.Success<Boolean>>(successState)
             assertTrue((successState as UiState.Success).data)
-
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `sendSoundLetter returns Error when input is empty`() = runTest {
-        viewModel.state.test {
-            awaitItem() // initial
+    fun `sendSoundLetter error when empty recipient or message`() = runTest {
+        viewModel.onRecipientChange("")
+        viewModel.onMessageChange("")
+        viewModel.sendSoundLetter()
 
-            viewModel.sendSoundLetter()
-
-            val errorState = awaitItem().sendStatus
-            assertIs<UiState.Error>(errorState)
-            cancelAndIgnoreRemainingEvents()
-        }
+        val state = viewModel.state.value
+        assertIs<UiState.Error>(state.sendStatus)
+        assertEquals("Penerima dan pesan tidak boleh kosong", (state.sendStatus as UiState.Error).message)
     }
 
     @Test
-    fun `sendSoundLetter returns Error when internet is offline`() = runTest {
-        fakeLetterRepo.shouldFail = true
+    fun `sendSoundLetter handles exception correctly`() = runTest {
         viewModel.onRecipientChange("Gian")
         viewModel.onMessageChange("Hello")
+        fakeLetterRepo.shouldFail = true
 
         viewModel.state.test {
-            awaitItem() // initial
-
+            awaitItem() // Initial Idle
             viewModel.sendSoundLetter()
-
             assertIs<UiState.Loading>(awaitItem().sendStatus)
-
             val errorState = awaitItem().sendStatus
             assertIs<UiState.Error>(errorState)
             assertEquals("Network Error", (errorState as UiState.Error).message)
@@ -129,38 +116,69 @@ class ComposeViewModelTest {
     }
 
     @Test
-    fun `recommendSongs success flow updates suggestions`() = runTest {
-        viewModel.onMessageChange("Aku lagi santai")
-
+    fun `recommendSongs success flow updates suggestions using mood tags`() = runTest {
+        viewModel.onMessageChange("Hari ini cerah sekali!")
         viewModel.state.test {
-            awaitItem() // initial
+            awaitItem() // initial state
             viewModel.recommendSongs()
-
             assertTrue(awaitItem().isAiLoading)
-
-            val successState = awaitItem()
-            assertFalse(successState.isAiLoading)
-            assertEquals(1, successState.suggestions.size)
-            assertEquals("Jamendo Track", successState.suggestions.first().title)
+            val resultState = awaitItem()
+            assertFalse(resultState.isAiLoading)
+            assertEquals("happy pop", fakeMusicRepo.lastMoodSearched)
+            assertEquals(1, resultState.suggestions.size)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `test onSongSelect updates state`() = runTest {
+    fun `recommendSongs error when message is blank`() = runTest {
+        viewModel.onMessageChange("")
+        viewModel.uiEvent.test {
+            viewModel.recommendSongs()
+            val event = awaitItem()
+            assertIs<ComposeUiEvent.ShowError>(event)
+            assertEquals("Tulis pesanmu dulu!", event.message)
+        }
+    }
+
+    @Test
+    fun `recommendSongs handles empty music results`() = runTest {
+        viewModel.onMessageChange("Sad")
+        fakeMusicRepo.returnEmpty = true
+        viewModel.uiEvent.test {
+            viewModel.recommendSongs()
+            val event = awaitItem()
+            assertIs<ComposeUiEvent.ShowError>(event)
+            assertEquals("Gagal memuat lagu. Coba lagi nanti.", event.message)
+        }
+    }
+
+    @Test
+    fun `recommendSongs handles exception from services`() = runTest {
+        // Pemicu catch block di ViewModel melalui MusicRepository 
+        // karena GeminiService menangkap exception secara internal.
+        fakeMusicRepo.shouldFail = true
+        viewModel.onMessageChange("Test")
+        viewModel.uiEvent.test {
+            viewModel.recommendSongs()
+            val event = awaitItem()
+            assertIs<ComposeUiEvent.ShowError>(event)
+            assertTrue(event.message.contains("Koneksi API bermasalah"))
+        }
+    }
+
+    @Test
+    fun `onSongSelect updates state correctly`() {
         val song = SongSuggestion("Title", "Artist")
         viewModel.onSongSelect(song)
         assertEquals(song, viewModel.state.value.selectedSong)
     }
 
     @Test
-    fun `test resetStatus returns to Idle`() = runTest {
+    fun `test resetStatus returns to Idle`() {
         viewModel.onRecipientChange("A")
         viewModel.onMessageChange("B")
         viewModel.sendSoundLetter()
-
-        advanceUntilIdle()
-
         viewModel.resetStatus()
         assertIs<UiState.Idle>(viewModel.state.value.sendStatus)
     }
@@ -172,17 +190,24 @@ class ComposeViewModelTest {
         override fun getGlobalLetters(): Flow<List<Note>> = flowOf(emptyList())
         override fun searchLetters(query: String): Flow<List<Note>> = flowOf(emptyList())
         override suspend fun sendLetter(letter: Note): Boolean {
+            kotlinx.coroutines.yield()
             if (shouldFail) throw Exception("Network Error")
             return true
         }
         override suspend fun getLetterById(id: Long): Note? = null
-        override suspend fun deleteLetter(id: Long) {}
-        override suspend fun clearHistory() {}
+        override suspend fun deleteLetter(id: Long) : Unit {}
+        override suspend fun clearHistory() : Unit {}
     }
 
     class FakeMusicRepository : MusicRepository {
-        override suspend fun searchSongs(query: String): List<MusicTrack> {
-            return listOf(MusicTrack("Jamendo Track", "Artist", "url", "img"))
+        var lastMoodSearched: String? = null
+        var returnEmpty = false
+        var shouldFail = false
+        override suspend fun searchSongs(mood: String): List<MusicTrack> {
+            if (shouldFail) throw Exception("Music API Error")
+            this.lastMoodSearched = mood
+            if (returnEmpty) return emptyList()
+            return listOf(MusicTrack("Mood Track", "Mood Artist", "url", "img"))
         }
     }
 }

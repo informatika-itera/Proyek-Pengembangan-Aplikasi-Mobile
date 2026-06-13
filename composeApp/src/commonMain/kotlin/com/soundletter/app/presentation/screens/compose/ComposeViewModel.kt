@@ -41,7 +41,8 @@ class ComposeViewModel(
     private val _state = MutableStateFlow(ComposeState())
     val state: StateFlow<ComposeState> = _state.asStateFlow()
 
-    private val _uiEvent = MutableSharedFlow<ComposeUiEvent>()
+    // Menambahkan extraBufferCapacity agar event tidak hilang saat diuji
+    private val _uiEvent = MutableSharedFlow<ComposeUiEvent>(extraBufferCapacity = 1)
     val uiEvent = _uiEvent.asSharedFlow()
 
     fun onRecipientChange(value: String) = _state.update { it.copy(recipient = value) }
@@ -90,40 +91,35 @@ class ComposeViewModel(
     fun recommendSongs() {
         val messageText = _state.value.message
         if (messageText.isBlank()) {
-            viewModelScope.launch { _uiEvent.emit(ComposeUiEvent.ShowError("Tulis pesanmu dulu!")) }
+            _uiEvent.tryEmit(ComposeUiEvent.ShowError("Tulis pesanmu dulu!"))
             return
         }
 
         viewModelScope.launch {
             _state.update { it.copy(isAiLoading = true, suggestions = emptyList()) }
             try {
-                // 1. Ambil saran teks dari Gemini
-                val rawText = geminiService.getSongRecommendations(messageText)
+                // 1. Ambil saran Mood/Genre dari Gemini
+                val rawTags = geminiService.getSongRecommendations(messageText)
                 
-                // Bersihkan teks (Hapus tanda kutip/markdown)
-                val cleanQuery = rawText
-                    .replace("\"", "")
-                    .replace("*", "")
-                    .replace("Lagu:", "")
-                    .trim()
+                // 2. Cari lagu berdasarkan Mood di Jamendo
+                val musicResults = musicRepository.searchSongs(rawTags)
+                
+                if (musicResults.isEmpty()) {
+                    _uiEvent.emit(ComposeUiEvent.ShowError("Gagal memuat lagu. Coba lagi nanti."))
+                    _state.update { it.copy(isAiLoading = false) }
+                    return@launch
+                }
 
-                // 2. Cari di Spotify (Fungsi ini sudah punya fallback data di Repository)
-                val spotifyResults = musicRepository.searchSongs(cleanQuery)
-                
-                val newSuggestions = spotifyResults.map { 
+                val newSuggestions = musicResults.map { 
                     SongSuggestion(it.title, it.artist, it.previewUrl, it.albumArtUrl) 
                 }
 
                 _state.update { 
                     it.copy(
                         suggestions = newSuggestions,
-                        selectedSong = newSuggestions.firstOrNull(), // Auto-select lagu pertama
+                        selectedSong = newSuggestions.firstOrNull(),
                         isAiLoading = false
                     )
-                }
-                
-                if (newSuggestions.isEmpty()) {
-                     _uiEvent.emit(ComposeUiEvent.ShowError("Gagal memuat lagu. Coba lagi nanti."))
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isAiLoading = false) }

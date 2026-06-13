@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.soundletter.app.core.util.UiState
@@ -96,7 +97,9 @@ private fun DetailContent(message: Note, viewModel: DetailMessageScreenViewModel
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = if (isDarkMode) Color.White else Color(0xFF007ACC)
-                    )
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -111,7 +114,9 @@ private fun DetailContent(message: Note, viewModel: DetailMessageScreenViewModel
                         fontWeight = FontWeight.Bold,
                         color = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Gray
                     ),
-                    modifier = Modifier.align(Alignment.End)
+                    modifier = Modifier.align(Alignment.End),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -167,16 +172,25 @@ fun MusicControls(message: Note, viewModel: DetailMessageScreenViewModel) {
     val state by viewModel.state.collectAsState()
     val hasPreview = !message.songPreviewUrl.isNullOrBlank()
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = message.songTitle ?: "Tanpa Judul",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = if (state.isPlaying) Color(0xFF007ACC) else Color.Gray
+            color = if (state.isPlaying) Color(0xFF007ACC) else Color.Gray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
         Text(
-            text = if (state.isPlaying) "Sedang Memutar Preview" else "Klik Play untuk Preview",
+            text = message.songArtist ?: "Unknown Artist",
             style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray
+            color = Color.Gray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(24.dp))
         

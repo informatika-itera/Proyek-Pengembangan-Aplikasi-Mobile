@@ -18,86 +18,235 @@ import kotlinx.datetime.minus
 class LetterRepositoryImpl(
     private val database: SoundLetterDatabase
 ) : LetterRepository {
-    
-    private val queries = database.noteQueries
 
-    private val dummyGlobalLetters: List<Note> = List(50) { index ->
-        val variation = index % 10 
+    private val queries = database.noteQueries
+    private val dummyGlobalLetters = listOf(
         Note(
-            id = -(index + 100).toLong(),
-            recipient = when (variation) {
-                0 -> "Gian Ivander"
-                1 -> "Atalie Salsabila"
-                2 -> "Muhammad Dzaky"
-                3 -> "Bapak Dosen"
-                4 -> "Putri"
-                5 -> "Budi"
-                6 -> "Sobat Ngoding"
-                7 -> "Maba ITERA"
-                8 -> "Admin Lab"
-                else -> "Stranger"
-            },
-            sender = when (variation) {
-                0 -> "Pengagum Rahasia"
-                1 -> "Teman Sekelas"
-                2 -> "Si Paling Spotify"
-                3 -> "Mahasiswa Rajin"
-                4 -> "Anonymous"
-                5 -> "Kating"
-                6 -> "Wibu Idaman"
-                7 -> "Anak Kost"
-                8 -> "SoundLetter User"
-                else -> "Secret Admirer"
-            },
-            content = when (variation) {
-                0 -> "Lagu ini vibesnya lu banget. Semangat ngerjain tugasnya!"
-                1 -> "Dengerin ini pas lagi ujan di Lampung, beuh mantap."
-                2 -> "Makasih ya tadi udah dibantu di perpus. Ini lagu buat nemenin lu balik."
-                3 -> "Izin titip lagu buat Bapak/Ibu. Sehat selalu."
-                4 -> "Tadi liat lu di kantin, kelihatannya lagi capek. Cheer up!"
-                5 -> "Lagu ini underrated banget, coba dengerin deh."
-                6 -> "Gua tau lu suka genre ginian. Hope you like it!"
-                7 -> "Jangan begadang mulu, dengerin lagu ini biar tenang tidurnya."
-                8 -> "Tugas emang banyak, tapi mental health nomor satu. Rehat sejenak."
-                else -> "Have a great day, whoever you are!"
-            },
-            songTitle = when (variation) {
-                0 -> "Evaluasi"
-                1 -> "Bertaut"
-                2 -> "Dan..."
-                3 -> "Secukupnya"
-                4 -> "Rumah ke Rumah"
-                5 -> "Sorai"
-                6 -> "Gajah"
-                7 -> "Tak Kan Ada Cinta yang Lain"
-                8 -> "Rehat"
-                else -> "Hati-Hati di Jalan"
-            },
-            songArtist = when (variation) {
-                0 -> "Hindia"
-                1 -> "Nadin Amizah"
-                2 -> "Sheila on 7"
-                3 -> "Hindia"
-                4 -> "Hindia"
-                5 -> "Nadin Amizah"
-                6 -> "Tulus"
-                7 -> "Dewa 19"
-                8 -> "Kunto Aji"
-                else -> "Tulus"
-            },
-            songPreviewUrl = when (variation) {
-                0 -> "https://p.scdn.co/mp3-preview/3eb16018c747030ae45a597ad20120556c3ad5c9"
-                1 -> "https://p.scdn.co/mp3-preview/0d9c490a0f829d66f6e80b435d72f12c140c885e"
-                2 -> "https://p.scdn.co/mp3-preview/6121f061e8605333f278d65c69781a798369b76c"
-                else -> null
-            },
-            songAlbumArtUrl = "https://picsum.photos/seed/${index + 50}/300/300",
-            category = NoteCategory.entries[index % NoteCategory.entries.size],
-            color = NoteColor.entries[index % NoteColor.entries.size],
-            createdAt = Clock.System.now().minus(index * 2, DateTimeUnit.HOUR),
-            updatedAt = Clock.System.now()
+            id = -201, recipient = "Rara", sender = "Midnight Wanderer",
+            content = "Hujan di perantauan selalu bikin aku ingat masakan ibu. Kamu baik-baik ya di sana, jangan telat makan.",
+            songTitle = "Home Bound", songArtist = "Indie Soul",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1886257&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/201/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.BLUE,
+            createdAt = Clock.System.now().minus(24, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -202, recipient = "Dimas", sender = "Sobat Seperjuangan",
+            content = "Selamat atas gelarnya! Perjuangan 4 tahun di lab akhirnya lunas. Dunia luar sudah menanti.",
+            songTitle = "Victory Lap", songArtist = "The Achievers",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1245678&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/202/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.ORANGE,
+            createdAt = Clock.System.now().minus(2, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -203, recipient = "Dia", sender = "A.N",
+            content = "Aku masih sering datang ke kedai kopi itu, duduk di kursi yang sama, memesan rasa yang sama, tapi tanpamu.",
+            songTitle = "Empty Chairs", songArtist = "Broken String",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1567890&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/203/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.PURPLE,
+            createdAt = Clock.System.now().minus(5, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -204, recipient = "Seseorang", sender = "Secret Admirer",
+            content = "Cara kamu tersenyum saat membaca buku di perpus itu sangat menenangkan. Semoga harimu menyenangkan.",
+            songTitle = "Quiet Library", songArtist = "Acoustic Dreams",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1122334&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/204/300/300",
+            category = NoteCategory.IDEAS, color = NoteColor.PINK,
+            createdAt = Clock.System.now().minus(10, DateTimeUnit.MINUTE)
+        ),
+        Note(
+            id = -205, recipient = "Mantan", sender = "Ghost of Past",
+            content = "Aku dengar kamu sudah bahagia sekarang. Syukurlah, setidaknya salah satu dari kita berhasil melakukannya.",
+            songTitle = "Moving On", songArtist = "Final Chapter",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1998877&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/205/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.DEFAULT,
+            createdAt = Clock.System.now().minus(72, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -206, recipient = "Ayah", sender = "Si Bungsu",
+            content = "Yah, aku baru saja gajian pertama. Minggu depan aku pulang, kita makan sate favorit Ayah ya.",
+            songTitle = "Father's Love", songArtist = "Roots & Wings",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1445566&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/206/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.GREEN,
+            createdAt = Clock.System.now().minus(8, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -207, recipient = "Team", sender = "Project Lead",
+            content = "Kerja keras kalian luar biasa minggu ini. Istirahatlah yang cukup, kesehatan kalian lebih utama.",
+            songTitle = "Weekend Vibes", songArtist = "Lofi Work",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1778899&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/207/300/300",
+            category = NoteCategory.WORK, color = NoteColor.YELLOW,
+            createdAt = Clock.System.now().minus(12, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -208, recipient = "Senja", sender = "Penikmat Kopi",
+            content = "Matahari terbenam hari ini indah sekali, warnanya jingga seperti jaket yang sering kamu pakai dulu.",
+            songTitle = "Golden Hour", songArtist = "Sunset Drive",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1223344&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/208/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.ORANGE,
+            createdAt = Clock.System.now().minus(1, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -209, recipient = "Dunia", sender = "The Optimist",
+            content = "Mungkin hari ini berat, tapi besok adalah kesempatan baru. Jangan menyerah dulu ya.",
+            songTitle = "New Dawn", songArtist = "Echoes of Hope",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1334455&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/209/300/300",
+            category = NoteCategory.TODO, color = NoteColor.GREEN,
+            createdAt = Clock.System.now().minus(4, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -210, recipient = "Maya", sender = "Old Friend",
+            content = "Sudah berapa lama kita tidak mengobrol? Aku rindu tawa receh kita saat membahas hal-hal tidak penting.",
+            songTitle = "Nostalgia", songArtist = "Rewind",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1445566&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/210/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.PURPLE,
+            createdAt = Clock.System.now().minus(168, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -211, recipient = "Self", sender = "Future Me",
+            content = "Hai diriku di masa lalu, terima kasih sudah bertahan melewati masa-masa tersulit itu. Kamu hebat.",
+            songTitle = "Resilience", songArtist = "Inner Voice",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1556677&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/211/300/300",
+            category = NoteCategory.IDEAS, color = NoteColor.BLUE,
+            createdAt = Clock.System.now().minus(15, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -212, recipient = "Bintang", sender = "Night Owl",
+            content = "Langit malam ini penuh bintang. Aku sengaja tidak tidur hanya untuk mengagumi keindahannya.",
+            songTitle = "Starry Night", songArtist = "Midnight Jazz",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1667788&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/212/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.DEFAULT,
+            createdAt = Clock.System.now().minus(30, DateTimeUnit.MINUTE)
+        ),
+        Note(
+            id = -213, recipient = "Andra", sender = "Silent Heart",
+            content = "Maaf aku tidak bisa datang ke acaramu. Jarak memang seringkali menjadi penghalang yang menyebalkan.",
+            songTitle = "Miles Apart", songArtist = "Distance",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1778899&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/213/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.RED,
+            createdAt = Clock.System.now().minus(48, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -214, recipient = "Students", sender = "Elder Senior",
+            content = "Kalian yang sedang ujian, semangat ya! Nilai memang penting, tapi kejujuran jauh lebih berharga.",
+            songTitle = "Final Exam", songArtist = "Focus Mode",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1889900&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/214/300/300",
+            category = NoteCategory.STUDY, color = NoteColor.YELLOW,
+            createdAt = Clock.System.now().minus(20, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -215, recipient = "Santi", sender = "Little Bird",
+            content = "Lagu ini dulu sering kita putar saat di bus sekolah. Masih ingat liriknya?",
+            songTitle = "Yellow Bus", songArtist = "School Days",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1990011&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/215/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.PINK,
+            createdAt = Clock.System.now().minus(240, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -216, recipient = "Rizky", sender = "Unknown",
+            content = "Jangan lupa istirahat, kamu sudah bekerja terlalu keras belakangan ini. Ambil napas dalam-dalam.",
+            songTitle = "Deep Breath", songArtist = "Zen Master",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1112233&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/216/300/300",
+            category = NoteCategory.WORK, color = NoteColor.GREEN,
+            createdAt = Clock.System.now().minus(1, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -217, recipient = "Tiara", sender = "Cloudy Soul",
+            content = "Aku titip rindu lewat angin yang berhembus ke arah rumahmu. Semoga sampai tepat waktu.",
+            songTitle = "Wind Whispers", songArtist = "Breeze",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1223344&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/217/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.BLUE,
+            createdAt = Clock.System.now().minus(4, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -218, recipient = "Developer", sender = "Bug Hunter",
+            content = "Aplikasi ini membantu aku mengeluarkan emosi yang terpendam. Terima kasih ya.",
+            songTitle = "Code & Soul", songArtist = "Binary Rhythm",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1334455&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/218/300/300",
+            category = NoteCategory.IDEAS, color = NoteColor.DEFAULT,
+            createdAt = Clock.System.now().minus(3, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -219, recipient = "Bunda", sender = "Rantau Son",
+            content = "Selamat ulang tahun Bunda. Maaf tahun ini belum bisa pulang dan kasih pelukan langsung.",
+            songTitle = "Mother's Smile", songArtist = "Heartfelt",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1445566&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/219/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.RED,
+            createdAt = Clock.System.now().minus(6, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -220, recipient = "Stranger", sender = "Anonymous",
+            content = "Kamu yang sedang membaca ini, kamu berharga. Jangan biarkan siapapun bilang sebaliknya.",
+            songTitle = "You Matter", songArtist = "Kindness",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1556677&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/220/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.YELLOW,
+            createdAt = Clock.System.now().minus(50, DateTimeUnit.MINUTE)
+        ),
+        Note(
+            id = -221, recipient = "Ardi", sender = "Hamba Allah",
+            content = "Sabar ya Bro, kehilangan memang berat. Tapi aku yakin lu bisa ngelewatin ini semua.",
+            songTitle = "Stronger", songArtist = "Uplift",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1667788&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/221/300/300",
+            category = NoteCategory.PERSONAL, color = NoteColor.ORANGE,
+            createdAt = Clock.System.now().minus(9, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -222, recipient = "Siska", sender = "Coffee Addict",
+            content = "Besok pagi di tempat biasa ya? Ada cerita seru yang pengen aku bagi sama kamu.",
+            songTitle = "Morning Talk", songArtist = "Cafe Latte",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1778899&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/222/300/300",
+            category = NoteCategory.TODO, color = NoteColor.GREEN,
+            createdAt = Clock.System.now().minus(14, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -223, recipient = "Langit", sender = "Dreamer",
+            content = "Aku ingin terbang bebas tanpa beban, seperti awan yang ditiup angin tanpa tujuan.",
+            songTitle = "Flight", songArtist = "Atmosphere",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1889900&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/223/300/300",
+            category = NoteCategory.IDEAS, color = NoteColor.PURPLE,
+            createdAt = Clock.System.now().minus(11, DateTimeUnit.HOUR)
+        ),
+        Note(
+            id = -224, recipient = "Reza", sender = "Gamer",
+            content = "Malam ini push rank lagi ga? Jangan cupu kaya semalem ya!",
+            songTitle = "Level Up", songArtist = "Pixel Beats",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1991122&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/224/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.DEFAULT,
+            createdAt = Clock.System.now().minus(30, DateTimeUnit.MINUTE)
+        ),
+        Note(
+            id = -225, recipient = "Semua", sender = "Midnight Thinker",
+            content = "Selamat tidur dunia. Semoga mimpi buruk tidak mampir malam ini.",
+            songTitle = "Lullaby", songArtist = "Soft Pillow",
+            songPreviewUrl = "https://mp3l.jamendo.com/?trackid=1112244&format=mp31",
+            songAlbumArtUrl = "https://picsum.photos/seed/225/300/300",
+            category = NoteCategory.GENERAL, color = NoteColor.PINK,
+            createdAt = Clock.System.now().minus(5, DateTimeUnit.MINUTE)
         )
-    }
+    )
 
     override fun getGlobalLetters(): Flow<List<Note>> = flowOf(dummyGlobalLetters)
 
@@ -110,13 +259,13 @@ class LetterRepositoryImpl(
 
     override fun searchLetters(query: String): Flow<List<Note>> {
         return getLetters().map { localNotes ->
-            val filteredLocal = localNotes.filter { 
-                it.recipient.contains(query, ignoreCase = true) || 
+            val filteredLocal = localNotes.filter {
+                it.recipient.contains(query, ignoreCase = true) ||
                 it.content.contains(query, ignoreCase = true) ||
                 it.songTitle?.contains(query, ignoreCase = true) == true
             }
-            val filteredDummy = dummyGlobalLetters.filter { 
-                it.recipient.contains(query, ignoreCase = true) || 
+            val filteredDummy = dummyGlobalLetters.filter {
+                it.recipient.contains(query, ignoreCase = true) ||
                 it.sender.contains(query, ignoreCase = true) ||
                 it.content.contains(query, ignoreCase = true) ||
                 it.songTitle?.contains(query, ignoreCase = true) == true
@@ -126,7 +275,6 @@ class LetterRepositoryImpl(
     }
 
     override suspend fun sendLetter(letter: Note): Boolean {
-        // FIX: Simpan null beneran, jangan dipaksa string kosong
         queries.insertNote(
             recipient = letter.recipient,
             sender = letter.sender,

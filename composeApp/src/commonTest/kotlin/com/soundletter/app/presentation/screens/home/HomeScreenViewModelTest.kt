@@ -18,14 +18,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class FakeHomeRepository : LetterRepository {
-    private val flow = MutableSharedFlow<List<Note>>()
+    private val globalFlow = MutableSharedFlow<List<Note>>()
+    private val localFlow = MutableSharedFlow<List<Note>>(replay = 1)
     var shouldFail = false
 
-    override fun getLetters(): Flow<List<Note>> = emptyFlow()
+    init {
+        localFlow.tryEmit(emptyList())
+    }
+
+    override fun getLetters(): Flow<List<Note>> = localFlow
 
     override fun getGlobalLetters(): Flow<List<Note>> = flow {
         if (shouldFail) throw Exception("Network Error")
-        emitAll(flow)
+        emitAll(globalFlow)
     }
 
     override fun searchLetters(query: String): Flow<List<Note>> = emptyFlow()
@@ -34,7 +39,7 @@ class FakeHomeRepository : LetterRepository {
     override suspend fun deleteLetter(id: Long) {}
     override suspend fun clearHistory() {}
 
-    suspend fun emit(data: List<Note>) = flow.emit(data)
+    suspend fun emitGlobal(data: List<Note>) = globalFlow.emit(data)
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -61,13 +66,15 @@ class HomeScreenViewModelTest {
         
         viewModel.uiState.test {
             var state = awaitItem()
-            if (state is UiState.Loading) {
-                repository.emit(mockData)
+            
+            // Tunggu sampai Loading atau Success (jika emisi sangat cepat)
+            if (state is UiState.Idle || state is UiState.Loading) {
+                repository.emitGlobal(mockData)
                 state = awaitItem()
-            } else if (state is UiState.Idle) {
-                state = awaitItem() // loading
-                repository.emit(mockData)
-                state = awaitItem() // success
+                // Jika masih loading, tunggu emisi berikutnya
+                if (state is UiState.Loading) {
+                    state = awaitItem()
+                }
             }
             
             assertIs<UiState.Success<List<Note>>>(state)
@@ -82,7 +89,7 @@ class HomeScreenViewModelTest {
         
         viewModel.uiState.test {
             var state = awaitItem()
-            if (state is UiState.Loading || state is UiState.Idle) {
+            if (state is UiState.Idle || state is UiState.Loading) {
                 state = awaitItem()
             }
             assertIs<UiState.Error>(state)

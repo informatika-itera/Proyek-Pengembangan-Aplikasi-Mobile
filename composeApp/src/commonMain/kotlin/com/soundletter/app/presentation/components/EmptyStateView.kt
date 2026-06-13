@@ -5,7 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -18,6 +17,9 @@ fun EmptyStateView(
     description: String,
     modifier: Modifier = Modifier
 ) {
+    // Menggunakan warna adaptif dari sistem agar kontras di Light maupun Dark Mode
+    val contentColor = MaterialTheme.colorScheme.onBackground
+    
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -29,20 +31,21 @@ fun EmptyStateView(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(100.dp),
-            tint = Color.White.copy(alpha = 0.3f)
+            // Memberikan alpha agar ikon tetap soft namun terlihat jelas (adaptif)
+            tint = contentColor.copy(alpha = 0.4f)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = Color.White,
+            color = contentColor.copy(alpha = 0.9f),
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.6f),
+            color = contentColor.copy(alpha = 0.6f),
             textAlign = TextAlign.Center
         )
     }

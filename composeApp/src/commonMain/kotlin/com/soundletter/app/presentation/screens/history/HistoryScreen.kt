@@ -34,6 +34,7 @@ fun HistoryScreen(
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Adaptive colors for background and text
     val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
     val primaryColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
 
@@ -58,6 +59,7 @@ fun HistoryScreen(
                         )
                     }
                 },
+                // Ensure AppBar is transparent to show adaptive background
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }

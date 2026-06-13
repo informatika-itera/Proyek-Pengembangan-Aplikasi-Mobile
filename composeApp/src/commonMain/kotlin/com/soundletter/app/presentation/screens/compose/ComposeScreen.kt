@@ -34,23 +34,22 @@ fun ComposeScreen(
     val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     val backgroundColor = if (isDarkMode) Color(0xFF000000) else Color(0xFFF0F8FF)
     val primaryColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
+    val accentColor = Color(0xFF007ACC) // Consistent brand color for actions
     
     val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = primaryColor,
-        unfocusedBorderColor = primaryColor.copy(alpha = 0.3f),
-        focusedLabelColor = primaryColor,
-        unfocusedLabelColor = Color.Gray,
+        focusedBorderColor = accentColor,
+        unfocusedBorderColor = if (isDarkMode) Color.White.copy(alpha = 0.3f) else accentColor.copy(alpha = 0.4f),
+        focusedLabelColor = accentColor,
+        unfocusedLabelColor = if (isDarkMode) Color.Gray else Color.DarkGray,
         focusedTextColor = if (isDarkMode) Color.White else Color.Black,
         unfocusedTextColor = if (isDarkMode) Color.White else Color.Black,
         focusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.White,
         unfocusedContainerColor = if (isDarkMode) Color.White.copy(alpha = 0.05f) else Color.White
     )
 
-    // Handle UI Events
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
@@ -136,25 +135,30 @@ fun ComposeScreen(
                     onClick = { viewModel.recommendSongs() },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFE3F2FD),
+                        contentColor = if (isDarkMode) Color.White else Color(0xFF007ACC)
                     ),
                     enabled = !state.isAiLoading,
                     shape = MaterialTheme.shapes.medium
                 ) {
                     if (state.isAiLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = accentColor)
                     } else {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Dapatkan Saran Lagu AI")
+                        Text("Dapatkan Saran Lagu AI", fontWeight = FontWeight.Bold)
                     }
                 }
 
                 if (state.suggestions.isNotEmpty()) {
-                    Text("Pilih Rekomendasi:", style = MaterialTheme.typography.labelLarge, color = primaryColor, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Pilih Rekomendasi:", 
+                        style = MaterialTheme.typography.labelLarge, 
+                        color = primaryColor, 
+                        fontWeight = FontWeight.Bold
+                    )
                     LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth().height(85.dp)
                     ) {
                         items(state.suggestions) { song ->
@@ -162,6 +166,7 @@ fun ComposeScreen(
                                 song = song, 
                                 isSelected = state.selectedSong == song,
                                 isDarkMode = isDarkMode,
+                                accentColor = accentColor,
                                 onClick = { viewModel.onSongSelect(song) }
                             )
                         }
@@ -169,11 +174,14 @@ fun ComposeScreen(
                 }
             }
 
-            // Tombol Kirim Fix di bawah
+            // Fix: Action Button with consistent brand color and high contrast
             Button(
                 onClick = { viewModel.sendSoundLetter() },
                 modifier = Modifier.fillMaxWidth().padding(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = accentColor,
+                    contentColor = Color.White
+                ),
                 shape = MaterialTheme.shapes.large,
                 enabled = state.sendStatus !is UiState.Loading
             ) {
@@ -188,12 +196,18 @@ fun ComposeScreen(
 }
 
 @Composable
-fun SongSuggestionCard(song: SongSuggestion, isSelected: Boolean, isDarkMode: Boolean, onClick: () -> Unit) {
+fun SongSuggestionCard(
+    song: SongSuggestion, 
+    isSelected: Boolean, 
+    isDarkMode: Boolean, 
+    accentColor: Color,
+    onClick: () -> Unit
+) {
     ElevatedCard(
         onClick = onClick,
-        modifier = Modifier.width(160.dp),
+        modifier = Modifier.width(160.dp).padding(end = 8.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (isSelected) Color(0xFF007ACC) 
+            containerColor = if (isSelected) accentColor
                              else if (isDarkMode) Color.White.copy(alpha = 0.1f)
                              else Color.White
         )

@@ -14,32 +14,44 @@ class GeminiServiceTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
-    fun `test recommendation logic mapping`() = runTest {
-        // Simulasi respon dari Gemini AI
-        val mockResponse = """
-            {
-                "candidates": [{
-                    "content": { "parts": [{ "text": "Hindia - Evaluasi" }] }
-                }]
-            }
-        """.trimIndent()
-
+    fun `test recommendation logic success mapping`() = runTest {
+        val mockResponse = """{"candidates": [{"content": {"parts": [{"text": "happy pop"}]}}]}"""
         val mockEngine = MockEngine {
-            respond(
-                content = mockResponse,
-                status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            )
+            respond(content = mockResponse, status = HttpStatusCode.OK, headers = headersOf(HttpHeaders.ContentType, "application/json"))
         }
-
-        val client = HttpClient(mockEngine) {
-            install(ContentNegotiation) { json(json) }
-        }
-
-        val service = GeminiService(client)
-        val result = service.getSongRecommendations("Sedang sedih")
+        val client = HttpClient(mockEngine) { install(ContentNegotiation) { json(json) } }
         
-        // Memastikan hasil parsing benar (Ini akan menaikkan coverage folder network)
-        assertEquals("Hindia - Evaluasi", result)
+        val service = GeminiService(client, "fake_key")
+        assertEquals("happy pop", service.getSongRecommendations("Message"))
+    }
+
+    @Test
+    fun `test recommendation fallback when api key is missing`() = runTest {
+        val client = HttpClient(MockEngine { respondOk() })
+        // Test key kosong atau "YOUR_..."
+        val service = GeminiService(client, "")
+        assertEquals("chill", service.getSongRecommendations("Message"))
+        
+        val service2 = GeminiService(client, "YOUR_API_KEY")
+        assertEquals("chill", service2.getSongRecommendations("Message"))
+    }
+
+    @Test
+    fun `test recommendation fallback when api returns error`() = runTest {
+        val mockEngine = MockEngine { respondError(HttpStatusCode.BadRequest) }
+        val client = HttpClient(mockEngine) { install(ContentNegotiation) { json(json) } }
+        
+        val service = GeminiService(client, "fake_key")
+        assertEquals("chill", service.getSongRecommendations("Message"))
+    }
+
+    @Test
+    fun `test recommendation fallback when network exception occurs`() = runTest {
+        val mockEngine = MockEngine { throw Exception("No Internet") }
+        val client = HttpClient(mockEngine)
+        
+        val service = GeminiService(client, "fake_key")
+        // Catch block mengembalikan "ambient"
+        assertEquals("ambient", service.getSongRecommendations("Message"))
     }
 }

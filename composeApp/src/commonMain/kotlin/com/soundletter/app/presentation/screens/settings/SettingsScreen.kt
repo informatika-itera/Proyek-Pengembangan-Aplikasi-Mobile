@@ -123,8 +123,9 @@ fun SettingsScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Button(
                             onClick = { viewModel.clearLocalHistory() },
+                            // Fix: Menetapkan warna merah tegas dan konten putih secara eksplisit
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
+                                containerColor = Color(0xFFC62828),
                                 contentColor = Color.White
                             ),
                             modifier = Modifier.fillMaxWidth(),

@@ -7,12 +7,13 @@ interface AIRepository {
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
     suspend fun suggestTitle(content: String): Result<String>
+    suspend fun breakdownTask(title: String, description: String): Result<String>
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {
     NEUTRAL("Netral", "Perbaiki tulisan dengan gaya netral"),
     FORMAL("Formal", "Perbaiki tulisan dengan gaya formal dan profesional"),
-    CASUAL("Kasual", "Perbaiki tulisan dengan gaya santai dan friendly"),
+    CASUAL("Kasual", "Perbaiki tulisan dengan gaya santai"),
     ACADEMIC("Akademik", "Perbaiki tulisan dengan gaya akademik dan ilmiah"),
-    CREATIVE("Kreatif", "Perbaiki tulisan dengan gaya kreatif dan menarik")
+    CREATIVE("Kreatif", "Perbaiki tulisan dengan gaya kreatif")
 }

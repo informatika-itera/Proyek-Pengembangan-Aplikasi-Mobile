@@ -1,10 +1,8 @@
-# EduMate - KMP Project
+# EduMate 📚🤖
 
-Aplikasi **EduMate** adalah asisten belajar cerdas berbasis kecerdasan buatan yang dirancang khusus untuk membantu mahasiswa mengelola tugas kuliah dan merangkum materi pelajaran. Aplikasi ini dikembangkan menggunakan **Kotlin Multiplatform (KMP)** dengan menerapkan *Clean Architecture* dan pola MVVM.
+EduMate adalah aplikasi asisten belajar berbasis AI yang membantu mahasiswa mengelola tugas kuliah dan memahami materi pembelajaran dengan lebih efektif.
 
-EduMate dibuat sebagai pemenuhan Tugas Mata Kuliah **Pengembangan Aplikasi Mobile** di Institut Teknologi Sumatera (ITERA).
-
----
+Aplikasi ini dikembangkan menggunakan Kotlin Multiplatform (KMP) sehingga dapat berjalan pada Android dan iOS menggunakan satu codebase yang sama.
 
 ## Tim Pengembang
 
@@ -13,34 +11,50 @@ EduMate dibuat sebagai pemenuhan Tugas Mata Kuliah **Pengembangan Aplikasi Mobil
 | Muhammad Ghama Al Fajri | 123140182 |
 | Abi Sholihan | 123140192 |
 
-
 ---
 
 ## Fitur Utama
 
-- **Manajemen Tugas Cerdas (Smart Task List)** - Buat, edit, dan hapus tugas lengkap dengan tenggat waktu (*deadline*) dan tingkat prioritas.
-- **AI Task Breakdown** - Merasa tugas terlalu berat? Gunakan bantuan AI Gemini untuk memecah tugas besar menjadi langkah-langkah (*sub-tasks*) yang lebih kecil dan mudah dieksekusi.
-- **Catatan Materi (Study Notes)** - Simpan salinan materi kuliah atau jurnal Anda secara luring (*offline*).
-- **AI Summarizer** - Merangkum teks materi kuliah yang sangat panjang menjadi 3-5 poin penting secara otomatis menggunakan *prompt* khusus dari Gemini.
-- **Pencarian & Filter Canggih** - Cari tugas dengan *debounce search*, *filter* status (Selesai/Belum Selesai), dan urutkan (*sort*) tugas berdasarkan tenggat waktu paling dekat.
-- **Cross-Platform** - Dibangun dengan satu basis kode (Kotlin) untuk berjalan di Android dan iOS.
+### Smart Task Management
+- Menambah tugas
+- Mengedit tugas
+- Menghapus tugas
+- Mengatur deadline
+- Mengatur prioritas tugas
+
+### AI Task Breakdown
+Memanfaatkan Google Gemini untuk memecah tugas besar menjadi beberapa langkah kecil yang lebih mudah diselesaikan.
+
+### Study Notes
+Menyimpan catatan materi kuliah secara lokal sehingga dapat diakses tanpa koneksi internet.
+
+### AI Summarizer
+Merangkum materi atau artikel panjang menjadi poin-poin penting menggunakan Gemini AI.
+
+### Search & Filter
+- Pencarian tugas
+- Filter berdasarkan status
+- Pengurutan berdasarkan deadline
+
+### Cross Platform
+Satu codebase untuk Android dan iOS menggunakan Kotlin Multiplatform.
 
 ---
 
-## Arsitektur & Teknologi
+## Teknologi yang Digunakan
 
-Proyek ini sangat patuh terhadap prinsip **Clean Architecture** dan pola **MVVM**.
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **UI** | Compose Multiplatform, Material 3 |
-| **State** | StateFlow, ViewModel |
-| **Navigation** | Compose Navigation (Type-safe) |
-| **Networking** | Ktor Client |
-| **Local DB** | SQLDelight |
-| **Preferences** | DataStore |
-| **Dependency Injection** | Koin |
-| **AI Integration** | Google Gemini API |
-| **Testing** | Kotlin Test, Turbine |
+| Kategori | Teknologi |
+|-----------|-----------|
+| Language | Kotlin |
+| UI | Compose Multiplatform, Material 3 |
+| Architecture | Clean Architecture, MVVM |
+| Dependency Injection | Koin |
+| Networking | Ktor Client |
+| Database | SQLDelight |
+| Preferences | DataStore |
+| Navigation | Navigation Compose |
+| Async Programming | Kotlin Coroutines |
+| Serialization | Kotlinx Serialization |
+| AI Integration | Google Gemini API |
+| Image Loading | Coil |
+| Testing | Kotlin Test, Turbine |

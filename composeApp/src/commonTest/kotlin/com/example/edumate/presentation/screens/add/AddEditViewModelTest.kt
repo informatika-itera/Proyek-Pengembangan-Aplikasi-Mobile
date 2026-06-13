@@ -3,6 +3,8 @@ package com.example.edumate.presentation.screens.add
 import com.example.edumate.data.repository.FakeTaskRepository
 import com.example.edumate.domain.model.Task
 import com.example.edumate.domain.model.TaskPriority
+import com.example.edumate.domain.repository.AIRepository
+import com.example.edumate.domain.repository.WritingStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -17,16 +19,29 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+// Fake repository untuk mem-bypass kebutuhan AI di level Unit Test
+class FakeAIRepository : AIRepository {
+    override suspend fun summarize(text: String): Result<String> = Result.success("Summary mock")
+    override suspend fun generateIdeas(topic: String): Result<List<String>> = Result.success(emptyList())
+    override suspend fun improveWriting(text: String, style: WritingStyle): Result<String> = Result.success("Improved writing mock")
+    override suspend fun translate(text: String, targetLanguage: String): Result<String> = Result.success("Translated text mock")
+    override suspend fun chat(message: String): Result<String> = Result.success("Chat reply mock")
+    override suspend fun suggestTitle(content: String): Result<String> = Result.success("Suggested Title")
+    override suspend fun breakdownTask(title: String, description: String): Result<String> = Result.success("- Langkah 1\n- Langkah 2")
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddEditViewModelTest {
 
     private lateinit var repository: FakeTaskRepository
+    private lateinit var aiRepository: FakeAIRepository
     private val testDispatcher = StandardTestDispatcher()
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeTaskRepository()
+        aiRepository = FakeAIRepository()
     }
 
     @AfterTest
@@ -36,7 +51,7 @@ class AddEditViewModelTest {
 
     @Test
     fun initialState_withoutTaskId_shouldSetDefaultDeadline() = runTest {
-        val viewModel = AddEditViewModel(repository, null)
+        val viewModel = AddEditViewModel(repository, aiRepository, null)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -50,7 +65,7 @@ class AddEditViewModelTest {
         val task = Task(id = 1, title = "Task Lama", description = "Desc")
         repository.insertTask(task)
 
-        val viewModel = AddEditViewModel(repository, 1L)
+        val viewModel = AddEditViewModel(repository, aiRepository, 1L)
         advanceUntilIdle() // Tunggu coroutine loadTask selesai
 
         val state = viewModel.uiState.value
@@ -61,7 +76,7 @@ class AddEditViewModelTest {
 
     @Test
     fun saveTask_withEmptyTitle_shouldShowError() = runTest {
-        val viewModel = AddEditViewModel(repository, null)
+        val viewModel = AddEditViewModel(repository, aiRepository, null)
         advanceUntilIdle()
 
         viewModel.onEvent(AddEditEvent.EnteredTitle("   "))
@@ -74,7 +89,7 @@ class AddEditViewModelTest {
 
     @Test
     fun saveTask_withInvalidDeadline_shouldShowError() = runTest {
-        val viewModel = AddEditViewModel(repository, null)
+        val viewModel = AddEditViewModel(repository, aiRepository, null)
         advanceUntilIdle()
 
         viewModel.onEvent(AddEditEvent.EnteredTitle("Valid Title"))
@@ -88,7 +103,7 @@ class AddEditViewModelTest {
 
     @Test
     fun saveTask_withValidData_shouldSaveSuccessfully() = runTest {
-        val viewModel = AddEditViewModel(repository, null)
+        val viewModel = AddEditViewModel(repository, aiRepository, null)
         advanceUntilIdle()
 
         viewModel.onEvent(AddEditEvent.EnteredTitle("Tugas Baru"))

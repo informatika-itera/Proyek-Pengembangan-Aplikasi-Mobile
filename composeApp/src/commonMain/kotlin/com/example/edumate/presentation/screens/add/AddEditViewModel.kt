@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.edumate.domain.model.Task
 import com.example.edumate.domain.model.TaskPriority
+import com.example.edumate.domain.repository.AIRepository
 import com.example.edumate.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,15 +23,18 @@ import kotlin.time.Duration.Companion.days
 data class AddEditUiState(
     val title: String = "",
     val description: String = "",
+    val subTasks: String = "",
     val deadlineText: String = "",
     val priority: TaskPriority = TaskPriority.MEDIUM,
     val isLoading: Boolean = false,
+    val isAILoading: Boolean = false,
     val isSaved: Boolean = false,
     val error: String? = null
 )
 
 class AddEditViewModel(
     private val repository: TaskRepository,
+    private val aiRepository: AIRepository,
     private val taskId: Long?
 ) : ViewModel() {
 
@@ -43,7 +47,6 @@ class AddEditViewModel(
         if (taskId != null) {
             loadTask(taskId)
         } else {
-            // Mengatur default deadline ke 1 minggu dari sekarang
             val oneWeekFromNow = Clock.System.now() + 7.days
             _uiState.update { it.copy(deadlineText = oneWeekFromNow.toDateText()) }
         }
@@ -59,6 +62,7 @@ class AddEditViewModel(
                     it.copy(
                         title = task.title,
                         description = task.description,
+                        subTasks = task.subTasks,
                         deadlineText = task.deadline?.toDateText().orEmpty(),
                         priority = task.priority,
                         isLoading = false
@@ -74,9 +78,32 @@ class AddEditViewModel(
         when (event) {
             is AddEditEvent.EnteredTitle -> _uiState.update { it.copy(title = event.value, error = null) }
             is AddEditEvent.EnteredDescription -> _uiState.update { it.copy(description = event.value, error = null) }
+            is AddEditEvent.EnteredSubTasks -> _uiState.update { it.copy(subTasks = event.value, error = null) }
             is AddEditEvent.EnteredDeadline -> _uiState.update { it.copy(deadlineText = event.value, error = null) }
             is AddEditEvent.SelectedPriority -> _uiState.update { it.copy(priority = event.value, error = null) }
+            is AddEditEvent.GenerateBreakdown -> generateBreakdown()
             is AddEditEvent.SaveTask -> saveTask()
+        }
+    }
+
+    private fun generateBreakdown() {
+        val state = _uiState.value
+        if (state.title.isBlank()) {
+            _uiState.update { it.copy(error = "Isi judul terlebih dahulu untuk analisis AI") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAILoading = true, error = null) }
+            aiRepository.breakdownTask(state.title, state.description).fold(
+                onSuccess = { result ->
+                    val newSubTasks = if (state.subTasks.isBlank()) result else "${state.subTasks}\n\n$result"
+                    _uiState.update { it.copy(isAILoading = false, subTasks = newSubTasks) }
+                },
+                onFailure = { error ->
+                    _uiState.update { it.copy(isAILoading = false, error = error.message) }
+                }
+            )
         }
     }
 
@@ -101,6 +128,7 @@ class AddEditViewModel(
                         currentTask!!.copy(
                             title = state.title.trim(),
                             description = state.description.trim(),
+                            subTasks = state.subTasks.trim(),
                             deadline = deadline,
                             priority = state.priority
                         )
@@ -110,6 +138,7 @@ class AddEditViewModel(
                         Task(
                             title = state.title.trim(),
                             description = state.description.trim(),
+                            subTasks = state.subTasks.trim(),
                             deadline = deadline,
                             priority = state.priority
                         )
@@ -126,8 +155,10 @@ class AddEditViewModel(
 sealed interface AddEditEvent {
     data class EnteredTitle(val value: String) : AddEditEvent
     data class EnteredDescription(val value: String) : AddEditEvent
+    data class EnteredSubTasks(val value: String) : AddEditEvent
     data class EnteredDeadline(val value: String) : AddEditEvent
     data class SelectedPriority(val value: TaskPriority) : AddEditEvent
+    data object GenerateBreakdown : AddEditEvent
     data object SaveTask : AddEditEvent
 }
 

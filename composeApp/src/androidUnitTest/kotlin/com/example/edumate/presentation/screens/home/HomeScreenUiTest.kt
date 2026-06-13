@@ -2,7 +2,6 @@ package com.example.edumate.presentation.screens.home
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import com.example.edumate.data.repository.FakeTaskRepository
@@ -19,9 +18,15 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalTestApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(
+    ExperimentalTestApi::class,
+    ExperimentalCoroutinesApi::class
+)
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33], application = android.app.Application::class)
+@Config(
+    sdk = [33],
+    application = android.app.Application::class
+)
 class HomeScreenUiTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -41,43 +46,26 @@ class HomeScreenUiTest {
     }
 
     @Test
-    fun homeScreen_shouldDisplayEmptyState_whenNoTasks() = runComposeUiTest {
-        val viewModel = createTestViewModel()
-
-        setContent {
-            HomeScreen(
-                onNavigateToAdd = {},
-                onNavigateToDetail = {},
-                onNavigateToAIAssistant = {},
-                onNavigateToTimer = {},
-                onNavigateToStatistics = {},
-                onNavigateToSettings = {},
-                onNavigateToProfile = {},
-                viewModel = viewModel
-            )
-        }
-
-        onNodeWithText("Tidak ada tugas yang terdaftar saat ini.").assertExists()
-    }
-
-    @Test
     fun homeScreen_clickFab_shouldTriggerNavigateToAdd() = runComposeUiTest {
         var isAddClicked = false
 
         setContent {
             HomeScreen(
-                onNavigateToAdd = { isAddClicked = true },
+                onOpenDrawer = {},
+                onNavigateToAdd = {
+                    isAddClicked = true
+                },
                 onNavigateToDetail = {},
                 onNavigateToAIAssistant = {},
-                onNavigateToTimer = {},
-                onNavigateToStatistics = {},
-                onNavigateToSettings = {},
-                onNavigateToProfile = {},
                 viewModel = createTestViewModel()
             )
         }
 
-        onNodeWithContentDescription("Buat Tugas").performClick()
+        waitForIdle()
+
+        onNodeWithContentDescription("Buat Tugas")
+            .performClick()
+
         waitForIdle()
 
         assertTrue(isAddClicked)

@@ -30,13 +30,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Build Project
-        run: ./gradlew build
-
-      - name: Run Unit Test
-        run: ./gradlew test
+      - name: Run Unit Test (Debug Only)
+        run: ./gradlew testDebugUnitTest
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug

@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PendingActions
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,7 +41,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
-    onNavigateBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: StatisticsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -47,10 +49,10 @@ fun StatisticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Statistik Belajar") },
+                title = { Text("Statistik dan Analitik") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Buka Menu")
                     }
                 }
             )
@@ -68,7 +70,6 @@ fun StatisticsScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Grafik Melingkar
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                     shape = RoundedCornerShape(24.dp),
@@ -109,7 +110,6 @@ fun StatisticsScreen(
                     }
                 }
 
-                // Kartu Angka
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     StatCard(
                         modifier = Modifier.weight(1f),
@@ -131,11 +131,40 @@ fun StatisticsScreen(
 
                 StatCard(
                     modifier = Modifier.fillMaxWidth(),
-                    title = "Belum Selesai (Pending)",
+                    title = "Dalam Proses (Pending)",
                     count = uiState.pendingTasks,
                     icon = Icons.Default.PendingActions,
                     color = MaterialTheme.colorScheme.tertiary
                 )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = "Analitik Produktivitas",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    InsightCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Hari Paling Produktif",
+                        value = uiState.mostProductiveDay,
+                        icon = Icons.Default.DateRange,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    InsightCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Jam Fokus Optimal",
+                        value = uiState.mostProductiveHour,
+                        icon = Icons.Default.Schedule,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         }
     }
@@ -154,6 +183,23 @@ fun StatCard(modifier: Modifier = Modifier, title: String, count: Int, icon: and
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = count.toString(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Text(text = title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun InsightCard(modifier: Modifier = Modifier, title: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(28.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

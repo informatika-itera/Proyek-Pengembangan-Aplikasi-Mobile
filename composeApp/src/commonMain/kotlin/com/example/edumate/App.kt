@@ -1,8 +1,12 @@
 package com.example.edumate
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.example.edumate.data.local.datastore.ThemeMode
@@ -28,8 +32,17 @@ fun App() {
 
         // Menerapkan tema yang dipilih ke seluruh aplikasi
         NoteAITheme(darkTheme = darkTheme) {
-            val navController = rememberNavController()
-            AppNavHost(navController = navController)
+
+            // SOLUSI BLANK SCREEN & FLASH PUTIH:
+            // Membungkus seluruh navigasi dengan Surface yang memiliki warna background bawaan tema
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                val navController = rememberNavController()
+                AppNavHost(navController = navController)
+            }
+
         }
     }
 }

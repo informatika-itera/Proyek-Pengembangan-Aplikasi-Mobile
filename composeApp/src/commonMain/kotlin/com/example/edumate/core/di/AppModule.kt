@@ -51,7 +51,7 @@ val repositoryModule = module {
 
 val viewModelModule = module {
     factory { HomeViewModel(get()) }
-    factory { (taskId: Long?) -> AddEditViewModel(get(), taskId) }
+    factory { (taskId: Long?) -> AddEditViewModel(get(), get(), taskId) }
     factory { (taskId: Long) -> DetailViewModel(get(), taskId) }
     factory { AIAssistantViewModel(get()) }
     factory { TimerViewModel() }

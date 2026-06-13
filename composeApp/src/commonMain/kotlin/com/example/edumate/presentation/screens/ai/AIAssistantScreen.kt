@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Summarize
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material3.Button
@@ -45,7 +45,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AIAssistantScreen(
     noteId: Long? = null,
     initialText: String? = null,
-    onNavigateBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onApplyResult: ((String) -> Unit)? = null,
     viewModel: AIAssistantViewModel = koinViewModel()
 ) {
@@ -64,8 +64,8 @@ fun AIAssistantScreen(
             TopAppBar(
                 title = { Text("AI Assistant EduMate") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Buka Menu")
                     }
                 }
             )

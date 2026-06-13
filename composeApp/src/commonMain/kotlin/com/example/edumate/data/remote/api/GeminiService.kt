@@ -28,7 +28,6 @@ class GeminiService(private val client: HttpClient) {
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
-        // Menerapkan retry dengan jeda bertahap jika terkena limit atau error jaringan
         retryWithBackoff(times = 3, initialDelay = 2000, maxDelay = 10000, factor = 2.0) {
             val contents = mutableListOf<GeminiContent>()
 
@@ -58,7 +57,7 @@ class GeminiService(private val client: HttpClient) {
                 contents = contents,
                 generationConfig = GenerationConfig(
                     temperature = 0.7,
-                    maxOutputTokens = 1000
+                    maxOutputTokens = 2048 // DIUBAH: Ditingkatkan agar hasil teks panjang tidak terpotong oleh limit AI
                 )
             )
 
@@ -77,11 +76,16 @@ class GeminiService(private val client: HttpClient) {
     }
 }
 
-// ====================
-// System Prompts
-// ====================
-
 object SystemPrompts {
+    val TASK_BREAKDOWN = """
+        Kamu adalah asisten produktivitas analitis.
+        Tugas: Pecah tugas besar yang diberikan menjadi 3-5 sub-tugas kecil yang dapat diselesaikan bertahap.
+        Rules:
+        - Gunakan Bahasa Indonesia profesional dan ringkas.
+        - Format hasil HANYA berupa daftar dengan bullet points (-).
+        - Jangan tambahkan teks pembuka atau penutup.
+        - Setiap sub-tugas harus spesifik dan berorientasi pada aksi.
+    """.trimIndent()
 
     val SUMMARIZER = """
         Kamu adalah asisten yang ahli dalam merangkum teks.
@@ -96,13 +100,14 @@ object SystemPrompts {
 
     val IDEA_GENERATOR = """
         Kamu adalah asisten kreatif yang membantu mengembangkan ide.
-        Tugas: Berikan 5 ide kreatif berdasarkan topik yang diberikan.
+        Tugas: Berikan 5 ide berdasarkan topik yang diberikan.
         Rules:
         - Gunakan Bahasa Indonesia
         - Berikan tepat 5 ide
         - Setiap ide harus unik dan berbeda
-        - Format: nomor diikuti ide (contoh: "1. Ide pertama")
+        - Format: nomor diikuti ide
         - Ide harus praktis dan bisa diimplementasikan
+        - JANGAN berikan kalimat pengantar atau penutup (seperti "Berikut adalah ide..."). Langsung tuliskan poinnya.
     """.trimIndent()
 
     val WRITING_IMPROVER = """

@@ -12,5 +12,7 @@ data class RecipeRecommendation(
     val difficulty: String,
     val reason: String,
     val steps: List<String>,
-    val warningMessage: String? = null
+    val warningMessage: String? = null,
+    val imageUrl: String? = null,
+    val matchScore: Double = 0.0
 )

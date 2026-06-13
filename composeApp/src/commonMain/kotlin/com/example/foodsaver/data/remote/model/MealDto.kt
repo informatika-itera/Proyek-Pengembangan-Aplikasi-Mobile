@@ -1,4 +1,4 @@
-package com.example.foodsaver.data.remote.dto
+package com.example.foodsaver.data.remote.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

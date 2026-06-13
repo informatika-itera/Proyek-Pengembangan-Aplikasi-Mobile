@@ -2,18 +2,9 @@ name: FoodSaver CI
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - project/123140089-123140125-FoodSaver
-      - Project/123140089-123140125-FoodSaver
-
+    branches: [ "main", "master", "project/**", "Project/**" ]
   pull_request:
-    branches:
-      - main
-      - master
-      - project/123140089-123140125-FoodSaver
-      - Project/123140089-123140125-FoodSaver
+    branches: [ "main", "master", "project/**", "Project/**" ]
 
 jobs:
   build:
@@ -30,25 +21,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Repair and Regenerate Gradle Wrapper (Safe Method)
-        run: |
-          # Buat folder sementara agar Gradle sistem tidak mencoba membaca build.gradle proyek
-          mkdir temp_wrapper
-          # Buat settings file agar Gradle tidak menaiki ke folder proyek utama
-          echo 'rootProject.name = "temp_wrapper"' > temp_wrapper/settings.gradle.kts
-          cd temp_wrapper
-          gradle wrapper --gradle-version 8.7
-          cd ..
-          # Pindahkan file yang benar ke lokasi proyek
-          mkdir -p gradle/wrapper
-          cp temp_wrapper/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar
-          rm -rf temp_wrapper
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Create local.properties
         run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > local.properties
 
-      - name: Build and Test
-        run: ./gradlew build --stacktrace
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Run Unit Tests
+        run: ./gradlew test --stacktrace

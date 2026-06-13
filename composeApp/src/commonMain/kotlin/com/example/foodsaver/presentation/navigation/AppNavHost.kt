@@ -7,10 +7,13 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -28,9 +31,10 @@ import com.example.foodsaver.presentation.screens.home.HomeScreen
 import com.example.foodsaver.presentation.screens.mealplan.MealPlannerScreen
 import com.example.foodsaver.presentation.screens.profile.ProfileScreen
 import com.example.foodsaver.presentation.screens.recipe.CookFromStockScreen
-import com.example.foodsaver.presentation.screens.recipe.RecipeListScreen
+import com.example.foodsaver.presentation.screens.recipe.CookFromStockViewModel
 import com.example.foodsaver.presentation.screens.recipe.RecipeRecommendationScreen
 import com.example.foodsaver.presentation.screens.recipe.detail.RecipeDetailScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AppNavHost() {
@@ -39,11 +43,11 @@ fun AppNavHost() {
     val currentDestination = navBackStackEntry?.destination
 
     val items = listOf(
-        BottomNavItem("Home", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory, "bottom_nav_home"),
-        BottomNavItem("Expiry", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant, "bottom_nav_expiry"),
+        BottomNavItem("Beranda", "home", Icons.Filled.Inventory, Icons.Outlined.Inventory, "bottom_nav_home"),
+        BottomNavItem("Peringatan", "expiry", Icons.Filled.NotificationImportant, Icons.Outlined.NotificationImportant, "bottom_nav_expiry"),
         BottomNavItem("Resep", "recipe", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu, "bottom_nav_recipe"),
-        BottomNavItem("Calendar", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, "bottom_nav_calendar"),
-        BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Outlined.Person, "bottom_nav_profile")
+        BottomNavItem("Kalender", "calendar", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, "bottom_nav_calendar"),
+        BottomNavItem("Profil", "profile", Icons.Filled.Person, Icons.Outlined.Person, "bottom_nav_profile")
     )
 
     Scaffold(
@@ -65,7 +69,14 @@ fun AppNavHost() {
                                     contentDescription = item.title 
                                 ) 
                             },
-                            label = { Text(item.title) },
+                            label = { 
+                                Text(
+                                    text = item.title,
+                                    fontSize = 9.sp,
+                                    softWrap = false,
+                                    textAlign = TextAlign.Center
+                                ) 
+                            },
                             selected = selected,
                             onClick = {
                                 if (!selected) {
@@ -102,8 +113,22 @@ fun AppNavHost() {
                     onAddFoodClick = { navController.navigate("add_food") },
                     onFoodClick = { id -> navController.navigate("detail/$id") },
                     onAIClick = { navController.navigate("ai") },
-                    onCalendarClick = { navController.navigate("calendar") },
-                    onCookFromStockClick = { navController.navigate("recipe") }
+                    onCalendarClick = { 
+                        navController.navigate("calendar") {
+                            val startRoute = navController.graph.findStartDestination().route ?: "home"
+                            popUpTo(startRoute) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onCookFromStockClick = { 
+                        navController.navigate("recipe") {
+                            val startRoute = navController.graph.findStartDestination().route ?: "home"
+                            popUpTo(startRoute) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 )
             }
 
@@ -117,45 +142,44 @@ fun AppNavHost() {
             composable("recipe") {
                 CookFromStockScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToResult = { ids, manual, prioritize, pref ->
+                    onNavigateToResult = { ids, _, _, _ ->
                         val idsString = if (ids.isEmpty()) "" else ids.joinToString(",")
-                        val manualString = if (manual.isEmpty()) "" else manual.joinToString(",")
-                        navController.navigate("recipe_recommendation?ids=$idsString&manual=$manualString&prioritize=$prioritize&pref=$pref")
+                        navController.navigate("recipe_recommendation?ids=$idsString")
                     },
                     onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
 
             composable(
-                route = "recipe_recommendation?ids={ids}&manual={manual}&prioritize={prioritize}&pref={pref}",
+                route = "recipe_recommendation?ids={ids}",
                 arguments = listOf(
-                    navArgument("ids") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("manual") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("prioritize") { type = NavType.BoolType; defaultValue = true },
-                    navArgument("pref") { type = NavType.StringType; defaultValue = "Praktis" }
+                    navArgument("ids") { type = NavType.StringType; defaultValue = "" }
                 )
             ) { backStackEntry ->
-                val ids = backStackEntry.arguments?.getString("ids")?.split(",")?.filter { it.isNotEmpty() }?.map { it.toLong() } ?: emptyList()
-                val manual = backStackEntry.arguments?.getString("manual")?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
-                val prioritize = backStackEntry.arguments?.getBoolean("prioritize") ?: true
-                val pref = backStackEntry.arguments?.getString("pref") ?: "Praktis"
+                val ids = backStackEntry.arguments?.getString("ids")
+                    ?.split(",")?.filter { it.isNotEmpty() }?.map { it.toLong() } ?: emptyList()
                 
+                // Menggunakan shared ViewModel dari entry "recipe"
+                val recipeEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry("recipe")
+                }
+                val viewModel: CookFromStockViewModel = koinViewModel(viewModelStoreOwner = recipeEntry)
+
                 RecipeRecommendationScreen(
                     ingredientIds = ids,
-                    manualIngredients = manual,
-                    prioritizeExpired = prioritize,
-                    preference = pref,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToHome = { 
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
                         }
-                    }
+                    },
+                    viewModel = viewModel
                 )
             }
 
             composable("calendar") {
                 CalendarScreen(
+                    onNavigateBack = { navController.popBackStack() },
                     onAddFoodClick = { navController.navigate("add_food") }
                 )
             }
@@ -169,10 +193,7 @@ fun AppNavHost() {
             composable(
                 route = "add_food?foodId={foodId}",
                 arguments = listOf(
-                    navArgument("foodId") {
-                        type = NavType.LongType
-                        defaultValue = -1L
-                    }
+                    navArgument("foodId") { type = NavType.LongType; defaultValue = -1L }
                 )
             ) { backStackEntry ->
                 val foodId = backStackEntry.arguments?.getLong("foodId")?.takeIf { it != -1L }

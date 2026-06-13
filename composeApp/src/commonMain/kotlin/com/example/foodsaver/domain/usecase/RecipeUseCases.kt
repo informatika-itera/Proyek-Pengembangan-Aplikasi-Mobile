@@ -1,6 +1,8 @@
 package com.example.foodsaver.domain.usecase
 
 import com.example.foodsaver.domain.model.Recipe
+import com.example.foodsaver.domain.model.RecipeIngredient
+import com.example.foodsaver.domain.model.RecipeRecommendation
 import com.example.foodsaver.domain.repository.RecipeRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -27,4 +29,13 @@ class ToggleFavoriteRecipeUseCase(private val repository: RecipeRepository) {
 class GetFavoriteRecipesUseCase(private val repository: RecipeRepository) {
     operator fun invoke(): Flow<List<Recipe>> = 
         repository.getFavoriteRecipes()
+}
+
+class GenerateAiRecipeUseCase(private val repository: RecipeRepository) {
+    suspend operator fun invoke(
+        ingredients: List<RecipeIngredient>,
+        preference: String,
+        prioritizeExpiring: Boolean
+    ): Result<RecipeRecommendation> = 
+        repository.generateAiRecipe(ingredients, preference, prioritizeExpiring)
 }

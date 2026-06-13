@@ -13,9 +13,6 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
-/**
- * User Preferences using DataStore for FoodSaver.
- */
 class UserPreferences(
     private val dataStore: DataStore<Preferences>
 ) {
@@ -23,10 +20,8 @@ class UserPreferences(
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val SORT_BY = stringPreferencesKey("sort_by")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
-        
-        // Notifications
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
-        val REMINDER_DAYS = intPreferencesKey("reminder_days") // 0, 1, 3
+        val REMINDER_DAYS = intPreferencesKey("reminder_days")
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
     }
     
@@ -65,7 +60,6 @@ class UserPreferences(
         }
     }
 
-    // Notifications logic
     val notificationsEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.NOTIFICATIONS_ENABLED] ?: true
     }

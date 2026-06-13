@@ -8,7 +8,6 @@ import com.example.foodsaver.domain.usecase.SaveFoodUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
-import kotlin.time.Duration.Companion.days
 
 data class AddFoodUiState(
     val id: Long = 0,
@@ -35,24 +34,28 @@ class AddFoodViewModel(
     fun loadFood(id: Long) {
         if (id <= 0) return
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val food = getFoodDetailUseCase(id)
-            if (food != null) {
-                _state.update { 
-                    it.copy(
-                        id = food.id,
-                        name = food.name,
-                        quantity = food.quantity.toString(),
-                        unit = food.unit,
-                        category = food.category,
-                        storageLocation = food.storageLocation,
-                        notes = food.notes ?: "",
-                        expiryDate = food.expiryDate,
-                        isLoading = false
-                    )
+            _state.update { it.copy(isLoading = true, error = null) }
+            try {
+                val food = getFoodDetailUseCase(id)
+                if (food != null) {
+                    _state.update { 
+                        it.copy(
+                            id = food.id,
+                            name = food.name,
+                            quantity = food.quantity.toString(),
+                            unit = food.unit,
+                            category = food.category,
+                            storageLocation = food.storageLocation,
+                            notes = food.notes ?: "",
+                            expiryDate = food.expiryDate,
+                            isLoading = false
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(isLoading = false, error = "Data makanan tidak ditemukan.") }
                 }
-            } else {
-                _state.update { it.copy(isLoading = false, error = "Aduh, datanya nggak ketemu nih.") }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, error = "Gagal memuat data. Coba lagi nanti.") }
             }
         }
     }
@@ -82,20 +85,22 @@ class AddFoodViewModel(
 
     fun saveFood() {
         val currentState = _state.value
+        
+        // Validation
         if (currentState.name.isBlank()) {
-            _state.update { it.copy(error = "Jangan lupa isi nama makanannya ya.") }
+            _state.update { it.copy(error = "Mohon isi nama makanan terlebih dahulu.") }
             return
         }
         
         val qty = currentState.quantity.toDoubleOrNull() ?: 0.0
         if (qty <= 0) {
-            _state.update { it.copy(error = "Jumlahnya harus lebih dari 0 ya.") }
+            _state.update { it.copy(error = "Jumlah stok harus lebih dari 0.") }
             return
         }
 
         viewModelScope.launch {
             try {
-                _state.update { it.copy(isLoading = true) }
+                _state.update { it.copy(isLoading = true, error = null) }
                 val food = FoodItem(
                     id = currentState.id,
                     name = currentState.name,
@@ -110,7 +115,7 @@ class AddFoodViewModel(
                 saveFoodUseCase(food)
                 _state.update { it.copy(isLoading = false, isSaved = true) }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Maaf, gagal simpan data nih: ${e.message}") }
+                _state.update { it.copy(isLoading = false, error = "Gagal menyimpan data. Pastikan koneksi aman.") }
             }
         }
     }

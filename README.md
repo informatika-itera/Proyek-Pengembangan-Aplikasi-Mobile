@@ -10,111 +10,111 @@ FoodSaver adalah aplikasi mobile multiplatform berbasis Android-first yang memba
 
 ---
 
-## 👥 Tim
+## 👥 Tim Pengembang
 
 | Nama | NIM | GitHub | Role |
 | :--- | :--- | :--- | :--- |
-| Bening Apni Prameswari | 123140089 | [@beningapniprameswari](https://github.com/beningapniprameswari) | Lead & UI/UX Developer |
-| Raditya Alrasyid Nugroho | 123140125 | [@rdtngh](https://github.com/rdtngh) | Logic & Android Dev |
+| **Bening Apni Prameswari** | 123140089 | [@beningapniprameswari](https://github.com/beningapniprameswari) | Full Stack Developer |
+| **Raditya Alrasyid Nugroho** | 123140125 | [@rdtngh](https://github.com/rdtngh) | Full Stack Developer |
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
-**Dosen Pengampu:** Pak Habib [@mh4Scripts](https://github.com/mh4Scripts)
+**Dosen:** Pak Habib [mh4Scripts](https://github.com/mh4Scripts)  
+**Institut:** Institut Teknologi Sumatera (ITERA)
 
 ---
 
 ## 📝 Deskripsi Aplikasi
 
-FoodSaver dirancang sebagai solusi cerdas untuk mengelola bahan makanan di rumah dan menekan angka *food waste*. Seringkali kita lupa dengan bahan makanan yang tersimpan di kulkas hingga akhirnya melewati tanggal kedaluwarsa. FoodSaver hadir untuk memastikan hal tersebut tidak terjadi lagi.
+**FoodSaver** adalah aplikasi mobile *Android-first* yang dirancang untuk membantu pengguna mengelola stok makanan di rumah secara efisien. Masalah utama yang ingin diselesaikan adalah banyaknya makanan yang terbuang karena lupa atau melewati tanggal kedaluwarsa.
 
-Aplikasi ini membantu pengguna untuk:
-- **Mencatat stok makanan**: Mengelola inventaris bahan makanan dengan mudah beserta kategorinya.
-- **Manajemen Kedaluwarsa**: Menyimpan tanggal expired dan memantau statusnya secara real-time (Aman, Hampir Expired, atau Expired).
-- **Rekomendasi Cerdas**: Menampilkan bahan yang harus segera dimasak pada halaman utama dan memberikan saran melalui kartu AI FoodSaver.
-- **Visualisasi Kalender**: Melihat jadwal kedaluwarsa bahan makanan dalam tampilan kalender yang intuitif.
-- **Masak dari Stok**: Fitur pencarian resep berdasarkan bahan yang sudah ada di inventaris atau input manual, membantu pengguna menentukan menu masakan tanpa bingung.
-- **Pengalaman Pengguna**: Mendukung mode gelap (*dark mode*) dan terang (*light mode*) untuk kenyamanan visual, serta pengaturan notifikasi pengingat.
+Dengan FoodSaver, pengguna dapat:
+- **Mencatat Stok:** Menyimpan data makanan lengkap dengan kategori, lokasi penyimpanan (kulkas/lemari), dan jumlahnya.
+- **Pantau Kedaluwarsa:** Melihat status makanan secara *real-time* (Aman, Segera Masak, atau Sudah Kedaluwarsa).
+- **Rekomendasi Resep:** Mendapatkan ide masakan berdasarkan bahan yang hampir kedaluwarsa menggunakan integrasi API.
+- **Asisten AI:** Bertanya tentang tips penyimpanan makanan melalui fitur AI Chat.
 
 ---
 
-## ✨ Fitur
+## 🎬 Demo Aplikasi
 
-### Core Features
-- [x] **Food Inventory**: Daftar stok makanan yang tersimpan.
-- [x] **Add/Edit Food**: Menambah dan mengubah data makanan serta tanggal kedaluwarsa.
-- [x] **Detail Makanan**: Informasi lengkap mengenai stok bahan.
-- [x] **Expiry Alert**: Indikator visual untuk makanan yang mendekati tanggal kedaluwarsa.
-- [x] **Food Calendar**: Melihat estimasi expired bahan makanan di halaman kalender.
-- [x] **Profile & Pengaturan**: Personalisasi akun dan preferensi aplikasi.
-- [x] **Search & Filter**: Mencari bahan makanan dan memfilternya berdasarkan kategori.
-- [x] **Bottom Navigation**: Navigasi antar halaman yang mudah.
-- [x] **Status Kedaluwarsa Otomatis**: Logika perhitungan sisa hari secara real-time.
-- [x] **Empty State & Error Handling**: Tampilan informatif saat data kosong atau terjadi kesalahan.
-- [x] **Theme Support**: Dukungan Light Mode dan Dark Mode.
+**https://youtu.be/BHWKOMmYIwo**
 
-### Recipe Feature
-- [x] **Page Resep**: Halaman khusus untuk mencari inspirasi masakan.
-- [x] **Masak dari Stok**: Memilih bahan langsung dari inventory yang tersedia.
-- [x] **Input Bahan Manual**: Menambahkan bahan tambahan di luar inventory menggunakan sistem Chip/Tag.
-- [x] **Rule-based Recipe Recommendation**: Algoritma rekomendasi resep berdasarkan kombinasi bahan.
-- [x] **Preferensi Resep**: Pilihan kategori masakan (Cepat, Praktis, Sehat).
-- [x] **Toggle Prioritas**: Mengutamakan bahan yang hampir expired untuk dijadikan bahan resep.
-- [x] **Hasil Rekomendasi**: Menampilkan detail resep yang disarankan.
-- [x] **Reset Bahan**: Membersihkan pilihan bahan dengan satu klik.
-- [ ] **AI Integration**: Rencana integrasi AI API pada pengembangan tahap selanjutnya.
+----
 
-### Reminder & Settings
-- [x] **Tema Aplikasi**: Switcher antara Dark Mode dan Light Mode.
-- [x] **Pengaturan Notifikasi**: Opsi untuk mengaktifkan pengingat.
-- [ ] **Push Reminder**: Fitur pengingat otomatis ke perangkat (Target pengembangan).
+## ✨ Fitur Aplikasi
+
+### A. Minimum / Wajib
+- [x] **Manajemen Stok Makanan:** CRUD (Create, Read, Update, Delete) data makanan.
+- [x] **Status Kedaluwarsa Otomatis:** Perhitungan status berdasarkan tanggal hari ini.
+- [x] **Expiry Alert & Food Calendar:** Visualisasi tanggal penting makanan dalam kalender.
+- [x] **Detail Makanan:** Informasi lengkap tiap item termasuk catatan tambahan.
+- [x] **Profile & Pengaturan:** Pengaturan profil pengguna dan preferensi aplikasi.
+- [x] **Navigasi Multi-screen:** Menggunakan Bottom Navigation (Home, Calendar, Recipe, Profile).
+- [x] **State Management:** MVVM dengan StateFlow untuk reaktivitas UI.
+- [x] **Local Storage:** Implementasi SQLDelight untuk database dan DataStore untuk preferensi.
+- [x] **CI/CD:** Pipeline otomatis menggunakan GitHub Actions.
+
+### B. Advanced / Bonus
+- [x] **Search & Filter:** Mencari stok makanan berdasarkan nama atau kategori.
+- [x] **Recipe Integration:** Mencari resep dari *TheMealDB* dan *Indonesian Recipe API*.
+- [x] **AI Assistant:** Chat bot bertenaga *Google Gemini AI* untuk tips dapur.
+- [x] **Rule-based Local Fallback:** Menampilkan resep lokal jika koneksi internet/API bermasalah.
+- [x] **UI Polish:** Implementasi Material 3, Dark Mode, serta state Loading/Empty/Error yang rapi.
+- [x] **Quantity Formatter:** Penanganan cerdas tampilan angka (misal: 12.0 menjadi 12 pcs).
 
 ---
 
 ## 🏗️ Arsitektur
 
-Aplikasi ini dibangun menggunakan prinsip **Clean Architecture** untuk memastikan kode yang mudah dikelola, diuji, dan dikembangkan.
-
-- **Kotlin Multiplatform (KMP)** & **Compose Multiplatform**
-- **MVVM (Model-View-ViewModel)** Pattern
-- **Repository Pattern**
-- **StateFlow & UI State** untuk manajemen reaktif UI.
-
-### Diagram Arsitektur
+Aplikasi ini mengikuti prinsip **Clean Architecture** yang dipadukan dengan **MVVM Pattern** untuk menjaga kode tetap modular dan mudah diuji.
 
 ```text
-Presentation Layer:
-    [Screens] <-> [Components] <-> [ViewModel] <-> [UI State]
-          |
-Domain Layer:
-    [Model] <-> [Repository Interface] <-> [Use Case / Helper Logic]
-          |
-Data Layer:
-    [Repository Impl] <-> [Local Data Source (SQLDelight/DataStore)] <-> [Rule-based Engine]
+Presentation Layer (UI)
+├── Screens (Composable): Home, Recipe, AI, Calendar, dsb.
+├── ViewModel: Mengelola logic UI dan StateFlow.
+├── UI State: Representasi data yang ditampilkan di layar.
+└── Navigation: Navigasi antar screen menggunakan Compose Navigation.
+
+Domain Layer (Business Logic)
+├── Models: Data classes utama (Food, Recipe, Note).
+├── Repository Interfaces: Kontrak untuk akses data.
+├── Use Cases: Logika bisnis spesifik (e.g., GetExpiredFoodsUseCase).
+└── Engine: Logika perhitungan status kedaluwarsa.
+
+Data Layer (Infrastructure)
+├── Repository Implementation: Menggabungkan data lokal dan remote.
+├── Local Data Source: SQLDelight (SQLite) & DataStore.
+├── Remote Data Source: Ktor Client (Recipe API & Gemini API).
+└── Mapper: Konversi antar DTO, Entity, dan Domain Model.
+
+Core
+└── Network, Injection (Koin), Utility, Theme.
 ```
 
 ---
 
 ## 📂 Struktur Folder
 
+<details>
+<summary><b>Klik untuk melihat struktur folder project</b></summary>
+
 ```text
 composeApp/src/commonMain/kotlin/com/example/foodsaver/
-├── core/             # DI, Network, & Utilities
-│   ├── di/           # Dependency Injection setup
-│   ├── network/      # API configurations
-│   └── util/         # Helper classes
-├── data/             # Implementasi data layer
-│   ├── local/        # Database (SQLDelight) & DataStore
-│   ├── remote/       # API Service
-│   └── repository/   # Implementasi Repository
-├── domain/           # Business logic layer
-│   ├── model/        # Data models / Entity
-│   ├── repository/   # Repository interfaces
-│   └── usecase/      # Application logic / Interactors
-└── presentation/     # UI layer
-    ├── navigation/   # NavGraph dan Route
-    ├── theme/        # Color, Type, dan Theme (Material 3)
-    ├── components/   # UI components yang reusable
-    └── screens/      # Feature screens (Home, AddFood, Recipe, Calendar, AI, MealPlan, Profile, dsb)
+├── core/               # Konfigurasi Network, DI (Koin), Utility
+├── data/               # Implementasi Repository, API, Database, Mapper
+│   ├── local/          # SQLDelight & DataStore
+│   ├── remote/         # GeminiService, MealApiService
+│   └── repository/     # Implementasi Interface Repository
+├── domain/             # Business Logic, Model, Interface Repository
+│   ├── model/          # Entity domain
+│   └── usecase/        # Use Case spesifik
+└── presentation/       # UI Layer
+    ├── components/     # Reusable UI Components
+    ├── navigation/     # Setup Navigasi
+    ├── screens/        # Screen-screen utama (Home, Detail, dsb.)
+    └── theme/          # Material 3 Theme & Colors
 ```
+</details>
 
 ---
 
@@ -122,129 +122,159 @@ composeApp/src/commonMain/kotlin/com/example/foodsaver/
 
 | Komponen | Teknologi |
 | :--- | :--- |
-| **Framework** | Kotlin Multiplatform, Compose Multiplatform |
-| **UI** | Material 3 |
-| **Architecture** | MVVM, Clean Architecture, Repository Pattern |
-| **Async/State** | Coroutines, Flow, StateFlow |
-| **Local Storage** | SQLDelight (Database), DataStore (Preferences) |
-| **Recipe Logic** | Rule-based Recommendation Engine |
+| **Language** | Kotlin Multiplatform (KMP) |
+| **UI Framework** | Compose Multiplatform |
+| **Dependency Injection** | Koin |
+| **Database** | SQLDelight |
+| **Local Preferences** | Jetpack DataStore |
+| **Networking** | Ktor Client |
+| **Serialization** | Kotlinx Serialization |
+| **Concurrency** | Coroutines & StateFlow |
+| **Image Loading** | Coil3 |
+| **Date & Time** | Kotlinx Datetime |
+| **AI Integration** | Google Gemini API |
 | **CI/CD** | GitHub Actions |
-| **Platform** | Android-first focus |
 
 ---
 
-## 📅 Sprint Plan
+## 📈 Sprint Plan / Development Journey
 
-| Sprint | Fokus Utama | Status |
-| :--- | :--- | :--- |
-| **Sprint 1** | Project setup, GitHub Repo, CI Setup, README awal, Planning. | ✅ Done |
-| **Sprint 2** | UI Screens utama, Navigation, Data Layer (Local), CRUD Stok Makanan. | ✅ Done |
-| **Sprint 3** | Expiry Alert logic, Calendar view, Profile, Dark Mode, Recipe Page awal. | ✅ Done |
-| **Sprint 4** | **Bug fixes, UI Polish, Unit/UI Tests, Edge cases handling.** | 🚀 In Progress |
-| **Sprint 5** | Final fixes, Documentation, Persiapan presentasi & demo. | ⏳ To Do |
+| Sprint | Minggu | Target | Implementasi di FoodSaver |
+| :--- | :--- | :--- | :--- |
+| **Sprint 1** | W11 | Planning & Setup | Inisialisasi KMP, setup SQLDelight, Koin, dan CI/CD. |
+| **Sprint 2** | W12 | Core Features | CRUD stok makanan, navigasi, dan integrasi database lokal. |
+| **Sprint 3** | W13 | Advanced Features | Integrasi Recipe API, Gemini AI Chat, dan fitur Kalender. |
+| **Sprint 4** | W14 | Polish & Testing | UI Refinement, penanganan error/empty state, dan Unit Testing. |
+| **Sprint 5** | W15 | Final Preparation | Dokumentasi README final, pembuatan demo, dan APK build. |
+| **UAS** | W16 | Final Demo Day | Final project & demo aplikasi. |
 
 ---
 
 ## 🚀 Setup & Cara Menjalankan
 
 ### Prerequisites
-- **Android Studio Ladybug** atau versi lebih baru.
-- **JDK 17** atau yang lebih tinggi.
-- **Android Emulator** atau perangkat fisik.
+- **Android Studio Ladybug** atau versi terbaru.
+- **JDK 17**.
+- **Android SDK 35**.
 
 ### Langkah-langkah
-1. Clone repository ini:
+1. **Clone Repository:**
    ```bash
-   https://github.com/rdtngh/123140089-123140125-FoodSaver.git
+   git clone https://github.com/rdtngh/123140089-123140125-FoodSaver.git
+   cd FoodSaver
    ```
-2. Buka project di Android Studio.
-3. Tunggu proses **Gradle Sync** selesai.
-4. Jalankan aplikasi melalui tombol **Run** atau melalui terminal:
+2. **Setup API Key (Opsional):**
+   Buat file `local.properties` di root project jika belum ada, lalu tambahkan:
+   ```properties
+   GEMINI_API_KEY=your_google_gemini_api_key
+   ```
+   *Aplikasi tetap dapat berjalan tanpa API Key, namun fitur AI akan dinonaktifkan.*
 
-**Windows PowerShell:**
-```powershell
-.\gradlew :composeApp:installDebug
+3. **Build & Run (Android):**
+   - **Linux/macOS:**
+     ```bash
+     ./gradlew :composeApp:installDebug
+     ```
+   - **Windows:**
+     ```powershell
+     .\gradlew :composeApp:installDebug
+     ```
+
+---
+
+## 🔌 API Reference
+
+1. **TheMealDB API / Indonesian Recipe API:**
+   - Digunakan untuk mencari rekomendasi resep berdasarkan bahan makanan yang tersedia.
+   - Endpoint: `www.themealdb.com/api/json/v1/1/`
+
+2. **Google Gemini API:**
+   - Digunakan untuk fitur **Asisten AI FoodSaver**.
+   - Memberikan tips penyimpanan makanan dan saran memasak secara interaktif.
+
+---
+
+## 🧠 Logika Utama Aplikasi
+
+### A. Logika Status Kedaluwarsa
+Aplikasi menghitung selisih hari antara tanggal hari ini dengan tanggal kedaluwarsa:
+- **Sudah Kedaluwarsa:** Selisih < 0 hari.
+- **Kedaluwarsa Hari Ini:** Selisih == 0 hari.
+- **Segera Masak:** 1 s/d 3 hari sebelum kedaluwarsa.
+- **Aman:** > 3 hari sebelum kedaluwarsa.
+
+### B. Logika Quantity Formatter
+Menghindari tampilan desimal yang tidak perlu:
+- `12.0` ditampilkan sebagai `12`
+- `1.5` tetap ditampilkan sebagai `1.5`
+
+### C. Recipe Fallback
+Jika koneksi internet terputus atau API limit tercapai:
+- Aplikasi akan menampilkan daftar resep lokal (Rule-based) yang tersimpan di dalam aset aplikasi agar pengguna tetap mendapatkan bantuan.
+
+---
+
+## 📱 App Preview
+
+| Beranda | Tambah Makanan | Detail Makanan |
+| :---: | :---: | :---: |
+| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/49c601b9-251c-42f0-b4cd-ca486eb6583d" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/136a4e3c-83dc-40d0-a105-91d59d3e820d" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/96214d45-5cac-4efc-848f-f32395ab206e" /> |
+| **Peringatan** | **Resep** | **Kalender** |
+| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d94d0474-fd9e-4e56-bff3-62886c3cfeab" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/51355416-aa82-4bb0-9e06-ed959b5eac36" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9986e1d0-d95f-450d-b861-a1104e7df7e2" /> |
+| **Profil** | **Asisten AI** | **Dark Mode** |
+| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6c0c5653-e24f-4443-b196-1266d9c3cd1a" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/b6fa2c47-dc1b-4710-a451-90d084e08090" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fb5416ef-9879-4c66-8e13-efbcd113ef4d" /> |
+
+---
+
+## 🧪 Testing & Coverage
+
+### Menjalankan Unit Test
+
+```bash
+.\gradlew :composeApp:test
 ```
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/9b60c2a6-9134-4d5f-8cec-7cf7e5eeecef" />
+
+Aplikasi FoodSaver sudah mencakup pengujian pada beberapa bagian utama berikut:
+
+- **Logic Engine**
+  - Menguji logic utama aplikasi, terutama validasi status kedaluwarsa makanan.
+  - Contoh: menentukan apakah makanan masih aman, mendekati kedaluwarsa, atau sudah kedaluwarsa.
+
+- **Utility / Helper**
+  - Menguji beberapa fungsi bantuan yang digunakan dalam aplikasi.
+  - Contoh: formatter angka, pengolahan teks, dan pembersihan teks resep.
+
+- **Local Data / Datastore**
+  - Menguji sebagian fungsi yang berkaitan dengan pengolahan data lokal.
+  - Contoh: penyimpanan atau pemrosesan data sederhana yang digunakan oleh aplikasi.
+
+> Catatan: Berdasarkan hasil Kover Coverage Report, bagian `domain.engine` sudah memiliki coverage paling tinggi, sedangkan beberapa bagian seperti `mapper`, `repository`, `remote API`, dan sebagian besar layer UI masih perlu ditambahkan pengujian lebih lanjut.
 
 ---
 
-## 🧪 Testing
-
-Pengembangan pada Sprint 4 menargetkan kualitas kode dengan:
-- Minimal **10 Unit Tests** untuk Domain & Data logic.
-- Minimal **3 UI Tests** menggunakan Compose Test library.
-- Target coverage minimal **50%**.
-
-**Menjalankan Unit Test:**
-```powershell
-.\gradlew test
-```
-
-**Verifikasi Build:**
-```powershell
-.\gradlew clean build
-```
+## 🛠️ GitHub Actions (CI/CD)
+Project ini dilengkapi dengan workflow `.github/workflows/build.yml` yang secara otomatis melakukan:
+- **Build Check:** Memastikan kode bisa dikompilasi dengan sukses.
+- **Unit Testing:** Menjalankan semua test secara otomatis pada setiap *push* atau *pull request*.
+- **Lint Check:** Memastikan kualitas kode terjaga.
 
 ---
 
-## ⏳ Logika Status Kedaluwarsa
-
-FoodSaver menghitung selisih hari (`daysLeft`) antara tanggal saat ini dan tanggal kedaluwarsa:
-
-- `daysLeft < 0`: **Expired** (Sudah Kedaluwarsa)
-- `daysLeft == 0`: **Expired Hari Ini**
-- `daysLeft` **1 s/d 3**: **Hampir Expired** (Label: Segera Masak)
-- `daysLeft > 3`: **Aman**
-
-Status ini diterapkan secara konsisten pada:
-- Badge status di halaman Home & Inventory.
-- Filter pada Expiry Alert.
-- Indikator warna pada Food Calendar.
-- Prioritas bahan dalam rekomendasi resep.
+## ⚠️ Batasan Saat Ini (Known Limitations)
+- Aplikasi dioptimalkan untuk platform Android (Android-first).
+- Notifikasi pengingat masih berbasis UI (Expiry Alert), belum menggunakan *Background WorkManager* untuk *Push Notification*.
+- Fitur sinkronisasi cloud (Login) direncanakan untuk pengembangan tahap selanjutnya.
 
 ---
 
-## 🍳 Logika Rekomendasi Resep
-
-Rekomendasi resep bekerja menggunakan **Rule-based Engine** yang mencocokkan input bahan dengan database resep lokal.
-
-**Parameter Input:**
-- Bahan dari Inventory (Checkbox selection).
-- Bahan Manual (Chip/Tag input).
-- Preferensi (Cepat, Praktis, Sehat).
-
-**Contoh Aturan (Rules):**
-- `Nasi` + `Telur` → **Nasi Goreng Telur**
-- `Mie` + `Bakso` → **Mie Bakso Praktis**
-- `Roti` + `Susu` → **Roti Panggang Susu**
-- `Buah` + `Susu` → **Smoothie Sehat**
-
-*Catatan: Integrasi AI API yang sesungguhnya direncanakan pada tahap pengembangan backend di masa mendatang untuk menjaga keamanan API Key.*
+## 🔮 Rencana Masa Depan
+- [ ] Implementasi Push Notification untuk pengingat otomatis.
+- [ ] Sinkronisasi akun menggunakan Firebase/Supabase.
+- [ ] Scan struk belanja (OCR) untuk input otomatis.
+- [ ] Statistik bulanan tentang makanan yang terbuang.
 
 ---
 
-## 🎨 UI/UX
-
-Desain FoodSaver mengusung tema **Fresh Grocery** dengan karakteristik:
-- **Color Palette**: Dominasi warna hijau (Fresh Green) yang melambangkan kesegaran makanan.
-- **Rounded Design**: Penggunaan card dengan corner radius besar untuk kesan modern dan ramah.
-- **Feedback Visual**: Snackbar untuk konfirmasi aksi dan status badge yang kontras (Merah untuk Expired, Kuning untuk Warning).
-- **Responsive**: Mendukung orientasi layar dan adaptasi Dark/Light mode secara mulus.
-
----
-
-## ⚙️ CI/CD
-
-Project ini menggunakan **GitHub Actions** untuk memastikan integritas kode.
-Setiap *Pull Request* akan memicu workflow build otomatis untuk memastikan:
-1. Kode dapat dicompile dengan sukses.
-2. Semua unit test lulus (passed).
-3. Build artifact (APK) dapat dihasilkan tanpa error.
-
----
-## Video Demonstrasi
-https://github.com/user-attachments/assets/6fa632c2-4215-4743-bf04-352040a5a544
-
-## 📄 Lisensi
-
-**MIT License** — Dibuat untuk keperluan pembelajaran Mata Kuliah Pengembangan Aplikasi Mobile ITERA.
+## 📜 Lisensi
+Distribusi di bawah **MIT License**. Dibuat untuk keperluan pembelajaran mata kuliah Pengembangan Aplikasi Mobile ITERA.

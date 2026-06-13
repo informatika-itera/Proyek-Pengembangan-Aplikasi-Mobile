@@ -1,4 +1,4 @@
-package com.example.foodsaver.core.util
+package com.example.foodsaver.core.utility
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver

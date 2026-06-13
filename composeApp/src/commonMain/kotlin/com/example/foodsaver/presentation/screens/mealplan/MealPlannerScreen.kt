@@ -138,11 +138,27 @@ fun DateHeader(
             }
             
             val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            val monthIndo = when(selectedDate.month) {
+                Month.JANUARY -> "Januari"
+                Month.FEBRUARY -> "Februari"
+                Month.MARCH -> "Maret"
+                Month.APRIL -> "April"
+                Month.MAY -> "Mei"
+                Month.JUNE -> "Juni"
+                Month.JULY -> "Juli"
+                Month.AUGUST -> "Agustus"
+                Month.SEPTEMBER -> "September"
+                Month.OCTOBER -> "Oktober"
+                Month.NOVEMBER -> "November"
+                Month.DECEMBER -> "Desember"
+                else -> selectedDate.month.name
+            }
+
             val dateLabel = when (selectedDate) {
                 today -> "Hari Ini"
                 today.plus(1, DateTimeUnit.DAY) -> "Besok"
                 today.minus(1, DateTimeUnit.DAY) -> "Kemarin"
-                else -> "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${selectedDate.year}"
+                else -> "${selectedDate.dayOfMonth} $monthIndo ${selectedDate.year}"
             }
 
             Text(

@@ -11,14 +11,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/**
- * Unit Test untuk FoodRepository.
- * Menggunakan Mock/Fake implementation jika tidak memungkinkan menggunakan SQLDelight in-memory di commonTest.
- * Di sini kita menguji fungsionalitas CRUD dasar.
- */
 class FoodRepositoryTest {
     
-    // Menggunakan Fake Repository untuk unit testing yang cepat dan tidak bergantung pada platform driver
     private lateinit var repository: FoodRepository
     private val testItems = mutableListOf<FoodItem>()
 

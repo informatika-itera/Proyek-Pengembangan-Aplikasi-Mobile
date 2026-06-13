@@ -1,5 +1,6 @@
 package com.example.foodsaver.core.util
 
+import com.example.foodsaver.core.utility.formatQuantity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

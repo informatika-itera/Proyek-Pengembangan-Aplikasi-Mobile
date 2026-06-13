@@ -1,28 +1,27 @@
-package com.example.foodsaver.core.util
+package com.example.foodsaver.core.utility
 
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.math.roundToInt
 
 /**
- * Extension untuk memformat Instant menjadi string tanggal yang mudah dibaca.
+ * Utility extensions for FoodSaver
  */
+
 fun Instant.formatToDisplay(): String {
     val dateTime = this.toLocalDateTime(TimeZone.currentSystemDefault())
-    return "${dateTime.dayOfMonth}/${dateTime.monthNumber}/${dateTime.year}"
+    val day = dateTime.dayOfMonth.toString().padStart(2, '0')
+    val month = dateTime.monthNumber.toString().padStart(2, '0')
+    val year = dateTime.year
+    return "$day/$month/$year"
 }
 
-/**
- * Extension untuk memformat jumlah stok makanan.
- * Menghilangkan .0 jika nilainya bulat (misal 12.0 -> 12).
- * Menambahkan satuan di belakangnya.
- */
 fun Double.formatQuantity(unit: String): String {
     val formattedValue = if (this % 1.0 == 0.0) {
         this.toInt().toString()
     } else {
-        this.toString()
+        // Simple formatting to avoid long decimals, e.g., 1.50000000001
+        ((this * 100).toInt() / 100.0).toString()
     }
     return "$formattedValue $unit"
 }

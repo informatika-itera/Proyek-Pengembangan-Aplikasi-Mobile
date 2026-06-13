@@ -14,8 +14,8 @@
 
 ---
 
-## 🎥 Demo Aplikasi 
-**▶️ [Tonton Video Demo TodoMaster Di Sini](https://drive.google.com/drive/folders/13HpJ73oDPwP2MWyWCWsQUYUqPCrJBIlK?usp=sharing)**
+## 🎥 Demo Aplikasi ToDoMaster
+**▶️ [Tonton Video Demo TodoMaster Di Sini](https://youtu.be/zjA1A3JOqig)**
 
 ### 📸 Antarmuka Pengguna
 

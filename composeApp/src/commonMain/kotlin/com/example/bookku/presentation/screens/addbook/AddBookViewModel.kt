@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bookku.domain.model.Book
 import com.example.bookku.domain.model.BookGenre
 import com.example.bookku.domain.model.BookRating
+import com.example.bookku.domain.repository.AuthRepository
 import com.example.bookku.domain.repository.NoteRepository
 import com.example.bookku.domain.usecase.SaveNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -20,6 +22,7 @@ import kotlinx.datetime.Instant
 
 class AddBookViewModel(
     private val repository: NoteRepository,
+    private val authRepository: AuthRepository,
     private val saveNoteUseCase: SaveNoteUseCase
 ) : ViewModel() {
     
@@ -32,32 +35,50 @@ class AddBookViewModel(
     private var currentNoteId: Long? = null
     
     fun loadNote(noteId: Long) {
+        if (currentNoteId == noteId) return
         currentNoteId = noteId
         _uiState.update { it.copy(isLoading = true) }
         
         viewModelScope.launch {
+            val currentUserId = authRepository.getCurrentUserId()
             repository.getBookById(noteId).collect { book ->
-                book?.let {
+                if (book != null) {
+                    if (book.userId != currentUserId) {
+                        _events.emit(AddBookEvent.Error("Anda tidak memiliki izin untuk mengedit buku ini"))
+                        _uiState.update { it.copy(isLoading = false) }
+                        return@collect
+                    }
                     _uiState.update { state ->
                         state.copy(
                             title = book.title,
+                            author = book.author,
+                            coverUrl = book.coverUrl,
                             content = book.content,
                             category = book.category,
                             color = book.color,
+                            totalPages = book.totalPages,
                             isLoading = false,
                             isEditMode = true,
                             createdAt = book.createdAt
                         )
                     }
+                } else {
+                    _uiState.update { it.copy(isLoading = false) }
                 }
             }
         }
     }
     
-    // ==================== USER ACTIONS ====================
-    
     fun onTitleChange(title: String) {
         _uiState.update { it.copy(title = title, titleError = null) }
+    }
+
+    fun onAuthorChange(author: String) {
+        _uiState.update { it.copy(author = author) }
+    }
+
+    fun onCoverUrlChange(url: String) {
+        _uiState.update { it.copy(coverUrl = url) }
     }
     
     fun onContentChange(content: String) {
@@ -71,24 +92,33 @@ class AddBookViewModel(
     fun onColorChange(color: BookRating) {
         _uiState.update { it.copy(color = color) }
     }
+
+    fun onTotalPagesChange(pages: Int) {
+        _uiState.update { it.copy(totalPages = pages) }
+    }
     
     fun saveNote() {
         val state = _uiState.value
         
-        if (state.title.isBlank() && state.content.isBlank()) {
-            _uiState.update { it.copy(titleError = "Judul atau konten harus diisi") }
+        if (state.title.isBlank()) {
+            _uiState.update { it.copy(titleError = "Judul harus diisi") }
             return
         }
         
         _uiState.update { it.copy(isSaving = true) }
         
         viewModelScope.launch {
+            val userId = authRepository.getCurrentUserId() ?: ""
             val book = Book(
                 id = currentNoteId ?: 0,
+                userId = userId,
                 title = state.title.trim(),
+                author = state.author.trim(),
+                coverUrl = state.coverUrl.trim(),
                 content = state.content.trim(),
                 category = state.category,
                 color = state.color,
+                totalPages = state.totalPages,
                 createdAt = if (currentNoteId == null) Clock.System.now() else state.createdAt,
                 updatedAt = Clock.System.now()
             )
@@ -103,21 +133,16 @@ class AddBookViewModel(
                 }
         }
     }
-    
-    fun applyAISuggestion(newContent: String) {
-        _uiState.update { it.copy(content = newContent) }
-    }
-    
-    fun applyAITitle(newTitle: String) {
-        _uiState.update { it.copy(title = newTitle) }
-    }
 }
 
 data class AddBookUiState(
     val title: String = "",
+    val author: String = "",
+    val coverUrl: String = "",
     val content: String = "",
-    val category: BookGenre = BookGenre.GENERAL,
+    val category: BookGenre = BookGenre.FICTION,
     val color: BookRating = BookRating.DEFAULT,
+    val totalPages: Int = 0,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isEditMode: Boolean = false,
@@ -125,7 +150,7 @@ data class AddBookUiState(
     val createdAt: Instant = Clock.System.now()
 ) {
     val isValid: Boolean
-        get() = title.isNotBlank() || content.isNotBlank()
+        get() = title.isNotBlank()
     
     val canSave: Boolean
         get() = isValid && !isSaving

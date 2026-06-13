@@ -1,0 +1,46 @@
+CREATE TABLE ReadingProgress (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  book_id INTEGER NOT NULL,
+  current_page INTEGER NOT NULL DEFAULT 0,
+  total_pages INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'READING',
+  started_at INTEGER NOT NULL,
+  finished_at INTEGER,
+  notes TEXT DEFAULT '',
+  FOREIGN KEY (book_id) REFERENCES BookEntity(id) ON DELETE CASCADE,
+  UNIQUE(user_id, book_id)
+);
+
+-- ReadingProgress Queries
+getReadingProgress:
+SELECT * FROM ReadingProgress WHERE user_id = ? AND book_id = ?;
+
+getAllReadingProgress:
+SELECT * FROM ReadingProgress WHERE user_id = ? ORDER BY started_at DESC;
+
+addReadingProgress:
+INSERT INTO ReadingProgress (
+  user_id, book_id, current_page, total_pages, status, started_at, finished_at, notes
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateReadingProgress:
+UPDATE ReadingProgress
+SET current_page = ?,
+    status = ?,
+    finished_at = ?,
+    notes = ?
+WHERE user_id = ? AND book_id = ?;
+
+markAsCompleted:
+UPDATE ReadingProgress
+SET current_page = total_pages,
+    status = 'COMPLETED',
+    finished_at = ?
+WHERE user_id = ? AND book_id = ?;
+
+deleteReadingProgress:
+DELETE FROM ReadingProgress WHERE user_id = ? AND book_id = ?;
+
+getReadingStats:
+SELECT status, COUNT(*) AS total FROM ReadingProgress WHERE user_id = ? GROUP BY status;

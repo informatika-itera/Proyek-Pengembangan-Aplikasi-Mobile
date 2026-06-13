@@ -1,84 +1,93 @@
-﻿-- book table schema for SQLDelight
--- File: book.sq
-
-CREATE TABLE BookEntity (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    category TEXT NOT NULL DEFAULT 'GENERAL',
-    color TEXT NOT NULL DEFAULT 'DEFAULT',
-    is_pinned INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+﻿CREATE TABLE BookEntity (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  author TEXT NOT NULL DEFAULT '',
+  cover_url TEXT NOT NULL DEFAULT '',
+  category TEXT NOT NULL DEFAULT 'FICTION',
+  color TEXT NOT NULL DEFAULT 'DEFAULT',
+  total_pages INTEGER NOT NULL DEFAULT 0,
+  is_pinned INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
 );
 
--- Get all books ordered by updated_at descending
+CREATE TABLE AIRecommendation (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL UNIQUE, -- Tambahkan UNIQUE agar INSERT OR REPLACE berfungsi
+  recommendation_text TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (book_id) REFERENCES BookEntity(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_book_entity_pinned ON BookEntity(is_pinned);
+CREATE INDEX IF NOT EXISTS idx_book_entity_user ON BookEntity(user_id);
+CREATE INDEX IF NOT EXISTS idx_ai_recommendation_book_id ON AIRecommendation(book_id);
+
+-- Book Queries
 getAllNotes:
 SELECT * FROM BookEntity
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Get pinned books
+getNotesByUser:
+SELECT * FROM BookEntity
+WHERE user_id = ?
+ORDER BY is_pinned DESC, updated_at DESC;
+
 getPinnedNotes:
 SELECT * FROM BookEntity
 WHERE is_pinned = 1
 ORDER BY updated_at DESC;
 
--- Get books by category
 getNotesByCategory:
 SELECT * FROM BookEntity
 WHERE category = ?
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Search books by title or content
 searchNotes:
 SELECT * FROM BookEntity
-WHERE title LIKE '%' || ? || '%' OR content LIKE '%' || ? || '%'
+WHERE (title LIKE '%' || ? || '%'
+   OR content LIKE '%' || ? || '%'
+   OR author LIKE '%' || ? || '%')
 ORDER BY is_pinned DESC, updated_at DESC;
 
--- Get single book by ID
 getBookById:
-SELECT * FROM BookEntity
-WHERE id = ?;
+SELECT * FROM BookEntity WHERE id = ?;
 
--- Insert new book
 addBook:
-INSERT INTO BookEntity (title, content, category, color, is_pinned, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO BookEntity (
+  user_id, title, content, author, cover_url, category, color, total_pages, is_pinned, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
--- Get last inserted ID
 lastInsertId:
 SELECT last_insert_rowid();
 
--- Update existing book
 updateBook:
 UPDATE BookEntity
-SET title = ?, content = ?, category = ?, color = ?, is_pinned = ?, updated_at = ?
+SET title = ?, content = ?, author = ?, cover_url = ?, category = ?, color = ?, total_pages = ?, is_pinned = ?, updated_at = ?
 WHERE id = ?;
 
--- Delete book by ID
 deleteNoteById:
-DELETE FROM BookEntity
-WHERE id = ?;
+DELETE FROM BookEntity WHERE id = ?;
 
--- Toggle pin status
 togglePin:
 UPDATE BookEntity
-SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END, updated_at = ?
+SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END,
+    updated_at = ?
 WHERE id = ?;
 
--- Delete multiple books
 deleteNotesByIds:
-DELETE FROM BookEntity
-WHERE id IN ?;
+DELETE FROM BookEntity WHERE id IN ?;
 
--- Count all books
-countNotes:
-SELECT COUNT(*) FROM BookEntity;
+-- AI Recommendation Queries
+getRecommendationForBook:
+SELECT * FROM AIRecommendation WHERE book_id = ?;
 
--- Count books by category
-countNotesByCategory:
-SELECT category, COUNT(*) AS total
-FROM BookEntity
-GROUP BY category;
+insertRecommendation:
+INSERT OR REPLACE INTO AIRecommendation (
+  book_id, recommendation_text, created_at
+) VALUES (?, ?, ?);
 
-
+deleteRecommendation:
+DELETE FROM AIRecommendation WHERE book_id = ?;

@@ -2,17 +2,21 @@
 
 import com.example.bookku.domain.model.Book
 import com.example.bookku.domain.model.BookGenre
+import com.example.bookku.domain.model.NoteSortBy
 import com.example.bookku.domain.repository.AIRepository
 import com.example.bookku.domain.repository.NoteRepository
+import com.example.bookku.domain.repository.AuthRepository
 import com.example.bookku.domain.repository.WritingStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.firstOrNull
 
 class GetAllNotesUseCase(
     private val repository: NoteRepository
 ) {
     operator fun invoke(sortBy: NoteSortBy = NoteSortBy.UPDATED_DESC): Flow<List<Book>> {
         return repository.getAllNotes().map { books ->
+            // Memastikan buku yang di-pin selalu berada di posisi teratas
             val (pinned, unpinned) = books.partition { it.isPinned }
             val sortedPinned = sortNotes(pinned, sortBy)
             val sortedUnpinned = sortNotes(unpinned, sortBy)
@@ -30,15 +34,6 @@ class GetAllNotesUseCase(
             NoteSortBy.UPDATED_DESC -> books.sortedByDescending { it.updatedAt }
         }
     }
-}
-
-enum class NoteSortBy(val displayName: String) {
-    TITLE_ASC("Judul (A-Z)"),
-    TITLE_DESC("Judul (Z-A)"),
-    CREATED_ASC("Dibuat (Lama)"),
-    CREATED_DESC("Dibuat (Baru)"),
-    UPDATED_ASC("Diupdate (Lama)"),
-    UPDATED_DESC("Diupdate (Baru)")
 }
 
 class SearchNotesUseCase(
@@ -66,8 +61,8 @@ class SaveNoteUseCase(
 ) {
     suspend operator fun invoke(book: Book): Result<Long> {
         return try {
-            if (book.title.isBlank() && book.content.isBlank()) {
-                return Result.failure(IllegalArgumentException("book tidak boleh kosong"))
+            if (book.title.isBlank()) {
+                return Result.failure(IllegalArgumentException("Judul buku tidak boleh kosong"))
             }
 
             val id = if (book.id == 0L) {
@@ -84,11 +79,32 @@ class SaveNoteUseCase(
     }
 }
 
-class deleteBookUseCase(
+class GetBookByIdUseCase(
     private val repository: NoteRepository
+) {
+    operator fun invoke(id: Long): Flow<Book?> {
+        return repository.getBookById(id)
+    }
+}
+
+class deleteBookUseCase(
+    private val repository: NoteRepository,
+    private val authRepository: AuthRepository
 ) {
     suspend operator fun invoke(id: Long): Result<Unit> {
         return try {
+            val currentUserId = authRepository.getCurrentUserId()
+            val book = repository.getBookById(id).firstOrNull()
+            
+            if (book == null) {
+                return Result.failure(Exception("Buku tidak ditemukan"))
+            }
+            
+            // Validasi kepemilikan: Hanya pemilik yang bisa menghapus
+            if (book.userId != currentUserId) {
+                return Result.failure(Exception("Anda tidak memiliki izin untuk menghapus buku ini"))
+            }
+
             repository.deleteBook(id)
             Result.success(Unit)
         } catch (e: Exception) {

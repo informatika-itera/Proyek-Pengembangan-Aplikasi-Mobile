@@ -7,28 +7,23 @@ import com.example.bookku.data.local.datastore.DataStoreFactory
 import com.example.bookku.data.local.datastore.UserPreferences
 import com.example.bookku.data.local.datastore.create
 import com.example.bookku.data.remote.api.GeminiService
-import com.example.bookku.data.repository.AIRepositoryImpl
-import com.example.bookku.data.repository.NoteRepositoryImpl
-import com.example.bookku.domain.repository.AIRepository
-import com.example.bookku.domain.repository.NoteRepository
-import com.example.bookku.domain.usecase.deleteBookUseCase
-import com.example.bookku.domain.usecase.GenerateIdeasUseCase
-import com.example.bookku.domain.usecase.GetAllNotesUseCase
-import com.example.bookku.domain.usecase.ImproveWritingUseCase
-import com.example.bookku.domain.usecase.SaveNoteUseCase
-import com.example.bookku.domain.usecase.SearchNotesUseCase
-import com.example.bookku.domain.usecase.SummarizeNoteUseCase
+import com.example.bookku.data.repository.*
+import com.example.bookku.domain.repository.*
+import com.example.bookku.domain.usecase.*
 import com.example.bookku.presentation.screens.addbook.AddBookViewModel
 import com.example.bookku.presentation.screens.ai.AIAssistantViewModel
+import com.example.bookku.presentation.screens.auth.AuthViewModel
 import com.example.bookku.presentation.screens.bookdetail.BookDetailViewModel
 import com.example.bookku.presentation.screens.home.HomeViewModel
-import org.koin.core.context.startKoin
+import com.example.bookku.presentation.screens.forum.ForumViewModel
+import com.example.bookku.presentation.screens.tracker.TrackerViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.core.context.startKoin
 
 // ==================== NETWORK MODULE ====================
 
@@ -56,20 +51,34 @@ val preferencesModule = module {
 // ==================== REPOSITORY MODULE ====================
 
 val repositoryModule = module {
-    singleOf(::NoteRepositoryImpl) bind NoteRepository::class
+    singleOf(::BookRepositoryImpl) bind NoteRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    singleOf(::ReviewRepositoryImpl) bind ReviewRepository::class
+    singleOf(::ReadingProgressRepositoryImpl) bind ReadingProgressRepository::class
+    singleOf(::CommentRepositoryImpl) bind CommentRepository::class
+    singleOf(::AuthRepositoryImpl) bind AuthRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
 
 val useCaseModule = module {
     singleOf(::GetAllNotesUseCase)
+    singleOf(::GetBookByIdUseCase)
     singleOf(::SearchNotesUseCase)
     singleOf(::SaveNoteUseCase)
     singleOf(::deleteBookUseCase)
     singleOf(::SummarizeNoteUseCase)
     singleOf(::ImproveWritingUseCase)
     singleOf(::GenerateIdeasUseCase)
+    singleOf(::GetRecommendationUseCase)
+    singleOf(::UpdateReadingProgressUseCase)
+    singleOf(::CompleteReadingUseCase)
+    singleOf(::AddReadingProgressUseCase)
+    singleOf(::AddReviewUseCase)
+    singleOf(::DeleteReviewUseCase)
+    singleOf(::AddCommentUseCase)
+    singleOf(::DeleteCommentUseCase)
+    singleOf(::LikeCommentUseCase)
 }
 
 // ==================== VIEWMODEL MODULE ====================
@@ -79,6 +88,9 @@ val viewModelModule = module {
     viewModelOf(::AddBookViewModel)
     viewModelOf(::BookDetailViewModel)
     viewModelOf(::AIAssistantViewModel)
+    viewModelOf(::AuthViewModel)
+    viewModelOf(::ForumViewModel)
+    viewModelOf(::TrackerViewModel)
 }
 
 // ==================== SHARED MODULES ====================

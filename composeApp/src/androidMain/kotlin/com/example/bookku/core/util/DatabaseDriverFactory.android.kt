@@ -18,7 +18,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = BookDatabase.Schema,
             context = context,
-            name = "bookku.db"
+            name = "bookku_new.db"
         )
     }
 }

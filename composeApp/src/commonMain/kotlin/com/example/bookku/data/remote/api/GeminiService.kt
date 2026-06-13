@@ -1,135 +1,158 @@
 ﻿package com.example.bookku.data.remote.api
 
 import com.example.bookku.core.network.ApiConfig
-import com.example.bookku.data.remote.dto.GeminiContent
-import com.example.bookku.data.remote.dto.GeminiPart
-import com.example.bookku.data.remote.dto.GeminiRequest
-import com.example.bookku.data.remote.dto.GeminiResponse
-import com.example.bookku.data.remote.dto.GenerationConfig
-import com.example.bookku.data.remote.dto.getErrorMessage
-import com.example.bookku.data.remote.dto.getTextContent
+import com.example.bookku.data.remote.dto.*
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
+import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.*
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.utils.io.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ModelListResponse(val models: List<GeminiModelInfo>? = null)
+
+@Serializable
+data class GeminiModelInfo(
+    val name: String,
+    val supportedGenerationMethods: List<String>? = null
+)
 
 class GeminiService(private val client: HttpClient) {
     
+    private val json = Json { ignoreUnknownKeys = true }
+    private var discoveredModel: String? = null
+    
     companion object {
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val MODEL = "gemini-2.0-flash"
+        
+        // Daftar model Generasi 3 untuk cadangan (2026)
+        private val FALLBACK_MODELS = listOf(
+            "gemini-3.5-flash",
+            "gemini-3.1-pro",
+            "gemini-3-flash",
+            "gemini-2.0-flash"
+        )
+    }
+
+    /**
+     * AUTO-DISCOVERY: Secara otomatis mencari model mana yang diizinkan untuk kunci AQ Anda.
+     * Ini menghilangkan masalah "Model Not Found".
+     */
+    private suspend fun getBestAvailableModel(): String {
+        if (discoveredModel != null) return discoveredModel!!
+        
+        val apiKey = ApiConfig.geminiApiKey.trim()
+        return try {
+            val response: HttpResponse = client.get("$BASE_URL/models") { parameter("key", apiKey) }
+            if (response.status == HttpStatusCode.OK) {
+                val modelList = response.body<ModelListResponse>()
+                // Cari model yang mendukung metode 'generateContent'
+                val found = modelList.models?.firstOrNull { 
+                    it.supportedGenerationMethods?.contains("generateContent") == true 
+                }?.name?.replace("models/", "")
+                
+                discoveredModel = found ?: FALLBACK_MODELS.first()
+                discoveredModel!!
+            } else {
+                FALLBACK_MODELS.first()
+            }
+        } catch (_: Exception) {
+            FALLBACK_MODELS.first()
+        }
+    }
+
+    /**
+     * DIAGNOSTIK: Gunakan kata 'debug' di chat untuk melihat hasil ini.
+     */
+    suspend fun debugCheckApi(): String {
+        val apiKey = ApiConfig.geminiApiKey.trim()
+        return try {
+            val response: HttpResponse = client.get("$BASE_URL/models") { parameter("key", apiKey) }
+            if (response.status == HttpStatusCode.OK) {
+                val modelList = response.body<ModelListResponse>()
+                val available = modelList.models?.joinToString { it.name.replace("models/", "") }
+                "KUNCI VALID (2026)!\nModel Anda: $available"
+            } else {
+                val body = response.bodyAsText()
+                "API ERROR ${response.status.value}:\n$body"
+            }
+        } catch (e: Exception) {
+            "KONEKSI GAGAL: ${e.message}"
+        }
     }
     
     suspend fun generateContent(
         prompt: String,
         systemPrompt: String? = null
     ): Result<String> = runCatching {
-        val contents = mutableListOf<GeminiContent>()
-        
-        if (systemPrompt != null) {
-            contents.add(
-                GeminiContent(
-                    parts = listOf(GeminiPart(text = systemPrompt)),
-                    role = "user"
-                )
-            )
-            contents.add(
-                GeminiContent(
-                    parts = listOf(GeminiPart(text = "Baik, saya akan mengikuti instruksi tersebut.")),
-                    role = "model"
-                )
-            )
-        }
-        
-        contents.add(
-            GeminiContent(
-                parts = listOf(GeminiPart(text = prompt)),
-                role = "user"
-            )
-        )
+        val apiKey = ApiConfig.geminiApiKey.trim()
+        val modelName = getBestAvailableModel()
         
         val request = GeminiRequest(
-            contents = contents,
-            generationConfig = GenerationConfig(
-                temperature = 0.7,
-                maxOutputTokens = 1000
-            )
+            contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = if (systemPrompt != null) "$systemPrompt\n\n$prompt" else prompt)))),
+            generationConfig = GenerationConfig(temperature = 0.7, maxOutputTokens = 1000)
         )
         
-        val response: GeminiResponse = client.post("$BASE_URL/models/$MODEL:generateContent") {
+        val httpResponse: HttpResponse = client.post("$BASE_URL/models/$modelName:generateContent") {
             contentType(ContentType.Application.Json)
-            parameter("key", ApiConfig.geminiApiKey)
+            parameter("key", apiKey)
             setBody(request)
-        }.body()
-        
-        response.getErrorMessage()?.let { errorMsg ->
-            throw Exception(errorMsg)
         }
+
+        if (httpResponse.status == HttpStatusCode.OK) {
+            httpResponse.body<GeminiResponse>().getTextContent() ?: throw Exception("Respons AI Kosong")
+        } else {
+            val errorMsg = httpResponse.bodyAsText()
+            throw Exception("[$modelName] -> $errorMsg")
+        }
+    }.recoverCatching { e ->
+        if (e.message?.contains("Unable to resolve host") == true) {
+            throw Exception("Tidak ada internet di Emulator. Mohon 'Cold Boot' emulator Anda.")
+        }
+        throw e
+    }
+
+    fun generateContentStream(
+        prompt: String,
+        systemPrompt: String? = null
+    ): Flow<String> = flow {
+        val apiKey = ApiConfig.geminiApiKey.trim()
+        val modelName = getBestAvailableModel()
         
-        response.getTextContent() ?: throw Exception("Respons kosong dari AI")
+        val request = GeminiRequest(
+            contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = if (systemPrompt != null) "$systemPrompt\n\n$prompt" else prompt)))),
+            generationConfig = GenerationConfig(temperature = 0.7, maxOutputTokens = 1000)
+        )
+        
+        client.preparePost("$BASE_URL/models/$modelName:streamGenerateContent?alt=sse&key=$apiKey") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.execute { httpResponse ->
+            if (httpResponse.status != HttpStatusCode.OK) throw Exception("Error ${httpResponse.status.value}")
+            val channel = httpResponse.bodyAsChannel()
+            while (!channel.isClosedForRead) {
+                val line = channel.readUTF8Line() ?: break
+                if (line.startsWith("data: ")) {
+                    val jsonString = line.substring(6)
+                    try {
+                        json.decodeFromString<GeminiResponse>(jsonString).getTextContent()?.let { emit(it) }
+                    } catch (_: Exception) {}
+                }
+            }
+        }
+    }.catch { _ -> 
+        emit("Maaf, terjadi gangguan pada koneksi AI Gemini 3. Silakan coba sesaat lagi.")
     }
 }
-
-// ====================
-// System Prompts
-// ====================
-
-object SystemPrompts {
-    
-    val SUMMARIZER = """
-        Kamu adalah asisten yang ahli dalam merangkum teks.
-        Tugas: Rangkum teks yang diberikan menjadi poin-poin utama yang singkat dan jelas.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Maksimal 3-5 poin utama
-        - Setiap poin maksimal 1-2 kalimat
-        - Fokus pada informasi paling penting
-        - Jangan menambahkan informasi yang tidak ada di teks asli
-    """.trimIndent()
-    
-    val IDEA_GENERATOR = """
-        Kamu adalah asisten kreatif yang membantu mengembangkan ide.
-        Tugas: Berikan 5 ide kreatif berdasarkan topik yang diberikan.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Berikan tepat 5 ide
-        - Setiap ide harus unik dan berbeda
-        - Format: nomor diikuti ide (contoh: "1. Ide pertama")
-        - Ide harus praktis dan bisa diimplementasikan
-    """.trimIndent()
-    
-    val WRITING_IMPROVER = """
-        Kamu adalah editor profesional yang membantu memperbaiki tulisan.
-        Tugas: Perbaiki tulisan yang diberikan tanpa mengubah makna aslinya.
-        Rules:
-        - Gunakan Bahasa Indonesia yang baik dan benar
-        - Perbaiki grammar, ejaan, dan struktur kalimat
-        - Pertahankan gaya dan tone asli penulis
-        - Jangan menambahkan informasi baru
-        - Berikan HANYA hasil tulisan yang sudah diperbaiki, tanpa penjelasan
-    """.trimIndent()
-    
-    val TITLE_SUGGESTER = """
-        Kamu adalah asisten yang membantu membuat judul menarik.
-        Tugas: Berikan 1 saran judul yang singkat dan menarik berdasarkan konten yang diberikan.
-        Rules:
-        - Gunakan Bahasa Indonesia
-        - Judul maksimal 5-7 kata
-        - Judul harus mencerminkan isi konten
-        - Berikan HANYA judul, tanpa penjelasan atau tanda kutip
-    """.trimIndent()
-    
-    val TRANSLATOR = """
-        Kamu adalah penerjemah profesional.
-        Tugas: Terjemahkan teks yang diberikan ke bahasa target.
-        Rules:
-        - Pertahankan makna dan nuansa asli
-        - Gunakan bahasa yang natural, bukan literal
-        - Berikan HANYA hasil terjemahan, tanpa penjelasan
-    """.trimIndent()
-}
-
-

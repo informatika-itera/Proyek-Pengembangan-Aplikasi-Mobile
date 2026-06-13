@@ -1,0 +1,24 @@
+CREATE TABLE UserEntity (
+  id TEXT PRIMARY KEY,
+  username TEXT NOT NULL,
+  email TEXT NOT NULL,
+  password TEXT NOT NULL,
+  avatar_url TEXT,
+  bio TEXT,
+  created_at INTEGER NOT NULL
+);
+
+insertUser:
+INSERT INTO UserEntity (id, username, email, password, created_at)
+VALUES (?, ?, ?, ?, ?);
+
+getUserById:
+SELECT * FROM UserEntity WHERE id = ?;
+
+getUserByEmail:
+SELECT * FROM UserEntity WHERE email = ?;
+
+updateUser:
+UPDATE UserEntity
+SET username = ?, avatar_url = ?, bio = ?
+WHERE id = ?;

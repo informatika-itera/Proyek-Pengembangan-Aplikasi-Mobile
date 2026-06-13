@@ -1,0 +1,33 @@
+CREATE TABLE Review (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  user_name TEXT NOT NULL,
+  rating REAL NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review_text TEXT DEFAULT '',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (book_id) REFERENCES BookEntity(id) ON DELETE CASCADE,
+  UNIQUE(book_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_review_book_id ON Review(book_id);
+CREATE INDEX IF NOT EXISTS idx_review_user_id ON Review(user_id);
+
+-- Review Queries
+getReviewsByBook:
+SELECT * FROM Review WHERE book_id = ? ORDER BY created_at DESC;
+
+getUserReview:
+SELECT * FROM Review WHERE book_id = ? AND user_id = ?;
+
+getAllReviews:
+SELECT * FROM Review ORDER BY created_at DESC;
+
+insertOrUpdateReview:
+INSERT OR REPLACE INTO Review (
+  book_id, user_id, user_name, rating, review_text, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteReview:
+DELETE FROM Review WHERE id = ?;

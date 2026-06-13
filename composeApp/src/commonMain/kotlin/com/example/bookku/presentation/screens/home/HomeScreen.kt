@@ -1,53 +1,31 @@
 ﻿package com.example.bookku.presentation.screens.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.NoteAlt
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Sort
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bookku.domain.model.Book
 import com.example.bookku.domain.model.BookGenre
-import com.example.bookku.domain.usecase.NoteSortBy
+import com.example.bookku.domain.model.NoteSortBy
 import com.example.bookku.presentation.components.EmptyState
 import com.example.bookku.presentation.components.ErrorState
 import com.example.bookku.presentation.components.LoadingIndicator
@@ -59,73 +37,74 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onnavigateToAddBook: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
-    onNavigateToAI: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentSortBy by viewModel.sortBy.collectAsStateWithLifecycle()
-    var showSearch by remember { mutableStateOf(false) }
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val userName by viewModel.userName.collectAsStateWithLifecycle()
     var showSortMenu by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    if (showSearch) {
-                        SearchField(
-                            query = when (val state = uiState) {
-                                is HomeUiState.Success -> state.query
-                                is HomeUiState.Empty -> state.query
-                                else -> ""
-                            },
-                            onQueryChange = viewModel::onSearchQueryChange,
-                            onClear = {
-                                viewModel.clearSearch()
-                                showSearch = false
-                            }
-                        )
-                    } else {
-                        Text("bookku")
-                    }
-                },
-                actions = {
-                    if (!showSearch) {
-                        IconButton(onClick = { showSearch = true }) {
-                            Icon(Icons.Default.Search, contentDescription = "Cari")
-                        }
-                        
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Outlined.Sort, contentDescription = "Urutkan")
-                        }
-                        
-                        SortDropdownMenu(
-                            expanded = showSortMenu,
-                            currentSortBy = currentSortBy,
-                            onSortSelected = { 
-                                viewModel.onSortByChanged(it)
-                                showSortMenu = false
-                            },
-                            onDismiss = { showSortMenu = false }
-                        )
-                    }
-                    
-                    IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Assistant")
-                    }
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Logout") },
+            text = { Text("Apakah Anda yakin ingin keluar?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    viewModel.logout()
+                }) {
+                    Text("Logout", color = MaterialTheme.colorScheme.error)
                 }
-            )
-        },
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
+
+    Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = onnavigateToAddBook) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Buku")
+            ExtendedFloatingActionButton(
+                onClick = onnavigateToAddBook,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Bagikan Buku")
             }
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
+            // Custom Stylish Header
+            HomeHeader(
+                userName = userName ?: "Pembaca",
+                isDarkMode = isDarkMode,
+                onToggleTheme = viewModel::toggleDarkMode,
+                onLogout = { showLogoutDialog = true }
+            )
+
+            // Search and Filter Bar
+            SearchBarRow(
+                query = when (val state = uiState) {
+                    is HomeUiState.Success -> state.query
+                    is HomeUiState.Empty -> state.query
+                    else -> ""
+                },
+                onQueryChange = viewModel::onSearchQueryChange,
+                onSortClick = { showSortMenu = true }
+            )
+
             CategoryFilterRow(
                 selectedCategory = when (val state = uiState) {
                     is HomeUiState.Success -> state.category
@@ -135,47 +114,112 @@ fun HomeScreen(
                 onCategorySelected = viewModel::onCategorySelected
             )
             
-            when (val state = uiState) {
-                is HomeUiState.Loading -> {
-                    LoadingIndicator()
-                }
-                
-                is HomeUiState.Success -> {
-                    NotesList(
-                        books = state.books,
-                        onNoteClick = onNavigateToDetail,
-                        onPinClick = viewModel::togglePin,
-                        onDeleteClick = viewModel::deleteBook
-                    )
-                }
-                
-                is HomeUiState.Empty -> {
-                    EmptyState(
-                        title = if (state.query.isNotBlank() || state.category != null) {
-                            "Tidak Ditemukan"
-                        } else {
-                            "Belum Ada Buku"
-                        },
-                        message = if (state.query.isNotBlank() || state.category != null) {
-                            "Coba ubah kata kunci atau filter"
-                        } else {
-                            "Tap + untuk membuat catatan baru"
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Outlined.NoteAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            )
+            Box(modifier = Modifier.weight(1f)) {
+                when (val state = uiState) {
+                    is HomeUiState.Loading -> LoadingIndicator()
+                    
+                    is HomeUiState.Success -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            item {
+                                Text(
+                                    text = "Koleksi Bukumu",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                            }
+                            items(state.books, key = { it.id }) { book ->
+                                NoteCard(
+                                    book = book,
+                                    onClick = { onNavigateToDetail(book.id) },
+                                    onPinClick = { viewModel.togglePin(book.id) },
+                                    onDeleteClick = { viewModel.deleteBook(book.id) },
+                                    isOwner = true
+                                )
+                            }
                         }
+                    }
+                    
+                    is HomeUiState.Empty -> {
+                        EmptyState(
+                            title = "Belum Ada Buku",
+                            message = "Mulai bagikan koleksi bukumu!",
+                            icon = { Icon(Icons.AutoMirrored.Filled.MenuBook, null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)) }
+                        )
+                    }
+                    
+                    is HomeUiState.Error -> ErrorState(message = state.message, onRetry = { viewModel.clearSearch() })
+                }
+            }
+        }
+    }
+
+    if (showSortMenu) {
+        SortBottomSheet(
+            currentSortBy = currentSortBy,
+            onSortSelected = { 
+                viewModel.onSortByChanged(it)
+                showSortMenu = false
+            },
+            onDismiss = { showSortMenu = false }
+        )
+    }
+}
+
+@Composable
+fun HomeHeader(
+    userName: String,
+    isDarkMode: Boolean,
+    onToggleTheme: () -> Unit,
+    onLogout: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        MaterialTheme.colorScheme.surface
+                    )
+                )
+            )
+            .padding(horizontal = 20.dp, vertical = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Halo, $userName! 👋",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Temukan Buku Menarik",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.5).sp
+                )
+            }
+            
+            Row {
+                IconButton(onClick = onToggleTheme) {
+                    Icon(
+                        imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "Theme"
                     )
                 }
-                
-                is HomeUiState.Error -> {
-                    ErrorState(
-                        message = state.message,
-                        onRetry = { viewModel.clearSearch() }
+                IconButton(onClick = onLogout) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = "Logout",
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
@@ -184,57 +228,40 @@ fun HomeScreen(
 }
 
 @Composable
-private fun SearchField(
+fun SearchBarRow(
     query: String,
     onQueryChange: (String) -> Unit,
-    onClear: () -> Unit
+    onSortClick: () -> Unit
 ) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = { Text("Cari catatan...") },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = query.isNotBlank(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                IconButton(onClick = onClear) {
-                    Icon(Icons.Default.Close, contentDescription = "Hapus")
-                }
-            }
-        }
-    )
-}
-
-@Composable
-private fun SortDropdownMenu(
-    expanded: Boolean,
-    currentSortBy: NoteSortBy,
-    onSortSelected: (NoteSortBy) -> Unit,
-    onDismiss: () -> Unit
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        NoteSortBy.entries.forEach { sortBy ->
-            DropdownMenuItem(
-                text = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(sortBy.displayName)
-                        if (sortBy == currentSortBy) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("✓", color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                },
-                onClick = { onSortSelected(sortBy) }
-            )
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .height(52.dp),
+            placeholder = { Text("Cari buku...") },
+            leadingIcon = { Icon(Icons.Outlined.Search, null) },
+            shape = RoundedCornerShape(16.dp),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        IconButton(
+            onClick = onSortClick,
+            modifier = Modifier
+                .size(52.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
+        ) {
+            Icon(Icons.Outlined.Sort, contentDescription = "Sort")
         }
     }
 }
@@ -245,7 +272,7 @@ private fun CategoryFilterRow(
     onCategorySelected: (BookGenre?) -> Unit
 ) {
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
@@ -259,38 +286,45 @@ private fun CategoryFilterRow(
         items(BookGenre.entries) { category ->
             FilterChip(
                 selected = selectedCategory == category,
-                onClick = { 
-                    onCategorySelected(
-                        if (selectedCategory == category) null else category
-                    )
-                },
+                onClick = { onCategorySelected(if (selectedCategory == category) null else category) },
                 label = { Text(category.displayName) }
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NotesList(
-    books: List<Book>,
-    onNoteClick: (Long) -> Unit,
-    onPinClick: (Long) -> Unit,
-    onDeleteClick: (Long) -> Unit
+fun SortBottomSheet(
+    currentSortBy: NoteSortBy,
+    onSortSelected: (NoteSortBy) -> Unit,
+    onDismiss: () -> Unit
 ) {
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(
-            items = books,
-            key = { it.id }
-        ) { book ->
-            NoteCard(
-                book = book,
-                onClick = { onNoteClick(book.id) },
-                onPinClick = { onPinClick(book.id) },
-                onDeleteClick = { onDeleteClick(book.id) }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+        ) {
+            Text(
+                text = "Urutkan Berdasarkan",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 16.dp)
             )
+            NoteSortBy.entries.forEach { sortBy ->
+                val isSelected = sortBy == currentSortBy
+                NavigationDrawerItem(
+                    label = { Text(sortBy.displayName) },
+                    selected = isSelected,
+                    onClick = { onSortSelected(sortBy) },
+                    icon = {
+                        if (isSelected) Icon(Icons.Default.Check, contentDescription = null)
+                    },
+                    modifier = Modifier.padding(vertical = 2.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
         }
     }
 }

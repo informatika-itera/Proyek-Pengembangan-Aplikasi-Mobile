@@ -5,14 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.bookku.domain.repository.AIRepository
 import com.example.bookku.domain.repository.WritingStyle
 import com.example.bookku.domain.usecase.GenerateIdeasUseCase
+import com.example.bookku.domain.usecase.GetBookByIdUseCase
 import com.example.bookku.domain.usecase.ImproveWritingUseCase
 import com.example.bookku.domain.usecase.SummarizeNoteUseCase
+import com.example.bookku.domain.model.Book
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -20,7 +24,8 @@ class AIAssistantViewModel(
     private val aiRepository: AIRepository,
     private val summarizeUseCase: SummarizeNoteUseCase,
     private val improveWritingUseCase: ImproveWritingUseCase,
-    private val generateIdeasUseCase: GenerateIdeasUseCase
+    private val generateIdeasUseCase: GenerateIdeasUseCase,
+    private val getBookByIdUseCase: GetBookByIdUseCase
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AIAssistantUiState())
@@ -29,9 +34,19 @@ class AIAssistantViewModel(
     private val _events = MutableSharedFlow<AIAssistantEvent>()
     val events: SharedFlow<AIAssistantEvent> = _events.asSharedFlow()
     
-    fun setInitialText(text: String?) {
-        text?.let {
-            _uiState.update { state -> state.copy(inputText = it) }
+    fun setInitialText(text: String?, noteId: Long? = null) {
+        _uiState.update { state -> 
+            state.copy(
+                inputText = text ?: state.inputText
+            )
+        }
+        
+        if (noteId != null && noteId != 0L) {
+            viewModelScope.launch {
+                getBookByIdUseCase(noteId).collect { book ->
+                    _uiState.update { it.copy(bookContext = book) }
+                }
+            }
         }
     }
     
@@ -46,8 +61,23 @@ class AIAssistantViewModel(
     fun executeAction() {
         val state = _uiState.value
         
+        // Fitur Diagnostik Rahasia: Jika input adalah "debug", cek kesehatan API
+        if (state.inputText.lowercase().trim() == "debug") {
+            _uiState.update { it.copy(isLoading = true, error = null, result = "Memulai Diagnostik...") }
+            viewModelScope.launch {
+                val debugResult = aiRepository.debugCheckApi()
+                _uiState.update { it.copy(isLoading = false, result = debugResult) }
+            }
+            return
+        }
+        
         if (state.inputText.isBlank()) {
             _uiState.update { it.copy(error = "Masukkan teks terlebih dahulu") }
+            return
+        }
+        
+        if (state.selectedAction == AIAction.CHAT) {
+            executeChat(state.inputText, state.bookContext)
             return
         }
         
@@ -60,7 +90,7 @@ class AIAssistantViewModel(
                 AIAction.IMPROVE_WRITING -> improveWriting(state.inputText, state.writingStyle)
                 AIAction.TRANSLATE -> translate(state.inputText, state.targetLanguage)
                 AIAction.SUGGEST_TITLE -> suggestTitle(state.inputText)
-                AIAction.CHAT -> chat(state.inputText)
+                AIAction.CHAT -> chat(state.inputText) // Should not happen now
             }
             
             result
@@ -69,6 +99,23 @@ class AIAssistantViewModel(
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message ?: "Terjadi kesalahan") }
+                }
+        }
+    }
+
+    private fun executeChat(message: String, context: Book?) {
+        val prompt = if (context != null) {
+            "Buku: ${context.title} (${context.author})\nGenre: ${context.category.displayName}\n\nPertanyaan: $message"
+        } else message
+
+        _uiState.update { it.copy(isLoading = true, error = null, result = "") }
+
+        viewModelScope.launch {
+            aiRepository.chatStream(prompt)
+                .onStart { _uiState.update { it.copy(isLoading = false) } }
+                .catch { e -> _uiState.update { it.copy(error = e.message ?: "Terjadi kesalahan") } }
+                .collect { chunk ->
+                    _uiState.update { it.copy(result = (it.result ?: "") + chunk) }
                 }
         }
     }
@@ -139,6 +186,7 @@ enum class AIAction(val displayName: String, val description: String) {
 
 data class AIAssistantUiState(
     val inputText: String = "",
+    val bookContext: Book? = null,
     val selectedAction: AIAction = AIAction.SUMMARIZE,
     val writingStyle: WritingStyle = WritingStyle.NEUTRAL,
     val targetLanguage: String = "English",

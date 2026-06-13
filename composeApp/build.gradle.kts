@@ -19,6 +19,9 @@ val localProperties = Properties().apply {
     }
 }
 
+val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -133,6 +136,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -154,8 +158,7 @@ sqldelight {
     databases {
         create("BookDatabase") {
             packageName.set("com.example.bookku.data.local")
+            verifyMigrations.set(false)
         }
     }
 }
-
-

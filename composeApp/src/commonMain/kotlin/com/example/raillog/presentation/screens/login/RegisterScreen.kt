@@ -48,38 +48,38 @@ fun RegisterScreen(
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = RailLogColors.TextPrimary,
         unfocusedTextColor = RailLogColors.TextPrimary,
-        focusedLabelColor = RailLogColors.PrimaryNavy,
+        focusedLabelColor = RailLogColors.PrimaryAction,
         unfocusedLabelColor = RailLogColors.TextPrimary,
         focusedContainerColor = Color.White,
         unfocusedContainerColor = Color.White,
-        focusedBorderColor = RailLogColors.PrimaryNavy,
-        unfocusedBorderColor = RailLogColors.BorderBlack
+        focusedBorderColor = RailLogColors.PrimaryAction,
+        unfocusedBorderColor = RailLogColors.BorderSubtle
     )
 
     if (isSuccess) {
         AlertDialog(
             onDismissRequest = { },
             containerColor = Color.White,
-            title = { Text("Registrasi Berhasil", color = RailLogColors.PrimaryNavy, fontWeight = FontWeight.ExtraBold) },
+            title = { Text("Registrasi Berhasil", color = RailLogColors.PrimaryAction, fontWeight = FontWeight.ExtraBold) },
             text = { Text("Akun Anda telah terdaftar secara resmi. Silakan Login dengan NIP dan Password Anda.", color = RailLogColors.TextPrimary, fontWeight = FontWeight.Bold) },
             confirmButton = {
                 Button(
                     onClick = onNavigateBack,
-                    colors = ButtonDefaults.buttonColors(containerColor = RailLogColors.PrimaryNavy, contentColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = RailLogColors.PrimaryAction, contentColor = Color.White)
                 ) { Text("KE HALAMAN LOGIN", fontWeight = FontWeight.ExtraBold, color = Color.White) }
             }
         )
     }
 
     Scaffold(
-        containerColor = RailLogColors.SurfaceSlate,
+        containerColor = RailLogColors.Neutral100,
         topBar = {
             TopAppBar(
-                title = { Text("Pendaftaran Akun Resmi", fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryNavy) },
+                title = { Text("Pendaftaran Akun Resmi", fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryAction) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = RailLogColors.PrimaryNavy) }
+                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = RailLogColors.PrimaryAction) }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = RailLogColors.SurfaceSlate)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = RailLogColors.Neutral100)
             )
         }
     ) { paddingValues ->
@@ -91,7 +91,7 @@ fun RegisterScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Otoritas Logistik", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryNavy)
+            Text("Otoritas Logistik", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryAction)
             Text("Masukkan identitas valid sesuai data kepegawaian.", color = RailLogColors.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -155,10 +155,10 @@ fun RegisterScreen(
             if (errorMsg != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = RailLogColors.ErrorBackground),
-                    border = BorderStroke(2.dp, RailLogColors.ErrorRed)
+                    colors = CardDefaults.cardColors(containerColor = RailLogColors.Danger50),
+                    border = BorderStroke(2.dp, RailLogColors.Danger600)
                 ) {
-                    Text(errorMsg!!, color = RailLogColors.ErrorRed, modifier = Modifier.padding(12.dp), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(errorMsg!!, color = RailLogColors.Danger600, modifier = Modifier.padding(12.dp), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
 
@@ -192,7 +192,7 @@ fun RegisterScreen(
                 },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = RailLogColors.PrimaryNavy,
+                    containerColor = RailLogColors.PrimaryAction,
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp)

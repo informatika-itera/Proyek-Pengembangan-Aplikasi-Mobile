@@ -45,7 +45,9 @@ fun SupplyDetailScreen(
     viewModel: SupplyDetailViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val documents by viewModel.documents.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDocDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(itemId) {
         viewModel.loadItem(itemId)
@@ -89,14 +91,17 @@ fun SupplyDetailScreen(
                         Text("Edit Details", color = MaterialTheme.colorScheme.onSurface)
                     }
                     Button(
-                        onClick = { /* TODO: Implement PDF Download */ },
+                        onClick = { showDocDialog = true },
                         modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy)
                     ) {
-                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Technical Doc")
+                        Text(
+                            if (documents.isEmpty()) "Technical Doc (Kosong)"
+                            else "Technical Doc (${documents.size})"
+                        )
                     }
                 }
             }
@@ -136,6 +141,75 @@ fun SupplyDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) { Text("Batal") }
+            }
+        )
+    }
+
+    if (showDocDialog) {
+        AlertDialog(
+            onDismissRequest = { showDocDialog = false },
+            title = { Text("Dokumen Teknis Terkait") },
+            text = {
+                if (documents.isEmpty()) {
+                    Text("Belum ada dokumen teknis yang terhubung dengan komponen ini.")
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 360.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        documents.forEach { doc ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceSlate, RoundedCornerShape(8.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(doc.title, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text(
+                                        doc.documentType.name,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    "Status: ${doc.verificationStatus.name}",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    doc.content.take(200).let {
+                                        if (doc.content.length > 200) "$it..." else it
+                                    },
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                doc.aiSummary?.let { summary ->
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    HorizontalDivider()
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        "Ringkasan AI:",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(summary, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDocDialog = false }) { Text("Tutup") }
             }
         )
     }

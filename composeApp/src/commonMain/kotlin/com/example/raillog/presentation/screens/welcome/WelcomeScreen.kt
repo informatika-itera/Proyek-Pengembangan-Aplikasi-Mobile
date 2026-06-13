@@ -2,38 +2,27 @@ package com.example.raillog.presentation.screens.welcome
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.DirectionsRailway
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Train
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.raillog.core.util.RequestNotificationPermission
 import com.example.raillog.data.local.datastore.UserPreferences
-import kotlinx.coroutines.launch
+import com.example.raillog.presentation.theme.RailLogColors
+import com.example.raillog.presentation.theme.Spacing
 import org.koin.compose.koinInject
-import kotlin.math.roundToInt
-
-val WelcomeBg = Color(0xFF1E3A5F)
-val BrandNavy = Color(0xFF00236F)
-val SuccessGreen = Color(0xFF10B981)
-val TextGray = Color(0xFFB0C4DE)
 
 @Composable
 fun WelcomeScreen(
@@ -41,175 +30,117 @@ fun WelcomeScreen(
     onAutoLogin: (String) -> Unit = {},
     userPreferences: UserPreferences = koinInject()
 ) {
-    // Request notifikasi permission — expect/actual, aman dipanggil dari commonMain
     RequestNotificationPermission()
 
     val savedRole by userPreferences.userRole.collectAsState(initial = "")
 
     LaunchedEffect(savedRole) {
-        if (savedRole.isNotEmpty()) {
-            onAutoLogin(savedRole)
-        }
+        if (savedRole.isNotEmpty()) onAutoLogin(savedRole)
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(WelcomeBg)
-            .padding(32.dp)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-        verticalArrangement = Arrangement.SpaceBetween
+            .background(RailLogColors.Background)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = 16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(Spacing.pagePadding)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Color.White, CircleShape),
-                contentAlignment = Alignment.Center
+            // Top — logo
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = Spacing.sm)
             ) {
-                Icon(
-                    imageVector = Icons.Default.DirectionsRailway,
-                    contentDescription = "Logo",
-                    tint = BrandNavy,
-                    modifier = Modifier.size(28.dp)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(RailLogColors.PrimaryAction),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Train,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    "RailLog",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = RailLogColors.TextPrimary
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "RailLog",
-                color = Color.White,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
 
-        Column {
-            Text(
-                text = "Streamlining Rail\nLogistics with\nAI Precision",
-                color = Color.White,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold,
-                lineHeight = 46.sp,
-                letterSpacing = (-1).sp
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Advanced tracking, predictive maintenance,\nand optimized routing for Nusantara's\nmodern rail network.",
-                color = TextGray,
-                fontSize = 16.sp,
-                lineHeight = 24.sp
-            )
-        }
+            // Center — headline
+            Column {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(RailLogColors.Brand50)
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
+                ) {
+                    Text(
+                        "Logistik Perkeretaapian",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = RailLogColors.PrimaryAction
+                    )
+                }
 
-        SwipeToStartButton(onSwipeComplete = onNavigateToLogin)
-    }
-}
+                Spacer(Modifier.height(Spacing.md))
 
-@Composable
-fun SwipeToStartButton(onSwipeComplete: () -> Unit) {
-    val thumbSize = 64.dp
-    val thumbSizePx = with(LocalDensity.current) { thumbSize.toPx() }
-    val coroutineScope = rememberCoroutineScope()
+                Text(
+                    "Kelola rantai pasok\nkereta api dengan\npresisi.",
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = 42.sp,
+                    color = RailLogColors.TextPrimary
+                )
 
-    var dragOffset by remember { mutableFloatStateOf(0f) }
+                Spacer(Modifier.height(Spacing.md))
 
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .clip(RoundedCornerShape(40.dp))
-            .background(Color.Black.copy(alpha = 0.2f))
-            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(40.dp))
-            .padding(8.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        val maxWidthPx = constraints.maxWidth.toFloat()
-        val maxDragPx = maxWidthPx - thumbSizePx
+                Text(
+                    "Pemantauan real-time, verifikasi dokumen\nberbasis AI, dan manajemen inventaris\ndalam satu platform.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = RailLogColors.TextSecondary,
+                    lineHeight = 22.sp
+                )
+            }
 
-        val progress = if (maxDragPx > 0) (dragOffset / maxDragPx).coerceIn(0f, 1f) else 0f
+            // Bottom — CTA
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                Button(
+                    onClick = onNavigateToLogin,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = RailLogColors.PrimaryAction,
+                        contentColor   = Color.White
+                    )
+                ) {
+                    Text("Masuk ke Sistem", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(Modifier.width(8.dp))
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, null, modifier = Modifier.size(18.dp))
+                }
 
-        val currentThumbColor = lerp(Color.White, SuccessGreen, progress)
-        val currentIconColor = lerp(BrandNavy, Color.White, progress)
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Start",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                modifier = Modifier.padding(end = 8.dp)
-            )
-            AnimatedArrows()
-        }
-
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(dragOffset.roundToInt(), 0) }
-                .size(thumbSize)
-                .background(currentThumbColor, CircleShape)
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            if (dragOffset > maxDragPx * 0.8f) {
-                                coroutineScope.launch {
-                                    dragOffset = maxDragPx
-                                    onSwipeComplete()
-                                }
-                            } else {
-                                coroutineScope.launch {
-                                    val anim = Animatable(dragOffset)
-                                    anim.animateTo(0f, tween(300)) {
-                                        dragOffset = value
-                                    }
-                                }
-                            }
-                        }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        dragOffset = (dragOffset + dragAmount).coerceIn(0f, maxDragPx)
-                    }
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = "Swipe to start",
-                tint = currentIconColor,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun AnimatedArrows() {
-    Row(horizontalArrangement = Arrangement.spacedBy((-4).dp)) {
-        for (i in 0..2) {
-            val infiniteTransition = rememberInfiniteTransition(label = "arrow_$i")
-            val alpha by infiniteTransition.animateFloat(
-                initialValue = 0.2f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 500, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse,
-                    initialStartOffset = StartOffset(offsetMillis = i * 200)
-                ),
-                label = "alpha_anim_$i"
-            )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = alpha),
-                modifier = Modifier.size(20.dp)
-            )
+                Text(
+                    "v1.0.0 · Institut Teknologi Sumatera",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = RailLogColors.TextTertiary,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }

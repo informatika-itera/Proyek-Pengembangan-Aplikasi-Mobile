@@ -11,28 +11,31 @@ CREATE TABLE SupplyItemEntity (
     document_ref TEXT,
     notes TEXT NOT NULL DEFAULT '',
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    created_by TEXT NOT NULL DEFAULT 'admin'
 );
 
 getAllItems:
 SELECT * FROM SupplyItemEntity
+WHERE created_by = ?
 ORDER BY priority DESC, updated_at DESC;
 
 getItemsByStatus:
 SELECT * FROM SupplyItemEntity
-WHERE status = ?
+WHERE status = ? AND created_by = ?
 ORDER BY priority DESC, updated_at DESC;
 
 getItemsByCategory:
 SELECT * FROM SupplyItemEntity
-WHERE category = ?
+WHERE category = ? AND created_by = ?
 ORDER BY priority DESC, updated_at DESC;
 
 searchItems:
 SELECT * FROM SupplyItemEntity
-WHERE name LIKE '%' || ? || '%'
+WHERE (name LIKE '%' || ? || '%'
    OR part_code LIKE '%' || ? || '%'
-   OR supplier LIKE '%' || ? || '%'
+   OR supplier LIKE '%' || ? || '%')
+   AND created_by = ?
 ORDER BY updated_at DESC;
 
 getItemById:
@@ -40,8 +43,8 @@ SELECT * FROM SupplyItemEntity WHERE id = ?;
 
 insertItem:
 INSERT INTO SupplyItemEntity
-(part_code, name, category, quantity, unit, supplier, status, priority, document_ref, notes, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+(part_code, name, category, quantity, unit, supplier, status, priority, document_ref, notes, created_at, updated_at, created_by)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertId:
 SELECT last_insert_rowid();
@@ -61,4 +64,7 @@ deleteItem:
 DELETE FROM SupplyItemEntity WHERE id = ?;
 
 countByStatus:
-SELECT status, COUNT(*) AS total FROM SupplyItemEntity GROUP BY status;
+SELECT status, COUNT(*) AS total FROM SupplyItemEntity WHERE created_by = ? GROUP BY status;
+
+migrateDataToUser:
+UPDATE SupplyItemEntity SET created_by = ? WHERE created_by = 'admin' OR created_by = '' OR created_by IS NULL;

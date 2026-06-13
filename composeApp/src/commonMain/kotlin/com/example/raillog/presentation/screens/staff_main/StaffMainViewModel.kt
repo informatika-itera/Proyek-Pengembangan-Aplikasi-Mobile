@@ -7,22 +7,41 @@ import com.example.raillog.domain.model.SupplyItem
 import com.example.raillog.domain.model.SupplyStatus
 import com.example.raillog.domain.repository.SupplyRepository
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class StaffMainViewModel(
     private val supplyRepository: SupplyRepository,
     val userPreferences: UserPreferences
 ) : ViewModel() {
 
+    private val activeUsername = userPreferences.activeUsername
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
     val activeUserRole = userPreferences.userRole
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Staff Gudang")
 
-    val allSupplyItems = supplyRepository.getAllItems()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    init {
+        viewModelScope.launch {
+            activeUsername.collect { username ->
+                if (username.isNotEmpty()) {
+                    supplyRepository.migrateDataToUser(username)
+                }
+            }
+        }
+    }
 
-    val allDrafts = supplyRepository.getAllDrafts()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val allSupplyItems = activeUsername.flatMapLatest { username ->
+        supplyRepository.getAllItems(username)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val allDrafts = activeUsername.flatMapLatest { username ->
+        supplyRepository.getAllDrafts(username)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // ==================== SEARCH & FILTER STATE ====================
 

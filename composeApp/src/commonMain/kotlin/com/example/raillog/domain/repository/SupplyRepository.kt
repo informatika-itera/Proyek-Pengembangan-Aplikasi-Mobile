@@ -6,16 +6,17 @@ import com.example.raillog.domain.model.SupplyStatus
 import kotlinx.coroutines.flow.Flow
 
 interface SupplyRepository {
-    fun getAllItems(): Flow<List<SupplyItem>>
+    suspend fun migrateDataToUser(username: String)
+    fun getAllItems(activeUsername: String): Flow<List<SupplyItem>>
     fun getItemById(id: Long): Flow<SupplyItem?>
 
-    suspend fun insertItem(item: SupplyItem)
+    suspend fun insertItem(item: SupplyItem, activeUsername: String)
     suspend fun updateItem(item: SupplyItem)
     suspend fun deleteItem(id: Long)
     suspend fun updateStatus(id: Long, status: SupplyStatus)
 
     // --- FITUR AUTO-SAVE DRAFT ---
-    suspend fun saveDraft(draftId: String, projectTitle: String, currentStep: Int, lastUpdated: Long, formStateJson: String)
-    fun getAllDrafts(): Flow<List<DraftItem>>
+    suspend fun saveDraft(draftId: String, projectTitle: String, currentStep: Int, lastUpdated: Long, formStateJson: String, activeUsername: String)
+    fun getAllDrafts(activeUsername: String): Flow<List<DraftItem>>
     suspend fun deleteDraft(draftId: String)
 }

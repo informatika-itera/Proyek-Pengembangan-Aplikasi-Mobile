@@ -3,15 +3,16 @@ CREATE TABLE DraftRequisition (
     projectTitle TEXT NOT NULL,
     currentStep INTEGER NOT NULL,
     lastUpdated INTEGER NOT NULL,
-    formStateJson TEXT NOT NULL
+    formStateJson TEXT NOT NULL,
+    created_by TEXT NOT NULL
 );
 
 insertOrReplaceDraft:
-INSERT OR REPLACE INTO DraftRequisition(draftId, projectTitle, currentStep, lastUpdated, formStateJson)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO DraftRequisition(draftId, projectTitle, currentStep, lastUpdated, formStateJson, created_by)
+VALUES (?, ?, ?, ?, ?, ?);
 
 getAllDrafts:
-SELECT * FROM DraftRequisition ORDER BY lastUpdated DESC;
+SELECT * FROM DraftRequisition WHERE created_by = ? ORDER BY lastUpdated DESC;
 
 getDraftById:
 SELECT * FROM DraftRequisition WHERE draftId = ?;

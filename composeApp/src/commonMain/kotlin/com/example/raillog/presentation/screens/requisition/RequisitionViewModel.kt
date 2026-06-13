@@ -2,6 +2,7 @@ package com.example.raillog.presentation.screens.requisition
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.raillog.data.local.datastore.UserPreferences
 import com.example.raillog.domain.model.PartCategory
 import com.example.raillog.domain.model.Priority
 import com.example.raillog.domain.model.SupplyItem
@@ -11,11 +12,7 @@ import com.example.raillog.domain.repository.TechnicalDocumentRepository
 import com.example.raillog.domain.repository.AIRepository
 import com.example.raillog.data.remote.api.SystemPrompts
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
@@ -50,6 +47,15 @@ data class RequisitionFormState(
     val projectType: String = "",
     val projectCode: String = "",
     val destinationSite: String = "",
+    val destinationOptions: List<String> = listOf(
+        "Depo MRT Lebak Bulus", "Depo MRT Dukuh Atas",
+        "Depo LRT Kelapa Gading", "Depo LRT Jati Mulya", "Depo LRT Harjamukti",
+        "Depo KRL Bukit Duri", "Depo KRL Depok", "Depo KRL Bogor", "Depo KRL Manggarai",
+        "Depo KAI Balai Yasa Manggarai", "Depo KAI Balai Yasa Gubeng", "Depo KAI Balai Yasa Yogyakarta",
+        "Depo KCIC Tegalluar", "Depo KCIC Halim",
+        "Stasiun Gambir", "Stasiun Pasar Senen", "Stasiun Bandung",
+        "Depo Kereta Api Medan", "Depo Kereta Api Surabaya Pasarturi"
+    ),
     
     // Step 3: Katalog Material (Expanded Industrial Catalog)
     val selectedCategory: String = "All",
@@ -66,7 +72,13 @@ data class RequisitionFormState(
         CatalogItemUI("FST-E-102", "Pandrol E-Clip Fastener", "Infrastructure", 5000, true, unit = "Pcs"),
         CatalogItemUI("WRN-110-T", "Torque Wrench Calibration Set", "Tools", 15, true, unit = "Set"),
         CatalogItemUI("INV-S-550", "Static Inverter Module 1500V", "Electrical", 2, false, unit = "Unit"),
-        CatalogItemUI("COM-D-012", "Train Dispatcher Radio Unit", "Communication", 10, true, unit = "Pcs")
+        CatalogItemUI("COM-D-012", "Train Dispatcher Radio Unit", "Communication", 10, true, unit = "Pcs"),
+        CatalogItemUI("AIR-C-202", "Air Compressor Unit 10 bar", "Mechanical", 4, true, unit = "Unit"),
+        CatalogItemUI("CB-HV-040", "Circuit Breaker HV 25kV", "Electrical", 6, false, unit = "Pcs"),
+        CatalogItemUI("BAT-L-110", "Ni-Cd Battery Bank 110V 80Ah", "Electrical", 15, true, unit = "Set"),
+        CatalogItemUI("AXL-C-001", "Axle Counter Sensor Unit", "Signaling", 40, true, unit = "Pcs"),
+        CatalogItemUI("BAL-S-010", "Eurobalise Signaling Transponder", "Signaling", 100, true, unit = "Pcs"),
+        CatalogItemUI("RLS-G-002", "Rail Lubrication System Pump", "Infrastructure", 12, true, unit = "Unit")
     ),
     
     // Step 4: Lembar Justifikasi
@@ -107,18 +119,22 @@ data class RequisitionFormState(
 class RequisitionViewModel(
     private val repository: SupplyRepository,
     private val technicalDocumentRepository: TechnicalDocumentRepository,
-    private val aiRepository: AIRepository
+    private val aiRepository: AIRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RequisitionFormState())
     val uiState: StateFlow<RequisitionFormState> = _uiState.asStateFlow()
+    
+    private val activeUsername = userPreferences.activeUsername
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
     private var currentDraftId = "DRAFT_${Random.nextInt(100000, 999999)}"
 
     fun loadDraft(draftId: String, onStepLoaded: (Int) -> Unit) {
         viewModelScope.launch {
             try {
-                val drafts = repository.getAllDrafts().firstOrNull()
+                val drafts = repository.getAllDrafts(activeUsername.value).firstOrNull()
                 val targetDraft = drafts?.find { it.draftId == draftId }
                 if (targetDraft != null) {
                     currentDraftId = draftId
@@ -188,7 +204,14 @@ class RequisitionViewModel(
         viewModelScope.launch {
             try {
                 val json = Json.encodeToString(currentState)
-                repository.saveDraft(currentDraftId, currentState.projectCode.ifBlank { "Audit Requisition" }, step, Clock.System.now().toEpochMilliseconds(), json)
+                repository.saveDraft(
+                    currentDraftId, 
+                    currentState.projectCode.ifBlank { "Audit Requisition" }, 
+                    step, 
+                    Clock.System.now().toEpochMilliseconds(), 
+                    json,
+                    activeUsername.value
+                )
             } catch (e: Exception) { println("Gagal simpan draf: ${e.message}") }
         }
     }
@@ -232,7 +255,7 @@ class RequisitionViewModel(
                     createdAt = Clock.System.now(),
                     updatedAt = Clock.System.now()
                 )
-                repository.insertItem(newItem)
+                repository.insertItem(newItem, activeUsername.value)
                 repository.deleteDraft(currentDraftId)
                 _uiState.update { it.copy(isSubmitting = false, submitSuccess = true) }
             } catch (e: Exception) { _uiState.update { it.copy(isSubmitting = false, errorMessage = "Error: ${e.message}") } }

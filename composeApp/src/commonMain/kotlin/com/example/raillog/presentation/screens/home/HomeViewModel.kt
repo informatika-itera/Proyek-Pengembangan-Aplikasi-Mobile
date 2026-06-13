@@ -17,17 +17,24 @@ class HomeViewModel(
     // Membaca user role secara reaktif dari DataStore
     val userRole: StateFlow<String> = userPreferences.userRole
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Operator Gudang")
+    
+    private val activeUsername = userPreferences.activeUsername
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadDashboardData()
+        viewModelScope.launch {
+            activeUsername.collect { username ->
+                loadDashboardData(username)
+            }
+        }
     }
 
-    private fun loadDashboardData() {
+    private fun loadDashboardData(username: String) {
         viewModelScope.launch {
-            repository.getAllItems()
+            repository.getAllItems(username)
                 .catch { e ->
                     _uiState.value = HomeUiState.Error(e.message ?: "Terjadi kesalahan sistem")
                 }

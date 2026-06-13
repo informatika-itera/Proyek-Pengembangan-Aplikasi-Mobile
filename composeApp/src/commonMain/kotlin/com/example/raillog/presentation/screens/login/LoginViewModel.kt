@@ -2,9 +2,7 @@ package com.example.raillog.presentation.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.raillog.data.local.datastore.DataStoreFactory
 import com.example.raillog.data.local.datastore.UserPreferences
-import com.example.raillog.data.local.datastore.create
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,15 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-object GlobalSessionManager {
-    private var instance: UserPreferences? = null
-    fun getPrefs(factory: DataStoreFactory): UserPreferences {
-        if (instance == null) {
-            instance = UserPreferences(factory.create())
-        }
-        return instance!!
-    }
-}
+
 
 data class LoginUiState(
     val isLoading: Boolean = false,
@@ -29,11 +19,9 @@ data class LoginUiState(
     val role: String = ""
 )
 
-class LoginViewModel(private val dataStoreFactory: DataStoreFactory) : ViewModel() {
+class LoginViewModel(private val userPreferences: UserPreferences) : ViewModel(){
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-
-    private val userPreferences = GlobalSessionManager.getPrefs(dataStoreFactory)
 
     fun login(usernameInput: String, passwordInput: String) {
         viewModelScope.launch {
@@ -45,14 +33,23 @@ class LoginViewModel(private val dataStoreFactory: DataStoreFactory) : ViewModel
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             delay(1000)
 
-            // Ambil data akun yang didaftarkan manual
-            val registeredStaffUser = userPreferences.staffUsername.first()
-            val registeredStaffPass = userPreferences.staffPassword.first()
+            // Ambil data daftar akun
+            val allAccountsString = userPreferences.staffAccounts.first()
+            val accountList = if (allAccountsString.isNotEmpty()) {
+                allAccountsString.split(";").map { it.split("|") }
+            } else {
+                emptyList()
+            }
+
+            // Cari user di daftar
+            val foundAccount = accountList.find { it.size >= 2 && it[0] == usernameInput && it[1] == passwordInput }
 
             when {
-                // 1. PRIORITASKAN AKUN BARU (Akun yang baru dibuat di RegisterScreen)
-                registeredStaffUser.isNotEmpty() && usernameInput == registeredStaffUser && passwordInput == registeredStaffPass -> {
+                // 1. DITEMUKAN DI DAFTAR AKUN
+                foundAccount != null -> {
                     userPreferences.setUserRole("staff")
+                    userPreferences.setActiveUsername(usernameInput) // Set sesi aktif
+                    println("DEBUG: User logged in, setting activeUsername to: $usernameInput")
                     _uiState.value = _uiState.value.copy(isLoading = false, loginSuccess = true, role = "staff")
                 }
                 // 2. Akun Admin (Hardcoded)

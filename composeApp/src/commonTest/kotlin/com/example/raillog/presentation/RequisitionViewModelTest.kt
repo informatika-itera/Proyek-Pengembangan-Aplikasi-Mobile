@@ -44,6 +44,7 @@ class RequisitionViewModelTest {
         val baseState = RequisitionFormState(
             requestorName = "Giovan Lado",
             employeeId = "RLN-001",
+            phoneNumber = "08123456789",
             projectType = "LRT",
             projectCode = "LRT-JABO-24A",
             isSigned = true

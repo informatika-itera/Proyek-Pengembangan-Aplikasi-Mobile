@@ -24,5 +24,5 @@ val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { DataStoreFactory(androidContext()) }
     single { NotificationServiceImpl(androidContext()) } bind NotificationService::class
-    single { CriticalItemsNotifier(androidContext(), get()) }
+    single { CriticalItemsNotifier(androidContext(), get(), get()) }
 }

@@ -1,6 +1,5 @@
 package com.example.raillog.presentation.screens.staff_main
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,50 +19,39 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.raillog.domain.model.DraftItem
 import com.example.raillog.domain.model.SupplyItem
+import com.example.raillog.presentation.components.*
 import com.example.raillog.presentation.theme.RailLogColors
+import com.example.raillog.presentation.theme.Spacing
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
-sealed class BottomNavItem(val title: String, val icon: ImageVector) {
-    data object Home : BottomNavItem("Beranda", Icons.Default.Home)
-    data object Requests : BottomNavItem("Pengajuan", Icons.AutoMirrored.Filled.Assignment)
-    data object Inventory : BottomNavItem("Gudang", Icons.Default.Inventory)
-    data object History : BottomNavItem("Audit", Icons.Default.History)
-}
-
-/**
- * Mendapatkan sapaan dinamis berdasarkan jam sistem saat ini (KMP Safe)
- */
-fun getGreeting(): String {
-    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-    return when (now.hour) {
-        in 5..10 -> "Selamat Pagi"
-        in 11..14 -> "Selamat Siang"
-        in 15..18 -> "Selamat Sore"
-        else -> "Selamat Malam"
+private fun getGreeting(): String {
+    val h = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
+    return when (h) {
+        in 5..10 -> "Selamat pagi"
+        in 11..14 -> "Selamat siang"
+        in 15..18 -> "Selamat sore"
+        else -> "Selamat malam"
     }
 }
 
-fun formatTimestamp(millis: Long): String {
+private fun formatTs(millis: Long): String {
     if (millis <= 0L) return "Baru saja"
     return try {
-        val instant = Instant.fromEpochMilliseconds(millis)
-        val dt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-        "${dt.dayOfMonth.toString().padStart(2, '0')}/${dt.monthNumber.toString().padStart(2, '0')}/${dt.year}"
-    } catch (e: Exception) {
-        "Audit ID: $millis"
-    }
+        val dt = Instant.fromEpochMilliseconds(millis)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+        "${dt.dayOfMonth.toString().padStart(2,'0')}/${dt.monthNumber.toString().padStart(2,'0')}/${dt.year}"
+    } catch (e: Exception) { "-" }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,96 +60,145 @@ fun StaffMainScreen(
     viewModel: StaffMainViewModel = koinViewModel(),
     onNavigateToNewRequisition: () -> Unit,
     onNavigateToResumeDraft: (String) -> Unit = {},
+    onNavigateToAIAssistant: () -> Unit,
     onLogout: () -> Unit
 ) {
-    val userRole by viewModel.activeUserRole.collectAsState()
-    val allItems by viewModel.allSupplyItems.collectAsState()
+    val userRole  by viewModel.activeUserRole.collectAsState()
+    val allItems  by viewModel.allSupplyItems.collectAsState()
     val allDrafts by viewModel.allDrafts.collectAsState()
-
     var selectedTab by remember { mutableIntStateOf(0) }
-    var showAccountMenu by remember { mutableStateOf(false) }
 
-    val tabs = listOf(BottomNavItem.Home, BottomNavItem.Requests, BottomNavItem.Inventory, BottomNavItem.History)
+    val tabs = listOf("Beranda", "Pengajuan", "Gudang", "Riwayat")
+    val tabIcons = listOf(
+        Icons.Default.Home,
+        Icons.AutoMirrored.Filled.Assignment,
+        Icons.Default.Inventory,
+        Icons.Default.History
+    )
 
     Scaffold(
-        containerColor = RailLogColors.SurfaceSlate,
+        containerColor = RailLogColors.Background,
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            modifier = Modifier.size(32.dp).background(RailLogColors.PrimaryNavy, CircleShape),
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(RailLogColors.PrimaryAction)
+                                .clickable { selectedTab = 0 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("GL", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.ExtraBold)
+                            Icon(Icons.Default.Train, null,
+                                tint = Color.White, modifier = Modifier.size(16.dp))
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text("RailLog Nusantara", fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryNavy)
+                        Spacer(Modifier.width(10.dp))
+                        Text("RailLog", fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp, color = RailLogColors.TextPrimary)
                     }
                 },
                 actions = {
-                    Box {
-                        IconButton(onClick = { showAccountMenu = true }) {
-                            Icon(Icons.Default.AccountCircle, "Akun", tint = RailLogColors.PrimaryNavy, modifier = Modifier.size(32.dp))
-                        }
-                        // Dropdown dengan Kontras Tinggi (Background Putih Solid)
-                        DropdownMenu(
-                            expanded = showAccountMenu, 
-                            onDismissRequest = { showAccountMenu = false },
-                            modifier = Modifier.background(Color.White).border(2.dp, Color.Black, RoundedCornerShape(8.dp))
-                        ) {
-                            val savedName by viewModel.userPreferences.staffName.collectAsState(initial = "")
-                            val savedId by viewModel.userPreferences.staffId.collectAsState(initial = "")
-                            val savedPhone by viewModel.userPreferences.staffPhone.collectAsState(initial = "")
-                            
-                            DropdownMenuItem(
-                                text = { 
-                                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                                        Text(savedName.ifEmpty { "Staff Logistik" }, fontWeight = FontWeight.ExtraBold, color = Color.Black, fontSize = 16.sp)
-                                        if (savedId.isNotEmpty()) Text("NIP: $savedId", fontSize = 13.sp, color = Color.Black, fontWeight = FontWeight.Bold)
-                                        if (savedPhone.isNotEmpty()) Text("WA: $savedPhone", fontSize = 13.sp, color = Color.Black, fontWeight = FontWeight.Bold)
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text("PERAN: $userRole", fontSize = 11.sp, color = RailLogColors.PrimaryNavy, fontWeight = FontWeight.ExtraBold)
+                    IconButton(onClick = onNavigateToAIAssistant) {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = "Asisten AI",
+                            tint = RailLogColors.PrimaryAction,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+
+                    var showMenu by remember { mutableStateOf(false) }
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.AccountCircle, null,
+                            tint = RailLogColors.TextSecondary, modifier = Modifier.size(26.dp))
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                        modifier = Modifier
+                            .background(RailLogColors.Surface)
+                            .border(1.dp, RailLogColors.BorderDefault, RoundedCornerShape(10.dp))
+                    ) {
+                        // Multi-account logic is complex, for now, just show a placeholder
+                        DropdownMenuItem(
+                            text = {
+                                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                                    Text("Staff Logistik",
+                                        fontWeight = FontWeight.Medium,
+                                        color = RailLogColors.TextPrimary)
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(100.dp))
+                                            .background(RailLogColors.Brand50)
+                                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(userRole, fontSize = 11.sp,
+                                            color = RailLogColors.PrimaryAction,
+                                            fontWeight = FontWeight.Medium)
                                     }
-                                },
-                                onClick = { showAccountMenu = false }
-                            )
-                            HorizontalDivider(color = Color.Black, thickness = 1.dp)
-                            DropdownMenuItem(
-                                text = { Text("LOGOUT SISTEM", color = RailLogColors.ErrorRed, fontWeight = FontWeight.ExtraBold) },
-                                onClick = { showAccountMenu = false; onLogout() },
-                                leadingIcon = { Icon(Icons.AutoMirrored.Filled.Logout, null, tint = RailLogColors.ErrorRed) }
-                            )
-                        }
+                                }
+                            },
+                            onClick = { showMenu = false }
+                        )
+                        HorizontalDivider(color = RailLogColors.BorderSubtle)
+                        DropdownMenuItem(
+                            text = {
+                                Text("Keluar", color = RailLogColors.Danger600,
+                                    fontWeight = FontWeight.Medium)
+                            },
+                            leadingIcon = {
+                                Icon(Icons.AutoMirrored.Filled.Logout, null,
+                                    tint = RailLogColors.Danger600, modifier = Modifier.size(16.dp))
+                            },
+                            onClick = { showMenu = false; onLogout() }
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = RailLogColors.Surface,
+                )
             )
         },
         floatingActionButton = {
             if (selectedTab == 1) {
                 FloatingActionButton(
-                    onClick = onNavigateToNewRequisition, 
-                    containerColor = RailLogColors.PrimaryNavy, 
-                    contentColor = Color.White
+                    onClick = onNavigateToNewRequisition,
+                    containerColor = RailLogColors.PrimaryAction,
+                    contentColor   = Color.White,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.size(52.dp)
                 ) {
-                    Icon(Icons.Default.Add, "Tambah", tint = Color.White)
+                    Icon(Icons.Default.Add, null, modifier = Modifier.size(22.dp))
                 }
             }
         },
         bottomBar = {
-            NavigationBar(containerColor = Color.White, tonalElevation = 8.dp) {
-                tabs.forEachIndexed { index, item ->
+            NavigationBar(
+                containerColor = RailLogColors.Surface,
+                tonalElevation = 0.dp,
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = RailLogColors.BorderSubtle,
+                    shape = RoundedCornerShape(0.dp)
+                )
+            ) {
+                tabs.forEachIndexed { i, label ->
                     NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        label = { Text(item.title, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold) },
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        selected = selectedTab == i,
+                        onClick  = { selectedTab = i },
+                        icon = { Icon(tabIcons[i], null, modifier = Modifier.size(20.dp)) },
+                        label = {
+                            Text(label, fontSize = 10.sp,
+                                fontWeight = if (selectedTab == i) FontWeight.SemiBold
+                                else FontWeight.Normal)
+                        },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = RailLogColors.PrimaryNavy,
-                            selectedTextColor = RailLogColors.PrimaryNavy,
-                            unselectedTextColor = Color.Black,
-                            indicatorColor = RailLogColors.AISurface
+                            selectedIconColor   = RailLogColors.PrimaryAction,
+                            selectedTextColor   = RailLogColors.PrimaryAction,
+                            unselectedIconColor = RailLogColors.TextTertiary,
+                            unselectedTextColor = RailLogColors.TextTertiary,
+                            indicatorColor      = RailLogColors.Brand50
                         )
                     )
                 }
@@ -170,7 +207,7 @@ fun StaffMainScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (selectedTab) {
-                0 -> StaffHomeTab(userRole, allItems, onNavigateToNewRequisition, { selectedTab = 3 })
+                0 -> StaffHomeTab(userRole, allItems, onNavigateToNewRequisition)
                 1 -> StaffRequestsTab(viewModel, allDrafts, onNavigateToResumeDraft)
                 2 -> StaffInventoryTab(viewModel)
                 3 -> StaffHistoryTab(viewModel)
@@ -179,71 +216,152 @@ fun StaffMainScreen(
     }
 }
 
+// ── Home tab ──────────────────────────────────────────────────────────────────
+
 @Composable
-fun StaffHomeTab(userRole: String, allItems: List<SupplyItem>, onStart: () -> Unit, onViewAll: () -> Unit) {
-    val pending = allItems.count { it.status.name == "PENDING" }
+fun StaffHomeTab(
+    userRole: String,
+    allItems: List<SupplyItem>,
+    onStart: () -> Unit
+) {
+    val pending  = allItems.count { it.status.name == "PENDING" }
     val critical = allItems.count { it.priority.name == "CRITICAL" || it.priority.name == "HIGH" }
 
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(Spacing.pagePadding),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionGap)
+    ) {
         item {
-            Spacer(modifier = Modifier.height(16.dp))
-            // SAPAAN DINAMIS JAM SISTEM
-            Text(
-                "${getGreeting()},\n$userRole", 
-                fontSize = 24.sp, 
-                fontWeight = FontWeight.ExtraBold, 
-                color = RailLogColors.PrimaryNavy, 
-                lineHeight = 30.sp
-            )
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                Box(modifier = Modifier.size(8.dp).background(if (pending > 0) RailLogColors.WarningAmber else RailLogColors.SuccessEmerald, CircleShape))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(if (pending > 0) "$pending Permintaan Audit Tertunda" else "Status Operasional Aman", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
-            }
-        }
-
-        item {
-            Card(onClick = onStart, modifier = Modifier.fillMaxWidth().height(100.dp), colors = CardDefaults.cardColors(containerColor = RailLogColors.PrimaryNavy), shape = RoundedCornerShape(12.dp)) {
-                Row(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Form Pengadaan Audit", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
-                        Text("Mulai alur 5-langkah profesional", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
-                    }
-                    Icon(Icons.Default.PostAdd, null, tint = Color.White, modifier = Modifier.size(36.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(getGreeting(), style = MaterialTheme.typography.bodySmall,
+                    color = RailLogColors.TextSecondary)
+                Text("Selamat bekerja",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold, color = RailLogColors.TextPrimary)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(modifier = Modifier.size(6.dp).clip(CircleShape)
+                        .background(if (pending > 0) RailLogColors.Warning600 else RailLogColors.Success600))
+                    Text(
+                        if (pending > 0) "$pending permintaan menunggu verifikasi"
+                        else "Semua permintaan terverifikasi",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = RailLogColors.TextSecondary
+                    )
                 }
             }
         }
 
+        // Metrics row
         item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                MetricCard(Modifier.weight(1f), Icons.Default.Inventory2, "Total Stok", allItems.size.toString(), RailLogColors.PrimaryNavy)
-                MetricCard(Modifier.weight(1f), Icons.Default.ReportProblem, "Peringatan", critical.toString(), RailLogColors.ErrorRed, RailLogColors.ErrorBackground)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.itemGap)
+            ) {
+                MetricCard("Inventaris", allItems.size.toString(),
+                    Icons.Default.Inventory2, RailLogColors.PrimaryAction,
+                    modifier = Modifier.weight(1f))
+                MetricCard("Kritis", critical.toString(),
+                    Icons.Default.Warning, RailLogColors.Danger600,
+                    modifier = Modifier.weight(1f))
+                MetricCard("Pending", pending.toString(),
+                    Icons.Default.Schedule, RailLogColors.Warning600,
+                    modifier = Modifier.weight(1f))
             }
         }
 
+        // Quick action card
         item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Audit Terbaru", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryNavy)
-                TextButton(onClick = onViewAll) { Text("LIHAT SEMUA", color = RailLogColors.PrimaryNavy, fontWeight = FontWeight.ExtraBold) }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(RailLogColors.PrimaryAction)
+                    .clickable(onClick = onStart)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text("Buat pengajuan baru",
+                        fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 15.sp)
+                    Spacer(Modifier.height(2.dp))
+                    Text("Requisition wizard 5 langkah",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.75f))
+                }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                }
             }
+        }
+
+        // Recent activity
+        item {
+            SectionHeader("Aktivitas terbaru")
         }
 
         if (allItems.isEmpty()) {
-            item { EmptyStateBox("Belum ada data audit logistik.") }
+            item {
+                EmptyState(Icons.Default.Inbox,
+                    "Belum ada aktivitas",
+                    "Buat pengajuan pertama Anda")
+            }
         } else {
-            items(allItems.reversed().take(3)) { item -> HistoryCard(item) }
+            items(allItems.reversed().take(5)) { item ->
+                SupplyItemRow(item)
+            }
         }
-        item { Spacer(modifier = Modifier.height(24.dp)) }
+
+        item { Spacer(Modifier.height(Spacing.lg)) }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaffRequestsTab(viewModel: StaffMainViewModel, allDrafts: List<DraftItem>, onResume: (String) -> Unit) {
+private fun SupplyItemRow(item: SupplyItem) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(RailLogColors.Surface)
+            .border(1.dp, RailLogColors.BorderDefault, RoundedCornerShape(10.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(item.name, style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium, color = RailLogColors.TextPrimary,
+                maxLines = 1)
+            Spacer(Modifier.height(2.dp))
+            Text(item.partCode, style = MaterialTheme.typography.labelSmall,
+                color = RailLogColors.TextTertiary)
+        }
+        StatusBadge(item.status)
+    }
+}
+
+// ── Requests tab ──────────────────────────────────────────────────────────────
+
+@Composable
+fun StaffRequestsTab(
+    viewModel: StaffMainViewModel,
+    allDrafts: List<DraftItem>,
+    onResume: (String) -> Unit
+) {
     var subTab by remember { mutableIntStateOf(0) }
-    val labels = listOf("Semua", "Draf", "Audit", "Selesai")
-    val query by viewModel.searchQuery.collectAsState()
-    val items by viewModel.filteredRequestItems.collectAsState()
+    val labels = listOf("Semua", "Draf", "Pending", "Selesai")
+    val query  by viewModel.searchQuery.collectAsState()
+    val items  by viewModel.filteredRequestItems.collectAsState()
 
     val display = when (subTab) {
         2 -> items.filter { it.status.name == "PENDING" }
@@ -251,205 +369,289 @@ fun StaffRequestsTab(viewModel: StaffMainViewModel, allDrafts: List<DraftItem>, 
         else -> items
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text("Daftar Pengajuan", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryNavy, modifier = Modifier.padding(16.dp))
-        FunctionalSearchBar(query, { viewModel.updateSearchQuery(it) }, "Cari berdasarkan nama atau kode...")
+    Column(modifier = Modifier.fillMaxSize().background(RailLogColors.Background)) {
+        Column(modifier = Modifier.padding(horizontal = Spacing.pagePadding)) {
+            Spacer(Modifier.height(Spacing.md))
+            PageHeader("Pengajuan", "Daftar semua permintaan material")
+            Spacer(Modifier.height(Spacing.md))
+            RailLogSearchField(query, { viewModel.updateSearchQuery(it) }, "Cari nama atau kode...")
+            Spacer(Modifier.height(Spacing.sm))
+        }
 
         ScrollableTabRow(
-            selectedTabIndex = subTab, containerColor = Color.Transparent, edgePadding = 16.dp,
+            selectedTabIndex = subTab,
+            containerColor   = RailLogColors.Background,
+            edgePadding = Spacing.pagePadding,
             indicator = { tabPositions ->
-                SecondaryIndicator(Modifier.tabIndicatorOffset(tabPositions[subTab]), color = RailLogColors.PrimaryNavy)
+                SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[subTab]),
+                    color = RailLogColors.PrimaryAction
+                )
             },
-            divider = { HorizontalDivider(color = Color.Black.copy(alpha = 0.1f)) }
+            divider = { HorizontalDivider(color = RailLogColors.BorderSubtle) }
         ) {
             labels.forEachIndexed { i, title ->
-                Tab(selected = subTab == i, onClick = { subTab = i }, text = { Text(title, fontWeight = if (subTab == i) FontWeight.Bold else FontWeight.Normal, color = if(subTab == i) RailLogColors.PrimaryNavy else Color.Black) })
+                Tab(
+                    selected = subTab == i,
+                    onClick  = { subTab = i },
+                    text = {
+                        Text(title,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (subTab == i) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (subTab == i) RailLogColors.PrimaryAction else RailLogColors.TextSecondary)
+                    }
+                )
             }
         }
 
-        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (subTab == 1 || subTab == 0) {
-                items(allDrafts) { DraftCard(it) { onResume(it.draftId) } }
+        LazyColumn(
+            contentPadding = PaddingValues(Spacing.pagePadding),
+            verticalArrangement = Arrangement.spacedBy(Spacing.itemGap)
+        ) {
+            if (subTab == 0 || subTab == 1) {
+                items(allDrafts) { DraftCard(it, { onResume(it.draftId) }) }
             }
             if (subTab != 1) {
-                items(display) { item -> HistoryCard(item) }
+                items(display) { RequestCard(it) }
             }
             if (display.isEmpty() && (subTab != 1 || allDrafts.isEmpty())) {
-                item { EmptyStateBox("Data tidak ditemukan.") }
+                item {
+                    EmptyState(Icons.Default.Inbox, "Tidak ditemukan",
+                        "Belum ada data yang sesuai")
+                }
             }
-            item { Spacer(modifier = Modifier.height(72.dp)) }
+            item { Spacer(Modifier.height(80.dp)) }
         }
     }
 }
+
+@Composable
+private fun RequestCard(item: SupplyItem) {
+    SurfaceCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(item.partCode, style = MaterialTheme.typography.labelSmall,
+                    color = RailLogColors.TextTertiary)
+                Spacer(Modifier.height(2.dp))
+                Text(item.name, style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium, color = RailLogColors.TextPrimary)
+                Spacer(Modifier.height(4.dp))
+                Text("${item.quantity} ${item.unit}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = RailLogColors.TextSecondary)
+            }
+            Column(horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                StatusBadge(item.status)
+                Text(formatTs(item.createdAt.toEpochMilliseconds()),
+                    style = MaterialTheme.typography.labelSmall, color = RailLogColors.TextTertiary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DraftCard(draft: DraftItem, onClick: () -> Unit) {
+    SurfaceCard(onClick = onClick) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(RailLogColors.Warning50)
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text("Draf", fontSize = 11.sp,
+                        color = RailLogColors.Warning600, fontWeight = FontWeight.Medium)
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(draft.projectTitle.ifEmpty { "Pengajuan belum selesai" },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium, color = RailLogColors.TextPrimary)
+                Spacer(Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { draft.currentStep / 5f },
+                    modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)),
+                    color = RailLogColors.PrimaryAction,
+                    trackColor = RailLogColors.Neutral200
+                )
+                Spacer(Modifier.height(4.dp))
+                Text("Langkah ${draft.currentStep} dari 5",
+                    style = MaterialTheme.typography.labelSmall, color = RailLogColors.TextTertiary)
+            }
+            Spacer(Modifier.width(12.dp))
+            Icon(Icons.Default.ChevronRight, null,
+                tint = RailLogColors.TextTertiary, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+// ── Inventory tab ─────────────────────────────────────────────────────────────
 
 @Composable
 fun StaffInventoryTab(viewModel: StaffMainViewModel) {
     val cats = listOf("All", "Infrastructure", "Bogie", "Propulsion", "Braking", "Tools")
-    val query by viewModel.searchQuery.collectAsState()
+    val query       by viewModel.searchQuery.collectAsState()
     val selectedCat by viewModel.inventoryCategory.collectAsState()
-    val items by viewModel.filteredInventoryItems.collectAsState()
+    val items       by viewModel.filteredInventoryItems.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        FunctionalSearchBar(query, { viewModel.updateSearchQuery(it) }, "Cari di gudang...")
-        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(RailLogColors.Background)) {
+        Column(modifier = Modifier.padding(horizontal = Spacing.pagePadding)) {
+            Spacer(Modifier.height(Spacing.md))
+            PageHeader("Gudang", "${items.size} item tersedia")
+            Spacer(Modifier.height(Spacing.md))
+            RailLogSearchField(query, { viewModel.updateSearchQuery(it) }, "Cari komponen...")
+            Spacer(Modifier.height(Spacing.sm))
+        }
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = Spacing.pagePadding),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
             items(cats) { cat ->
-                FilterChip(
-                    selected = selectedCat == cat, onClick = { viewModel.updateInventoryCategory(cat) },
-                    label = { Text(cat, fontWeight = FontWeight.ExtraBold) },
-                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = RailLogColors.PrimaryNavy, selectedLabelColor = Color.White)
-                )
+                val selected = selectedCat == cat
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(
+                            if (selected) RailLogColors.PrimaryAction else RailLogColors.Surface
+                        )
+                        .border(
+                            1.dp,
+                            if (selected) RailLogColors.PrimaryAction else RailLogColors.BorderDefault,
+                            RoundedCornerShape(100.dp)
+                        )
+                        .clickable { viewModel.updateInventoryCategory(cat) }
+                        .padding(horizontal = 14.dp, vertical = 7.dp)
+                ) {
+                    Text(
+                        cat,
+                        fontSize = 12.sp,
+                        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                        color = if (selected) Color.White else RailLogColors.TextSecondary
+                    )
+                }
             }
         }
-        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (items.isEmpty()) item { EmptyStateBox("Inventaris kosong.") }
-            else items(items) { InventoryItemCard(it) }
-            item { Spacer(modifier = Modifier.height(72.dp)) }
+
+        Spacer(Modifier.height(Spacing.sm))
+
+        LazyColumn(
+            contentPadding = PaddingValues(Spacing.pagePadding),
+            verticalArrangement = Arrangement.spacedBy(Spacing.itemGap)
+        ) {
+            if (items.isEmpty()) {
+                item {
+                    EmptyState(Icons.Default.Inventory2, "Tidak ditemukan",
+                        "Coba ubah filter atau kata kunci pencarian")
+                }
+            } else {
+                items(items) { InventoryItemCard(it) }
+            }
+            item { Spacer(Modifier.height(80.dp)) }
         }
     }
 }
+
+@Composable
+private fun InventoryItemCard(item: SupplyItem) {
+    SurfaceCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(item.name, style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium, color = RailLogColors.TextPrimary)
+                Spacer(Modifier.height(2.dp))
+                Text(item.partCode, style = MaterialTheme.typography.labelSmall,
+                    color = RailLogColors.TextTertiary)
+                Spacer(Modifier.height(6.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(RailLogColors.Neutral100)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(item.category.name, fontSize = 11.sp, color = RailLogColors.TextSecondary)
+                }
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text("${item.quantity}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold, color = RailLogColors.TextPrimary)
+                Text(item.unit, style = MaterialTheme.typography.labelSmall,
+                    color = RailLogColors.TextTertiary)
+            }
+        }
+    }
+}
+
+// ── History tab ───────────────────────────────────────────────────────────────
 
 @Composable
 fun StaffHistoryTab(viewModel: StaffMainViewModel) {
     val filters = listOf("Semua", "Pending", "Terverifikasi", "Ditolak")
-    val query by viewModel.historySearchQuery.collectAsState()
+    val query  by viewModel.historySearchQuery.collectAsState()
     val filter by viewModel.historyFilter.collectAsState()
-    val items by viewModel.filteredHistoryItems.collectAsState()
+    val items  by viewModel.filteredHistoryItems.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text("Riwayat Audit", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = RailLogColors.PrimaryNavy, modifier = Modifier.padding(16.dp))
-        FunctionalSearchBar(query, { viewModel.updateHistorySearchQuery(it) }, "Cari ID Proyek...")
-        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(RailLogColors.Background)) {
+        Column(modifier = Modifier.padding(horizontal = Spacing.pagePadding)) {
+            Spacer(Modifier.height(Spacing.md))
+            PageHeader("Riwayat audit", "${items.size} entri")
+            Spacer(Modifier.height(Spacing.md))
+            RailLogSearchField(query, { viewModel.updateHistorySearchQuery(it) }, "Cari kode proyek...")
+            Spacer(Modifier.height(Spacing.sm))
+        }
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = Spacing.pagePadding),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
             items(filters) { f ->
-                FilterChip(selected = filter.contains(f, true) || (f == "Semua" && filter == "All Requests"), onClick = { viewModel.updateHistoryFilter(if(f=="Semua") "All Requests" else f) }, label = { Text(f, fontWeight = FontWeight.Bold) })
-            }
-        }
-        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (items.isEmpty()) item { EmptyStateBox("Belum ada riwayat.") }
-            else items(items) { HistoryCard(it) }
-            item { Spacer(modifier = Modifier.height(72.dp)) }
-        }
-    }
-}
-
-@Composable
-fun FunctionalSearchBar(value: String, onValueChange: (String) -> Unit, placeholder: String) {
-    OutlinedTextField(
-        value = value, onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text(placeholder, color = Color.Black.copy(alpha = 0.6f)) },
-        leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Black) },
-        trailingIcon = { if (value.isNotEmpty()) IconButton(onClick = { onValueChange("") }) { Icon(Icons.Default.Close, null, tint = Color.Black) } },
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color.Black, unfocusedTextColor = Color.Black,
-            focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
-            unfocusedBorderColor = Color.Black, focusedBorderColor = RailLogColors.PrimaryNavy
-        ),
-        singleLine = true
-    )
-}
-
-@Composable
-fun EmptyStateBox(msg: String) {
-    Box(modifier = Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(Icons.Default.Inbox, null, tint = Color.Black, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(msg, color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
-        }
-    }
-}
-
-@Composable
-fun HistoryCard(item: SupplyItem) {
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(2.dp, Color.Black)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(item.partCode, color = RailLogColors.PrimaryNavy, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
-                Box(modifier = Modifier.background(RailLogColors.AISurface, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                    Text(formatTimestamp(item.createdAt.toEpochMilliseconds()), fontSize = 11.sp, color = RailLogColors.PrimaryNavy, fontWeight = FontWeight.ExtraBold)
+                val isSelected = filter.contains(f, true) ||
+                        (f == "Semua" && filter == "All Requests")
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(if (isSelected) RailLogColors.PrimaryAction else RailLogColors.Surface)
+                        .border(1.dp,
+                            if (isSelected) RailLogColors.PrimaryAction else RailLogColors.BorderDefault,
+                            RoundedCornerShape(100.dp))
+                        .clickable {
+                            viewModel.updateHistoryFilter(if (f == "Semua") "All Requests" else f)
+                        }
+                        .padding(horizontal = 14.dp, vertical = 7.dp)
+                ) {
+                    Text(f, fontSize = 12.sp,
+                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                        color = if (isSelected) Color.White else RailLogColors.TextSecondary)
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(item.name, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Inventory2, null, tint = Color.Black, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("${item.quantity} Unit", fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                }
-                StatusChip(item.status.name)
-            }
         }
-    }
-}
 
-@Composable
-fun StatusChip(status: String) {
-    val bgColor = when (status) {
-        "VERIFIED" -> RailLogColors.SuccessBackground
-        "PENDING" -> RailLogColors.WarningBackground
-        "REJECTED" -> RailLogColors.ErrorBackground
-        else -> RailLogColors.SurfaceSlate
-    }
-    val textColor = when (status) {
-        "VERIFIED" -> RailLogColors.SuccessEmerald
-        "PENDING" -> RailLogColors.WarningAmber
-        "REJECTED" -> RailLogColors.ErrorRed
-        else -> Color.Black
-    }
-    Box(modifier = Modifier.background(bgColor, RoundedCornerShape(6.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
-        Text(status, color = textColor, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
-    }
-}
+        Spacer(Modifier.height(Spacing.sm))
 
-@Composable
-fun DraftCard(draft: DraftItem, onClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().clickable { onClick() }, colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(2.dp, RailLogColors.PrimaryNavy)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(draft.projectTitle.ifEmpty { "Audit Requisition" }, color = RailLogColors.PrimaryNavy, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-                Box(modifier = Modifier.background(Color.Black, RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)) {
-                    Text("DRAF", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.ExtraBold)
-                }
+        LazyColumn(
+            contentPadding = PaddingValues(Spacing.pagePadding),
+            verticalArrangement = Arrangement.spacedBy(Spacing.itemGap)
+        ) {
+            if (items.isEmpty()) {
+                item { EmptyState(Icons.Default.History, "Belum ada riwayat", "Mulai buat pengajuan baru") }
+            } else {
+                items(items) { RequestCard(it) }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Langkah ${draft.currentStep} dari 5", fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(12.dp))
-            LinearProgressIndicator(progress = { draft.currentStep / 5f }, modifier = Modifier.fillMaxWidth().height(8.dp), color = RailLogColors.PrimaryNavy, trackColor = RailLogColors.BorderGray)
-        }
-    }
-}
-
-@Composable
-fun InventoryItemCard(item: SupplyItem) {
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(2.dp, Color.Black)) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(item.name, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = Color.Black)
-                Text("KODE: ${item.partCode}", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(item.category.name, color = RailLogColors.PrimaryNavy, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
-            }
-            Box(modifier = Modifier.background(RailLogColors.SuccessBackground, RoundedCornerShape(4.dp)).border(1.dp, RailLogColors.SuccessEmerald, RoundedCornerShape(4.dp)).padding(horizontal = 10.dp, vertical = 6.dp)) {
-                Text("${item.quantity} ${item.unit}", fontSize = 13.sp, color = RailLogColors.SuccessEmerald, fontWeight = FontWeight.ExtraBold)
-            }
-        }
-    }
-}
-
-@Composable
-fun MetricCard(modifier: Modifier, icon: ImageVector, title: String, count: String, color: Color, bg: Color = RailLogColors.AISurface) {
-    Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(2.dp, Color.Black)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Box(modifier = Modifier.size(32.dp).background(bg, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                    Icon(icon, null, tint = color, modifier = Modifier.size(18.dp))
-                }
-                Text(count, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, color = RailLogColors.PrimaryNavy)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(title, fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
+            item { Spacer(Modifier.height(80.dp)) }
         }
     }
 }

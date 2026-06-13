@@ -2,24 +2,31 @@ package com.example.raillog.presentation.screens.addsupply
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.raillog.data.local.datastore.UserPreferences
 import com.example.raillog.domain.model.PartCategory
 import com.example.raillog.domain.model.Priority
 import com.example.raillog.domain.model.SupplyItem
 import com.example.raillog.domain.model.SupplyStatus
 import com.example.raillog.domain.repository.SupplyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddSupplyViewModel(
-    private val repository: SupplyRepository
+    private val repository: SupplyRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddSupplyUiState())
     val uiState: StateFlow<AddSupplyUiState> = _uiState.asStateFlow()
+    
+    private val activeUsername = userPreferences.activeUsername
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
     fun loadItemForEdit(itemId: Long) {
         viewModelScope.launch {
@@ -115,7 +122,7 @@ class AddSupplyViewModel(
                         priority = state.priority,
                         notes = state.notes
                     )
-                    repository.insertItem(item)
+                    repository.insertItem(item, activeUsername.value)
                 }
                 _uiState.update { it.copy(isSaved = true) }
             } catch (e: Exception) {

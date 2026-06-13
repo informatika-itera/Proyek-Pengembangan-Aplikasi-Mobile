@@ -50,16 +50,20 @@ class VerificationDetailViewModel(
                 .collect { item ->
                     _selectedItem.value = item
 
-                    val documentTitle = item?.documentRef
-                    if (!documentTitle.isNullOrBlank()) {
-                        technicalDocumentRepository
-                            .getDocumentByTitle(documentTitle)
-                            .collect { document ->
-                                _document.value = document
-                            }
+                    // FIX: Ganti nested collect dengan firstOrNull.
+                    // Nested collect sebelumnya memblokir outer collect,
+                    // sehingga update status dari database tidak ter-propagasi.
+                    if (item != null && _document.value == null) {
+                        val documentTitle = item.documentRef
+                        if (!documentTitle.isNullOrBlank()) {
+                            val doc = technicalDocumentRepository
+                                .getDocumentByTitle(documentTitle)
+                                .firstOrNull()
+                            _document.value = doc
+                        }
                     }
 
-                    // Auto-run AI validation once item data is loaded
+                    // Auto-run AI validation sekali saat item pertama kali dimuat
                     if (item != null && _aiValidation.value.status == AIValidationStatus.IDLE) {
                         runAIValidation(item)
                     }
@@ -115,8 +119,10 @@ class VerificationDetailViewModel(
     fun verifyItem(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _selectedItem.value?.let { item ->
-                val updatedItem = item.copy(status = SupplyStatus.VERIFIED)
-                supplyRepository.updateItem(updatedItem)
+                // FIX: Gunakan updateStatus (lebih ringan) daripada updateItem
+                // untuk menghindari overwrite field lain secara tidak sengaja.
+                // updateItem hanya dipanggil jika ada perubahan data penuh.
+                supplyRepository.updateStatus(item.id, SupplyStatus.VERIFIED)
 
                 _document.value?.let { document ->
                     technicalDocumentRepository.updateVerification(
@@ -125,6 +131,9 @@ class VerificationDetailViewModel(
                         aiSummary = _aiValidation.value.result ?: document.aiSummary
                     )
                 }
+                // FIX: onSuccess() dipanggil setelah updateStatus selesai
+                // (karena updateStatus adalah suspend fun — dijamin selesai dulu
+                // sebelum baris ini dieksekusi).
                 onSuccess()
             }
         }
@@ -133,8 +142,7 @@ class VerificationDetailViewModel(
     fun rejectItem(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _selectedItem.value?.let { item ->
-                val updatedItem = item.copy(status = SupplyStatus.REJECTED)
-                supplyRepository.updateItem(updatedItem)
+                supplyRepository.updateStatus(item.id, SupplyStatus.REJECTED)
 
                 _document.value?.let { document ->
                     technicalDocumentRepository.updateVerification(

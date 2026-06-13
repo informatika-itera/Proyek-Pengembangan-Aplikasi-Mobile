@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class UserPreferences(
+open class UserPreferences(
     private val dataStore: DataStore<Preferences>
 ) {
     private object Keys {
@@ -20,11 +20,10 @@ class UserPreferences(
 
         // Akun & Sesi
         val USER_ROLE = stringPreferencesKey("user_role")
-        val STAFF_USERNAME = stringPreferencesKey("staff_username")
-        val STAFF_PASSWORD = stringPreferencesKey("staff_password")
-        val STAFF_NAME = stringPreferencesKey("staff_name")
-        val STAFF_ID = stringPreferencesKey("staff_id") // NIP/Employee ID
-        val STAFF_PHONE = stringPreferencesKey("staff_phone") // Nomor WA
+        val ACTIVE_USERNAME = stringPreferencesKey("active_username")
+        
+        // Multi-account storage (format: user|pass|name|id|phone;user2|...)
+        val STAFF_ACCOUNTS = stringPreferencesKey("staff_accounts")
     }
 
     val isDarkMode: Flow<Boolean> = dataStore.data.map { prefs -> prefs[Keys.DARK_MODE] ?: false }
@@ -32,29 +31,31 @@ class UserPreferences(
 
     // ==================== USER ROLE & SESSION ====================
     val userRole: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.USER_ROLE] ?: "" }
+    open val activeUsername: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.ACTIVE_USERNAME] ?: "" }
 
     suspend fun setUserRole(role: String) {
         dataStore.edit { prefs -> prefs[Keys.USER_ROLE] = role }
     }
 
+    suspend fun setActiveUsername(username: String) {
+        dataStore.edit { prefs -> prefs[Keys.ACTIVE_USERNAME] = username }
+    }
+
     suspend fun clearUserSession() {
-        dataStore.edit { prefs -> prefs[Keys.USER_ROLE] = "" }
+        dataStore.edit { prefs -> 
+            prefs[Keys.USER_ROLE] = ""
+            prefs[Keys.ACTIVE_USERNAME] = ""
+        }
     }
 
     // ==================== REGISTER STAFF DATA ====================
-    val staffUsername: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.STAFF_USERNAME] ?: "" }
-    val staffPassword: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.STAFF_PASSWORD] ?: "" }
-    val staffName: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.STAFF_NAME] ?: "" }
-    val staffId: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.STAFF_ID] ?: "" }
-    val staffPhone: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.STAFF_PHONE] ?: "" }
+    val staffAccounts: Flow<String> = dataStore.data.map { prefs -> prefs[Keys.STAFF_ACCOUNTS] ?: "" }
 
     suspend fun registerStaff(name: String, user: String, pass: String, employeeId: String, phone: String) {
         dataStore.edit { prefs ->
-            prefs[Keys.STAFF_NAME] = name
-            prefs[Keys.STAFF_USERNAME] = user
-            prefs[Keys.STAFF_PASSWORD] = pass
-            prefs[Keys.STAFF_ID] = employeeId
-            prefs[Keys.STAFF_PHONE] = phone
+            val currentAccounts = prefs[Keys.STAFF_ACCOUNTS] ?: ""
+            val newAccount = "$user|$pass|$name|$employeeId|$phone"
+            prefs[Keys.STAFF_ACCOUNTS] = if (currentAccounts.isEmpty()) newAccount else "$currentAccounts;$newAccount"
         }
     }
 }

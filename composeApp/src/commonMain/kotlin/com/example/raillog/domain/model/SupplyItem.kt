@@ -16,7 +16,8 @@ data class SupplyItem(
     val documentRef: String? = null,
     val notes: String = "",
     val createdAt: Instant = Clock.System.now(),
-    val updatedAt: Instant = Clock.System.now()
+    val updatedAt: Instant = Clock.System.now(),
+    val createdBy: String = "admin"
 )
 
 enum class PartCategory() {

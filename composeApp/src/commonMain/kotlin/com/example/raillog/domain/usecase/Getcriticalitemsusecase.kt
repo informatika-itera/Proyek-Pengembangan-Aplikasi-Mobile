@@ -22,8 +22,8 @@ class GetCriticalItemsUseCase(
      * Mengembalikan Flow list komponen yang membutuhkan perhatian segera.
      * Filter: Priority.CRITICAL atau Priority.HIGH
      */
-    operator fun invoke(): Flow<List<SupplyItem>> {
-        return repository.getAllItems().map { items ->
+    operator fun invoke(activeUsername: String): Flow<List<SupplyItem>> {
+        return repository.getAllItems(activeUsername).map { items ->
             items.filter { item ->
                 item.priority == Priority.CRITICAL || item.priority == Priority.HIGH
             }

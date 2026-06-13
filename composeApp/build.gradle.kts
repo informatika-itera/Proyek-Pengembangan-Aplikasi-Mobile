@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kover)
 }
 
 // Load local.properties for API keys
@@ -124,11 +125,6 @@ android {
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
 
-        buildConfigField(
-            "String",
-            "VISION_API_KEY",
-            "\"${localProperties.getProperty("VISION_API_KEY", "")}\""
-        )
     }
 
     packaging {

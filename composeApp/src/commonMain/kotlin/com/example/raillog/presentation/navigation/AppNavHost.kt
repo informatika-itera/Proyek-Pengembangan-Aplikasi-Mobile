@@ -17,9 +17,6 @@ import com.example.raillog.presentation.screens.requisition.RequisitionScreen
 import com.example.raillog.presentation.screens.requisition.RequisitionViewModel
 import com.example.raillog.presentation.screens.admin_main.AdminMainScreen
 import com.example.raillog.presentation.screens.admin_main.VerificationDetailScreen
-import com.example.raillog.presentation.screens.home.HomeScreen
-import com.example.raillog.presentation.screens.addsupply.AddSupplyScreen
-import com.example.raillog.presentation.screens.detail.SupplyDetailScreen
 import com.example.raillog.presentation.screens.ai.AIAssistantScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -82,6 +79,9 @@ fun AppNavHost(
                 onNavigateToResumeDraft = { draftId ->
                     navController.navigate(Route.RequisitionWizard(draftId = draftId))
                 },
+                onNavigateToAIAssistant = {
+                    navController.navigate(Route.ContextualAI)
+                },
                 onLogout = {
                     coroutineScope.launch {
                         try {
@@ -118,6 +118,9 @@ fun AppNavHost(
                 onNavigateToVerificationDetail = { reqId ->
                     navController.navigate(Route.VerificationDetail(reqId))
                 },
+                onNavigateToAIAssistant = {
+                    navController.navigate(Route.ContextualAI)
+                },
                 onLogout = {
                     coroutineScope.launch {
                         try {
@@ -142,11 +145,12 @@ fun AppNavHost(
             )
         }
 
-        composable<Route.Home> { HomeScreen({}, {}, {}) }
-        composable<Route.AddSupply> {
-            AddSupplyScreen(onNavigateBack = { navController.popBackStack() })
+        composable<Route.ContextualAI> {
+            AIAssistantScreen(
+                noteId = null,
+                initialText = null,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
-        composable<Route.SupplyDetail> { SupplyDetailScreen(0L, {}, {}) }
-        composable<Route.AIAssistant> { AIAssistantScreen(null, null, {}) }
     }
 }

@@ -1,4 +1,4 @@
-﻿package com.example.fintrack.domain.repository
+package com.example.fintrack.domain.repository
 
 interface AIRepository {
     suspend fun summarize(text: String): Result<String>
@@ -7,6 +7,14 @@ interface AIRepository {
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
     suspend fun suggestTitle(content: String): Result<String>
+    suspend fun getFinancialInsight(
+        totalBalance: Double,
+        totalIncome: Double,
+        totalExpense: Double,
+        budget: Double,
+        topCategory: String,
+        transactionDetails: String = ""
+    ): Result<String>
 }
 
 enum class WritingStyle(val displayName: String, val prompt: String) {

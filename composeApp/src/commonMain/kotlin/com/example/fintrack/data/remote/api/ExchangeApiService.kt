@@ -27,7 +27,9 @@ class ExchangeApiService(private val client: HttpClient) {
         baseCurrency: String = "USD"
     ): NetworkResult<FrankfurterResponse> = safeApiCall {
         val targetCurrencies = ALL_CURRENCIES.filter { it != baseCurrency }.joinToString(",")
-        val url = "$BASE_URL/latest?from=$baseCurrency&to=$targetCurrencies"
-        client.get(url).body()
+        val urlString = "$BASE_URL/latest?from=$baseCurrency&to=$targetCurrencies"
+        
+        val response = client.get(urlString)
+        response.body<FrankfurterResponse>()
     }
 }

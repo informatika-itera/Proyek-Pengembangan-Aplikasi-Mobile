@@ -1,4 +1,4 @@
-﻿package com.example.fintrack.data.repository
+package com.example.fintrack.data.repository
 
 import com.example.fintrack.data.remote.api.GeminiService
 import com.example.fintrack.data.remote.api.SystemPrompts
@@ -91,5 +91,40 @@ class AIRepositoryImpl(
             prompt = prompt,
             systemPrompt = SystemPrompts.TITLE_SUGGESTER
         ).map { it.trim().removeSurrounding("\"") }
+    }
+    
+    override suspend fun getFinancialInsight(
+        totalBalance: Double,
+        totalIncome: Double,
+        totalExpense: Double,
+        budget: Double,
+        topCategory: String,
+        transactionDetails: String
+    ): Result<String> {
+        val formattedBalance = com.example.fintrack.core.util.CurrencyFormatter.formatCurrency(totalBalance, "USD")
+        val formattedIncome = com.example.fintrack.core.util.CurrencyFormatter.formatCurrency(totalIncome, "USD")
+        val formattedExpense = com.example.fintrack.core.util.CurrencyFormatter.formatCurrency(totalExpense, "USD")
+        val formattedBudget = com.example.fintrack.core.util.CurrencyFormatter.formatCurrency(budget, "USD")
+        
+        val detailsSection = if (transactionDetails.isNotBlank()) {
+            "\nDetail Transaksi:\n$transactionDetails\n"
+        } else {
+            ""
+        }
+        
+        val promptText = """
+            Kondisi keuangan saya bulan ini:
+            - Saldo uang saat ini: $formattedBalance
+            - Total pemasukan: $formattedIncome
+            - Total pengeluaran: $formattedExpense (dari budget $formattedBudget)
+            - Kategori pengeluaran terbesar: $topCategory
+            $detailsSection
+            Berikan masukan atau saran.
+        """.trimIndent()
+        
+        return geminiService.generateContent(
+            prompt = promptText,
+            systemPrompt = SystemPrompts.FINANCIAL_ADVISOR
+        )
     }
 }

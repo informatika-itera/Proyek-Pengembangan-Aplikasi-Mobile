@@ -10,8 +10,8 @@ Proyek ini dibuat untuk memenuhi Tugas Besar mata kuliah **Pengembangan Aplikasi
 ## 👥 Tim Kelompok & Peran
 | Nama | NIM | GitHub Username | Role |
 | --- | --- | --- | --- |
-| Ivan Nandira Mangunang | 123140094 | @V4nzz | Fullstack Developer |
-| Ahmad Aufamahdi Salam | 123140092 | @Novro | Fullstack Developer |
+| Ivan Nandira Mangunang 	| 123140094 | @V4nzz | Fullstack Developer |
+| Ahmad Aufamahdi Salam 	| 123140092 | @Novro | Fullstack Developer |
 
 ---
 
@@ -22,9 +22,9 @@ Dalam era digital, fluktuasi nilai mata uang dan aset digital terjadi sangat cep
 
 ## 🎥 Demo Aplikasi
 
-Berikut adalah rekaman demonstrasi jalannya aplikasi FinTrack:
+Berikut adalah rekaman demonstrasi jalannya aplikasi FinTrack bisa dilihat pada link youtube berikut:
 
-![Demo Aplikasi](videoRun.gif)
+https://youtu.be/MbFxGPpnI8w
 
 ---
 

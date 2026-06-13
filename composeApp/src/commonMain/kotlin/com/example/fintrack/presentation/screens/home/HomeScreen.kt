@@ -57,6 +57,8 @@ fun HomeScreen(
     val monthlyIncomeIdr by viewModel.monthlyIncomeIdr.collectAsState()
     val monthlyExpenseIdr by viewModel.monthlyExpenseIdr.collectAsState()
     val lastIdrRate by viewModel.lastIdrRate.collectAsState()
+    val aiInsightText by viewModel.aiInsightText.collectAsState()
+    val isAiLoading by viewModel.isAiLoading.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -95,6 +97,12 @@ fun HomeScreen(
                     monthlyExpenseUsd = monthlyExpense,
                     monthlyIncomeIdr = monthlyIncomeIdr,
                     monthlyExpenseIdr = monthlyExpenseIdr
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                AiInsightCard(
+                    insightText = aiInsightText,
+                    isLoading = isAiLoading,
+                    onClick = { viewModel.refreshInsight() }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 RecentTransactionsHeader(
@@ -533,5 +541,82 @@ private fun FinTrackBottomBar(
                 indicatorColor = FinTrackGreen.copy(alpha = 0.1f)
             )
         )
+    }
+}
+
+@Composable
+fun AiInsightCard(
+    insightText: String,
+    isLoading: Boolean,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E293B)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF10B981).copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color(0xFF10B981),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.AutoAwesome,
+                        contentDescription = "AI Insight",
+                        tint = Color(0xFF10B981)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Smart Financial Insights",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Refresh",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = FinTrackGreen,
+                        modifier = Modifier.clickable {onClick()}
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = insightText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.85f),
+                    lineHeight = 18.sp
+                )
+            }
+        }
     }
 }

@@ -31,8 +31,8 @@ import org.koin.dsl.module
 
 val networkModule = module {
     single { HttpClientFactory.create(enableLogging = true) }
-    singleOf(::GeminiService)
-    singleOf(::ExchangeApiService)
+    single { GeminiService(get()) }
+    single { ExchangeApiService(get()) }
 }
 
 // ==================== DATABASE MODULE ====================

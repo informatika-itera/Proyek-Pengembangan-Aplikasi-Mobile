@@ -30,7 +30,23 @@ class HomeViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeTransactionRepository()
-        viewModel = HomeViewModel(repository)
+        val dummyAiRepository = object : com.example.fintrack.domain.repository.AIRepository {
+            override suspend fun summarize(text: String): Result<String> = Result.success("")
+            override suspend fun generateIdeas(topic: String): Result<List<String>> = Result.success(emptyList())
+            override suspend fun improveWriting(text: String, style: com.example.fintrack.domain.repository.WritingStyle): Result<String> = Result.success("")
+            override suspend fun translate(text: String, targetLanguage: String): Result<String> = Result.success("")
+            override suspend fun chat(message: String): Result<String> = Result.success("")
+            override suspend fun suggestTitle(content: String): Result<String> = Result.success("")
+            override suspend fun getFinancialInsight(
+                totalBalance: Double,
+                totalIncome: Double,
+                totalExpense: Double,
+                budget: Double,
+                topCategory: String,
+                transactionDetails: String
+            ): Result<String> = Result.success("")
+        }
+        viewModel = HomeViewModel(repository, dummyAiRepository)
     }
     
     @AfterTest

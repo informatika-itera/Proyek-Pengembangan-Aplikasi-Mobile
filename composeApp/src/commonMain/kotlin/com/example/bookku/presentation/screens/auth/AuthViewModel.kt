@@ -43,17 +43,22 @@ class AuthViewModel(
         _uiState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            val result = if (state.isLoginMode) {
-                authRepository.login(state.email, state.password)
-            } else {
-                authRepository.register(state.username, state.email, state.password)
-            }
+            try {
+                val result = if (state.isLoginMode) {
+                    authRepository.login(state.email, state.password)
+                } else {
+                    authRepository.register(state.username, state.email, state.password)
+                }
 
-            result.onSuccess {
-                _events.emit(AuthEvent.Success)
-            }.onFailure { error ->
+                result.onSuccess {
+                    _events.emit(AuthEvent.Success)
+                }.onFailure { error ->
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.emit(AuthEvent.Error(error.message ?: "Autentikasi gagal"))
+                }
+            } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false) }
-                _events.emit(AuthEvent.Error(error.message ?: "Autentikasi gagal"))
+                _events.emit(AuthEvent.Error("Kesalahan sistem: ${e.message}"))
             }
         }
     }

@@ -55,8 +55,8 @@ fun AIAssistantScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     
-    LaunchedEffect(initialText) {
-        viewModel.setInitialText(initialText)
+    LaunchedEffect(initialText, noteId) {
+        viewModel.setInitialText(initialText, noteId)
     }
     
     LaunchedEffect(Unit) {

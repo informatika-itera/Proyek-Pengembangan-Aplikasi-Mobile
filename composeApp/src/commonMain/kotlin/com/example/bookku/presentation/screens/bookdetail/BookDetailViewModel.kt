@@ -161,10 +161,8 @@ class BookDetailViewModel(
     fun fetchAiRecommendation() {
         val book = (uiState.value as? NoteDetailUiState.Success)?.book ?: return
         
-        if (book.content.isBlank()) {
-            viewModelScope.launch { _events.emit(NoteDetailEvent.Error("Deskripsi buku kosong, AI tidak bisa menganalisis.")) }
-            return
-        }
+        // Menghapus validasi content.isBlank() agar AI tetap bisa menganalisis 
+        // berdasarkan Judul dan Penulis jika deskripsi kosong.
 
         _isAiLoading.value = true
         viewModelScope.launch {

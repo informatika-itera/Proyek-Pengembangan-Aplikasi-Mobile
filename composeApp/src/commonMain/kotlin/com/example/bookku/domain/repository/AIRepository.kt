@@ -1,11 +1,14 @@
 ﻿package com.example.bookku.domain.repository
 
+import kotlinx.coroutines.flow.Flow
+
 interface AIRepository {
     suspend fun summarize(text: String): Result<String>
     suspend fun generateIdeas(topic: String): Result<List<String>>
     suspend fun improveWriting(text: String, style: WritingStyle = WritingStyle.NEUTRAL): Result<String>
     suspend fun translate(text: String, targetLanguage: String): Result<String>
     suspend fun chat(message: String): Result<String>
+    fun chatStream(message: String, systemPrompt: String? = null): Flow<String>
     suspend fun suggestTitle(content: String): Result<String>
 }
 

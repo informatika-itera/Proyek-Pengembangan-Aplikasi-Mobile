@@ -3,8 +3,8 @@ CREATE TABLE UserEntity (
   username TEXT NOT NULL,
   email TEXT NOT NULL,
   password TEXT NOT NULL,
-  avatar_url TEXT DEFAULT '',
-  bio TEXT DEFAULT '',
+  avatar_url TEXT,
+  bio TEXT,
   created_at INTEGER NOT NULL
 );
 

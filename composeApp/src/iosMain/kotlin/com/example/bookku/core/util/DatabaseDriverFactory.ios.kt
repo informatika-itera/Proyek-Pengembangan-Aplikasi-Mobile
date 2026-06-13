@@ -14,7 +14,7 @@ actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
         return NativeSqliteDriver(
             schema = BookDatabase.Schema,
-            name = "bookku.db"
+            name = "bookku_new.db"
         )
     }
 }

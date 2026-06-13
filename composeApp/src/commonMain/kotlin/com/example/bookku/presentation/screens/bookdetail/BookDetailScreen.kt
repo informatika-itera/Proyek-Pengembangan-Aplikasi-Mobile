@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Star
@@ -40,6 +42,7 @@ fun BookDetailScreen(
     noteId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
+    onNavigateToAiAssistant: (Long) -> Unit,
     onShare: (String) -> Unit,
     viewModel: BookDetailViewModel = koinViewModel()
 ) {
@@ -199,7 +202,8 @@ fun BookDetailScreen(
                         AIRecommendationSection(
                             recommendation = aiRecommendation,
                             isLoading = isAiLoading,
-                            onFetch = { viewModel.fetchAiRecommendation() }
+                            onFetch = { viewModel.fetchAiRecommendation() },
+                            onChatWithAi = { onNavigateToAiAssistant(book.id) }
                         )
 
                         // Reviews Section
@@ -333,7 +337,12 @@ fun ProgressUpdateDialog(currentProgress: Int, onConfirm: (Int) -> Unit, onDismi
 }
 
 @Composable
-fun AIRecommendationSection(recommendation: String?, isLoading: Boolean, onFetch: () -> Unit) {
+fun AIRecommendationSection(
+    recommendation: String?,
+    isLoading: Boolean,
+    onFetch: () -> Unit,
+    onChatWithAi: () -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
@@ -341,10 +350,20 @@ fun AIRecommendationSection(recommendation: String?, isLoading: Boolean, onFetch
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Wawasan AI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Wawasan AI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+                
+                IconButton(onClick = onChatWithAi) {
+                    Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Tanya AI Lebih Lanjut", tint = MaterialTheme.colorScheme.primary)
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
             if (isLoading) {
@@ -353,6 +372,10 @@ fun AIRecommendationSection(recommendation: String?, isLoading: Boolean, onFetch
                 }
             } else if (recommendation != null) {
                 Text(text = recommendation, style = MaterialTheme.typography.bodyMedium)
+                TextButton(onClick = onChatWithAi, modifier = Modifier.align(Alignment.End)) {
+                    Text("Tanya AI Lebih Lanjut")
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp).padding(start = 4.dp))
+                }
             } else {
                 Text(text = "Dapatkan ringkasan atau rekomendasi buku serupa dari AI.", style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onFetch, modifier = Modifier.padding(top = 8.dp)) {

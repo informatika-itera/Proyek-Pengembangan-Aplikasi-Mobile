@@ -22,24 +22,50 @@ class GetRecommendationUseCase(
             return@flow
         }
 
-        // 2. Ambil konteks buku lain untuk perbandingan
-        val similarBooks = noteRepository.getBooksByCategory(book.category).first()
+        // 2. Ambil konteks buku lain
+        val allBooks = noteRepository.getAllNotes().first()
+        
+        val otherBooks = allBooks
             .filter { it.id != bookId }
-            .take(3)
-            .joinToString("\n") { "- ${it.title} oleh ${it.author}" }
+            .take(5)
+            .joinToString("\n") { "- ${it.title} oleh ${it.author} (${it.category.displayName})" }
 
-        val prompt = """
-            Anda adalah asisten perpustakaan digital "Bookku" yang cerdas.
-            
-            Buku saat ini: "${book.title}" (${book.category.displayName})
-            Deskripsi: ${book.content}
-            
-            ${if (similarBooks.isNotBlank()) "Buku serupa lainnya:\n$similarBooks" else ""}
-            
-            Tugas:
-            Berikan wawasan singkat mengapa buku ini menarik dan saran apa yang sebaiknya dibaca selanjutnya dalam 3-4 kalimat.
-            Gunakan Bahasa Indonesia yang hangat.
-        """.trimIndent()
+        val prompt = if (otherBooks.isNotBlank()) {
+            """
+                Anda adalah asisten pustakawan cerdas "Buku-San" dari aplikasi Bookku.
+                
+                PENGGUNA MEMILIKI KOLEKSI BERIKUT:
+                $otherBooks
+                
+                BUKU YANG SEDANG DILIHAT:
+                Judul: "${book.title}"
+                Penulis: ${book.author}
+                Kategori: ${book.category.displayName}
+                Deskripsi: ${book.content.ifBlank { "Tidak ada deskripsi tersedia." }}
+                
+                TUGAS:
+                1. Berikan ulasan singkat (2 kalimat) mengapa buku "${book.title}" ini menarik bagi pengguna berdasarkan koleksi buku lainnya yang mereka miliki.
+                2. Berikan 1 rekomendasi buku lain yang belum ada di koleksi mereka tapi relevan.
+                
+                Gunakan Bahasa Indonesia yang ramah dan puitis. Maksimal 4 kalimat.
+            """.trimIndent()
+        } else {
+            """
+                Anda adalah asisten pustakawan cerdas "Buku-San" dari aplikasi Bookku.
+                
+                BUKU YANG SEDANG DILIHAT:
+                Judul: "${book.title}"
+                Penulis: ${book.author}
+                Kategori: ${book.category.displayName}
+                Deskripsi: ${book.content.ifBlank { "Tidak ada deskripsi tersedia." }}
+                
+                TUGAS:
+                1. Berikan ulasan singkat (2 kalimat) mengapa buku "${book.title}" ini menarik secara umum.
+                2. Berikan 1 rekomendasi buku lain yang serupa dengan genre ${book.category.displayName}.
+                
+                Gunakan Bahasa Indonesia yang ramah dan puitis. Maksimal 4 kalimat.
+            """.trimIndent()
+        }
         
         val remoteResult = aiRepository.chat(prompt)
         

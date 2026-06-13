@@ -79,6 +79,14 @@ class SaveNoteUseCase(
     }
 }
 
+class GetBookByIdUseCase(
+    private val repository: NoteRepository
+) {
+    operator fun invoke(id: Long): Flow<Book?> {
+        return repository.getBookById(id)
+    }
+}
+
 class deleteBookUseCase(
     private val repository: NoteRepository,
     private val authRepository: AuthRepository

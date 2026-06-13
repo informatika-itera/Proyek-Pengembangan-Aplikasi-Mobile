@@ -70,8 +70,12 @@ fun AppNavHost(
                             selected = isSelected,
                             onClick = {
                                 navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                                    val startDest = navController.graph.findStartDestination()
+                                    val route = startDest.route
+                                    if (route != null) {
+                                        popUpTo(route) {
+                                            saveState = true
+                                        }
                                     }
                                     launchSingleTop = true
                                     restoreState = true
@@ -129,6 +133,7 @@ fun AppNavHost(
                     noteId = route.noteId,
                     onNavigateBack = { navigationActions.navigateBack() },
                     onNavigateToEdit = { navigationActions.navigateToAddBook(route.noteId) },
+                    onNavigateToAiAssistant = { navigationActions.navigateToAIAssistant(route.noteId) },
                     onShare = { _ -> }
                 )
             }

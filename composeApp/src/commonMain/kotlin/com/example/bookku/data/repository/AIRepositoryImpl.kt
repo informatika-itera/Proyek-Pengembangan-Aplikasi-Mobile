@@ -4,6 +4,7 @@ import com.example.bookku.data.remote.api.GeminiService
 import com.example.bookku.data.remote.api.SystemPrompts
 import com.example.bookku.domain.repository.AIRepository
 import com.example.bookku.domain.repository.WritingStyle
+import kotlinx.coroutines.flow.Flow
 
 class AIRepositoryImpl(
     private val geminiService: GeminiService
@@ -51,7 +52,17 @@ class AIRepositoryImpl(
     }
     
     override suspend fun chat(message: String): Result<String> {
-        return geminiService.generateContent(prompt = message)
+        return geminiService.generateContent(
+            prompt = message,
+            systemPrompt = SystemPrompts.LIBRARIAN_PERSONA
+        )
+    }
+
+    override fun chatStream(message: String, systemPrompt: String?): Flow<String> {
+        return geminiService.generateContentStream(
+            prompt = message,
+            systemPrompt = systemPrompt ?: SystemPrompts.LIBRARIAN_PERSONA
+        )
     }
     
     override suspend fun suggestTitle(content: String): Result<String> {

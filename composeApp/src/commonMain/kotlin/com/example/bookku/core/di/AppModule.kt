@@ -63,6 +63,7 @@ val repositoryModule = module {
 
 val useCaseModule = module {
     singleOf(::GetAllNotesUseCase)
+    singleOf(::GetBookByIdUseCase)
     singleOf(::SearchNotesUseCase)
     singleOf(::SaveNoteUseCase)
     singleOf(::deleteBookUseCase)

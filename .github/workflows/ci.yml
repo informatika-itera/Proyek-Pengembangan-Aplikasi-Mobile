@@ -22,6 +22,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -38,7 +41,7 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" >> local.properties
-          echo "AIzaSyAJoPFVxOEhK86MCtscJAyVwYCd6PWv2hE=${{ secrets.AIzaSyAJoPFVxOEhK86MCtscJAyVwYCd6PWv2hE }}" >> local.properties
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
 
       - name: Run unit tests
         run: ./gradlew :composeApp:testDebugUnitTest --no-daemon

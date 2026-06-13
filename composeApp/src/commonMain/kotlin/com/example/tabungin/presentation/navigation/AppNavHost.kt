@@ -68,7 +68,8 @@ fun AppNavHost(
             DetailScreen(
                 targetId        = targetId,
                 onNavigateBack  = { navController.popBackStack() },
-                onNavigateToEdit = { navController.navigate(Routes.AddEdit.createRoute(it)) }
+                onNavigateToEdit = { navController.navigate(Routes.AddEdit.createRoute(it)) },
+                onDeleteSuccess = { navController.popBackStack() }
             )
         }
 

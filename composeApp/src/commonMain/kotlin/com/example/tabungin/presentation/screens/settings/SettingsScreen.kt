@@ -1,5 +1,6 @@
 package com.example.tabungin.presentation.screens.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,13 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.tabungin.presentation.painterResourceLogo
 import org.koin.compose.viewmodel.koinViewModel
 
 
@@ -29,12 +31,11 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.isSaved) {
-        if (state.isSaved) {
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
             snackbarHostState.showSnackbar(
                 message = "Nama berhasil disimpan!",
                 duration = SnackbarDuration.Short
@@ -44,10 +45,10 @@ fun SettingsScreen(
     }
 
     // Time Picker Dialog
-    if (state.showTimePicker) {
+    if (uiState.showTimePicker) {
         TimePickerDialog(
-            initialHour = state.notifikasiJam,
-            initialMinute = state.notifikasiMenit,
+            initialHour = uiState.notifikasiJam,
+            initialMinute = uiState.notifikasiMenit,
             onDismiss = { viewModel.hideTimePicker() },
             onConfirm = { hour, minute ->
                 viewModel.setNotificationTime(hour, minute)
@@ -148,18 +149,23 @@ fun SettingsScreen(
                                 modifier = Modifier.size(64.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🏦", style = MaterialTheme.typography.headlineMedium)
+                                    Image(
+                                        painter = painterResourceLogo(),
+                                        contentDescription = "Logo TabungIn",
+                                        modifier = Modifier.size(48.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
                                 }
                             }
                             Column {
                                 Text(
-                                    if (state.namaUser.isNotBlank()) state.namaUser else "TabungIn",
+                                    if (uiState.namaUser.isNotBlank()) uiState.namaUser else "TabungIn",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
                                 Text(
-                                    if (state.namaUser.isNotBlank()) "Wujudkan Impianmu" else "Mulai menabung sekarang",
+                                    if (uiState.namaUser.isNotBlank()) "Wujudkan Impianmu" else "Mulai menabung sekarang",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.White.copy(alpha = 0.85f)
                                 )
@@ -228,7 +234,7 @@ fun SettingsScreen(
                         )
 
                         OutlinedTextField(
-                            value = state.namaUser,
+                            value = uiState.namaUser,
                             onValueChange = { newName ->
                                 viewModel.onNamaUserChange(newName)
                             },
@@ -347,7 +353,7 @@ fun SettingsScreen(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
-                                            "${state.notifikasiJam.toString().padStart(2, '0')}:${state.notifikasiMenit.toString().padStart(2, '0')}",
+                                            "${uiState.notifikasiJam.toString().padStart(2, '0')}:${uiState.notifikasiMenit.toString().padStart(2, '0')}",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -397,7 +403,12 @@ fun SettingsScreen(
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🏦", style = MaterialTheme.typography.titleLarge)
+                                    Image(
+                                        painter = painterResourceLogo(),
+                                        contentDescription = "Logo TabungIn",
+                                        modifier = Modifier.size(36.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
                                 }
                             }
                             Column(modifier = Modifier.weight(1f)) {
@@ -408,7 +419,7 @@ fun SettingsScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    "Versi 1.0.0",
+                                    "Versi 5.1",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

@@ -20,7 +20,8 @@ data class DetailUiState(
     val isLoading: Boolean       = true,
     val error: String?           = null,
     val showSetoranDialog: Boolean = false,
-    val targetAchieved: Boolean  = false
+    val targetAchieved: Boolean  = false,
+    val isDeleted: Boolean      = false
 )
 
 class DetailViewModel(
@@ -29,6 +30,7 @@ class DetailViewModel(
     private val getSetoranByTargetUseCase: GetSetoranByTargetUseCase,
     private val insertSetoranUseCase: InsertSetoranUseCase,
     private val deleteSetoranUseCase: DeleteSetoranUseCase,
+    private val deleteTargetUseCase: DeleteTargetUseCase,
     private val notificationService: NotificationService,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
@@ -99,5 +101,17 @@ class DetailViewModel(
     fun dismissSetoranDialog() = _uiState.update { it.copy(showSetoranDialog = false) }
     fun clearError()           = _uiState.update { it.copy(error = null) }
     fun clearTargetAchieved()  = _uiState.update { it.copy(targetAchieved = false) }
+
+    fun deleteTarget() {
+        viewModelScope.launch {
+            runCatching { deleteTargetUseCase(targetId) }
+                .onSuccess {
+                    _uiState.update { it.copy(isDeleted = true) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(error = e.message) }
+                }
+        }
+    }
 }
 

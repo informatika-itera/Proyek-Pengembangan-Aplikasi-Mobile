@@ -78,7 +78,7 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModel { HomeViewModel(get(), get()) }
-    viewModel { (id: Long) -> DetailViewModel(id, get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: Long) -> DetailViewModel(id, get(), get(), get(), get(), get(), get(), get()) }
     viewModel { params -> AddEditViewModel(params.getOrNull<Long>(), get(), get(), get()) }
     viewModel { RiwayatViewModel(get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }

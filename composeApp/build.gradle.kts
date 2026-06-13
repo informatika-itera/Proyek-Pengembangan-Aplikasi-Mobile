@@ -108,20 +108,26 @@ kotlin {
 android {
     namespace = "com.example.tabungin"
     compileSdk = 35
-    
+
     defaultConfig {
         applicationId = "com.example.tabungin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
-        
+
         // Inject API key from local.properties
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
             "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
         )
+    }
+
+    sourceSets {
+        getByName("main") {
+            res.srcDirs("src/androidMain/res")
+        }
     }
     
     packaging {

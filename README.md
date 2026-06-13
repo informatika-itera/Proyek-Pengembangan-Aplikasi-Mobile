@@ -12,7 +12,6 @@ TabungIn memfasilitasi pengguna untuk mencatat dan memantau progres celengan fis
 - 📊 **Progress Visual** — Progress bar reaktif menampilkan persentase pencapaian
 - 🤖 **AI Asisten Finansial** — Tips menabung dan saran perencanaan keuangan via Gemini API
 - 🌙 **Dark Mode** — Tema gelap/terang
-- 📱 **Cross-Platform** — Android & iOS dari satu codebase
 
 ## 🏗️ Arsitektur & Teknologi
 
@@ -89,7 +88,7 @@ composeApp/src/
 │   ├── domain/                            # Domain layer (pure Kotlin)
 │   │   ├── model/                         # Target, Setoran
 │   │   ├── repository/                    # TargetRepository, AIRepository interfaces
-│   │   └── usecase/                       # Business logic
+│   │   └── usecase/                       # Business logic, UseCases
 │   │
 │   └── presentation/                      # Presentation layer
 │       ├── navigation/                    # Routes.kt, AppNavHost.kt
@@ -115,6 +114,8 @@ composeApp/src/
 │       │   └── TargetRepositoryTest.kt
 │       └── presentation/
 │           └── HomeViewModelTest.kt
+│           └── AddEditViewModelTest.kt
+│           └── StatisticsViewModelTest.kt
 │
 ├── androidMain/kotlin/                    # Android-specific (expect/actual)
 │   └── com/example/tabungin/
@@ -149,7 +150,6 @@ composeApp/src/
 
 - Android Studio Ladybug (2024.2.1) atau lebih baru
 - JDK 17+
-- Xcode 15+ (untuk iOS, opsional)
 
 ### Setup
 
@@ -188,8 +188,8 @@ composeApp/src/
 | 12 | Sprint 2: Core Features | 5 screens, navigation, CRUD, SQLDelight | 5% |
 | 13 | Sprint 3: Advanced | Gemini AI, Dark Mode, animasi progress bar | 5% |
 | 14 | Sprint 4: Polish | Bug fixes, UI polish, 10+ tests, coverage | 5% |
-| 15 | Sprint 5: Final | Demo ready, slide, signed APK, README | 5% |
-| 16 | UAS | Live demo, Q&A, presentasi | 35% |
+| 15 | Sprint 5: Final | Demo ready, signed APK, README | 5% |
+| 16 | UAS | Demo | 35% |
 
 ## 📝 Tugas Mahasiswa
 
@@ -222,7 +222,6 @@ composeApp/src/
 
 ### Sprint 5: Final
 - [ ] Aplikasi stabil tanpa crash
-- [ ] Slide presentasi siap
 - [ ] Signed APK/AAB dibuat
 - [ ] README final diperbarui
 - [ ] Video backup demo
@@ -236,6 +235,20 @@ composeApp/src/
 # Run unit test debug
 ./gradlew :composeApp:testDebugUnitTest
 ```
+
+Hasil Testing: 
+
+
+<img src="cov.png" width="600" />
+<img src="cov2.png" width="600" />
+---
+
+## Link Video Demo Final
+
+
+[Link Video Demo](https://youtu.be/hQBxHotBzzA)
+
+---
 
 ## 📄 License
 

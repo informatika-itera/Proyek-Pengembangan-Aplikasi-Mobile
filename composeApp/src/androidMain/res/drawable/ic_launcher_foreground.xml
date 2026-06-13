@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <inset android:insetLeft="18dp" android:insetTop="18dp" android:insetRight="18dp" android:insetBottom="18dp">
+            <bitmap
+                android:src="@drawable/ic_launcher_image"
+                android:gravity="fill" />
+        </inset>
+    </item>
+</layer-list>

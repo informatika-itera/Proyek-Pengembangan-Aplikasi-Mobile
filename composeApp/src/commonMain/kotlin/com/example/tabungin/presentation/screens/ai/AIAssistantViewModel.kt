@@ -109,11 +109,28 @@ class AIAssistantViewModel(
                         )
                     }
                 }.onFailure { error ->
+                    val errorMessage = when {
+                        error.message?.contains("Unable to resolve host") == true ||
+                        error.message?.contains("No address associated") == true ->
+                            "Tidak dapat terhubung ke server AI. Pastikan koneksi internet aktif."
+
+                        error.message?.contains("API key") == true ||
+                        error.message?.contains("api key") == true ->
+                            "Kunci API tidak valid atau belum dikonfigurasi."
+
+                        error.message?.contains("429") == true ->
+                            "Batas penggunaan AI tercapai. Coba lagi dalam beberapa menit."
+
+                        error.message?.contains("timeout") == true ->
+                            "Koneksi timeout. Pastikan internet stabil lalu coba lagi."
+
+                        else -> "Maaf, terjadi kesalahan: ${error.message}"
+                    }
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
                             messages = state.messages + ChatMessage(
-                                content = "Maaf, terjadi kesalahan: ${error.message}",
+                                content = errorMessage,
                                 isUser = false,
                                 timestamp = nextId()
                             )
@@ -121,11 +138,22 @@ class AIAssistantViewModel(
                     }
                 }
             } catch (e: Exception) {
+                val errorMessage = when {
+                    e.message?.contains("Unable to resolve host") == true ||
+                    e.message?.contains("No address associated") == true ->
+                        "Tidak dapat terhubung ke server AI. Pastikan koneksi internet aktif."
+
+                    e.message?.contains("API key") == true ||
+                    e.message?.contains("api key") == true ->
+                        "Kunci API tidak valid atau belum dikonfigurasi."
+
+                    else -> "Maaf, terjadi kesalahan: ${e.message}"
+                }
                 _uiState.update { state ->
                     state.copy(
                         isLoading = false,
                         messages = state.messages + ChatMessage(
-                            content = "Maaf, terjadi kesalahan: ${e.message}",
+                            content = errorMessage,
                             isUser = false,
                             timestamp = nextId()
                         )

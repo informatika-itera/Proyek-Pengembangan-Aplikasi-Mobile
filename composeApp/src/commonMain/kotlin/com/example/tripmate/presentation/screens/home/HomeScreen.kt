@@ -102,20 +102,6 @@ fun HomeScreen(
                     )
                 }
                 // Pesawat di pojok kanan
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(48.dp),
-                    tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)
-                )
-                Text(
-                    text = "✈",
-                    fontSize = 36.sp,
-                    modifier = Modifier.align(Alignment.TopEnd),
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                )
             }
 
             // Search bar

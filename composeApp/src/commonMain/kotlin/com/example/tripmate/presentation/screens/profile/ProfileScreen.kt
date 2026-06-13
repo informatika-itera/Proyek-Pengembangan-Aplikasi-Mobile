@@ -1,5 +1,9 @@
 package com.example.tripmate.presentation.screens.profile
 
+import androidx.compose.foundation.Image
+import org.jetbrains.compose.resources.painterResource
+import tripmate.composeapp.generated.resources.Res
+import tripmate.composeapp.generated.resources.ic_tripmate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -76,14 +81,12 @@ fun ProfileScreen(
                     }
                 },
                 actions = {
-                    Icon(
-                        Icons.Default.Flight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(28.dp)
-                    )
+Icon(
+    Icons.Default.Flight,
+    contentDescription = null,
+    tint = MaterialTheme.colorScheme.surface,
+    modifier = Modifier.size(36.dp)
+)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -114,22 +117,13 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // App icon placeholder
-                    Box(
+                    Image(
+                        painter = painterResource(Res.drawable.ic_tripmate),
+                        contentDescription = "TripMate Logo",
                         modifier = Modifier
                             .size(64.dp)
-                            .background(
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
-                                RoundedCornerShape(14.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Flight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
+                            .clip(RoundedCornerShape(14.dp))
+                    )
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(

@@ -8,8 +8,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.noteai.presentation.screens.MainScreen
+import com.example.noteai.presentation.screens.auth.AuthScreen
 import com.example.noteai.presentation.screens.recipe.AddEditRecipeScreen
 import com.example.noteai.presentation.screens.recipe.RecipeDetailScreen
+import com.example.noteai.presentation.screens.splash.SplashScreen
 
 @Composable
 fun AppNavHost(
@@ -17,16 +19,34 @@ fun AppNavHost(
     modifier: Modifier = Modifier
 ) {
     val navigationActions = createNavigationActions(navController)
-    
+
     NavHost(
         navController = navController,
-        startDestination = Route.Chat,
+        startDestination = Route.Splash,
         modifier = modifier
     ) {
+        composable<Route.Splash> {
+            SplashScreen(
+                onNavigateToMain = { navigationActions.navigateToChat() },
+                onNavigateToAuth = { navigationActions.navigateToAuth() }
+            )
+        }
+
+        composable<Route.Auth> {
+            AuthScreen(
+                onAuthSuccess = {
+                    navigationActions.navigateToChat()
+                }
+            )
+        }
+
         composable<Route.Chat> {
             MainScreen(
                 onRecipeClick = { id -> navigationActions.navigateToRecipeDetail(id) },
-                onAddRecipeClick = { navigationActions.navigateToAddEditRecipe() }
+                onAddRecipeClick = { navigationActions.navigateToAddEditRecipe() },
+                onLogout = {
+                    navigationActions.navigateToAuth()
+                }
             )
         }
 
@@ -51,9 +71,21 @@ fun AppNavHost(
 
 private fun createNavigationActions(navController: NavHostController): NavigationActions {
     return object : NavigationActions {
+        override fun navigateToSplash() {
+            navController.navigate(Route.Splash) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+
+        override fun navigateToAuth() {
+            navController.navigate(Route.Auth) {
+                popUpTo(Route.Splash) { inclusive = true }
+            }
+        }
+
         override fun navigateToChat() {
             navController.navigate(Route.Chat) {
-                popUpTo(Route.Chat) { inclusive = true }
+                popUpTo(Route.Splash) { inclusive = true }
             }
         }
         
@@ -77,4 +109,15 @@ private fun createNavigationActions(navController: NavHostController): Navigatio
             navController.popBackStack()
         }
     }
+}
+
+interface NavigationActions {
+    fun navigateToSplash()
+    fun navigateToAuth()
+    fun navigateToChat()
+    fun navigateToPantry()
+    fun navigateToRecipes()
+    fun navigateToRecipeDetail(recipeId: Long)
+    fun navigateToAddEditRecipe(recipeId: Long? = null)
+    fun navigateBack()
 }

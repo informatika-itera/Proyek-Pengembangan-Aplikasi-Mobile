@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,11 +12,13 @@ import androidx.compose.ui.Modifier
 import com.example.noteai.presentation.screens.chat.ChatScreen
 import com.example.noteai.presentation.screens.pantry.PantryScreen
 import com.example.noteai.presentation.screens.recipe.RecipeScreen
+import com.example.noteai.presentation.screens.profile.ProfileScreen
 
 @Composable
 fun MainScreen(
     onRecipeClick: (Long) -> Unit,
-    onAddRecipeClick: () -> Unit
+    onAddRecipeClick: () -> Unit,
+    onLogout: () -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     
@@ -40,6 +43,12 @@ fun MainScreen(
                     icon = { Icon(Icons.Default.RestaurantMenu, contentDescription = "Recipes") },
                     label = { Text("Recipes") }
                 )
+                NavigationBarItem(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") }
+                )
             }
         }
     ) { padding ->
@@ -50,6 +59,9 @@ fun MainScreen(
                 2 -> RecipeScreen(
                     onRecipeClick = onRecipeClick,
                     onAddRecipeClick = onAddRecipeClick
+                )
+                3 -> ProfileScreen(
+                    onLogout = onLogout
                 )
             }
         }

@@ -15,7 +15,7 @@ actual class DatabaseDriverFactory(
         return AndroidSqliteDriver(
             schema = NoteDatabase.Schema,
             context = context,
-            name = "cooknote_final_v7.db" // Gunakan nama baru untuk reset total
+            name = "cooknote_final_v8.db" // Incremented version to force schema update
         )
     }
 }

@@ -10,13 +10,18 @@ import com.example.noteai.data.remote.api.GeminiService
 import com.example.noteai.data.repository.AIRepositoryImpl
 import com.example.noteai.data.repository.PantryRepositoryImpl
 import com.example.noteai.data.repository.RecipeRepositoryImpl
+import com.example.noteai.data.repository.UserRepositoryImpl
 import com.example.noteai.domain.repository.AIRepository
 import com.example.noteai.domain.repository.PantryRepository
 import com.example.noteai.domain.repository.RecipeRepository
+import com.example.noteai.domain.repository.UserRepository
 import com.example.noteai.domain.usecase.*
 import com.example.noteai.presentation.screens.chat.ChatViewModel
 import com.example.noteai.presentation.screens.pantry.PantryViewModel
 import com.example.noteai.presentation.screens.recipe.RecipeViewModel
+import com.example.noteai.presentation.screens.recipe.RecipeDetailViewModel
+import com.example.noteai.presentation.screens.auth.AuthViewModel
+import com.example.noteai.presentation.screens.profile.ProfileViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -41,7 +46,7 @@ val databaseModule = module {
     }
 }
 
-// ==================== PREFERENCES MODULE = : Preferences MODULE ====================
+// ==================== PREFERENCES MODULE ====================
 
 val preferencesModule = module {
     single { get<DataStoreFactory>().create() }
@@ -54,6 +59,7 @@ val repositoryModule = module {
     singleOf(::PantryRepositoryImpl) bind PantryRepository::class
     singleOf(::RecipeRepositoryImpl) bind RecipeRepository::class
     singleOf(::AIRepositoryImpl) bind AIRepository::class
+    singleOf(::UserRepositoryImpl) bind UserRepository::class
 }
 
 // ==================== USE CASE MODULE ====================
@@ -82,6 +88,9 @@ val viewModelModule = module {
     viewModelOf(::ChatViewModel)
     viewModelOf(::PantryViewModel)
     viewModelOf(::RecipeViewModel)
+    viewModelOf(::RecipeDetailViewModel)
+    viewModelOf(::AuthViewModel)
+    viewModelOf(::ProfileViewModel)
 }
 
 // ==================== SHARED MODULES ====================

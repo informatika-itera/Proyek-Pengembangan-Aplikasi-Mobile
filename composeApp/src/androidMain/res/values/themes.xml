@@ -4,4 +4,15 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Background sama dengan SplashScreen di Compose -->
+        <item name="windowSplashScreenBackground">#F9FBE7</item>
+
+        <!-- Menghilangkan ikon Android dengan membuatnya transparan -->
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+
+        <!-- Tema yang digunakan setelah splash screen sistem selesai -->
+        <item name="postSplashScreenTheme">@style/Theme.NoteAI</item>
+    </style>
 </resources>

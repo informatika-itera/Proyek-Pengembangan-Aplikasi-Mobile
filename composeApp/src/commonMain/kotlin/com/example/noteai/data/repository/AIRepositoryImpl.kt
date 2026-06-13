@@ -75,9 +75,13 @@ class AIRepositoryImpl(
             systemPrompt = SystemPrompts.TRANSLATOR
         )
     }
-    
+
     override suspend fun chat(message: String): Result<String> {
-        return geminiService.generateContent(prompt = message)
+        // Tambahkan systemPrompt CHEF_ASSISTANT di sini
+        return geminiService.generateContent(
+            prompt = message,
+            systemPrompt = SystemPrompts.CHEF_ASSISTANT
+        )
     }
     
     override suspend fun suggestTitle(content: String): Result<String> {

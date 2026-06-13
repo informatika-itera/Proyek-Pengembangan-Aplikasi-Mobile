@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.example.noteai.domain.model.PantryItem
 import org.koin.compose.viewmodel.koinViewModel
 
+// Daftar kategori terpusat agar konsisten antara Filter dan Dialog Tambah
+private val PANTRY_CATEGORIES = listOf("Bahan Utama", "Bumbu", "Sayuran", "Daging", "Minuman", "Lainnya")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantryScreen(
@@ -36,8 +39,6 @@ fun PantryScreen(
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
-
-    val categories = listOf("Bahan Utama", "Bumbu", "Sayuran", "Daging", "Minuman", "Lainnya")
 
     val groupedItems = remember(items) {
         items.groupBy { it.category }
@@ -117,7 +118,7 @@ fun PantryScreen(
                         label = { Text("Semua") }
                     )
                 }
-                items(categories) { category ->
+                items(PANTRY_CATEGORIES) { category ->
                     FilterChip(
                         selected = selectedCategory == category,
                         onClick = {
@@ -152,7 +153,8 @@ fun PantryScreen(
                             Text(
                                 text = category.uppercase(),
                                 style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.typography.labelLarge.color.copy(alpha = 0.6f),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
                             )
                         }
@@ -288,6 +290,7 @@ fun PantryInventoryCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddInventoryItemDialog(
     onDismiss: () -> Unit,
@@ -297,9 +300,8 @@ fun AddInventoryItemDialog(
     var amount by remember { mutableStateOf("") }
     var minStock by remember { mutableStateOf("") }
     var unit by remember { mutableStateOf("gram") }
-    var category by remember { mutableStateOf("Bahan Utama") }
-
-    val categories = listOf("Bahan Utama", "Bumbu", "Sayuran", "Daging", "Minuman", "Lainnya")
+    var category by remember { mutableStateOf(PANTRY_CATEGORIES.first()) }
+    var expanded by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -335,14 +337,38 @@ fun AddInventoryItemDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Text("Kategori", style = MaterialTheme.typography.labelLarge)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    // Sederhana: Hanya text field, idealnya pakai DropdownMenu
-                    OutlinedTextField(
-                        value = category,
-                        onValueChange = { category = it },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                // Kategori dengan Dropdown
+                Column {
+                    Text("Kategori", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        OutlinedTextField(
+                            value = category,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            PANTRY_CATEGORIES.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption) },
+                                    onClick = {
+                                        category = selectionOption
+                                        expanded = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                                )
+                            }
+                        }
+                    }
                 }
             }
         },

@@ -1,6 +1,5 @@
 package com.example.noteai.presentation.screens.recipe
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.noteai.domain.model.Recipe
@@ -32,7 +32,7 @@ fun RecipeScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Buku Resep") },
+                title = { Text("Buku Resep", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -45,7 +45,7 @@ fun RecipeScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+                Icon(Icons.Default.Add, contentDescription = "Tambah Resep")
             }
         }
     ) { padding ->
@@ -54,7 +54,6 @@ fun RecipeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Tab Header
             TabRow(selectedTabIndex = if (showFavoritesOnly) 1 else 0) {
                 Tab(
                     selected = !showFavoritesOnly,
@@ -68,7 +67,6 @@ fun RecipeScreen(
                 )
             }
 
-            // Recipe List Content
             if (recipes.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -85,7 +83,7 @@ fun RecipeScreen(
                     items(recipes, key = { it.id }) { recipe ->
                         RecipeCard(
                             recipe = recipe,
-                            onClick = { onRecipeClick(recipe.id) },
+                            onCardClick = { onRecipeClick(recipe.id) },
                             onFavoriteClick = { viewModel.toggleFavorite(recipe.id) }
                         )
                     }
@@ -96,24 +94,26 @@ fun RecipeScreen(
     }
 }
 
-// ... Bagian RecipeCard dibiarkan seperti kode Anda yang asli ...
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeCard(
     recipe: Recipe,
-    onClick: () -> Unit,
+    onCardClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+    ElevatedCard(
+        onClick = onCardClick,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -121,7 +121,7 @@ fun RecipeCard(
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
                         imageVector = if (recipe.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
+                        contentDescription = "Favorit",
                         tint = if (recipe.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -130,14 +130,20 @@ fun RecipeCard(
             Text(
                 text = recipe.instructions,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (recipe.isAiGenerated) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 SuggestionChip(
                     onClick = {},
-                    label = { Text("AI Generated", style = MaterialTheme.typography.labelSmall) }
+                    label = { 
+                        Text("AI Generated", style = MaterialTheme.typography.labelSmall) 
+                    },
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    )
                 )
             }
         }

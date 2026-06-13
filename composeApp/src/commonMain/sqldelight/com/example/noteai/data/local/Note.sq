@@ -2,6 +2,15 @@
 -- COOKNOTE INTEGRATED SCHEMA
 -- ==========================================
 
+-- User Table
+CREATE TABLE UserEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    password TEXT NOT NULL,
+    is_logged_in INTEGER NOT NULL DEFAULT 0
+);
+
 -- Pantry Table (Inventory Style)
 CREATE TABLE PantryEntity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +45,26 @@ CREATE TABLE NoteEntity (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );
+
+-- ==========================================
+-- USER QUERIES
+-- ==========================================
+
+insertUser:
+INSERT INTO UserEntity (email, name, password)
+VALUES (?, ?, ?);
+
+getUserByEmail:
+SELECT * FROM UserEntity WHERE email = ?;
+
+getCurrentUser:
+SELECT * FROM UserEntity WHERE is_logged_in = 1 LIMIT 1;
+
+loginUser:
+UPDATE UserEntity SET is_logged_in = 1 WHERE email = ? AND password = ?;
+
+logoutAllUsers:
+UPDATE UserEntity SET is_logged_in = 0;
 
 -- ==========================================
 -- PANTRY QUERIES

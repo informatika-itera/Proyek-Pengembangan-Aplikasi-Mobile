@@ -15,6 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +32,14 @@ fun ChatScreen(
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.messages.size - 1)
+        }
+    }
+    LazyColumn( /* ... */ ) {
+        items(uiState.messages) { message ->
+            // Tambahkan parameter callback untuk tombol simpan resep
+            ChatBubble(message = message, onSaveRecipeClick = {
+                viewModel.saveAiRecipe(message.text)
+            })
         }
     }
 
@@ -51,7 +64,12 @@ fun ChatScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(uiState.messages) { message ->
-                    ChatBubble(message)
+                    ChatBubble(
+                        message = message,
+                        onSaveRecipeClick = {
+                            viewModel.saveAiRecipe(message.text)
+                        }
+                    )
                 }
                 if (uiState.isLoading) {
                     item {
@@ -90,23 +108,75 @@ fun ChatScreen(
 }
 
 @Composable
-fun ChatBubble(message: ChatMessage) {
+fun ChatBubble(
+    message: ChatMessage,
+    onSaveRecipeClick: () -> Unit // Parameter ini wajib ada
+) {
     val alignment = if (message.isUser) Alignment.End else Alignment.Start
     val containerColor = if (message.isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
         horizontalAlignment = alignment
     ) {
         Surface(
             color = containerColor,
             shape = MaterialTheme.shapes.medium
         ) {
-            Text(
-                text = message.text,
-                modifier = Modifier.padding(12.dp),
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Column {
+                Text(
+                    text = formatMarkdownToAnnotatedString(message.text), // Pastikan helper ini ada
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                // Menampilkan tombol jika pesan dari AI dan berformat resep
+                if (!message.isUser && message.canBeSavedAsRecipe) {
+                    HorizontalDivider()
+                    TextButton(
+                        onClick = onSaveRecipeClick,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(end = 8.dp)
+                    ) {
+                        Text("Simpan ke Resep")
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun formatMarkdownToAnnotatedString(text: String): AnnotatedString {
+    return buildAnnotatedString {
+        // Regex untuk mencari teks yang diapit ** (contoh: **teks tebal**)
+        val pattern = Regex("\\*\\*(.*?)\\*\\*")
+        var currentIndex = 0
+        val matches = pattern.findAll(text)
+
+        matches.forEach { matchResult ->
+            val startIndex = matchResult.range.first
+            val endIndex = matchResult.range.last + 1
+            val matchText = matchResult.groupValues[1] // Mengambil teks di dalam **
+
+            // Tambahkan teks biasa yang berada sebelum tanda **
+            if (startIndex > currentIndex) {
+                append(text.substring(currentIndex, startIndex))
+            }
+
+            // Terapkan gaya tebal (Bold) pada teks yang cocok
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(matchText)
+            }
+
+            currentIndex = endIndex
+        }
+
+        // Tambahkan sisa teks biasa setelah tanda ** terakhir
+        if (currentIndex < text.length) {
+            append(text.substring(currentIndex))
         }
     }
 }

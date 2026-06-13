@@ -11,9 +11,9 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.noteai.domain.model.Recipe
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,16 +22,13 @@ fun RecipeDetailScreen(
     recipeId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
-    viewModel: RecipeViewModel = koinViewModel()
+    viewModel: RecipeDetailViewModel = koinViewModel()
 ) {
-    val recipes by viewModel.recipes.collectAsState()
-    val recipe = remember(recipeId, recipes) {
-        recipes.find { it.id == recipeId }
-    }
+    val recipe by viewModel.recipe.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    if (recipe == null) {
-        onNavigateBack()
-        return
+    LaunchedEffect(recipeId) {
+        viewModel.loadRecipe(recipeId)
     }
 
     Scaffold(
@@ -44,56 +41,90 @@ fun RecipeDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.toggleFavorite(recipeId) }) {
-                        Icon(
-                            imageVector = if (recipe.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            tint = if (recipe.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    IconButton(onClick = { onNavigateToEdit(recipeId) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit")
-                    }
-                    IconButton(onClick = {
-                        viewModel.removeRecipe(recipeId)
-                        onNavigateBack()
-                    }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    recipe?.let { r ->
+                        IconButton(onClick = { viewModel.toggleFavorite(recipeId) }) {
+                            Icon(
+                                imageVector = if (r.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorite",
+                                tint = if (r.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = { onNavigateToEdit(recipeId) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit")
+                        }
+                        IconButton(onClick = {
+                            viewModel.removeRecipe(recipeId) {
+                                onNavigateBack()
+                            }
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        }
                     }
                 }
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(recipe.title, style = MaterialTheme.typography.headlineMedium)
-            
-            if (recipe.isAiGenerated) {
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text("AI Generated") }
-                )
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Bahan-bahan", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(recipe.ingredients, style = MaterialTheme.typography.bodyLarge)
+        } else if (recipe == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Resep tidak ditemukan")
+            }
+        } else {
+            val r = recipe!!
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(r.title, style = MaterialTheme.typography.headlineMedium)
+                
+                if (r.isAiGenerated) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = { Text("AI Generated") }
+                    )
                 }
-            }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Instruksi", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(recipe.instructions, style = MaterialTheme.typography.bodyLarge)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Bahan-bahan", 
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Text(r.ingredients, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Instruksi Memasak", 
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Text(r.instructions, style = MaterialTheme.typography.bodyLarge)
+                    }
                 }
             }
         }

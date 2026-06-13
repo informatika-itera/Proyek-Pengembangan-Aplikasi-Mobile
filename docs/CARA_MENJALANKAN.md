@@ -1,265 +1,187 @@
-# 🚀 Cara Menjalankan NoteAI
+# Cara Menjalankan My Bawang Gacha
 
-Panduan lengkap untuk menjalankan template aplikasi **NoteAI** (Kotlin Multiplatform).
+Panduan lengkap untuk menjalankan aplikasi My Bawang Gacha (Kotlin Multiplatform).
 
-> **Status target build:**
-> - ✅ **Android** — jalur utama yang didukung penuh oleh template ini.
-> - ⚠️ **iOS** — kode shared (Kotlin) sudah ter-set untuk target iOS (X64/Arm64/SimulatorArm64),
->   tetapi project Xcode (`iosApp/`) **belum disertakan** di template ini.
->   Lihat bagian *"Menjalankan iOS (lanjutan)"* di bawah jika Anda ingin mencoba target iOS.
-
----
+## Status Target Build
+- Android: Jalur utama yang didukung penuh.
+- iOS: Logika kode dibagikan (shared Kotlin) dan proyek Xcode (`iosApp/`) sudah tersedia di repositori ini. Kompilasi target iOS memerlukan macOS dengan Xcode terinstal.
 
 ## 1. Prasyarat
 
-| Software           | Versi minimum             | Catatan                                        |
-| ------------------ | ------------------------- | ---------------------------------------------- |
-| **JDK**            | 17 (disarankan 17 / 21)   | Bawaan Android Studio sudah cukup              |
-| **Android Studio** | Ladybug (2024.2.1) atau ↑ | Wajib untuk Compose Multiplatform tooling      |
-| **Android SDK**    | API 34 / 35               | Diinstall via SDK Manager Android Studio       |
-| **Git**            | 2.x                       | Untuk clone & branching                        |
-| **Xcode** (opt.)   | 15.0+                     | Hanya kalau ingin build iOS, **macOS-only**    |
+| Software | Versi Minimum | Catatan |
+| :--- | :--- | :--- |
+| JDK | 17 (disarankan 17 / 21) | Bawaan Android Studio sudah cukup |
+| Android Studio | Ladybug (2024.2.1) atau lebih baru | Wajib untuk Compose Multiplatform tooling |
+| Android SDK | API 34 / 35 | Diinstal via SDK Manager Android Studio |
+| Git | 2.x | Untuk clone dan branching |
+| Xcode | 15.0 atau lebih baru | Hanya jika ingin melakukan build iOS (khusus macOS) |
 
-Hardware yang nyaman: RAM minimal 8 GB (16 GB lebih lega), free space ±10 GB.
+Spesifikasi perangkat keras yang disarankan: RAM minimal 8 GB (16 GB disarankan) dan ruang penyimpanan kosong sekitar 10 GB.
 
----
-
-## 2. Clone Repository
+## 2. Kloning Repositori
 
 ```bash
-git clone https://github.com/informatika-itera/Proyek-Pengembangan-Aplikasi-Mobile.git
+git clone https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile.git
 cd Proyek-Pengembangan-Aplikasi-Mobile
 ```
 
-Buat branch project kelompok sesuai aturan di [GIT_WORKFLOW.md](./GIT_WORKFLOW.md):
+Buat branch proyek kelompok sesuai konvensi penamaan di Git Workflow:
 
 ```bash
-git checkout -b project/121140003-121140004-NamaApp
+git checkout -b project/NIM1-NIM2-NamaApp
 ```
 
----
+## 3. Setup local.properties
 
-## 3. Setup `local.properties`
+Berkas `local.properties` tidak dimasukkan ke dalam kontrol repositori Git (sudah terdaftar di `.gitignore`). Setiap pengembang harus membuatnya secara mandiri di direktori root proyek.
 
-File `local.properties` **TIDAK ter-commit** ke repository (sudah di `.gitignore`).
-Setiap orang perlu membuatnya sendiri di root project (sejajar dengan `settings.gradle.kts`).
-
-Cara termudah: copy dari template:
+Salin dari contoh template yang tersedia:
 
 ```bash
 cp local.properties.example local.properties
 ```
 
-Lalu edit `local.properties`:
+Edit berkas `local.properties` tersebut dan tambahkan API key Gemini Anda:
 
 ```properties
-# Lokasi Android SDK (Android Studio biasanya mengisi otomatis saat sync)
-# macOS  :
+# Lokasi Android SDK (Android Studio akan mengisinya otomatis saat sync)
+# macOS:
 # sdk.dir=/Users/<USER>/Library/Android/sdk
-# Linux  :
+# Linux:
 # sdk.dir=/home/<USER>/Android/Sdk
 # Windows:
 # sdk.dir=C\:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
 
-# Google Gemini API Key (lihat langkah 4)
-GEMINI_API_KEY=AIzaSy....your_real_key....
+# Google Gemini API Key
+GEMINI_API_KEY=AIzaSy...key_gemini_anda...
 ```
 
-> Tanpa `GEMINI_API_KEY` aplikasi tetap **bisa dibuka**, tetapi fitur AI (ringkas,
-> generate ide, perbaiki tulisan, dll) akan gagal dengan error 401/403.
-
----
+Jika `GEMINI_API_KEY` tidak diisi, aplikasi tetap dapat dijalankan tetapi fitur asisten AI akan mengembalikan error.
 
 ## 4. Dapatkan Gemini API Key
 
-1. Buka https://aistudio.google.com
-2. Login dengan akun Google.
-3. Klik **Get API Key** → **Create API Key** → pilih project (atau buat baru).
-4. Copy key dan tempel ke `local.properties` di baris `GEMINI_API_KEY=`.
+1. Buka Google AI Studio di https://aistudio.google.com/
+2. Masuk menggunakan akun Google Anda.
+3. Klik tombol Get API Key, lalu buat kunci API baru.
+4. Salin kunci tersebut dan masukkan ke dalam berkas `local.properties` pada baris `GEMINI_API_KEY=`.
 
-> ⚠️ **Jangan share / commit API key.** File `local.properties` sudah di-ignore.
-
----
-
-## 5. Build & Sync via Android Studio (cara yang dianjurkan)
+## 5. Build dan Sinkronisasi via Android Studio
 
 1. Buka Android Studio.
-2. **File → Open** → pilih folder root project (`Pryk-PAM`).
-3. Klik **Trust Project**.
-4. Tunggu Gradle sync selesai. Sync pertama bisa 5–15 menit (download
-   Compose Multiplatform, KMP runtime, dependencies).
-5. Bila ada notifikasi *"Install missing platform"*, klik **Install**.
+2. Pilih File -> Open, arahkan ke direktori root proyek.
+3. Klik Trust Project jika diminta.
+4. Tunggu sinkronisasi Gradle selesai. Sinkronisasi pertama dapat memakan waktu 5 hingga 15 menit tergantung kecepatan internet Anda karena mengunduh dependensi Kotlin Multiplatform.
+5. Jika muncul pemberitahuan untuk menginstal modul SDK yang kurang, klik opsi instalasi yang disediakan.
 
-Saat sync sukses Anda akan melihat run configuration **composeApp** di toolbar.
+Setelah proses sinkronisasi sukses, Anda dapat memilih konfigurasi run androidApp di toolbar atas.
 
----
+## 6. Build dari Terminal
 
-## 6. Build dari Terminal (alternatif)
-
-Project ini sudah berisi Gradle wrapper. Anda **tidak** perlu menginstall Gradle
-manual — wrapper akan mendownload Gradle 8.9 sendiri.
+Proyek ini dilengkapi dengan Gradle wrapper. Anda tidak perlu menginstal Gradle secara manual.
 
 ```bash
-# Pertama kali (download dependencies + build semua artifact)
+# Kompilasi seluruh proyek dan jalankan pengujian
 ./gradlew build
 
-# Build APK debug saja (lebih cepat)
-./gradlew :composeApp:assembleDebug
+# Build berkas APK debug untuk Android
+./gradlew :androidApp:assembleDebug
 
-# Install ke emulator/device yang sedang aktif
-./gradlew :composeApp:installDebug
+# Pasang aplikasi ke emulator atau perangkat Android yang aktif
+./gradlew :androidApp:installDebug
 ```
 
-> Di Windows pakai `gradlew.bat ...` (bukan `./gradlew`).
+Catatan: Pada sistem operasi Windows, gunakan `gradlew.bat` sebagai pengganti `./gradlew`.
 
-Generate file SQLDelight (biasanya otomatis, tapi kalau perlu manual):
-
+Untuk membuat berkas interface SQLDelight secara manual:
 ```bash
 ./gradlew :composeApp:generateCommonMainNoteDatabaseInterface
 ```
 
-> Nama task ini berasal dari konfigurasi di `composeApp/build.gradle.kts`:
-> `sqldelight { databases { create("NoteDatabase") { ... } } }`.
-
-Jalankan unit test (commonTest):
-
+Menjalankan pengujian (unit test):
 ```bash
-# Semua test di semua target
+# Menjalankan seluruh pengujian di semua target
 ./gradlew allTests
 
-# Hanya unit test JVM/Android debug
+# Menjalankan unit test JVM/Android saja
 ./gradlew :composeApp:testDebugUnitTest
 ```
 
----
-
 ## 7. Jalankan di Android
 
-### 7.1 Pakai Emulator
+### 7.1 Menggunakan Emulator
+1. Di Android Studio, buka Tools -> Device Manager -> Create Device.
+2. Buat perangkat virtual baru (misal: Pixel 7) dengan image API 34 atau lebih baru.
+3. Jalankan emulator tersebut.
+4. Pilih konfigurasi run androidApp di toolbar atas, kemudian klik tombol Run (ikon segitiga hijau) atau tekan Shift + F10.
 
-1. Android Studio → **Tools → Device Manager → Create Device**.
-2. Pilih device (mis. **Pixel 7**), system image **API 34** atau lebih baru.
-3. Klik **Finish**, lalu **Run** emulator (▶).
-4. Pilih run configuration **composeApp** di toolbar atas.
-5. Klik tombol **Run** (▶) atau tekan **Shift + F10**.
+### 7.2 Menggunakan Perangkat Fisik
+1. Hubungkan perangkat Android menggunakan kabel data.
+2. Aktifkan Opsi Pengembang (Developer Options) dengan mengetuk Build Number sebanyak 7 kali di menu Pengaturan Ponsel.
+3. Aktifkan USB Debugging di dalam menu Developer Options.
+4. Pilih perangkat fisik Anda pada toolbar Android Studio, lalu jalankan aplikasi.
 
-### 7.2 Pakai HP Fisik
+## 8. Jalankan di iOS
 
-1. HP Android → **Settings → About Phone** → ketuk **Build Number** 7×
-   untuk mengaktifkan **Developer Options**.
-2. **Developer Options** → aktifkan **USB debugging**.
-3. Sambungkan HP ke laptop via kabel USB → pilih **Allow** saat dialog muncul.
-4. Pilih device di toolbar Android Studio → **Run** (▶).
-
----
-
-## 8. Menjalankan iOS (lanjutan, opsional)
-
-Template ini **belum menyertakan** folder `iosApp/` dengan project Xcode yang
-siap pakai. Anda punya 2 opsi:
-
-### Opsi A — Pakai KMP Wizard JetBrains
-
-1. Buka https://kmp.jetbrains.com.
-2. Generate template baru "Compose Multiplatform" (Android + iOS).
-3. Copy folder `iosApp/` hasil wizard ke root project ini.
-4. Edit `iosApp/iosApp/iOSApp.swift` agar memanggil `MainViewControllerKt.MainViewController()`
-   dari module `ComposeApp` (lihat dokumentasi inline di
-   `composeApp/src/iosMain/kotlin/com/example/noteai/MainViewController.kt`).
-
-### Opsi B — Build framework saja
-
-Walau belum ada folder `iosApp/`, kode Kotlin Anda tetap bisa dikompilasi
-ke framework iOS:
+Kompilasi dan jalankan aplikasi target iOS langsung menggunakan emulator Xcode atau perangkat simulator dari Android Studio (jika menggunakan plugin KMP) atau jalankan perintah berikut dari terminal macOS:
 
 ```bash
-# Build framework debug untuk simulator Apple Silicon
+# Kompilasi kerangka kerja debug iOS simulator untuk Apple Silicon
 ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
 ```
 
-Hasilnya ada di `composeApp/build/bin/iosSimulatorArm64/debugFramework/`.
-
-> **Catatan:** build target iOS hanya berjalan di **macOS** (butuh Kotlin/Native
-> toolchain dan Xcode). Pada Windows/Linux target iOS akan otomatis di-skip.
-
----
+Hasil kompilasi akan berada di direktori `composeApp/build/bin/iosSimulatorArm64/debugFramework/`.
+Untuk menjalankan aplikasi secara penuh di simulator, buka direktori `iosApp/` menggunakan Xcode, pilih simulator target, lalu klik tombol Run di Xcode.
 
 ## 9. Verifikasi Aplikasi Berjalan
 
-Checklist setelah app jalan:
+Lakukan pengujian manual berikut untuk memastikan aplikasi berjalan dengan normal:
 
-- [ ] Splash → Home Screen tampil dengan FAB **+**.
-- [ ] Tap **+** → bisa membuat catatan baru (judul + konten).
-- [ ] Catatan baru muncul di daftar Home.
-- [ ] Tap catatan → masuk ke detail screen.
-- [ ] Pin / unpin berjalan; catatan ter-pin pindah ke atas.
-- [ ] Search (ikon 🔍) menyaring berdasarkan judul/konten.
-- [ ] Filter kategori (chip "Semua/Umum/Pekerjaan/...") berfungsi.
-- [ ] Sort menu (ikon ⇅) mengubah urutan.
-- [ ] Hapus dari card Home bekerja.
-- [ ] AI Assistant (ikon ✨) terbuka.
-- [ ] Dengan API key valid → aksi **Ringkas** mengembalikan teks (butuh konten ≥ 50 karakter).
+- Discover: Halaman utama menampilkan rekomendasi musiman dan daftar anime/manga populer.
+- Detail: Tap pada media menampilkan halaman informasi lengkap beserta relasi media.
+- Library CRUD:
+  - Buka detail media, pilih Tambah ke Library.
+  - Masukkan status, progress episode/chapter, skor, dan catatan personal.
+  - Simpan dan verifikasi item muncul di tab yang sesuai di My Library.
+  - Edit progress atau status, lalu simpan perubahan.
+  - Hapus item dari library dan pastikan dialog konfirmasi muncul.
+- Gacha: Masuk ke menu Gacha, pilih tipe preferensi, klik tombol roll, dan pastikan hasil gacha muncul secara acak.
+- Catatan: Menambahkan catatan lokal baru, mengubahnya, dan menghapusnya.
+- AI Assistant: Membuka fitur chat AI, mengirimkan pertanyaan, dan menerima respon dari Gemini.
+- Settings: Merubah tema (Terang, Gelap, Sistem) dan mengganti skema warna (misal: Gruvbox atau Code Geass) untuk memverifikasi perubahan visual.
 
----
+## 10. Troubleshooting Umum
 
-## 10. Troubleshooting Cepat
+| Masalah | Solusi |
+| :--- | :--- |
+| SDK location not found | Isi variabel `sdk.dir` secara manual di berkas `local.properties` atau buka proyek via Android Studio agar dikonfigurasi otomatis. |
+| API Key Kosong atau Error 401 | Pastikan variabel `GEMINI_API_KEY` di `local.properties` sudah terisi dengan kunci yang valid dari Google AI Studio, lalu lakukan rebuild proyek. |
+| Class NoteDatabase tidak ditemukan | Jalankan perintah `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface` lalu pilih Build -> Rebuild Project di Android Studio. |
+| Gradle Sync lambat | Hal ini normal saat pertama kali sinkronisasi karena mengunduh dependensi multiplatform. Pastikan koneksi internet Anda stabil. |
+| Daemon terminated karena kehabisan memori | Naikkan alokasi heap JVM di `gradle.properties` dengan mengubah baris: `org.gradle.jvmargs=-Xmx6g`. |
 
-| Gejala                                                 | Solusi                                                            |
-| ------------------------------------------------------ | ------------------------------------------------------------------ |
-| `SDK location not found`                               | Edit `local.properties`, isi `sdk.dir=...` atau buka project lewat Android Studio agar diisi otomatis. |
-| `GEMINI_API_KEY` kosong / 401 Unauthorized             | Periksa baris `GEMINI_API_KEY=...` di `local.properties` lalu rebuild. |
-| `Cannot resolve symbol 'NoteDatabase'`                 | Jalankan `./gradlew :composeApp:generateCommonMainNoteDatabaseInterface`, lalu **Build → Rebuild Project**. |
-| Gradle sync lambat sekali pertama kali                 | Normal — dependencies KMP cukup besar (~1 GB). Pastikan internet stabil. |
-| `Daemon ... was terminated` saat build                 | Naikkan heap di `gradle.properties`: `org.gradle.jvmargs=-Xmx6g`. |
-| Build error setelah ganti versi                        | `./gradlew clean` lalu rebuild; bila tetap gagal hapus folder `.gradle/` lokal lalu sync ulang. |
-| Error `Plugin com.android.application not found` di Linux/CI | Pastikan punya akses ke repo Google + Maven Central (cek setting proxy/firewall). |
-
-Lebih lengkap di [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md).
-
----
-
-## 11. File Penting
+## 11. Struktur Berkas Kunci
 
 ```
-Pryk-PAM/
-├── local.properties           ← BUAT FILE INI (tidak ter-commit)
-├── local.properties.example   ← Template, di-commit
-├── settings.gradle.kts
-├── build.gradle.kts
-├── gradlew / gradlew.bat      ← Wrapper, dipanggil sebagai ./gradlew
-├── gradle/
-│   ├── libs.versions.toml     ← Daftar versi semua dependency
-│   └── wrapper/
-├── composeApp/
-│   ├── build.gradle.kts
+Proyek-Pengembangan-Aplikasi-Mobile/
+├── local.properties           # Berkas konfigurasi SDK dan API key (lokal, di-ignore)
+├── local.properties.example   # Template berkas konfigurasi lokal
+├── settings.gradle.kts        # Pengaturan modul proyek
+├── build.gradle.kts           # Konfigurasi build root proyek
+├── androidApp/                # Modul khusus aplikasi Android
+├── iosApp/                    # Proyek Xcode untuk aplikasi iOS
+├── composeApp/                # Modul bersama (shared) Kotlin Multiplatform
+│   ├── build.gradle.kts       # Dependensi modul bersama
 │   └── src/
-│       ├── commonMain/        ← Kode shared Kotlin
-│       ├── commonMain/sqldelight/  ← Skema DB (Note.sq)
-│       ├── commonTest/        ← Unit test
-│       ├── androidMain/       ← Implementasi spesifik Android
-│       └── iosMain/           ← Implementasi spesifik iOS
-└── docs/                      ← Dokumentasi (file ini ada di sini)
+│       ├── commonMain/        # Kode Kotlin yang dibagikan ke Android dan iOS
+│       │   ├── kotlin/        # Logika bisnis dan UI presentation
+│       │   └── sqldelight/    # Skema dan query SQLDelight (Note.sq, Anime.sq, Library.sq, Manga.sq, AiChat.sq, MediaCache.sq)
+│       ├── androidMain/       # Implementasi spesifik platform Android
+│       └── iosMain/           # Implementasi spesifik platform iOS
+└── docs/                      # Dokumentasi proyek
 ```
-
----
 
 ## 12. Tips Pengembangan
 
-- **Live Edit** Compose: aktif by default, edit `@Composable` lalu lihat
-  hasilnya tanpa restart app (selama struktur tidak berubah drastis).
-- **Logcat**: `View → Tool Windows → Logcat` (filter dengan tag `HTTP:` untuk
-  melihat log Ktor karena kita pakai `enableLogging = true`).
-- **Run unit test cepat** dari IDE: klik kanan file `*Test.kt` → **Run**.
-- **Debug DataStore**: file preferences disimpan di
-  `/data/data/com.example.noteai/files/noteai.preferences_pb` (Android).
+- Logcat: Gunakan Logcat di Android Studio dan saring dengan tag `HTTP:` untuk memantau log jaringan dari Ktor Client.
+- Preferensi DataStore: Berkas preferensi tersimpan lokal di dalam direktori internal data aplikasi masing-masing platform dengan package name `id.my.sinanonym.mybawanggacha`.
 
----
-
-## Referensi
-
-- [Kotlin Multiplatform docs](https://kotlinlang.org/docs/multiplatform.html)
-- [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
-- [SQLDelight](https://cashapp.github.io/sqldelight/)
-- [Koin DI](https://insert-koin.io/)
-- [Ktor Client](https://ktor.io/docs/welcome.html)
-- [Google Gemini API](https://ai.google.dev/docs)

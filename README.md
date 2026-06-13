@@ -1,83 +1,141 @@
+
 # My Bawang Gacha
 
 <p align="center">
   <a href="https://youtu.be/UAeIq0xMsbk">
     <img src="https://img.youtube.com/vi/UAeIq0xMsbk/maxresdefault.jpg" alt="Video Demo My Bawang Gacha" width="70%">
     <br>
-    <b>[PLAY] Putar Video Demo (YouTube)</b>
+    <b>Watch video demo on YouTube</b>
   </a>
 </p>
 
-My Bawang Gacha adalah aplikasi Anime List, Manga List, dan Gacha yang dikembangkan menggunakan Kotlin Multiplatform (KMP) untuk platform Android dan iOS. Proyek ini dibangun di atas template Clean Architecture dan MVVM dengan integrasi Google Gemini API dan Jikan API (MyAnimeList).
+<p align="center">
+  <a href="https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/KMP-ci.yml">
+    <img src="https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/KMP-ci.yml/badge.svg" alt="CI">
+  </a>
+  <a href="https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/releases/latest">
+    <img src="https://img.shields.io/github/v/release/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile?label=latest%20release" alt="Latest Release">
+  </a>
+  <a href="https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/releases">
+    <img src="https://img.shields.io/github/downloads/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/total?label=downloads" alt="Total Downloads">
+  </a>
+  <a href="https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile" alt="License">
+  </a>
+</p>
 
-![CI](https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/actions/workflows/KMP-ci.yml/badge.svg)
+<p align="center">
+  <a href="https://github.com/sinavarasina/Proyek-Pengembangan-Aplikasi-Mobile/releases/latest">
+    <b>Download latest release</b>
+  </a>
+</p>
 
-## Fitur Utama
+My Bawang Gacha adalah aplikasi Kotlin Multiplatform untuk menemukan, mencari, menyimpan, dan mengatur anime/manga. Aplikasi ini menyediakan discover list, detail media, library lokal, catatan, AI assistant berbasis Gemini, serta sistem gacha rekomendasi anime/manga berdasarkan preferensi pengguna.
 
-- Discover & Search: Menampilkan anime dan manga populer, rekomendasi musiman, serta melakukan pencarian media menggunakan Jikan API dengan optimasi debounce query.
-- Library Management: Menyimpan dan melacak status tontonan/bacaan (Plan to Watch, Watching, Completed, On Hold, Dropped) lengkap dengan jumlah episode/chapter, skor personal (1-10), dan catatan khusus.
-- Gacha System: Memberikan rekomendasi anime atau manga secara acak (gacha) berdasarkan preferensi media yang dimasukkan pengguna.
-- Note System: Membuat, membaca, memperbarui, dan menghapus catatan personal secara lokal.
-- AI Assistant: Integrasi dengan Google Gemini API untuk melakukan tanya jawab interaktif dengan riwayat percakapan yang disimpan di database lokal.
-- Dashboard & Settings: Konfigurasi API key Gemini, pergantian tema (Terang, Gelap, Sistem) dan skema warna (Default, Catppuccin, Gruvbox, Hatsune Miku, Pak Habib, Code Geass), serta pemantauan kuota request Jikan API dan penggunaan token AI.
+Project ini memakai Compose Multiplatform sebagai UI shared untuk Android dan iOS, Clean Architecture, MVVM, Koin, SQLDelight, DataStore, Ktor Client, Jikan API, Gemini API, dan GitHub Releases API.
 
-## Persiapan dan Instalasi
+## Fitur utama
 
-### Kebutuhan Sistem
+| Fitur                | Ringkasan                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Home dan Discover    | Menampilkan anime dan manga populer, musim berjalan, upcoming, rekomendasi, dan watch episode dari Jikan API.          |
+| Anime dan Manga List | Menampilkan list media dengan pagination, kategori, filter, dan pull-to-refresh.                                       |
+| Search               | Mencari anime/manga dengan debounce, filter media type, genre, score, status, dan format.                              |
+| Detail Media         | Menampilkan detail anime/manga, poster, sinopsis, metadata, relasi, episode anime, dan aksi tambah ke library.         |
+| My Library           | Menyimpan anime/manga lokal dengan status, progress episode/chapter, skor personal, dan catatan.                       |
+| Gacha                | Menghasilkan rekomendasi acak berdasarkan preferensi, deck session, histori, dan pengecualian item yang sudah dikenal. |
+| Notes                | CRUD catatan lokal dengan kategori, warna, pin, dan integrasi ke AI assistant.                                         |
+| AI Assistant         | Chat Gemini dengan konteks aplikasi, pilihan model, personality, token usage tracking, dan histori lokal.              |
+| Settings dan About   | Tema, color scheme, mode jaringan, API token AI, cache, build info, release info, dan metadata runtime.                |
 
-- Android Studio Ladybug (2024.2.1) atau versi lebih baru
-- JDK 17 atau versi lebih baru
-- Xcode 15 atau versi lebih baru (khusus untuk build target iOS di macOS)
+## Platform
 
-### Cara Menjalankan
+| Platform | Status                                                                                                          |
+| -------- | --------------------------------------------------------------------------------------------------------------- |
+| Android  | Target utama. Build debug dan release tersedia melalui Gradle.                                                  |
+| iOS      | Target KMP tersedia melalui Xcode project dan ComposeUIViewController. Build simulator bersifat optional di CI. |
 
-1. Clone repository ini ke direktori lokal Anda.
-2. Salin template konfigurasi properti lokal:
-   ```bash
-   cp local.properties.example local.properties
-   ```
-3. Lakukan sync Gradle di Android Studio.
-4. Jalankan perintah build melalui terminal:
-   ```bash
-   ./gradlew build
-   ```
-5. Untuk menjalankan aplikasi di emulator atau perangkat Android yang terhubung:
-   ```bash
-   ./gradlew :androidApp:installDebug
-   ```
+## Menjalankan project
 
-## Arsitektur dan Struktur Proyek
+Kebutuhan utama:
 
-Aplikasi ini menerapkan prinsip Clean Architecture dengan pemisahan menjadi tiga layer utama: Data, Domain, dan Presentation.
+* Android Studio Ladybug 2024.2.1 atau lebih baru
+* JDK 17 atau lebih baru
+* Android SDK
+* Xcode 15 atau lebih baru untuk target iOS di macOS
 
-### Modul Utama
-- `androidApp`: Entry point dan konfigurasi spesifik untuk aplikasi Android.
-- `iosApp`: Entry point dan konfigurasi proyek Xcode untuk aplikasi iOS.
-- `composeApp`: Shared module berisi modul bersama (95%+ dari basis kode), termasuk logika bisnis, penanganan data, dan UI (Compose Multiplatform).
+Android Studio biasanya membuat `local.properties` secara otomatis untuk `sdk.dir`. Project ini tidak membutuhkan instruksi manual `cp local.properties.example local.properties` untuk Gemini. Token Gemini diatur dari Settings aplikasi.
 
-### Tech Stack
-- UI Framework: Compose Multiplatform
-- Jaringan: Ktor Client
-- Database Lokal: SQLDelight
-- Dependency Injection: Koin
-- Penyimpanan Preferensi: DataStore (Preferences)
-- Image Loading: Coil Compose
-- Integrasi AI: Google Gemini API
+Build dari terminal:
 
-Untuk penjelasan lebih detail mengenai struktur paket, kelas, dan alur dependensi, silakan merujuk ke [Struktur Kode](docs/STRUKTUR_KODE.md).
+```bash
+./gradlew :composeApp:compileKotlinMetadata
+./gradlew :composeApp:compileAndroidMain
+./gradlew :androidApp:assembleDebug
+```
 
-## Dokumentasi Tambahan
+Install debug ke perangkat Android:
 
-Panduan lengkap proyek ini dibagi ke dalam beberapa dokumen di direktori `docs/`:
-- [Indeks Dokumentasi](docs/INDEX.md): Panduan navigasi seluruh file dokumentasi yang tersedia.
-- [Panduan Proyek](docs/PANDUAN_PROJECT.md): Ketentuan sprint, rubrik penilaian, dan timeline pengembangan.
-- [Struktur Kode](docs/STRUKTUR_KODE.md): Penjelasan rinci tentang arsitektur Clean Architecture + MVVM, modul, dan alur data.
-- [Cara Menjalankan](docs/CARA_MENJALANKAN.md): Langkah detail instalasi, setup emulator, dan kompilasi proyek.
-- [Aturan Modifikasi](docs/ATURAN_MODIFIKASI.md): Regulasi memodifikasi berkas template.
-- [Git Workflow](docs/GIT_WORKFLOW.md): Panduan branching, penamaan branch, dan konvensi commit.
-- [Troubleshooting](docs/TROUBLESHOOTING.md): Solusi untuk berbagai masalah kompilasi dan runtime yang umum terjadi.
+```bash
+./gradlew :androidApp:installDebug
+```
 
-## Dosen Pengampu
+Build iOS simulator dari macOS:
+
+```bash
+./gradlew :composeApp:compileKotlinIosSimulatorArm64
+```
+
+Panduan lengkap ada di [docs/CARA_MENJALANKAN.md](docs/CARA_MENJALANKAN.md).
+
+## Struktur repository
+
+```text
+.
+├── androidApp/                 Android application module
+├── iosApp/                     Xcode project dan entry point iOS
+├── composeApp/                 Shared Kotlin Multiplatform module
+│   └── src/
+│       ├── commonMain/         Domain, data, presentation, resources, SQLDelight
+│       ├── androidMain/        actual implementation Android
+│       ├── iosMain/            actual implementation iOS
+│       └── commonTest/         Unit tests shared
+├── docs/                       Dokumentasi project
+├── .github/workflows/          CI, dry build, dan release automation
+├── VERSIONING.md               Kebijakan versi dan release
+└── PLAN.md                     Status fitur dan roadmap project
+```
+
+Dokumentasi kode ada di [docs/code/INDEX.md](docs/code/INDEX.md).
+
+## Arsitektur
+
+Project menggunakan pemisahan layer berikut:
+
+```text
+Presentation -> Domain -> Data
+```
+
+Presentation berisi screen, ViewModel, navigation, theme, dan komponen UI. Domain berisi model, repository contract, dan use case. Data berisi implementasi repository, local source, remote source, cache, DTO, mapper, DataStore, dan SQLDelight.
+
+Detail arsitektur ada di [docs/ARSITEKTUR.md](docs/ARSITEKTUR.md) dan [docs/STRUKTUR_KODE.md](docs/STRUKTUR_KODE.md).
+
+## Konfigurasi AI
+
+Token Gemini disimpan melalui Settings aplikasi. Runtime membaca token dari DataStore terlebih dahulu, kemudian memakai fallback platform `ApiConfig` jika tersedia. Jika keduanya kosong, AI Assistant akan menampilkan error bahwa token belum diatur.
+
+Dokumentasi AI ada di [docs/AI_ASSISTANT.md](docs/AI_ASSISTANT.md).
+
+## CI dan release
+
+CI berjalan pada push dan pull request ke branch `main`. Workflow melakukan build Android, compile metadata shared, compile unit test sources, dan compile iOS simulator secara optional.
+
+Release workflow membuat signed Android APK, checksum SHA-256, optional iOS simulator artifact, tag `v<version>`, dan GitHub Release.
+
+Detail ada di [docs/CI_RELEASE.md](docs/CI_RELEASE.md) dan [VERSIONING.md](VERSIONING.md).
+
+## Dosen pengampu
+
 <table>
   <tr>
     <td align="center">
@@ -90,7 +148,8 @@ Panduan lengkap proyek ini dibagi ke dalam beberapa dokumen di direktori `docs/`
   </tr>
 </table>
 
-## Anggota Kelompok
+## Anggota kelompok
+
 <table>
   <tr>
     <td align="center">
@@ -110,12 +169,10 @@ Panduan lengkap proyek ini dibagi ke dalam beberapa dokumen di direktori `docs/`
   </tr>
 </table>
 
-**Program Studi Teknik Informatika**  
+**Program Studi Teknik Informatika**
 Institut Teknologi Sumatera (ITERA)
 
-## Lisensi
+## License
 
 MIT License
-
-
 

@@ -47,3 +47,10 @@ daemon/
 kotlin-profile/
 native/
 wrapper/
+# Signing key - jangan commit!
+masakuy-release.jks
+
+# Temp files
+rec2.txt
+rec2_full.txt
+rec_test.txt

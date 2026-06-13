@@ -1,0 +1,319 @@
+﻿Initialized native services in: C:\Users\ACER\.gradle\native
+Initialized jansi services in: C:\Users\ACER\.gradle\native
+The client will now receive all logging from the daemon (pid: 10872). The daemon log file: C:\Users\ACER\.gradle\daemon\9.0-milestone-1\daemon-10872.out.log
+Starting 59th build in daemon [uptime: 2 hrs 35 mins 36.134 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 4 GiB]
+Using 8 worker leases.
+Now considering [D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\settings.gradle.kts'.
+Using local directory build cache for the root build (location = C:\Users\ACER\.gradle\caches\build-cache-1, remove unused entries = after 7 days).
+Type-safe project accessors is an incubating feature.
+Projects loaded. Root project using build file 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\build.gradle.kts'.
+Included projects: [root project 'Masakuy', project ':composeApp']
+
+> Configure project :
+Evaluating root project 'Masakuy' using build file 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application', version: '8.7.3', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.1.0', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.plugin.compose', version: '2.1.0', apply: false]
+
+> Configure project :composeApp
+Evaluating project ':composeApp' using build file 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application', version: '8.7.3']
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.1.0']
+Resolved plugin [id: 'org.jetbrains.kotlin.plugin.serialization', version: '2.1.0']
+Resolved plugin [id: 'org.jetbrains.kotlin.plugin.compose', version: '2.1.0']
+Resolved plugin [id: 'app.cash.sqldelight', version: '2.0.2']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.7.6']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle85 variant
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+Detected Android Gradle Plugin compose compiler configuration
+All projects evaluated.
+Task name matched 'testDebugUnitTest'
+Selected primary task 'testDebugUnitTest' from project :
+Tasks to be executed: [task ':composeApp:checkKotlinGradlePluginConfigurationErrors', task ':composeApp:preBuild', task ':composeApp:preDebugBuild', task ':composeApp:generateDebugBuildConfig', task ':composeApp:generateDebugMasakuyDatabaseInterface', task ':composeApp:checkDebugAarMetadata', task ':composeApp:generateDebugResValues', task ':composeApp:mapDebugSourceSetPaths', task ':composeApp:generateDebugResources', task ':composeApp:mergeDebugResources', task ':composeApp:packageDebugResources', task ':composeApp:parseDebugLocalResources', task ':composeApp:createDebugCompatibleScreenManifests', task ':composeApp:extractDeepLinksDebug', task ':composeApp:processDebugMainManifest', task ':composeApp:processDebugManifest', task ':composeApp:processDebugManifestForPackage', task ':composeApp:processDebugResources', task ':composeApp:compileDebugKotlin', task ':composeApp:javaPreCompileDebug', task ':composeApp:compileDebugJavaWithJavac', task ':composeApp:bundleDebugClassesToRuntimeJar', task ':composeApp:bundleDebugClassesToCompileJar', task ':composeApp:compileDebugUnitTestKotlin', task ':composeApp:preDebugUnitTestBuild', task ':composeApp:javaPreCompileDebugUnitTest', task ':composeApp:compileDebugUnitTestJavaWithJavac', task ':composeApp:koverFindJar', task ':composeApp:processDebugJavaRes', task ':composeApp:processDebugUnitTestJavaRes', task ':composeApp:testDebugUnitTest']
+Tasks that were excluded: []
+Resolve mutations for :composeApp:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:composeApp:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':composeApp:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :composeApp:preBuild (Thread[Execution worker,5,main]) started.
+:composeApp:preBuild (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:preBuild UP-TO-DATE
+Skipping task ':composeApp:preBuild' as it has no actions.
+Resolve mutations for :composeApp:preDebugBuild (Thread[Execution worker,5,main]) started.
+:composeApp:preDebugBuild (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:preDebugBuild UP-TO-DATE
+Skipping task ':composeApp:preDebugBuild' as it has no actions.
+Resolve mutations for :composeApp:generateDebugBuildConfig (Thread[Execution worker,5,main]) started.
+:composeApp:generateDebugBuildConfig (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:generateDebugBuildConfig UP-TO-DATE
+Build cache key for task ':composeApp:generateDebugBuildConfig' is 8c3a1d32b367fa703233aa685f16947d
+Skipping task ':composeApp:generateDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :composeApp:generateDebugMasakuyDatabaseInterface (Thread[Execution worker,5,main]) started.
+:composeApp:generateDebugMasakuyDatabaseInterface (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:generateDebugMasakuyDatabaseInterface UP-TO-DATE
+Build cache key for task ':composeApp:generateDebugMasakuyDatabaseInterface' is 9bdb5ec787e21995ee608996896b6b9e
+Skipping task ':composeApp:generateDebugMasakuyDatabaseInterface' as it is up-to-date.
+Resolve mutations for :composeApp:checkDebugAarMetadata (Thread[Execution worker,5,main]) started.
+:composeApp:checkDebugAarMetadata (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:checkDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':composeApp:checkDebugAarMetadata' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:checkDebugAarMetadata' as it is up-to-date.
+Resolve mutations for :composeApp:generateDebugResValues (Thread[Execution worker,5,main]) started.
+:composeApp:generateDebugResValues (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:generateDebugResValues UP-TO-DATE
+Build cache key for task ':composeApp:generateDebugResValues' is 665049f147ac4620882afbd27a7e937a
+Skipping task ':composeApp:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :composeApp:mapDebugSourceSetPaths (Thread[Execution worker,5,main]) started.
+:composeApp:mapDebugSourceSetPaths (Thread[Execution worker,5,main]) started.
+
+> Task :composeApp:mapDebugSourceSetPaths UP-TO-DATE
+Caching disabled for task ':composeApp:mapDebugSourceSetPaths' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:mapDebugSourceSetPaths' as it is up-to-date.
+Resolve mutations for :composeApp:generateDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:generateDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:generateDebugResources UP-TO-DATE
+Build cache key for task ':composeApp:generateDebugResources' is 3cbfc3958de9a7a5010db1ae9855d67a
+Skipping task ':composeApp:generateDebugResources' as it is up-to-date.
+Resolve mutations for :composeApp:mergeDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:mergeDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:mergeDebugResources UP-TO-DATE
+Build cache key for task ':composeApp:mergeDebugResources' is 03de37961e2386555fa07d6dbea72a58
+Skipping task ':composeApp:mergeDebugResources' as it is up-to-date.
+Resolve mutations for :composeApp:packageDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:packageDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:packageDebugResources UP-TO-DATE
+Build cache key for task ':composeApp:packageDebugResources' is 96f33d0fa2cbf98ec2d42eceeafc9d35
+Skipping task ':composeApp:packageDebugResources' as it is up-to-date.
+Resolve mutations for :composeApp:parseDebugLocalResources (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:parseDebugLocalResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:parseDebugLocalResources UP-TO-DATE
+Build cache key for task ':composeApp:parseDebugLocalResources' is 8cae13bdca7160f671f0acf55551f15c
+Skipping task ':composeApp:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :composeApp:createDebugCompatibleScreenManifests (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:createDebugCompatibleScreenManifests (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:createDebugCompatibleScreenManifests UP-TO-DATE
+Caching disabled for task ':composeApp:createDebugCompatibleScreenManifests' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:createDebugCompatibleScreenManifests' as it is up-to-date.
+Resolve mutations for :composeApp:extractDeepLinksDebug (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:extractDeepLinksDebug (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:extractDeepLinksDebug UP-TO-DATE
+Build cache key for task ':composeApp:extractDeepLinksDebug' is 177bb5fc40fc4c258304ba77fa1d94f0
+Skipping task ':composeApp:extractDeepLinksDebug' as it is up-to-date.
+Resolve mutations for :composeApp:processDebugMainManifest (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:processDebugMainManifest (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:processDebugMainManifest UP-TO-DATE
+Build cache key for task ':composeApp:processDebugMainManifest' is 56d557296f0b26ad7ac1f9487763cd63
+Skipping task ':composeApp:processDebugMainManifest' as it is up-to-date.
+Resolve mutations for :composeApp:processDebugManifest (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:processDebugManifest (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:processDebugManifest UP-TO-DATE
+Build cache key for task ':composeApp:processDebugManifest' is a6038344f3e129b2d8ad13e737393e56
+Skipping task ':composeApp:processDebugManifest' as it is up-to-date.
+Resolve mutations for :composeApp:processDebugManifestForPackage (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:processDebugManifestForPackage (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:processDebugManifestForPackage UP-TO-DATE
+Custom actions are attached to task ':composeApp:processDebugManifestForPackage'.
+Build cache key for task ':composeApp:processDebugManifestForPackage' is bc0242bb12ac3127958f5bc10f05e6ce
+Skipping task ':composeApp:processDebugManifestForPackage' as it is up-to-date.
+Resolve mutations for :composeApp:processDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+:composeApp:processDebugResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :composeApp:processDebugResources UP-TO-DATE
+Build cache key for task ':composeApp:processDebugResources' is ebc0c683df849f931e26d895f3f7457a
+Skipping task ':composeApp:processDebugResources' as it is up-to-date.
+Resolve mutations for :composeApp:compileDebugKotlin (Thread[Execution worker Thread 5,5,main]) started.
+:composeApp:compileDebugKotlin (Thread[Execution worker Thread 5,5,main]) started.
+
+> Task :composeApp:compileDebugKotlin UP-TO-DATE
+GradleBuildProject.Builder should not be accessed through AnalyticsConfiguratorService after AnalyticsService is created. Analytics information of this build might be incomplete.
+Build cache key for task ':composeApp:compileDebugKotlin' is a579acc56948e9f9bccd0423c7b75b2b
+Skipping task ':composeApp:compileDebugKotlin' as it is up-to-date.
+Resolve mutations for :composeApp:javaPreCompileDebug (Thread[Execution worker Thread 5,5,main]) started.
+:composeApp:javaPreCompileDebug (Thread[Execution worker Thread 5,5,main]) started.
+
+> Task :composeApp:javaPreCompileDebug UP-TO-DATE
+Build cache key for task ':composeApp:javaPreCompileDebug' is 6beb91f3a86eda442e9da48e03bff9bf
+Skipping task ':composeApp:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :composeApp:compileDebugJavaWithJavac (Thread[Execution worker Thread 5,5,main]) started.
+:composeApp:compileDebugJavaWithJavac (Thread[Execution worker Thread 5,5,main]) started.
+
+> Task :composeApp:compileDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':composeApp:compileDebugJavaWithJavac'.
+Build cache key for task ':composeApp:compileDebugJavaWithJavac' is 10b5665ad874ea4b40634f67f0c6f403
+Skipping task ':composeApp:compileDebugJavaWithJavac' as it is up-to-date.
+No compile result for :composeApp:compileDebugJavaWithJavac
+No compile result for :composeApp:compileDebugJavaWithJavac
+Resolve mutations for :composeApp:bundleDebugClassesToRuntimeJar (Thread[Execution worker Thread 5,5,main]) started.
+:composeApp:bundleDebugClassesToRuntimeJar (Thread[Execution worker Thread 5,5,main]) started.
+
+> Task :composeApp:bundleDebugClassesToRuntimeJar UP-TO-DATE
+Caching disabled for task ':composeApp:bundleDebugClassesToRuntimeJar' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:bundleDebugClassesToRuntimeJar' as it is up-to-date.
+work action resolve classes.jar (project :composeApp) (Thread[Execution worker Thread 5,5,main]) started.
+Resolve mutations for :composeApp:bundleDebugClassesToCompileJar (Thread[Execution worker Thread 5,5,main]) started.
+:composeApp:bundleDebugClassesToCompileJar (Thread[Execution worker Thread 5,5,main]) started.
+
+> Task :composeApp:bundleDebugClassesToCompileJar UP-TO-DATE
+Caching disabled for task ':composeApp:bundleDebugClassesToCompileJar' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:bundleDebugClassesToCompileJar' as it is up-to-date.
+work action resolve classes.jar (project :composeApp) (Thread[Execution worker Thread 5,5,main]) started.
+Resolve mutations for :composeApp:compileDebugUnitTestKotlin (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:compileDebugUnitTestKotlin (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:compileDebugUnitTestKotlin UP-TO-DATE
+Build cache key for task ':composeApp:compileDebugUnitTestKotlin' is 1c26a42e5e43750268d9aaed72f9b95a
+Skipping task ':composeApp:compileDebugUnitTestKotlin' as it is up-to-date.
+Resolve mutations for :composeApp:preDebugUnitTestBuild (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:preDebugUnitTestBuild (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:preDebugUnitTestBuild UP-TO-DATE
+Skipping task ':composeApp:preDebugUnitTestBuild' as it has no actions.
+Resolve mutations for :composeApp:javaPreCompileDebugUnitTest (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:javaPreCompileDebugUnitTest (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:javaPreCompileDebugUnitTest UP-TO-DATE
+Build cache key for task ':composeApp:javaPreCompileDebugUnitTest' is 6beb91f3a86eda442e9da48e03bff9bf
+Skipping task ':composeApp:javaPreCompileDebugUnitTest' as it is up-to-date.
+Resolve mutations for :composeApp:compileDebugUnitTestJavaWithJavac (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:compileDebugUnitTestJavaWithJavac (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:compileDebugUnitTestJavaWithJavac NO-SOURCE
+Skipping task ':composeApp:compileDebugUnitTestJavaWithJavac' as it has no source files and no previous output files.
+Resolve mutations for :composeApp:koverFindJar (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:koverFindJar (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:koverFindJar UP-TO-DATE
+Build cache key for task ':composeApp:koverFindJar' is 4787a6f9f1d96e5c1ce6372a1e6779f5
+Skipping task ':composeApp:koverFindJar' as it is up-to-date.
+Resolve mutations for :composeApp:processDebugJavaRes (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:processDebugJavaRes (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:processDebugJavaRes UP-TO-DATE
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\main\resources', not found
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\debug\resources', not found
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\main\resources', not found
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\debug\resources', not found
+Caching disabled for task ':composeApp:processDebugJavaRes' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:processDebugJavaRes' as it is up-to-date.
+work action resolve out (project :composeApp) (Thread[Execution worker Thread 4,5,main]) started.
+Resolve mutations for :composeApp:processDebugUnitTestJavaRes (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:processDebugUnitTestJavaRes (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:processDebugUnitTestJavaRes UP-TO-DATE
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\test\resources', not found
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\testDebug\resources', not found
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\test\resources', not found
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\testDebug\resources', not found
+Caching disabled for task ':composeApp:processDebugUnitTestJavaRes' because:
+  Caching has been disabled for the task
+Skipping task ':composeApp:processDebugUnitTestJavaRes' as it is up-to-date.
+Resolve mutations for :composeApp:testDebugUnitTest (Thread[Execution worker Thread 4,5,main]) started.
+:composeApp:testDebugUnitTest (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :composeApp:testDebugUnitTest
+Custom actions are attached to task ':composeApp:testDebugUnitTest'.
+Build cache key for task ':composeApp:testDebugUnitTest' is f2c0987c0e82cb78bad89b14799c4d16
+Task ':composeApp:testDebugUnitTest' is not up-to-date because:
+  Task has failed previously.
+file or directory 'D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build\intermediates\javac\debugUnitTest\compileDebugUnitTestJavaWithJavac\classes', not found
+Starting process 'Gradle Test Executor 20'. Working directory: D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp Command: D:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot\bin\java.exe -Dcoverage.ignore.private.constructor.util.class=true -Didea.coverage.calculate.hits=false -Didea.coverage.log.level=error -Didea.new.tracing.coverage=true -Djava.awt.headless=true -Djava.library.path=D:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;D:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\MinGw\Bin;C:\MinGW\bin;C:\Program Files\nodejs\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;E:\SISTEM\Downloads\mongodb-windows-x86_64-8.0.9-signed.msi;E:\SISTEM\Downloads\mongosh-2.5.0-win32-x64;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;D:\php-8.4.14-Win32-vs17-x64;C:\ProgramData\ComposerSetup\bin;C:\Users\ACER\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\ACER\AppData\Local\Programs\Python\Python311\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\MinGw\Bin;C:\MinGW\bin;C:\Program Files\nodejs\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;E:\SISTEM\Downloads\mongodb-windows-x86_64-8.0.9-signed.msi;E:\SISTEM\Downloads\mongosh-2.5.0-win32-x64;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Users\ACER\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\ACER\AppData\Local\Programs\Python\Python313\;C:\Users\ACER\AppData\Local\Programs\Python\Launcher\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\MinGw\Bin;C:\MinGW\bin;C:\Program Files\nodejs\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Pr;C:\Users\ACER\AppData\Roaming\Composer\vendor\bin;d:\Users\ACER\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\ACER\AppData\Local\Python\bin;.;D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\testDebug\jniLibs;D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\src\test\jniLibs -Dorg.gradle.internal.worker.tmpdir=D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build\tmp\testDebugUnitTest\work --add-opens=java.base/java.io=ALL-UNNAMED -javaagent:D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build\kover\intellij-coverage-agent-1.0.748.jar=D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build\tmp\testDebugUnitTest\kover-agent.args @C:\Users\ACER\.gradle\.tmp\gradle-worker-classpath9744484472360487669txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=ID -Duser.language=en -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 20'
+Successfully started process 'Gradle Test Executor 20'
+
+Gradle Test Executor 20 started executing tests.
+.\gradlew : OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+At line:1 char:1
++ .\gradlew testDebugUnitTest --tests "com.example.masakuy.presentation ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (OpenJDK 64-Bit ...s been appended:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+> Task :composeApp:testDebugUnitTest
+
+FavoriteViewModelTest > loadFavorites set error saat Result Error FAILED
+    java.lang.AssertionError: State error tidak boleh null saat terjadi kegagalan Result.Error
+        at org.junit.Assert.fail(Assert.java:89)
+        at kotlin.test.junit.JUnitAsserter.fail(JUnitSupport.kt:56)
+        at kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:694)
+        at kotlin.test.junit.JUnitAsserter.assertTrue(JUnitSupport.kt:30)
+        at kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:704)
+        at kotlin.test.junit.JUnitAsserter.assertTrue(JUnitSupport.kt:30)
+        at kotlin.test.AssertionsKt__AssertionsKt.assertTrue(Assertions.kt:44)
+        at kotlin.test.AssertionsKt.assertTrue(Unknown Source)
+        at com.example.masakuy.presentation.screens.favorite.FavoriteViewModelTest$loadFavorites set error saat Result Error$1.invokeSuspend(Favoriteviewmodeltest.kt:114)
+        at com.example.masakuy.presentation.screens.favorite.FavoriteViewModelTest$loadFavorites set error saat Result Error$1.invoke(Favoriteviewmodeltest.kt)
+        at com.example.masakuy.presentation.screens.favorite.FavoriteViewModelTest$loadFavorites set error saat Result Error$1.invoke(Favoriteviewmodeltest.kt)
+        at kotlinx.coroutines.test.TestBuildersKt__TestBuildersKt$runTest$2$1$1.invokeSuspend(TestBuilders.kt:317)
+        at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+        at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+        at kotlinx.coroutines.test.TestDispatcher.processEvent$kotlinx_coroutines_test(TestDispatcher.kt:24)
+        at kotlinx.coroutines.test.TestCoroutineScheduler.tryRunNextTaskUnless$kotlinx_coroutines_test(TestCoroutineScheduler.kt:99)
+        at kotlinx.coroutines.test.TestBuildersKt__TestBuildersKt$runTest$2$1$workRunner$1.invokeSuspend(TestBuilders.kt:326)
+        at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+        at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+        at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+        at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:95)
+        at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:69)
+        at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source)
+        at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:47)
+        at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source)
+        at kotlinx.coroutines.test.TestBuildersJvmKt.createTestResult(TestBuildersJvm.kt:10)
+        at kotlinx.coroutines.test.TestBuildersKt__TestBuildersKt.runTest-8Mi8wO0(TestBuilders.kt:309)
+        at kotlinx.coroutines.test.TestBuildersKt.runTest-8Mi8wO0(Unknown Source)
+        at kotlinx.coroutines.test.TestBuildersKt__TestBuildersKt.runTest-8Mi8wO0(TestBuilders.kt:167)
+        at kotlinx.coroutines.test.TestBuildersKt.runTest-8Mi8wO0(Unknown Source)
+        at kotlinx.coroutines.test.TestBuildersKt__TestBuildersKt.runTest-8Mi8wO0$default(TestBuilders.kt:159)
+        at kotlinx.coroutines.test.TestBuildersKt.runTest-8Mi8wO0$default(Unknown Source)
+        at com.example.masakuy.presentation.screens.favorite.FavoriteViewModelTest.loadFavorites set error saat Result Error(Favoriteviewmodeltest.kt:105)
+
+Gradle Test Executor 20 finished executing tests.
+
+> Task :composeApp:testDebugUnitTest FAILED
+
+8 tests completed, 1 failed
+Finished generating test XML results (0.01 secs) into: D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build\test-results\testDebugUnitTest
+Generating HTML test report...
+Finished generating test html results (0.018 secs) into: D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile\composeApp\build\reports\tests\testDebugUnitTest
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:testDebugUnitTest'.
+> There were failing tests. See the report at: file:///D:/Users/ACER/StudioProjects/Proyek-Pengembangan-Aplikasi-Mobile/composeApp/build/reports/tests/testDebugUnitTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 32s
+26 actionable tasks: 1 executed, 25 up-to-date
+Watched directory hierarchies: [D:\Users\ACER\StudioProjects\Proyek-Pengembangan-Aplikasi-Mobile]

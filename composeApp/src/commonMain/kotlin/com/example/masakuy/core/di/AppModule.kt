@@ -21,7 +21,7 @@ import com.example.masakuy.presentation.screens.home.HomeViewModel
 import com.example.masakuy.presentation.screens.recommendation.RecommendationViewModel
 import com.example.masakuy.presentation.screens.search.SearchViewModel
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 fun appModule() = module {

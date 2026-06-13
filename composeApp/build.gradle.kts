@@ -19,6 +19,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlinx.kover") version "0.8.3"
 }
 
 android {
@@ -32,10 +33,14 @@ android {
         versionCode   = versionCodeProp
         versionName   = versionNameProp
 
-        buildConfigField("String", "GEMINI_API_KEY",
-            "\"${localProp("GEMINI_API_KEY")}\"")
-        buildConfigField("String", "BASE_URL",
-            "\"${localProp("BASE_URL", "https://generativelanguage.googleapis.com/")}\"")
+        buildConfigField(
+            "String", "GEMINI_API_KEY",
+            "\"${localProp("GEMINI_API_KEY")}\""
+        )
+        buildConfigField(
+            "String", "BASE_URL",
+            "\"${localProp("BASE_URL", "https://generativelanguage.googleapis.com/")}\""
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -46,9 +51,12 @@ android {
                 ?: localProperties.getProperty("SIGNING_STORE_FILE")
             if (keystoreFile != null) {
                 storeFile     = file(keystoreFile)
-                storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: localProp("SIGNING_STORE_PASSWORD")
-                keyAlias      = System.getenv("SIGNING_KEY_ALIAS")      ?: localProp("SIGNING_KEY_ALIAS")
-                keyPassword   = System.getenv("SIGNING_KEY_PASSWORD")   ?: localProp("SIGNING_KEY_PASSWORD")
+                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+                    ?: localProp("SIGNING_STORE_PASSWORD")
+                keyAlias      = System.getenv("SIGNING_KEY_ALIAS")
+                    ?: localProp("SIGNING_KEY_ALIAS")
+                keyPassword   = System.getenv("SIGNING_KEY_PASSWORD")
+                    ?: localProp("SIGNING_KEY_PASSWORD")
             }
         }
     }
@@ -62,19 +70,27 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "GEMINI_API_KEY",
-                "\"${localProp("GEMINI_API_KEY")}\"")
-            buildConfigField("String", "BASE_URL",
-                "\"${localProp("BASE_URL", "https://generativelanguage.googleapis.com/")}\"")
+            buildConfigField(
+                "String", "GEMINI_API_KEY",
+                "\"${localProp("GEMINI_API_KEY")}\""
+            )
+            buildConfigField(
+                "String", "BASE_URL",
+                "\"${localProp("BASE_URL", "https://generativelanguage.googleapis.com/")}\""
+            )
         }
         debug {
             isDebuggable        = true
             applicationIdSuffix = ".debug"
             versionNameSuffix   = "-debug"
-            buildConfigField("String", "GEMINI_API_KEY",
-                "\"${localProp("GEMINI_API_KEY_DEBUG").ifEmpty { localProp("GEMINI_API_KEY") }}\"")
-            buildConfigField("String", "BASE_URL",
-                "\"${localProp("BASE_URL_DEBUG", "https://generativelanguage.googleapis.com/")}\"")
+            buildConfigField(
+                "String", "GEMINI_API_KEY",
+                "\"${localProp("GEMINI_API_KEY_DEBUG").ifEmpty { localProp("GEMINI_API_KEY") }}\""
+            )
+            buildConfigField(
+                "String", "BASE_URL",
+                "\"${localProp("BASE_URL_DEBUG", "https://generativelanguage.googleapis.com/")}\""
+            )
         }
     }
 
@@ -82,7 +98,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17"
+
+    kotlinOptions {
+        jvmTarget = "17"
         freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
     }
 
@@ -104,6 +122,14 @@ android {
             java.srcDirs("src/androidMain/kotlin", "src/commonMain/kotlin")
             res.srcDirs("src/androidMain/res")
             manifest.srcFile("src/androidMain/AndroidManifest.xml")
+        }
+        // Map commonTest (and androidUnitTest, if it exists) into the
+        // Android "test" source set so testDebugUnitTest actually picks up
+        // and compiles these files. Without this, compileDebugUnitTestKotlin
+        // reports NO-SOURCE and Kover shows 0% coverage even though the
+        // test files exist on disk.
+        getByName("test") {
+            java.srcDirs("src/commonTest/kotlin", "src/androidUnitTest/kotlin")
         }
     }
 }
@@ -143,6 +169,7 @@ dependencies {
     // SQLDelight
     implementation(libs.sqldelight.android.driver)
     implementation(libs.sqldelight.coroutines.extensions)
+    implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
 
     // Gemini AI
     implementation(libs.generativeai)
@@ -157,14 +184,39 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
 
-    // Test
+    // Coil
+    implementation(libs.coil.compose)
+
+    // ─── Testing ───────────────────────────────────────────────────────────
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("app.cash.turbine:turbine:1.1.0")
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-    // Coil
-    implementation(libs.coil.compose)
 }
 
+// ─── Kover — code coverage ─────────────────────────────────────────────────
+kover { reports {
+    filters {
+        excludes {
+            classes(
+                // Generated / framework code — tidak perlu di-cover
+                "*.BuildConfig",
+                "*.ComposableSingletons*",
+                "*_Factory*",
+                "*_HiltComponents*",
+                "*.ui.theme.*",
+                "*Module*",          // Koin modules
+                "*Screen*Kt*",       // Generated Compose top-level
+                "*.MainActivity*",
+                "*.MasakuyApp*"
+            )
+        }
+    }
+}
+
+
+}

@@ -1,10 +1,8 @@
-package com.example.masakuy.presentation.navigation
+﻿package com.example.masakuy.presentation.navigation
 
 import java.net.URLEncoder
 
-sealed class Routes(val route: String) {
-    data object Login : Routes("login")
-    data object Home : Routes("home")
+sealed class Routes(val route: String) {    data object Home : Routes("home")
     data object Recommendation : Routes("recommendation/{budget}") {
         fun createRoute(budget: Int) = "recommendation/$budget"
     }

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.masakuy.core.network.Result
 import com.example.masakuy.domain.model.Recipe
 import com.example.masakuy.domain.usecase.GetRecipesUseCase
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +21,8 @@ data class SearchUiState(
 )
 
 class SearchViewModel(
-    private val getRecipesUseCase: GetRecipesUseCase
+    private val getRecipesUseCase: GetRecipesUseCase,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -33,7 +36,7 @@ class SearchViewModel(
     }
 
     fun search(query: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true)
                 getRecipesUseCase().collect { result ->
@@ -56,7 +59,7 @@ class SearchViewModel(
                         }
                         is Result.Error -> {
                             _uiState.value = _uiState.value.copy(
-                                error = result.exception.message,
+                                error = result.exception.message ?: "Terjadi kesalahan",
                                 isLoading = false
                             )
                         }
@@ -64,7 +67,7 @@ class SearchViewModel(
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message,
+                    error = e.message ?: "Terjadi kesalahan",
                     isLoading = false
                 )
             }

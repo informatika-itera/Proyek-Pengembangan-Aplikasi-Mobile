@@ -23,8 +23,7 @@ import com.example.masakuy.theme.OrangeMain
 @Composable
 fun ProfileScreen(
     isDarkMode: Boolean = false,
-    onDarkModeToggle: (Boolean) -> Unit = {},
-    onLogout: () -> Unit = {}
+    onDarkModeToggle: (Boolean) -> Unit = {}
 ) {
     var notificationEnabled by remember { mutableStateOf(true) }
 
@@ -150,21 +149,6 @@ fun ProfileScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-
-            // Tombol Keluar — outline style
-            OutlinedButton(
-                onClick = onLogout,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(50.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = OrangeMain
-                ),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, OrangeMain)
-            ) {
-                Text("Keluar", fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold, color = OrangeMain)
-            }
 
             Spacer(Modifier.height(32.dp))
         }

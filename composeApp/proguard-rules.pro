@@ -1,45 +1,54 @@
-# ProGuard Rules for NoteAI
-# ===========================
+# ── MasakuY ProGuard Rules ────────────────────────────────────────────────────
 
-# Keep Kotlin Serialization
+# Keep domain models (serialized ke/dari Gemini response)
+-keep class com.example.masakuy.domain.model.** { *; }
+-keep class com.example.masakuy.data.remote.dto.** { *; }
+
+# SQLDelight — generated query classes
+-keep class com.example.masakuy.data.local.** { *; }
+-keep class app.cash.sqldelight.** { *; }
+-dontwarn app.cash.sqldelight.**
+
+# Ktor
+-keep class io.ktor.** { *; }
+-dontwarn io.ktor.**
+-keep class kotlinx.coroutines.** { *; }
+
+# Kotlinx Serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
-
--keepclassmembers class kotlinx.serialization.json.** {
+-keep,includedescriptorclasses class com.example.masakuy.**$$serializer { *; }
+-keepclassmembers class com.example.masakuy.** {
     *** Companion;
 }
--keepclasseswithmembers class kotlinx.serialization.json.** {
+-keepclasseswithmembers class com.example.masakuy.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Keep serializable classes
--keep,includedescriptorclasses class com.example.noteai.**$$serializer { *; }
--keepclassmembers class com.example.noteai.** {
-    *** Companion;
-}
--keepclasseswithmembers class com.example.noteai.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
+# Google Generative AI SDK
+-keep class com.google.ai.client.generativeai.** { *; }
+-dontwarn com.google.ai.client.generativeai.**
+-keep class com.google.protobuf.** { *; }
+-dontwarn com.google.protobuf.**
 
-# Keep Ktor
--keep class io.ktor.** { *; }
--keep class kotlinx.coroutines.** { *; }
--dontwarn kotlinx.atomicfu.**
--dontwarn io.netty.**
--dontwarn com.typesafe.**
--dontwarn org.slf4j.**
-
-# Ktor common code mereferensikan JVM-only API (java.lang.management.*)
-# lewat IntellijIdeaDebugDetector. Tidak ada di Android runtime → silence-kan.
--dontwarn io.ktor.util.debug.**
--dontwarn java.lang.management.**
-
-# Keep SQLDelight generated classes
--keep class com.example.noteai.data.local.** { *; }
-
-# Keep Koin DI metadata + ViewModel constructors agar reflection-based
-# resolution tidak ke-strip oleh R8.
+# Koin
 -keep class org.koin.** { *; }
--keepclassmembers class * extends androidx.lifecycle.ViewModel {
-    <init>(...);
+-keep class com.example.masakuy.core.di.** { *; }
+-dontwarn org.koin.**
+
+# Kotlin
+-keepclassmembernames class kotlinx.** { volatile <fields>; }
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+
+# Enum
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
 }
+
+# Coil
+-dontwarn coil.**
+# Ignore missing JDBC classes from sqlite-jdbc (not used on Android)
+-dontwarn java.sql.**
+-dontwarn org.sqlite.**

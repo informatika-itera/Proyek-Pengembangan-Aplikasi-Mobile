@@ -7,6 +7,8 @@ import com.example.masakuy.domain.model.RecipeDetail
 import com.example.masakuy.domain.repository.AIRepository
 import com.example.masakuy.domain.repository.RecipeRepository
 import com.example.masakuy.domain.usecase.SaveFavoriteUseCase
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,14 +23,15 @@ data class DetailUiState(
 class DetailViewModel(
     private val aiRepository: AIRepository,
     private val saveFavoriteUseCase: SaveFavoriteUseCase,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     fun loadRecipe(recipeId: String, recipeName: String, budget: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
             var dbData: RecipeDetail? = null
@@ -62,7 +65,8 @@ class DetailViewModel(
                         _uiState.value = _uiState.value.copy(recipe = merged, isLoading = false)
                     }
                     is Result.Error -> _uiState.value = _uiState.value.copy(
-                        error = result.exception.message, isLoading = false
+                        error = result.exception.message ?: "Terjadi kesalahan",
+                        isLoading = false
                     )
                 }
             }
@@ -70,7 +74,7 @@ class DetailViewModel(
     }
 
     fun toggleFavorite(recipeId: String, isFavorite: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
             saveFavoriteUseCase(recipeId, isFavorite)
             _uiState.value = _uiState.value.copy(
                 recipe = _uiState.value.recipe?.copy(isFavorite = isFavorite)

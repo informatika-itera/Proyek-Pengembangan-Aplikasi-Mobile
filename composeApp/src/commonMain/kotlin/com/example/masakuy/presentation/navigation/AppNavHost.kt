@@ -18,7 +18,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.masakuy.core.network.NetworkMonitor
 import com.example.masakuy.theme.OrangeMain
 import com.example.masakuy.presentation.components.OfflineBanner
-import com.example.masakuy.presentation.screens.auth.LoginScreen
 import com.example.masakuy.presentation.screens.detail.DetailScreen
 import com.example.masakuy.presentation.screens.favorite.FavoriteScreen
 import com.example.masakuy.presentation.screens.home.HomeScreen
@@ -92,15 +91,8 @@ fun AppNavHost(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             OfflineBanner(isOnline = isOnline)
-            NavHost(navController = navController, startDestination = Routes.Login.route) {
+            NavHost(navController = navController, startDestination = Routes.Home.route) {
 
-                composable(Routes.Login.route) {
-                    LoginScreen(onLoginSuccess = {
-                        navController.navigate(Routes.Home.route) {
-                            popUpTo(Routes.Login.route) { inclusive = true }
-                        }
-                    })
-                }
 
                 composable(Routes.Home.route) {
                     HomeScreen(
@@ -159,13 +151,7 @@ fun AppNavHost(
                 composable("profile") {
                     ProfileScreen(
                         isDarkMode = isDarkMode,
-                        onDarkModeToggle = onDarkModeToggle,
-                        onLogout = {
-                            navController.navigate(Routes.Login.route) {
-                                popUpTo(0) { inclusive = true }
-                                launchSingleTop = true
-                            }
-                        }
+                        onDarkModeToggle = onDarkModeToggle
                     )
                 }
             }

@@ -1,5 +1,6 @@
-﻿package com.example.masakuy.theme
+package com.example.masakuy.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -42,7 +43,7 @@ private val MasakuyDarkColorScheme = darkColorScheme(
 
 @Composable
 fun MasakuyTheme(
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

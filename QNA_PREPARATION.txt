@@ -1,0 +1,309 @@
+================================================================================
+Q&A PREPARATION — NEWS MBG (MBGNEWS)
+Persiapan Jawaban Pertanyaan Sidang / Sesi Tanya Jawab Presentasi PAM - ITERA
+================================================================================
+Panduan Penggunaan:
+Hafal INTI jawaban tiap pertanyaan, bukan kata per katanya.
+Bicara santai, pakai contoh dari kode sendiri, dan tunjukkan keyakinan diri.
+Jika tidak tahu → Jujur: "Itu menjadi pertimbangan kami ke depannya, Pak/Bu."
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q1: "Mengapa kalian memilih arsitektur ini (Clean Architecture + MVVM)?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Kami memilih Clean Architecture karena kami ingin kode yang bisa bertahan lama
+dan mudah dipelihara, bukan hanya sekedar bisa jalan. Dengan memisahkan tiga
+lapisan — Presentation, Domain, dan Data — setiap bagian punya tanggung jawab
+yang jelas dan tidak tumpang tindih.
+
+Konkretnya di proyek kami:
+- Layer Presentation (HomeScreen, BookmarkScreen, ViewModel) hanya tahu cara
+  menampilkan data. Dia tidak tahu apakah data datang dari internet Ktor atau
+  dari database SQLDelight.
+- Layer Domain (NewsRepository interface, Article model) adalah kontrak murni
+  Kotlin tanpa dependensi library apapun. Ini berarti kalaupun kami ganti
+  SQLDelight ke Room besok, kode di layer Presentation dan Domain tidak perlu
+  diubah sama sekali — yang berubah hanya NewsRepositoryImpl di layer Data.
+- Layer Data (NewsRepositoryImpl) adalah satu-satunya yang tahu detail teknis:
+  kapan ambil dari Ktor, kapan ambil dari SQLDelight.
+
+Mengapa MVVM? Karena Jetpack Compose sangat cocok dengan pola ini. ViewModel
+memegang StateFlow yang di-observe oleh Compose. Saat data berubah, UI
+otomatis re-render tanpa kita perlu menulis kode update manual. Ini membuat
+UI kita reaktif dan bebas dari logic bisnis yang berantakan.
+
+VERSI SINGKAT (kalau waktu terbatas):
+"Clean Architecture membuat kode kami modular dan mudah diuji. Setiap layer
+punya satu tanggung jawab. ViewModel memegang StateFlow, UI hanya merender
+State. Kalau ada bug, kami langsung tahu di layer mana masalahnya."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q2: "Bagaimana cara kalian menangani Offline Mode?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Kami menerapkan strategi Offline-First menggunakan SQLDelight sebagai Local
+Database. Konsepnya sederhana: setiap artikel yang di-bookmark oleh pengguna
+langsung disimpan ke database lokal di perangkat. Jadi saat internet mati,
+data itu tetap ada dan bisa diakses.
+
+Secara teknis, di NewsRepositoryImpl kami punya beberapa fungsi kunci:
+- saveArticle(article): Menyimpan artikel ke SQLDelight via queries.insertArticle()
+- getBookmarkedArticles(): Mengembalikan Flow<List<Article>> dari SQLDelight.
+  Fungsi ini menggunakan .asFlow().mapToList(Dispatchers.IO) sehingga hasilnya
+  reaktif — kalau ada artikel baru ditambahkan, UI langsung update otomatis.
+- isArticleBookmarked(url): Mengecek apakah artikel sudah tersimpan, hasilnya
+  berupa Flow<Boolean> yang mengupdate icon bookmark di UI secara real-time.
+
+Yang penting, kami memisahkan data Remote (Ktor untuk ambil berita baru dari API)
+dan data Local (SQLDelight untuk berita tersimpan). Saat aplikasi dibuka tanpa
+internet, layar Home memang akan menampilkan pesan error jaringan, tapi layar
+Bookmark tetap berfungsi sempurna menampilkan semua artikel yang sudah disimpan.
+
+VERSI SINGKAT:
+"Kami pakai SQLDelight sebagai database lokal. Setiap artikel yang di-bookmark
+tersimpan di perangkat via saveArticle(). getBookmarkedArticles() mengembalikan
+Flow yang reaktif, jadi UI selalu up-to-date meski tanpa internet."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q3: "Apa bagian yang paling challenging dalam proses pengembangan ini?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Ada tiga hal yang benar-benar menguji kami:
+
+Pertama, integrasi Gemini AI. Awalnya kami pikir tinggal panggil API dan selesai.
+Ternyata respons AI sangat tidak konsisten — kadang dia balas "Artikel ini
+bersifat kontra karena...", bukan sekedar satu kata. UI kami yang mengandalkan
+nilai tepat "Pro", "Kontra", atau "Netral" jadi rusak.
+
+Solusinya adalah dengan menstabilkan format instruksi pada API. Kami memodifikasi permintaannya menjadi:
+"Analisis sentimen berita berikut. Balas HANYA dengan satu kata: 'Pro', 'Kontra',
+atau 'Netral'." Dengan membatasi ruang jawabannya secara eksplisit, AI akhirnya konsisten memberikan
+satu kata saja, dan itu yang langsung kami jadikan kunci untuk pewarnaan indikator.
+
+Kedua, desain Neumorphism di Jetpack Compose. Tidak ada library yang siap pakai
+untuk ini di Compose. Kami harus membuat Custom Modifier sendiri yang menghitung
+bayangan ganda (shadow dan highlight) secara manual menggunakan BlurMaskFilter
+dengan offset yang tepat agar terlihat seperti elemen yang menonjol dari layar.
+
+Ketiga, memahami reaktivitas StateFlow dengan SQLDelight. Kami sempat bingung
+mengapa icon bookmark tidak update saat artikel disimpan. Ternyata masalahnya
+di cara kami mengumpulkan (collect) Flow di ViewModel. Setelah memperbaiki
+scope-nya dan memastikan setiap perubahan database di-emit lewat asFlow(),
+semuanya bekerja mulus.
+
+VERSI SINGKAT:
+"Yang paling menantang adalah menstabilkan respons Gemini AI agar selalu
+konsisten menjawab satu kata, dan membuat Custom Neumorphism Modifier di Compose dari
+nol karena tidak ada library siap pakai untuk itu."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q4: "Bagaimana cara kalian men-scale aplikasi ini jika penggunanya bertambah besar?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Secara arsitektur, fondasi kami sudah siap untuk di-scale ke beberapa arah:
+
+Dari sisi CLIENT (aplikasi):
+- Kami sudah menerapkan Clean Architecture yang modular. Menambahkan fitur baru
+  seperti notifikasi atau feed kategori baru hanya memerlukan tambahan di satu
+  layer tanpa merusak yang lain.
+- Struktur folder feature-based (screens/home, screens/bookmark, screens/add) 
+  memudahkan tim yang lebih besar untuk bekerja paralel di fitur berbeda.
+- Fondasi Kotlin Multiplatform (KMP) yang sudah kami pasang berarti basis kode
+  yang sama bisa di-extend ke iOS atau Desktop tanpa menulis ulang dari awal.
+
+Dari sisi BACKEND/DATA:
+- Saat ini kami pakai News API pihak ketiga. Untuk scale, kami akan membangun
+  backend sendiri menggunakan Ktor Server atau Firebase, dengan caching di
+  level server (Redis misalnya) agar tidak setiap pengguna membebani API eksternal.
+- Database lokal SQLDelight bisa dimigrasi schema-nya dengan mulus menggunakan
+  migration system bawaan SQLDelight.
+
+Dari sisi PERFORMA:
+- Tambahkan Pagination (Pager3) untuk memuat berita secara bertahap, bukan
+  sekaligus ribuan artikel sekaligus.
+- Implementasi Image Caching yang lebih agresif agar daftar berita scroll
+  lebih mulus meski koneksi lambat.
+
+VERSI SINGKAT:
+"Arsitektur modular kami sudah siap scale. Untuk pengguna lebih banyak, kami
+akan tambahkan Pagination, bangun backend sendiri dengan Ktor Server, dan
+manfaatkan fondasi KMP untuk ekspansi ke platform lain."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q5: "Mengapa memilih KMP (Kotlin Multiplatform) bukan Native Android biasa atau Flutter?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Ini pertanyaan yang sangat bagus. Ada tiga pilihan yang kami pertimbangkan:
+
+Native Android (Kotlin only):
+Kelebihannya adalah paling sederhana dan dokumentasinya paling lengkap.
+Kekurangannya adalah jika kami ingin ekspansi ke iOS suatu hari, kami harus
+menulis ulang semuanya dari nol menggunakan Swift/SwiftUI.
+
+Flutter (Dart):
+Kelebihannya adalah benar-benar cross-platform dengan satu codebase. 
+Kekurangannya adalah bahasanya Dart — berbeda ekosistem dengan dunia Android/Kotlin.
+Integrasi dengan library Android native (seperti SQLDelight, Ktor) juga lebih sulit.
+
+Kotlin Multiplatform (KMP) — yang kami pilih:
+Kami bisa menulis logika bisnis (Repository, Model, Use Case, ViewModel) satu kali
+di commonMain, dan itu berjalan di Android, iOS, maupun Desktop. Hanya UI-nya
+yang perlu berbeda per platform (Compose untuk Android, SwiftUI untuk iOS).
+
+Keputusan ini juga didorong oleh konteks kuliah: kami belajar ekosistem Kotlin
+secara mendalam — coroutines, Flow, KSP, Ktor — semua tools yang relevan dengan
+karir Android developer modern. KMP membuat kami tidak terjebak di satu platform.
+
+Faktanya, proyek kami sudah menggunakan struktur commonMain/androidMain yang
+benar, jadi secara teknis tinggal menambahkan iosMain untuk rilis di iOS.
+
+VERSI SINGKAT:
+"KMP memberi kami keunggulan terbaik dari dua dunia: ekosistem Kotlin yang kami
+kuasai, plus potensi ekspansi ke iOS tanpa menulis ulang layer Domain dan Data.
+Fondasi KMP sudah terpasang sejak Sprint 1."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q6: "Bagaimana kalian menangani Error Handling di dalam aplikasi ini?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Kami menerapkan error handling di beberapa lapisan:
+
+Di Layer Data (Repository):
+Fungsi getMbgNews() di NewsRepositoryImpl menggunakan Kotlin Result pattern:
+  return try {
+      val response = newsApi.getMbgNews(query)
+      val articles = response.articles?.map { it.toDomain() } ?: emptyList()
+      Result.success(articles)
+  } catch (e: Exception) {
+      Result.failure(e)
+  }
+Ini berarti setiap exception jaringan (timeout, no internet, server error) tidak
+akan mencrash aplikasi, melainkan diteruskan sebagai Result.failure() ke ViewModel.
+
+Di GeminiApi:
+Jika analisis AI gagal (rate limit, timeout, respons tidak valid), fungsi
+analyzeSentiment() mengembalikan string default "Netral" sehingga UI selalu
+punya nilai yang valid untuk ditampilkan.
+  } catch (e: Exception) { "Netral" }
+
+Di Layer Presentation (ViewModel & UiState):
+ViewModel mengevaluasi Result yang dikembalikan Repository. Jika gagal, ia
+mengupdate UiState dengan pesan error yang ramah pengguna, misalnya:
+"Gagal memuat berita. Periksa koneksi internet Anda." — yang kemudian
+ditampilkan oleh Compose sebagai informasi, bukan dialog crash yang menakutkan.
+
+Untuk operasi database lokal, karena SQLDelight berjalan secara sinkron dan
+terisolasi, error-nya sangat jarang. Kami tetap menargetkan operasi DB di
+Dispatchers.IO agar tidak memblokir UI thread.
+
+VERSI SINGKAT:
+"Kami pakai Kotlin Result pattern di Repository, try-catch dengan fallback
+default di GeminiApi, dan menampilkan pesan error yang ramah di UI via UiState
+— jadi tidak ada crash, hanya informasi yang tepat untuk pengguna."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q7: "Kalau bisa mengulang proyek ini dari awal, apa yang akan kalian lakukan berbeda?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Ada beberapa hal yang kami refleksikan:
+
+1. Menulis Unit Test dari awal, bukan di akhir.
+Kami baru menambahkan unit test (AddEditViewModelTest, BookmarkViewModelTest,
+FakeNewsRepository) di Sprint terakhir. Harusnya ini dibuat bersamaan dengan
+kode utama — ini prinsip TDD (Test-Driven Development). Dengan test yang ada
+sejak awal, bug di ViewModel dan Repository akan terdeteksi lebih cepat.
+
+2. Desain State lebih awal dan lebih ketat.
+Di tengah pengembangan, kami sempat refactor UiState beberapa kali karena
+ada field yang kurang atau strukturnya kurang tepat. Kalau dari awal kami
+mendefinisikan UiState dengan lebih matang, refactor yang memakan waktu itu
+bisa dihindari.
+
+3. Konfigurasi CI/CD lebih awal.
+GitHub Actions yang kami setup berguna untuk memverifikasi build secara
+otomatis. Tapi kami baru mengoptimalkannya di Sprint 3. Kalau ini ada dari
+Sprint 1, kami bisa lebih cepat mendeteksi build yang rusak.
+
+4. Cache Strategy yang lebih cerdas di Home Screen.
+Saat ini berita baru hanya muncul kalau ada internet aktif. Idealnya, kami
+implementasikan caching di sisi Home juga (bukan hanya Bookmark), sehingga
+berita terakhir yang berhasil diunduh tetap muncul saat dibuka offline.
+
+VERSI SINGKAT:
+"Kami akan menulis unit test sejak Sprint 1, bukan di akhir. Dan kami akan
+mendefinisikan UiState dengan lebih matang dari awal agar tidak perlu refactor
+besar di tengah jalan."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q8: "Bagaimana pembagian kerja di dalam tim kalian?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JAWABAN LENGKAP:
+Kami membagi pekerjaan berdasarkan keahlian dan minat masing-masing anggota,
+tapi tetap saling memahami pekerjaan satu sama lain.
+
+Febrian Valentino Nugroho (123140034) — Lead Developer:
+  - Merancang dan membangun keseluruhan UI menggunakan Jetpack Compose
+  - Mendesain visual Neumorphism termasuk Custom Modifier untuk efek shadow
+  - Mengintegrasikan Google Gemini AI (GeminiApi.kt, Optimasi respons AI)
+  - Menyiapkan Koin Dependency Injection (AppModule.kt) agar semua komponen
+    terhubung dengan bersih
+  - Mengatur GitHub repository, branch naming convention, dan CI/CD pipeline
+
+Jonathan Pande Sinaga (123140153) — Database Engineer:
+  - Merancang dan mengimplementasikan skema database SQLDelight (Article.sq)
+  - Mengimplementasikan NewsRepositoryImpl sebagai jembatan antara data remote
+    dan local, termasuk seluruh fungsi CRUD (saveArticle, deleteArticle,
+    updateArticle, getBookmarkedArticles, isArticleBookmarked)
+  - Mengonfigurasi Ktor HttpClient untuk komunikasi jaringan (NewsApi.kt)
+  - Memastikan aliran data (Flow) dari SQLDelight bekerja reaktif dengan ViewModel
+  - Menulis FakeNewsRepository dan unit test untuk ViewModel
+
+Kolaborasi:
+  - Kami bertemu rutin setiap sprint untuk review kode satu sama lain.
+  - Semua keputusan arsitektur dibahas bersama sebelum diimplementasikan.
+  - Pembagian ini tidak kaku — saat ada bug kritis, kami berdua terjun bersama.
+
+VERSI SINGKAT:
+"Febrian fokus di UI, desain Neumorphism, dan integrasi Gemini AI. Jonathan
+fokus di database SQLDelight, Repository Implementation, dan unit test.
+Tapi kami berdua tetap saling review kode dan semua keputusan arsitektur
+diputuskan bersama."
+
+================================================================================
+TIPS TAMBAHAN SAAT SESI Q&A
+================================================================================
+
+DO's (Lakukan ini):
+  ✓ Pakai nama file/class asli saat menjelaskan ("di NewsRepositoryImpl.kt...")
+  ✓ Gambar analogi sederhana untuk konsep teknis yang kompleks
+  ✓ Tunjukkan kode jika dosen meminta bukti
+  ✓ Jujur jika ada kekurangan — dosen lebih menghargai kejujuran
+  ✓ Akhiri jawaban dengan "Apakah Bapak/Ibu ingin saya jelaskan lebih lanjut?"
+
+DON'Ts (Hindari ini):
+  ✗ Jangan panik jika ada pertanyaan yang tidak terduga
+  ✗ Jangan berbohong tentang fitur yang tidak ada
+  ✗ Jangan jawab terlalu panjang — max 1-2 menit per jawaban
+  ✗ Jangan gunakan kata "mungkin" terlalu sering — tunjukkan keyakinan
+
+KALIMAT CADANGAN JIKA TIDAK TAHU:
+  "Pertanyaan yang sangat menarik. Saat ini kami belum mengimplementasikannya,
+   tapi itu menjadi salah satu item dalam Future Plans kami."
+
+  "Jujurnya kami sempat kesulitan di sana, dan itu menjadi salah satu
+   pembelajaran terpenting dari proyek ini."
+
+================================================================================
+END OF Q&A PREPARATION FILE
+News MBG | PAM ITERA | 2026
+================================================================================

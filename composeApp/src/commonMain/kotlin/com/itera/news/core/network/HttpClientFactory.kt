@@ -23,7 +23,8 @@ fun createHttpClient(): HttpClient {
                     println("Ktor: $message")
                 }
             }
-            level = LogLevel.ALL
+            // Ubah ke NONE untuk hemat CPU dan I/O
+            level = LogLevel.NONE
         }
     }
 }

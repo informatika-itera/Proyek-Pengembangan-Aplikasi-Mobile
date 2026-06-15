@@ -52,12 +52,17 @@ class NewsViewModel(
         fetchNews()
     }
 
+    private var lastFetchedQuery: String? = null
+
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            delay(500) // Debounce
-            fetchNews(query.ifEmpty { null })
+            delay(800) // Debounce ditingkatkan untuk menghemat API
+            val newQuery = query.ifEmpty { null }
+            if (newQuery != lastFetchedQuery || _uiState.value is NewsUiState.Error) {
+                fetchNews(newQuery)
+            }
         }
     }
 
@@ -66,6 +71,7 @@ class NewsViewModel(
     }
 
     fun fetchNews(query: String? = null) {
+        lastFetchedQuery = query
         viewModelScope.launch {
             _uiState.value = NewsUiState.Loading
             getMbgNewsUseCase(query).collect { result ->

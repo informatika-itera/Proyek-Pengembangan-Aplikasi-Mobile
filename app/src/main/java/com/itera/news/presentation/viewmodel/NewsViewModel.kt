@@ -15,34 +15,50 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+enum class SortOrder {
+    NEWEST, OLDEST, A_Z, Z_A
+}
+
 class NewsViewModel(
     private val getMbgNewsUseCase: GetMbgNewsUseCase,
     private val repository: NewsRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<NewsUiState>(NewsUiState.Loading)
-    
+    // Raw loading/error state — tidak terpengaruh oleh filter kategori
+    private val _loadingState = MutableStateFlow<NewsUiState>(NewsUiState.Loading)
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("Semua")
     val selectedCategory = _selectedCategory.asStateFlow()
 
+    // Source of truth untuk semua artikel (tidak pernah difilter)
     private val _allArticles = MutableStateFlow<List<Article>>(emptyList())
-    
+
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
-    val uiState: StateFlow<NewsUiState> = combine(_uiState, _selectedCategory) { state, category ->
-        if (state is NewsUiState.Success) {
-            val filtered = if (category == "Semua") {
-                state.articles
-            } else {
-                state.articles.filter { it.category == category }
+    private val _sortOrder = MutableStateFlow(SortOrder.NEWEST)
+    val sortOrder = _sortOrder.asStateFlow()
+
+    // uiState di-derive dari _allArticles (bukan dari uiState itu sendiri),
+    // sehingga switching tab tidak memfilter list yang sudah terfilter
+    val uiState: StateFlow<NewsUiState> = combine(_loadingState, _allArticles, _selectedCategory, _sortOrder) { loadState, allArticles, category, sort ->
+        when (loadState) {
+            is NewsUiState.Loading -> NewsUiState.Loading
+            is NewsUiState.Error -> loadState
+            is NewsUiState.Success -> {
+                val filtered = if (category == "Semua") allArticles
+                               else allArticles.filter { it.category == category }
+                val sorted = when (sort) {
+                    SortOrder.NEWEST -> filtered.sortedByDescending { it.publishedAt }
+                    SortOrder.OLDEST -> filtered.sortedBy { it.publishedAt }
+                    SortOrder.A_Z    -> filtered.sortedBy { it.title.lowercase() }
+                    SortOrder.Z_A    -> filtered.sortedByDescending { it.title.lowercase() }
+                }
+                NewsUiState.Success(sorted)
             }
-            NewsUiState.Success(filtered)
-        } else {
-            state
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), NewsUiState.Loading)
 
@@ -68,16 +84,20 @@ class NewsViewModel(
         _selectedCategory.value = category
     }
 
+    fun onSortOrderSelected(sort: SortOrder) {
+        _sortOrder.value = sort
+    }
+
     fun fetchNews(query: String? = null) {
         viewModelScope.launch {
-            _uiState.value = NewsUiState.Loading
+            _loadingState.value = NewsUiState.Loading
             getMbgNewsUseCase(query).collect { result ->
                 result.fold(
-                    onSuccess = { articles -> 
+                    onSuccess = { articles ->
                         _allArticles.value = articles
-                        _uiState.value = NewsUiState.Success(articles) 
+                        _loadingState.value = NewsUiState.Success(articles)
                     },
-                    onFailure = { error -> _uiState.value = NewsUiState.Error(error.message ?: "Error") }
+                    onFailure = { error -> _loadingState.value = NewsUiState.Error(error.message ?: "Error") }
                 )
             }
         }
@@ -88,11 +108,11 @@ class NewsViewModel(
             _isRefreshing.value = true
             getMbgNewsUseCase(_searchQuery.value.ifEmpty { null }).collect { result ->
                 result.fold(
-                    onSuccess = { articles -> 
+                    onSuccess = { articles ->
                         _allArticles.value = articles
-                        _uiState.value = NewsUiState.Success(articles) 
+                        _loadingState.value = NewsUiState.Success(articles)
                     },
-                    onFailure = { error -> _uiState.value = NewsUiState.Error(error.message ?: "Error") }
+                    onFailure = { error -> _loadingState.value = NewsUiState.Error(error.message ?: "Error") }
                 )
             }
             _isRefreshing.value = false

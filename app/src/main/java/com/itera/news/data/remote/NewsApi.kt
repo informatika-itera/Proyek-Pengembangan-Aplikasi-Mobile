@@ -10,6 +10,7 @@ interface NewsApi {
         @Query("q") query: String = "makan bergizi gratis OR gizi anak",
         @Query("language") language: String = "id",
         @Query("sortBy") sortBy: String = "publishedAt",
+        @Query("pageSize") pageSize: Int = 30,
         @Query("apiKey") apiKey: String
     ): NewsResponse
 }

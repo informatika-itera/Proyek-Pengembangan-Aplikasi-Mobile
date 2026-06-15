@@ -1,5 +1,6 @@
 package com.itera.news.data.remote.dto
 
+import com.itera.news.data.remote.api.SentimentAnalyzer
 import com.itera.news.domain.model.Article
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -21,14 +22,21 @@ data class ArticleDto(
     @SerialName("publishedAt") val publishedAt: String? = null,
     @SerialName("source") val source: SourceDto? = null
 ) {
+    /**
+     * Mapping ke domain model.
+     * Sentimen dihitung LOKAL via [SentimentAnalyzer] — tanpa API call.
+     */
     fun toDomain(): Article {
+        val safeTitle = title ?: ""
+        val safeDesc = description ?: ""
         return Article(
-            title = title ?: "",
-            description = description ?: "",
+            title = safeTitle,
+            description = safeDesc,
             url = url ?: "",
             imageUrl = urlToImage ?: "",
             publishedAt = publishedAt ?: "",
-            sourceName = source?.name ?: ""
+            sourceName = source?.name ?: "",
+            category = SentimentAnalyzer.analyze(safeTitle, safeDesc)
         )
     }
 }
@@ -36,4 +44,4 @@ data class ArticleDto(
 @Serializable
 data class SourceDto(
     @SerialName("name") val name: String? = null
-)
+)

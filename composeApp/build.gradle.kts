@@ -102,13 +102,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
-        
-        // Inject API key from local.properties
-        buildConfigField(
-            "String",
-            "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\""
-        )
     }
     
     packaging {

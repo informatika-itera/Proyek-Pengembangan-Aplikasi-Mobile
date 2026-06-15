@@ -1,3 +1,22 @@
+# Sprint 5 - Final Submission Checklist
+
+## ✅ DELIVERABLES SPRINT 5
+**Bobot:** 5% | **Deadline:** Sebelum UAS (Pertemuan 16)
+
+### Deliverables:
+- [ ] All bugs fixed, app is stable
+- [ ] Presentation slides ready (PDF/PPTX)
+- [ ] Demo script written and practiced
+- [ ] Release APK built and tested
+- [x] README finalized (features, setup, screenshots) *(Selesai)*
+- [ ] Video backup of demo (just in case)
+- [ ] Team practiced demo at least 2x
+
+### Submission:
+- [ ] GitHub repo + Slides + APK uploaded to e-learning Pengembangan Aplikasi Mobile - ITERA
+
+---
+
 # Sprint 3 - Submission Checklist
 
 ## ✅ Deliverables Sprint 3

@@ -13,13 +13,14 @@ data class ArticleEntity(
     val imageUrl: String,
     val publishedAt: String,
     val sourceName: String,
-    val category: String
+    val category: String,
+    val isBookmarked: Boolean = false  // true = sengaja di-bookmark user, false = hanya cache
 ) {
     fun toDomain(): Article {
         return Article(title, description, url, imageUrl, publishedAt, sourceName, category)
     }
 }
 
-fun Article.toEntity(): ArticleEntity {
-    return ArticleEntity(url, title, description, imageUrl, publishedAt, sourceName, category)
+fun Article.toEntity(isBookmarked: Boolean = false): ArticleEntity {
+    return ArticleEntity(url, title, description, imageUrl, publishedAt, sourceName, category, isBookmarked)
 }

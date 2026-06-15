@@ -1,0 +1,73 @@
+Tolong buatkan materi lengkap untuk presentasi slide (Slide Content) dan naskah bicara (Speaker Notes) berdasarkan struktur dan data proyek aplikasi saya di bawah ini. Aplikasi saya bernama "News MBG (Mbgnews)", sebuah portal berita Android berdesain premium Neumorphism yang mengimplementasikan Clean Architecture dan diintegrasikan dengan Google Gemini AI.
+
+Berikut adalah kerangka presentasinya:
+
+1. Title Slide
+- App Name: News MBG (Mbgnews)
+- Mata Kuliah: Pengembangan Aplikasi Mobile (PAM) - ITERA
+- Members: 
+  1. Febrian Valentino Nugroho (123140034) - Lead Developer, UI/UX, Gemini AI & Koin DI
+  2. Jonathan Pande Sinaga (123140153) - Database Engineer, Local Caching (SQLDelight) & Repository
+
+2. Problem Statement
+- Banyak aplikasi berita memiliki antarmuka yang standar dan membosankan.
+- Pengguna kesulitan membedakan sentimen atau sudut pandang sebuah berita secara cepat (apakah berita itu positif, negatif, atau netral).
+- Jika tidak ada koneksi internet, pengguna sering kehilangan akses ke berita yang ingin mereka simpan atau baca nanti.
+
+3. Solution Overview
+- News MBG memberikan pengalaman membaca berita premium dengan desain Neumorphism yang interaktif.
+- Menggunakan Google Gemini AI untuk menganalisis sentimen berita secara real-time dan memberikan indikator warna (Glowing Effect).
+- Mengimplementasikan sistem Offline-First Database menggunakan SQLDelight agar pengguna tetap bisa mengakses berita yang sudah di-bookmark kapanpun tanpa internet.
+
+4. Features (Key features with screenshots)
+- Premium Neumorphic UI & Dark Mode.
+- Smart AI Sentiment Analysis & Categorization.
+- Search & Category Filtering (Real-time dengan debounce).
+- Offline Bookmark (Full CRUD operation: Create, Read, Update, Delete secara lokal).
+
+5. Demo
+- (Tuliskan instruksi singkat langkah-langkah Live Demo: Menunjukkan Home Screen, melakukan pencarian berita, menyimpan artikel ke Bookmark, mematikan internet untuk mendemokan Offline Mode, lalu membuka halaman detail untuk melihat Analisis AI).
+
+6. Architecture
+- Architecture: Clean Architecture + MVVM (Model-View-ViewModel).
+- Tech Stack: Kotlin (Jetpack Compose), Ktor (Networking), SQLDelight (Local Database), Koin (Dependency Injection).
+- Alur Data: Compose UI -> ViewModel -> Repository (Single Source of Truth) -> SQLDelight (Local) / Ktor & Gemini (Remote).
+
+7. Challenges & Learnings
+- Challenges: Merancang integrasi arsitektur bersih yang memisahkan logic UI dan data agar tetap modular; mengelola performa caching agar aplikasi tetap lancar; menulis prompt AI yang efisien.
+- Learnings: Memahami mendalam tentang implementasi Clean Architecture pada lingkungan modern Android, manajemen State di Compose, serta efektivitas Offline-first repository.
+
+8. Future Plans
+- Notifikasi Breaking News menggunakan Firebase Cloud Messaging.
+- Fitur Text-to-Speech (Membacakan berita secara audio).
+- Sistem rekomendasi berita berbasis Machine Learning sesuai preferensi pengguna.
+
+9. Q&A
+- Slide penutup dan ucapan terima kasih.
+
+Tolong buatkan detail teks untuk disalin ke setiap Slide (buat singkat, padat berupa bullet points) dan naskah bicara (Speaker Notes) yang profesional namun rileks untuk dibacakan saat presentasi.
+
+---
+### CODE CONTEXT (REFERENSI UNTUK AI)
+Berikut adalah gambaran arsitektur kode dan teknologi nyata yang digunakan dalam proyek agar naskah presentasi relevan dengan implementasi aslinya:
+
+1. Dependencies Utama (build.gradle.kts):
+- UI: Jetpack Compose (Multiplatform)
+- Network: Ktor Client
+- Database: SQLDelight Coroutines
+- Dependency Injection: Koin Compose
+- AI Integration: Gemini REST API
+
+2. Gemini AI Implementation (GeminiApi.kt):
+Aplikasi meminta analisis dari Gemini menggunakan Ktor POST request.
+Prompt AI: "Analisis sentimen berita berikut. Balas hanya dengan satu kata: 'Pro', 'Kontra', atau 'Netral'. Judul: [title] Deskripsi: [description]"
+
+3. Offline-First Repository (NewsRepositoryImpl.kt):
+- Terdapat fungsi fetch `getMbgNews` ke Ktor (NewsApi) dan map response ke Model Domain.
+- Terdapat metode CRUD offline: `saveArticle`, `deleteArticle`, `getBookmarkedArticles`, yang berinteraksi dengan `queries` dari SQLDelight.
+- Semua entitas database dikonversi ke `Article` Domain Model sehingga UI terbebas dari library data eksternal.
+
+4. UI & State (Compose + ViewModel):
+Menggunakan `StateFlow` pada ViewModel (seperti `NewsViewModel`) yang diikat ke Jetpack Compose Screen agar UI reaktif terhadap database (misal: saat berita di-bookmark, icon bookmark langsung ter-update di UI tanpa perlu me-refresh data jaringan).
+
+Posisikan penjelasan teknis ini di slide Architecture dan Challenges agar presentasi terdengar sangat nyata dan meyakinkan!

@@ -1,0 +1,292 @@
+================================================================================
+MEGA PROMPT: BUAT PPT PRESENTASI LENGKAP - NEWS MBG APP
+================================================================================
+Anda adalah seorang desainer presentasi profesional dan ahli teknologi Android.
+Tugas Anda: Buatkan konten LENGKAP untuk 9 SLIDE presentasi PowerPoint/Canva
+beserta SPEAKER NOTES (naskah bicara) untuk setiap slide.
+Output harus siap pakai, dalam Bahasa Indonesia yang profesional namun natural.
+
+FORMAT OUTPUT YANG DIHARAPKAN:
+Untuk setiap slide, tulis:
+[SLIDE X - JUDUL SLIDE]
+>> KONTEN SLIDE (bullet points singkat, max 6 baris, cocok ditampilkan di PPT):
+  • ...
+  • ...
+>> SPEAKER NOTES (naskah bicara lengkap ~3-5 kalimat, natural & rileks):
+  "..."
+
+================================================================================
+IDENTITAS PROYEK
+================================================================================
+Nama Aplikasi  : News MBG (Mbgnews)
+Jenis          : Aplikasi Android Portal Berita Premium
+Mata Kuliah    : Pengembangan Aplikasi Mobile (PAM)
+Institusi      : Institut Teknologi Sumatera (ITERA)
+Branch GitHub  : 123140034-123140131-Mbgnews
+
+Tim Pengembang:
+  1. Febrian Valentino Nugroho (NIM: 123140034)
+     Peran: Lead Developer, UI/UX Designer, Gemini AI Integration, Koin DI Setup
+  2. Jonathan Pande Sinaga (NIM: 123140153)
+     Peran: Database Engineer, Local Caching (SQLDelight), Repository Implementation
+
+================================================================================
+STRUKTUR 9 SLIDE PRESENTASI
+================================================================================
+
+--- SLIDE 1: TITLE SLIDE ---
+Tujuan: Perkenalan awal, kesan pertama yang kuat.
+Isi:
+- Nama Aplikasi: News MBG (Mbgnews)
+- Tagline: "Portal Berita Android Premium dengan Kecerdasan Buatan"
+- Mata Kuliah: Pengembangan Aplikasi Mobile - ITERA
+- Anggota Tim:
+    • Febrian Valentino Nugroho (123140034)
+    • Jonathan Pande Sinaga (123140153)
+
+--- SLIDE 2: PROBLEM STATEMENT ---
+Tujuan: Jelaskan masalah nyata yang dialami pengguna aplikasi berita saat ini.
+Isi (3 poin masalah utama):
+1. Antarmuka aplikasi berita yang monoton dan tidak menarik secara visual.
+   → Pengguna cepat bosan dan meninggalkan aplikasi.
+2. Tidak ada indikator sentimen atau sudut pandang berita secara instan.
+   → Pengguna harus membaca artikel penuh hanya untuk tahu apakah berita itu
+     bersifat mendukung (Pro), mengkritik (Kontra), atau netral.
+3. Aplikasi bergantung 100% pada internet.
+   → Saat offline, seluruh konten menghilang, aplikasi tidak berguna.
+
+--- SLIDE 3: SOLUTION OVERVIEW ---
+Tujuan: Tunjukkan bagaimana News MBG menjawab ketiga masalah di atas.
+Isi (3 solusi):
+1. Desain Neumorphism Premium + Dark Mode
+   → Tampilan artistik, mewah, dan membuat betah berlama-lama membaca.
+2. Indikator Sentimen AI Real-time (Google Gemini)
+   → Setiap artikel otomatis diberi label "Pro" (hijau), "Kontra" (merah),
+     atau "Netral" (abu) menggunakan analisis AI hanya dalam hitungan detik.
+3. Sistem Offline-First (SQLDelight Bookmark)
+   → Semua artikel yang di-bookmark tersimpan permanen di perangkat.
+     Tetap bisa diakses meski sinyal 0%.
+
+--- SLIDE 4: FEATURES ---
+Tujuan: Pamerkan 4 fitur unggulan dengan konteks screenshot nyata.
+Isi:
+
+Fitur 1: Premium Neumorphic UI & Dark Mode
+  - Desain 3D-soft menggunakan Custom Compose Modifier
+  - Tema gelap yang elegan, ramah mata saat malam hari
+
+Fitur 2: Smart AI Sentiment Analysis
+  - Powered by Google Gemini API
+  - Respons: "Pro" / "Kontra" / "Netral" — ditampilkan sebagai Glowing Effect
+  - Instruksi API yang dioptimalkan untuk konsistensi jawaban
+
+Fitur 3: Real-Time Search & Category Filter
+  - Pencarian instan menggunakan teknik Debounce 500ms
+  - Filter Kategori: Pro / Kontra / Netral / Semua
+
+Fitur 4: Offline Bookmark (Full CRUD)
+  - Simpan (Create), Baca (Read), Edit (Update), Hapus (Delete) artikel
+  - Data tersimpan lokal menggunakan SQLDelight
+  - 100% berfungsi tanpa internet
+
+Screenshot pendukung ada di folder: ./Screenshoot/
+  - Tampilan Awal.jpeg  (Home Screen)
+  - Pencarian.jpeg      (Fitur Search)
+  - Berita Tersimpan.jpeg (Bookmark/Offline)
+  - Kontra.jpeg         (Analisis Sentimen AI - Kontra)
+  - Pengaturan.jpeg     (Settings Screen)
+
+--- SLIDE 5: DEMO ---
+Tujuan: Persiapkan audiens untuk Live Demo yang akan dilakukan di depan.
+Isi (urutan langkah demo, cocok ditampilkan sebagai numbered list di slide):
+
+Langkah Demo (totalnya ±3-4 menit):
+  1. [HOME SCREEN] Tunjukkan tampilan awal dengan daftar berita terbaru.
+     → Sorot desain Neumorphism dan Dark Mode.
+  2. [SEARCH] Ketik kata kunci di kotak pencarian.
+     → Demonstrasikan hasil yang berubah real-time saat mengetik.
+  3. [FILTER] Tekan tombol filter "Kontra" atau "Pro".
+     → Lihat hanya berita dengan sentimen tersebut yang muncul.
+  4. [DETAIL + AI] Buka salah satu artikel.
+     → Tunjukkan Glowing Sentiment Indicator (Pro/Kontra/Netral) dari Gemini AI.
+  5. [BOOKMARK] Tekan ikon Bookmark.
+     → Ikon berubah jadi terisi (filled) secara instan.
+  6. [OFFLINE TEST] Matikan WiFi / aktifkan Airplane Mode.
+     → Buka halaman Berita Tersimpan — artikel masih muncul sempurna!
+  7. [ADD/EDIT] Tunjukkan tambah berita manual dan edit artikel.
+     → Demonstrasikan fitur CRUD lengkap.
+
+BACKUP PLAN SAAT DEMO:
+  - Jika koneksi bermasalah → Fokus ke fitur Bookmark (Offline Mode)
+  - Jika app crash → Tunjukkan screenshot/video recording sebagai backup
+  - Jika Gemini AI lambat → Jelaskan konsep sambil tunjukkan kode GeminiApi.kt
+
+--- SLIDE 6: ARCHITECTURE ---
+Tujuan: Tunjukkan kedewasaan teknis dengan arsitektur yang solid.
+Isi:
+
+Pola Arsitektur: Clean Architecture + MVVM
+Alur Data:
+  [Compose UI] → [ViewModel + StateFlow] → [Repository Interface]
+       ↓                                          ↓
+  [State/UiState]                    [NewsRepositoryImpl]
+                                      ↙             ↘
+                           [SQLDelight]         [Ktor + GeminiAPI]
+                           (Offline/Local)       (Remote/Network)
+
+Tech Stack Lengkap:
+  • Bahasa          : Kotlin (Multiplatform ready)
+  • UI Framework    : Jetpack Compose (Declarative UI)
+  • Networking      : Ktor Client (HTTP + JSON serialization)
+  • Database Lokal  : SQLDelight (Type-safe SQL, auto-generate Kotlin queries)
+  • DI Framework    : Koin (Dependency Injection untuk ViewModel & Repository)
+  • AI Integration  : Google Gemini REST API (via Ktor POST)
+  • CI/CD           : GitHub Actions (android.yml, badge di README)
+  • Image Loading   : Coil + Coil-Ktor
+
+Prinsip Kunci:
+  • Single Source of Truth: Repository sebagai satu-satunya sumber kebenaran data
+  • Separation of Concerns: UI tidak tahu asal data (DB atau API), hanya render State
+  • Reactive: UI otomatis ter-update via StateFlow tanpa polling manual
+
+Struktur Folder:
+  composeApp/src/commonMain/kotlin/com/itera/news/
+  ├── data/          → remote/ (Ktor, DTO), repository/ (Impl)
+  ├── domain/        → model/ (Article), repository/ (Interface)
+  ├── presentation/  → screens/ (Home, Detail, Bookmark, AddEdit, Settings)
+  │                    navigation/ (NavGraph, Screen)
+  ├── core/          → di/ (AppModule Koin), network/ (HttpClient), util/
+  └── ui/theme/      → Custom Neumorphic Modifiers, Material3 Theme
+
+--- SLIDE 7: CHALLENGES & LEARNINGS ---
+Tujuan: Tunjukkan refleksi tim atas perjalanan membangun aplikasi ini.
+Isi:
+
+CHALLENGES (Hambatan):
+  1. Integrasi 3 layer Clean Architecture
+     → Sulit menjaga agar UI, Domain, dan Data benar-benar terpisah.
+       Setiap tambahan fitur harus melewati semua lapisan dengan benar.
+  2. Menstabilkan Format Respons Gemini AI
+     → Awalnya AI sering memberikan kalimat panjang yang merusak UI.
+       Solusi: Kami menyesuaikan format permintaan API dengan instruksi ketat: 
+       "Balas HANYA dengan satu kata: Pro/Kontra/Netral"
+  3. Reaktivitas StateFlow dengan SQLDelight
+     → Memastikan UI ter-update otomatis saat data berubah di database lokal
+       tanpa memanggil API lagi.
+  4. Desain Neumorphism di Compose
+     → Tidak ada library siap pakai. Harus membuat Custom Modifier sendiri
+       dengan shadowColor, highlight, dan offset yang dikalkulasi manual.
+
+LEARNINGS (Pelajaran):
+  1. Clean Architecture bukan tentang kerumitan, tapi tentang ketahanan kode jangka panjang.
+  2. Cara kita memberi instruksi ke API sangat menentukan stabilitas aplikasi saat berhadapan dengan AI.
+  3. Offline-First Repository adalah standar emas aplikasi modern yang peduli pengguna.
+  4. Dependency Injection (Koin) secara drastis menyederhanakan testing dan modularity.
+  5. StateFlow + Jetpack Compose = UI reaktif yang jauh lebih bersih dari LiveData/Callback.
+
+--- SLIDE 8: FUTURE PLANS ---
+Tujuan: Tunjukkan bahwa aplikasi ini adalah fondasi yang bisa tumbuh lebih jauh.
+Isi:
+
+Rencana Pengembangan Selanjutnya:
+  1. Push Notification (Firebase Cloud Messaging)
+     → Notifikasi Breaking News real-time langsung ke HP pengguna
+  2. Text-to-Speech (TTS)
+     → Biarkan aplikasi membacakan berita dengan suara — cocok untuk aksesibilitas
+  3. Rekomendasi Berita (Machine Learning)
+     → Algoritma ML mempelajari preferensi pengguna, lalu menyajikan berita
+       yang relevan secara otomatis
+  4. Multi-Platform (iOS/Desktop)
+     → Pondasi Kotlin Multiplatform (KMP) sudah terpasang sejak hari pertama.
+       Satu langkah lagi untuk rilis di App Store.
+  5. Autentikasi Pengguna (Firebase Auth / OAuth)
+     → Login Google untuk sinkronisasi bookmark antar perangkat
+
+--- SLIDE 9: Q&A / PENUTUP ---
+Tujuan: Akhiri dengan kesan yang kuat dan buka sesi tanya jawab.
+Isi:
+  • Terima kasih telah menyimak presentasi kami!
+  • "News MBG: Berita yang Cerdas, Tersedia Kapanpun"
+  • GitHub: github.com/Febvn/Proyek-Pengembangan-Aplikasi-Mobile
+  • Dibimbing oleh: Bapak Habib (mh4Scripts)
+  • Program Studi Informatika — Institut Teknologi Sumatera (ITERA)
+  • Pertanyaan?
+
+================================================================================
+KONTEKS KODE NYATA (UNTUK REFERENSI AI YANG MEMBUAT PPT)
+================================================================================
+Berikut adalah cuplikan kode asli dari proyek untuk memastikan penjelasan teknis
+di dalam slide Architecture dan Challenges terdengar autentik dan tepat secara teknis:
+
+--- GeminiApi.kt (Implementasi AI Sentimen) ---
+class GeminiApi(private val httpClient: HttpClient) {
+    suspend fun analyzeSentiment(title: String, description: String): String {
+        val prompt = """
+            Analisis sentimen berita berikut. Balas hanya dengan satu kata: "Pro", "Kontra", atau "Netral".
+            Judul: $title
+            Deskripsi: $description
+        """.trimIndent()
+        return try {
+            val response = httpClient.post(
+                "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=$geminiApiKey"
+            ) {
+                header("Content-Type", "application/json")
+                setBody(GeminiRequest(listOf(Content(listOf(Part(prompt))))))
+            }.body<GeminiResponse>()
+            response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text?.trim() ?: "Netral"
+        } catch (e: Exception) { "Netral" }
+    }
+}
+
+--- NewsRepositoryImpl.kt (Repository Offline-First) ---
+class NewsRepositoryImpl(private val newsApi: NewsApi, private val db: NewsDatabase) : NewsRepository {
+    private val queries = db.articleQueries
+
+    override suspend fun getMbgNews(query: String?): Result<List<Article>> { ... // Ktor fetch }
+    override suspend fun saveArticle(article: Article) { queries.insertArticle(...) }
+    override suspend fun deleteArticle(article: Article) { queries.deleteArticle(article.url) }
+    override fun getBookmarkedArticles(): Flow<List<Article>> {
+        return queries.getAllBookmarkedArticles()
+            .asFlow().mapToList(Dispatchers.IO)
+            .map { entities -> entities.map { it.toDomain() } }
+    }
+    override fun isArticleBookmarked(url: String): Flow<Boolean> {
+        return queries.isArticleBookmarked(url).asFlow().mapToOne(Dispatchers.IO).map { it > 0 }
+    }
+    override suspend fun updateArticle(article: Article) { queries.updateArticle(...) }
+}
+
+--- build.gradle.kts (Tech Stack Resmi) ---
+commonMain.dependencies {
+    // UI
+    implementation(compose.material3)
+    implementation(compose.materialIconsExtended)
+    // Networking
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.content.negotiation)
+    // Database
+    implementation(libs.sqldelight.runtime)
+    implementation(libs.sqldelight.coroutines)
+    // DI
+    implementation(libs.koin.core)
+    implementation(libs.koin.compose.viewmodel)
+    // Image
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.ktor)
+}
+
+================================================================================
+INSTRUKSI AKHIR UNTUK AI
+================================================================================
+Sekarang, berdasarkan SEMUA konteks di atas, buatkan output lengkap 9 slide
+dalam format yang rapi dan siap disalin ke PowerPoint/Canva/Google Slides.
+
+Setiap slide harus memiliki:
+1. Judul Slide yang menarik
+2. Bullet Points konten (max 6 baris, singkat dan padat)
+3. Speaker Notes yang natural dan mengalir untuk dibacakan
+
+Gunakan bahasa Indonesia yang profesional namun tidak kaku.
+Pastikan slide Architecture benar-benar mengacu pada kode di atas.
+Pastikan slide Challenges menyebut pengalaman nyata (Menstabilkan respons AI, StateFlow, Neumorphism Custom Modifier).
+================================================================================

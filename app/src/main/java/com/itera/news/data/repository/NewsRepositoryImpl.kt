@@ -87,11 +87,15 @@ class NewsRepositoryImpl(
     }
 
     override suspend fun saveArticle(article: Article) {
-        dao.insertArticle(article.toEntity())
+        // Simpan sebagai bookmark (isBookmarked = true)
+        // Pakai REPLACE — jika artikel sudah ada di cache, update jadi bookmark
+        dao.insertArticle(article.toEntity(isBookmarked = true))
     }
 
     override suspend fun deleteArticle(article: Article) {
-        dao.deleteArticle(article.toEntity())
+        // Saat un-bookmark: kembalikan jadi cache biasa (bukan dihapus)
+        // supaya artikel tetap tampil di feed
+        dao.insertArticle(article.toEntity(isBookmarked = false))
     }
     
     override fun getCachedArticles(): Flow<List<Article>> {

@@ -26,6 +26,28 @@ This project was developed to fulfill the assignments for the **Mobile Applicati
 
 ---
 
+## Demo Video
+
+[![Demo Aplikasi News MBG](https://img.youtube.com/vi/UnIUC4MEWUs/0.jpg)](https://youtube.com/shorts/UnIUC4MEWUs?si=vAgK8P2Q-hwv2IJQ)
+
+> Klik gambar di atas untuk menonton demo aplikasi News MBG di YouTube.
+
+---
+
+## App Screenshots / Tangkapan Layar Aplikasi
+
+Berikut adalah beberapa tampilan antarmuka dari aplikasi News MBG yang menggunakan desain Neumorphism yang modern:
+
+| Tampilan Awal | Pencarian | Berita Tersimpan |
+|:---:|:---:|:---:|
+| <img src="./Screenshoot/Tampilan%20Awal.jpeg" width="250"/> | <img src="./Screenshoot/Pencarian.jpeg" width="250"/> | <img src="./Screenshoot/Berita%20Tersimpan.jpeg" width="250"/> |
+
+| Analisis Sentimen (Kontra) | Pengaturan |
+|:---:|:---:|
+| <img src="./Screenshoot/Kontra.jpeg" width="250"/> | <img src="./Screenshoot/Pengaturan.jpeg" width="250"/> |
+
+---
+
 ## Sprint 1: Foundation and AI Integration
 
 The focus of Sprint 1 was establishing the project foundation, architectural patterns, and integrating the core external APIs.
@@ -62,6 +84,15 @@ The focus of Sprint 2 shifted towards the presentation layer, complex navigation
 | :--- | :---: | :--- |
 | **Febrian Valentino Nugroho** | `123140034` | Lead Developer, UI/UX Designer, Gemini AI & Koin DI Integration |
 | **Jonathan Pande Sinaga** | `123140153` | Database Engineer, Local Caching (SQLDelight) & Repository Implementation |
+
+---
+
+## System Architecture
+
+![Diagram Arsitektur](./Arsitektur%20diagram.png)
+
+Aplikasi ini menggunakan pola **Clean Architecture** dipadukan dengan **MVVM (Model-View-ViewModel)**. 
+Arsitektur ini memisahkan lapisan UI (*Compose*), *State Holders* (*ViewModel*), lapisan Domain (antarmuka repository), serta lapisan Data. Sumber data terbagi menjadi Remote API (Ktor dan Gemini AI) dan Local Database (SQLDelight untuk *caching* dan fitur *Bookmark*). Pemisahan ini menjaga kode tetap bersih, mudah di-test, dan *maintainable*.
 
 ---
 

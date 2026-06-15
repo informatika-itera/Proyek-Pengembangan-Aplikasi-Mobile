@@ -23,15 +23,19 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.itera.news.app.R
 import com.itera.news.domain.model.Article
 import com.itera.news.presentation.viewmodel.NewsUiState
 import com.itera.news.presentation.viewmodel.NewsViewModel
+import com.itera.news.presentation.viewmodel.SortOrder
 import com.itera.news.ui.theme.neumorphicShadow
 import org.koin.androidx.compose.koinViewModel
 
@@ -45,6 +49,8 @@ fun HomeScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val sortOrder by viewModel.sortOrder.collectAsState()
+    var showSortMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -71,7 +77,7 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center
                     )
-                    
+
                     // Refresh button
                     IconButton(
                         onClick = { viewModel.refreshNews() },
@@ -81,39 +87,115 @@ fun HomeScreen(
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = "Refresh",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.then(
-                                if (isRefreshing) {
-                                    Modifier.size(24.dp)
-                                } else {
-                                    Modifier.size(24.dp)
-                                }
-                            )
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Search Bar
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChange(it) },
-                    placeholder = { Text("Cari berita terbaru...", fontSize = 14.sp) },
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                // Search Bar + Filter Icon
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 16.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    singleLine = true
-                )
+                        .padding(horizontal = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // Search bar (lebih kecil, pakai weight agar sisa ruang diisi filter icon)
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChange(it) },
+                        placeholder = { Text("Cari berita...", fontSize = 13.sp) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Search,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .neumorphicShadow(offset = 4.dp, blur = 8.dp, cornerRadius = 14.dp)
+                            .clip(RoundedCornerShape(14.dp)),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(14.dp),
+                        singleLine = true,
+                        textStyle = LocalTextStyle.current.copy(fontSize = 13.sp)
+                    )
+
+                    // Filter / Sort icon button
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .neumorphicShadow(
+                                    offset = if (sortOrder != SortOrder.NEWEST) 0.dp else 4.dp,
+                                    blur = if (sortOrder != SortOrder.NEWEST) 0.dp else 8.dp,
+                                    cornerRadius = 14.dp
+                                )
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(
+                                    if (sortOrder != SortOrder.NEWEST) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surface
+                                )
+                                .clickable { showSortMenu = true },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_filter_list),
+                                contentDescription = "Filter urutan",
+                                tint = if (sortOrder != SortOrder.NEWEST) MaterialTheme.colorScheme.onPrimary
+                                       else MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
+                        // Dropdown menu
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            val sortOptions = listOf(
+                                SortOrder.NEWEST to "Terbaru",
+                                SortOrder.OLDEST to "Terlama",
+                                SortOrder.A_Z    to "A → Z",
+                                SortOrder.Z_A    to "Z → A"
+                            )
+                            sortOptions.forEach { (order, label) ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = label,
+                                            fontWeight = if (sortOrder == order) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (sortOrder == order) MaterialTheme.colorScheme.primary
+                                                    else MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        viewModel.onSortOrderSelected(order)
+                                        showSortMenu = false
+                                    },
+                                    trailingIcon = if (sortOrder == order) ({
+                                        Box(
+                                            modifier = Modifier
+                                                .size(8.dp)
+                                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                        )
+                                    }) else null
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -135,7 +217,7 @@ fun HomeScreen(
                                 )
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary 
+                                    if (isSelected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.surface
                                 )
                                 .clickable { viewModel.onCategorySelected(category) }
@@ -143,7 +225,7 @@ fun HomeScreen(
                         ) {
                             Text(
                                 text = category,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary 
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary
                                         else MaterialTheme.colorScheme.onSurface,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                 fontSize = 13.sp
@@ -219,14 +301,14 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Ups! Terjadi kendala", 
-                            fontWeight = FontWeight.Bold, 
+                            text = "Ups! Terjadi kendala",
+                            fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = errorMsg, 
-                            color = MaterialTheme.colorScheme.error, 
+                            text = errorMsg,
+                            color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(24.dp))
@@ -239,7 +321,7 @@ fun HomeScreen(
                     }
                 }
             }
-            
+
             // Loading indicator overlay when refreshing
             if (isRefreshing && uiState is NewsUiState.Success) {
                 LinearProgressIndicator(
@@ -293,7 +375,7 @@ fun ArticleCard(
     viewModel: NewsViewModel
 ) {
     val isBookmarked by viewModel.isArticleBookmarked(article.url).collectAsState()
-    
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -317,10 +399,10 @@ fun ArticleCard(
                             .fillMaxWidth()
                             .height(200.dp)
                     )
-                    
+
                     // Bookmark button overlay
                     IconButton(
-                        onClick = { 
+                        onClick = {
                             viewModel.toggleBookmark(article, isBookmarked)
                         },
                         modifier = Modifier
@@ -360,13 +442,13 @@ fun ArticleCard(
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
-                    
-                    val glowColor = when(article.category) {
+
+                    val glowColor = when (article.category) {
                         "Pro" -> Color(0xFF4CAF50)
                         "Kontra" -> Color(0xFFF44336)
                         else -> Color(0xFFFFEB3B)
                     }
-                    
+
                     Box(
                         modifier = Modifier
                             .size(10.dp)

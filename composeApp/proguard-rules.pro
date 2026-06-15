@@ -13,11 +13,11 @@
 }
 
 # Keep serializable classes
--keep,includedescriptorclasses class com.example.noteai.**$$serializer { *; }
--keepclassmembers class com.example.noteai.** {
+-keep,includedescriptorclasses class com.itera.news.**$$serializer { *; }
+-keepclassmembers class com.itera.news.** {
     *** Companion;
 }
--keepclasseswithmembers class com.example.noteai.** {
+-keepclasseswithmembers class com.itera.news.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -35,7 +35,7 @@
 -dontwarn java.lang.management.**
 
 # Keep SQLDelight generated classes
--keep class com.example.noteai.data.local.** { *; }
+-keep class com.itera.news.data.local.** { *; }
 
 # Keep Koin DI metadata + ViewModel constructors agar reflection-based
 # resolution tidak ke-strip oleh R8.

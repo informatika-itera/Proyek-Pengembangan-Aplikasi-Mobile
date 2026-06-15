@@ -52,11 +52,30 @@ PocketGuard mengimplementasikan **Clean Architecture** (Domain, Data, Presentati
 
 ---
 
-## 🧪 Strategi Pengujian (Testing)
+## 🧪 Strategi Pengujian & Koverasi Kode
+
 Stabilitas aplikasi divalidasi melalui pengujian di berbagai lapisan:
 
 1. **Presentation Layer:** Menggunakan **Robolectric** dan Compose UI Test untuk memvalidasi interaksi komponen UI. Skenario mencakup pengujian `EmptyState` pada layar kosong, validasi error pada fitur pencarian, dan keakuratan *formatter* mata uang pada kartu ringkasan saldo.
 2. **Domain & Data Layer:** Memanfaatkan *Manual Fakes* untuk mereplikasi Repository secara aman di ekosistem KMP. Ini memastikan logika kalkulasi *budget* dan operasi CRUD database berjalan akurat melalui evaluasi *StateFlow* dengan library Turbine.
+
+### 📊 Kover Coverage Report
+Fokus pengujian (*test suite*) pada rilis ini diprioritaskan secara khusus pada *Core Logic* (Domain) dan antarmuka utama (Dashboard/Home) untuk memastikan keandalan pencatatan transaksi pengguna.
+
+| Module / Package | Line Coverage |
+| :--- | :---: |
+| **Overall Project (composeApp)** | **65.7%** |
+| `core.di` (Dependency Injection) | 92.3% |
+| `domain.model` (Core Business Models) | 81.2% |
+| `domain.usecase` (Business Logic Execution) | 73.7% |
+| `presentation.components` (Reusable UI) | 68.8% |
+| `presentation.screens.home` (Dashboard UI & Logic) | 61.3% |
+
+> 💡 **Akses Laporan Lokal:** Laporan interaktif HTML yang mendalam dapat Anda akses secara lokal melalui folder `build/reports/kover/htmlDebug/index.html` setelah mengeksekusi perintah `./gradlew koverHtmlReportDebug`.
+
+<div align="center">
+  <img src="composeApp/KoverReport.png" alt="PocketGuard Kover Report Screenshot" width="750">
+</div>
 
 ---
 

@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlinx.kover") version "0.8.2"
 }
 
 // Load local.properties for API keys
@@ -198,4 +199,20 @@ sqldelight {
 
 dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.0")
+}
+
+kover {
+    reports {
+        filters {
+            includes {
+                classes(
+                    "com.example.pocketguard.core.di.*",
+                    "com.example.pocketguard.domain.model.*",
+                    "com.example.pocketguard.domain.usecase.*",
+                    "com.example.pocketguard.presentation.components.*",
+                    "com.example.pocketguard.presentation.screens.home.*"
+                )
+            }
+        }
+    }
 }

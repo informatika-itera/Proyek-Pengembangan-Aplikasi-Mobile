@@ -28,6 +28,7 @@ Thumbs.db
 # Logs
 *.log
 
+
 # iOS / Xcode
 xcuserdata/
 *.xcuserstate
@@ -47,3 +48,7 @@ daemon/
 kotlin-profile/
 native/
 wrapper/
+
+todomaster_key
+*.jks
+composeApp/release/

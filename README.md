@@ -14,6 +14,15 @@
 
 ---
 
+## 📦 Unduh Aplikasi (Release APK)
+Silakan unduh berkas instalasi rilis resmi aplikasi TodoMaster yang siap diuji melalui tautan di bawah ini:
+
+📥 **[Klik Di Sini Untuk Mengunduh Berkas APK TodoMaster (Google Drive)](https://drive.google.com/drive/folders/1hMOVxn4mgIcGJfEevOITr901T2widR6e?usp=sharing)**
+
+> **⚠️ Catatan Pemasangan:** Karena berkas ini didistribusikan secara mandiri dalam bentuk *Signed Release APK* di luar ekosistem Google Play Store, Google Play Protect di perangkat Anda mungkin akan memunculkan peringatan keamanan. Silakan klik opsi **"More details"** (Detail selengkapnya) lalu pilih **"Install anyway"** (Tetap instal) untuk melanjutkan proses instalasi dengan aman.
+
+---
+
 ## 🎥 Demo Aplikasi ToDoMaster
 **▶️ [Tonton Video Demo TodoMaster Di Sini](https://youtu.be/zjA1A3JOqig)**
 
@@ -33,8 +42,6 @@
 | :---: | :---: |
 | <img width="349" height="630" alt="Screenshot 2026-05-31 183441" src="https://github.com/user-attachments/assets/aca723f3-9d86-4b4d-b1f2-fb519e675100" /> | |
 | **Pemecahan otomatis sub-tugas dari Gemini AI.** | |
-
----
 
 ---
 

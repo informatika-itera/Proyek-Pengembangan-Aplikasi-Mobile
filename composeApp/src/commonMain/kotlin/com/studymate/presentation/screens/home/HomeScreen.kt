@@ -13,10 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.studymate.domain.model.Note
 import com.studymate.presentation.theme.*
 import com.studymate.Res
@@ -68,11 +66,12 @@ fun HomeScreen(
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
-            // 1. Header with glassmorphism feel
-            HomeHeader(
-                userName = (uiState as? HomeUiState.Success)?.userName ?: "User",
-                onNavigateToProfile = onNavigateToProfile
-            )
+        // 1. Header with glassmorphism feel
+        HomeHeader(
+            userName = (uiState as? HomeUiState.Success)?.userName ?: "User",
+            photoUrl = (uiState as? HomeUiState.Success)?.userProfile?.displayPhoto,
+            onNavigateToProfile = onNavigateToProfile
+        )
 
             when (val state = uiState) {
                 is HomeUiState.Loading -> {
@@ -116,7 +115,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeHeader(userName: String, onNavigateToProfile: () -> Unit) {
+fun HomeHeader(userName: String, photoUrl: String?, onNavigateToProfile: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -125,7 +124,7 @@ fun HomeHeader(userName: String, onNavigateToProfile: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(72.dp)
+                    .size(60.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(PrimaryLight.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -133,20 +132,20 @@ fun HomeHeader(userName: String, onNavigateToProfile: () -> Unit) {
                 Image(
                     painter = painterResource(Res.drawable.app_logo),
                     contentDescription = "Mascot",
-                    modifier = Modifier.size(56.dp)
+                    modifier = Modifier.size(44.dp)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
                     "Halo, $userName! 👋",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     "Ayo lanjut belajarnya!",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -157,16 +156,25 @@ fun HomeHeader(userName: String, onNavigateToProfile: () -> Unit) {
                 .size(48.dp)
                 .clip(CircleShape)
                 .clickable { onNavigateToProfile() },
-            color = PrimaryLight.copy(alpha = 0.2f),
+            color = MaterialTheme.colorScheme.surfaceVariant,
             border = BorderStroke(2.dp, PrimaryLight)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(
-                    userName.take(1).uppercase(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryLight
-                )
+                if (photoUrl != null) {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = "Profile",
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = PrimaryLight,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
     }

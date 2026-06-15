@@ -1,5 +1,6 @@
 package com.studymate.presentation.screens.calendar
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,9 +23,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studymate.domain.model.Reminder
@@ -32,6 +41,7 @@ import com.studymate.domain.repository.CalendarEvent
 import com.studymate.presentation.theme.*
 import kotlinx.datetime.*
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,12 +50,32 @@ fun CalendarScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val reminders by viewModel.reminders.collectAsState()
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableStateOf(0) } // 0: Weekly, 1: Monthly
     var showTypeSelection by remember { mutableStateOf(false) }
     var showAddEventDialog by remember { mutableStateOf(false) }
     var showAddReminderDialog by remember { mutableStateOf(false) }
 
     var selectedDetailItem by remember { mutableStateOf<Any?>(null) }
+
+    // Collapsing Calendar Logic for Monthly view
+    val calendarHeight = 280.dp
+    val calendarHeightPx = with(LocalDensity.current) { calendarHeight.toPx() }
+    val collapsedHeight = 60.dp
+    val collapsedHeightPx = with(LocalDensity.current) { collapsedHeight.toPx() }
+    
+    var calendarOffsetHeightPx by remember { mutableStateOf(0f) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (selectedTab == 0) return Offset.Zero // No collapse in weekly
+                val delta = available.y
+                val newOffset = calendarOffsetHeightPx + delta
+                calendarOffsetHeightPx = newOffset.coerceIn(-(calendarHeightPx - collapsedHeightPx), 0f)
+                return Offset.Zero
+            }
+        }
+    }
 
     if (showTypeSelection) {
         AlertDialog(
@@ -96,7 +126,7 @@ fun CalendarScreen(
             onDelete = {
                 val item = selectedDetailItem
                 when (item) {
-                    is CalendarEvent -> item.id?.let { id: String -> viewModel.deleteEvent(id) }
+                    is CalendarEvent -> item.id?.let { viewModel.deleteEvent(it) }
                     is Reminder -> viewModel.deleteReminder(item.id)
                 }
                 selectedDetailItem = null
@@ -106,7 +136,6 @@ fun CalendarScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0), // Matikan insets otomatis Scaffold ini
         topBar = {
             Surface(
                 modifier = Modifier.shadow(4.dp),
@@ -120,7 +149,7 @@ fun CalendarScreen(
                         selectedTabIndex = selectedTab,
                         containerColor = Color.Transparent,
                         divider = {},
-                        indicator = { tabPositions: List<TabPosition> ->
+                        indicator = { tabPositions ->
                             if (selectedTab < tabPositions.size) {
                                 Box(
                                     Modifier
@@ -135,7 +164,10 @@ fun CalendarScreen(
                     ) {
                         Tab(
                             selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
+                            onClick = { 
+                                selectedTab = 0 
+                                calendarOffsetHeightPx = 0f
+                            },
                             selectedContentColor = PrimaryLight,
                             unselectedContentColor = Color.Gray
                         ) {
@@ -159,115 +191,114 @@ fun CalendarScreen(
                 containerColor = ActionFABLight,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.padding(bottom = 16.dp) // Beri sedikit jarak dari bottom bar
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Tambah")
             }
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding()) // Hanya ambil padding atas (topBar)
-                .background(MaterialTheme.colorScheme.background)
+                .padding(top = padding.calculateTopPadding())
+                .nestedScroll(nestedScrollConnection)
         ) {
-            CalendarHeaderSection(
-                selectedDate = uiState.selectedDate,
-                onPrev = { viewModel.navigatePrev(selectedTab == 1) },
-                onNext = { viewModel.navigateNext(selectedTab == 1) }
-            )
-            
-            if (selectedTab == 0) {
-                CalendarGridSection(
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Calendar Header (Month Year + Nav)
+                CalendarHeaderSection(
                     selectedDate = uiState.selectedDate,
-                    reminders = reminders,
-                    events = uiState.events,
-                    onDateSelected = { viewModel.onDateSelected(it) }
+                    onPrev = { viewModel.navigatePrev(selectedTab == 1) },
+                    onNext = { viewModel.navigateNext(selectedTab == 1) }
                 )
-            } else {
-                MonthlyGridSection(
-                    selectedDate = uiState.selectedDate,
-                    reminders = reminders,
-                    events = uiState.events,
-                    onDateSelected = { viewModel.onDateSelected(it) }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            val dailyEvents = uiState.events.filter { 
-                Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
-            }
-            val dailyReminders = reminders.filter { 
-                Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
-            }
 
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "Agenda Hari Ini",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Black
-                )
-                Surface(
-                    color = PrimaryLight.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    val count = dailyEvents.size + dailyReminders.size
-                    Text(
-                        "$count Agenda",
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = PrimaryLight,
-                        fontWeight = FontWeight.Bold
-                    )
+                // Calendar Content Area
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    if (selectedTab == 0) {
+                        CalendarGridSection(
+                            selectedDate = uiState.selectedDate,
+                            reminders = reminders,
+                            events = uiState.events,
+                            onDateSelected = { viewModel.onDateSelected(it) }
+                        )
+                    } else {
+                        // Monthly grid with collapsing logic
+                        Box(modifier = Modifier
+                            .height(calendarHeight + (calendarOffsetHeightPx / with(LocalDensity.current) { 1.dp.toPx() }).dp)
+                            .clip(RectangleShape)
+                        ) {
+                            MonthlyGridSection(
+                                selectedDate = uiState.selectedDate,
+                                reminders = reminders,
+                                events = uiState.events,
+                                onDateSelected = { viewModel.onDateSelected(it) },
+                                isCollapsed = calendarOffsetHeightPx < -100f
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Daily Agenda List Header
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Agenda Hari Ini",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    val dailyEvents = uiState.events.filter { 
+                        Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
+                    }
+                    val dailyReminders = reminders.filter { 
+                        Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
+                    }
+                    val count = dailyEvents.size + dailyReminders.size
+                    Surface(color = PrimaryLight.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp)) {
+                        Text(
+                            "$count Agenda",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = PrimaryLight,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Scrollable List
+                TimelineListSection(
+                    events = uiState.events.filter { 
+                        Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
+                    },
+                    reminders = reminders.filter { 
+                        Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == uiState.selectedDate
+                    },
+                    onItemClick = { selectedDetailItem = it }
+                )
             }
-            
-            TimelineListSection(
-                events = dailyEvents,
-                reminders = dailyReminders,
-                onItemClick = { selectedDetailItem = it }
-            )
         }
     }
 }
 
 @Composable
-fun CalendarHeaderSection(
-    selectedDate: LocalDate,
-    onPrev: () -> Unit,
-    onNext: () -> Unit
-) {
+fun CalendarHeaderSection(selectedDate: LocalDate, onPrev: () -> Unit, onNext: () -> Unit) {
     val monthName = remember(selectedDate) {
         selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }
     }
     Row(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(
-                "$monthName ${selectedDate.year}", 
-                fontWeight = FontWeight.Black, 
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                "Aktivitas Terjadwal", 
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )
+            Text("$monthName ${selectedDate.year}", fontWeight = FontWeight.Black, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
+            Text("Aktivitas Terjadwal", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-        ) {
+        Row(modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
             IconButton(onClick = onPrev) { Icon(Icons.Default.ChevronLeft, null, modifier = Modifier.size(20.dp)) }
             IconButton(onClick = onNext) { Icon(Icons.Default.ChevronRight, null, modifier = Modifier.size(20.dp)) }
         }
@@ -275,75 +306,27 @@ fun CalendarHeaderSection(
 }
 
 @Composable
-fun CalendarGridSection(
-    selectedDate: LocalDate,
-    reminders: List<Reminder>,
-    events: List<CalendarEvent>,
-    onDateSelected: (LocalDate) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
+fun CalendarGridSection(selectedDate: LocalDate, reminders: List<Reminder>, events: List<CalendarEvent>, onDateSelected: (LocalDate) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
         val days = listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
-        // Start week with Sunday on the left
         val startOfWeek = selectedDate.minus((selectedDate.dayOfWeek.ordinal + 1) % 7, DateTimeUnit.DAY)
-        
         repeat(7) { i ->
             val date = startOfWeek.plus(i, DateTimeUnit.DAY)
             val isSelected = date == selectedDate
             val isToday = date == Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-            
-            val hasReminder = reminders.any { 
-                Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
-            }
-            val hasHoliday = events.any { 
-                it.isHoliday && Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
-            }
-
+            val hasReminder = reminders.any { Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == date }
+            val hasHoliday = events.any { it.isHoliday && Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == date }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .width(48.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .then(
-                        if (isSelected) {
-                            Modifier.background(
-                                brush = Brush.verticalGradient(colors = listOf(PrimaryLight, SecondaryLight))
-                            ).shadow(8.dp, RoundedCornerShape(16.dp))
-                        } else if (isToday) {
-                            Modifier.background(PrimaryLight.copy(alpha = 0.1f))
-                        } else {
-                            Modifier.background(Color.Transparent)
-                        }
-                    )
-                    .clickable { onDateSelected(date) }
-                    .padding(vertical = 12.dp)
+                modifier = Modifier.width(48.dp).clip(RoundedCornerShape(16.dp))
+                    .background(if (isSelected) PrimaryLight else if (isToday) PrimaryLight.copy(alpha = 0.1f) else Color.Transparent)
+                    .clickable { onDateSelected(date) }.padding(vertical = 12.dp)
             ) {
-                Text(
-                    days[i], 
-                    color = if (isSelected) Color.White else if (hasHoliday) Color(0xFF4CAF50) else Color.Gray, 
-                    fontSize = 11.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                )
+                Text(days[i], color = if (isSelected) Color.White else if (hasHoliday) Color(0xFF4CAF50) else Color.Gray, fontSize = 11.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        date.dayOfMonth.toString(), 
-                        fontWeight = FontWeight.Black, 
-                        fontSize = 16.sp,
-                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                    )
-                    if (hasReminder && !isSelected) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .offset(y = 8.dp)
-                                .size(4.dp)
-                                .clip(CircleShape)
-                                .background(ActionFABLight)
-                        )
-                    }
+                    Text(date.dayOfMonth.toString(), fontWeight = FontWeight.Black, fontSize = 16.sp, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface)
+                    if (hasReminder && !isSelected) Box(modifier = Modifier.align(Alignment.BottomCenter).offset(y = 8.dp).size(4.dp).clip(CircleShape).background(ActionFABLight))
                 }
             }
         }
@@ -351,88 +334,32 @@ fun CalendarGridSection(
 }
 
 @Composable
-fun MonthlyGridSection(
-    selectedDate: LocalDate,
-    reminders: List<Reminder>,
-    events: List<CalendarEvent>,
-    onDateSelected: (LocalDate) -> Unit
-) {
-    val firstDayOfMonth = LocalDate(selectedDate.year, selectedDate.month, 1)
-    val daysInMonth = selectedDate.month.number.let { month ->
-        if (month == 2) {
-            if (selectedDate.year % 4 == 0 && (selectedDate.year % 100 != 0 || selectedDate.year % 400 == 0)) 29 else 28
-        } else if (month in listOf(4, 6, 9, 11)) 30 else 31
-    }
-    
-    val startPadding = (firstDayOfMonth.dayOfWeek.ordinal + 1) % 7
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            listOf("M", "S", "S", "R", "K", "J", "S").forEach { 
-                Text(it, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
+fun MonthlyGridSection(selectedDate: LocalDate, reminders: List<Reminder>, events: List<CalendarEvent>, onDateSelected: (LocalDate) -> Unit, isCollapsed: Boolean) {
+    if (isCollapsed) {
+        CalendarGridSection(selectedDate, reminders, events, onDateSelected)
+    } else {
+        val firstDay = LocalDate(selectedDate.year, selectedDate.month, 1)
+        val daysInMonth = selectedDate.month.number.let { m -> if (m == 2) (if (selectedDate.year % 4 == 0) 29 else 28) else if (m in listOf(4,6,9,11)) 30 else 31 }
+        val startPadding = (firstDay.dayOfWeek.ordinal + 1) % 7
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("M", "S", "S", "R", "K", "J", "S").forEach { Text(it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold) }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(8.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.height(240.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(List(startPadding) { null } + List(daysInMonth) { it + 1 }) { day ->
-                if (day != null) {
-                    val date = LocalDate(selectedDate.year, selectedDate.month, day)
-                    val isSelected = date == selectedDate
-                    val isToday = date == today
-                    
-                    val hasReminder = reminders.any { 
-                        Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
-                    }
-                    val hasHoliday = events.any { 
-                        it.isHoliday && Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == date 
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                when {
-                                    isSelected -> PrimaryLight
-                                    isToday -> PrimaryLight.copy(alpha = 0.1f)
-                                    else -> Color.Transparent
-                                }
-                            )
-                            .clickable { onDateSelected(date) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            day.toString(),
-                            fontSize = 14.sp,
-                            fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
-                            color = when {
-                                isSelected -> Color.White
-                                hasHoliday -> Color(0xFF4CAF50)
-                                isToday -> PrimaryLight
-                                else -> MaterialTheme.colorScheme.onSurface
-                            }
-                        )
-                        if (hasReminder && !isSelected) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(bottom = 2.dp)
-                                    .size(4.dp)
-                                    .clip(CircleShape)
-                                    .background(ActionFABLight)
-                            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.height(240.dp)) {
+                items(List(startPadding) { null } + List(daysInMonth) { it + 1 }) { day ->
+                    if (day != null) {
+                        val date = LocalDate(selectedDate.year, selectedDate.month, day)
+                        val isSelected = date == selectedDate
+                        val isToday = date == today
+                        val hasReminder = reminders.any { Instant.fromEpochMilliseconds(it.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()).date == date }
+                        val hasHoliday = events.any { it.isHoliday && Instant.fromEpochMilliseconds(it.startTime).toLocalDateTime(TimeZone.currentSystemDefault()).date == date }
+                        Box(modifier = Modifier.aspectRatio(1f).clip(RoundedCornerShape(8.dp)).background(if (isSelected) PrimaryLight else if (isToday) PrimaryLight.copy(alpha = 0.1f) else Color.Transparent).clickable { onDateSelected(date) }, contentAlignment = Alignment.Center) {
+                            Text(day.toString(), fontSize = 14.sp, fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) Color.White else if (hasHoliday) Color(0xFF4CAF50) else if (isToday) PrimaryLight else MaterialTheme.colorScheme.onSurface)
+                            if (hasReminder && !isSelected) Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 2.dp).size(4.dp).clip(CircleShape).background(ActionFABLight))
                         }
-                    }
-                } else {
-                    Box(modifier = Modifier.aspectRatio(1f))
+                    } else Box(modifier = Modifier.aspectRatio(1f))
                 }
             }
         }
@@ -440,159 +367,38 @@ fun MonthlyGridSection(
 }
 
 @Composable
-fun TimelineListSection(
-    events: List<CalendarEvent>,
-    reminders: List<Reminder>,
-    onItemClick: (Any) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = 100.dp, start = 24.dp, end = 24.dp, top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        if (reminders.isNotEmpty()) {
-            item {
-                Text(
-                    "PENGINGAT",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-            }
-            items(reminders) { reminder ->
-                ReminderItem(reminder, onItemClick)
-            }
-        }
-
-        if (events.isNotEmpty()) {
-            item {
-                Text(
-                    "AGENDA",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                )
-            }
-            items(events) { event ->
-                EventItem(event, onItemClick)
-            }
-        }
-
-        if (events.isEmpty() && reminders.isEmpty()) {
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 60.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        Icons.Default.EventBusy,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Tidak ada jadwal untuk hari ini",
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ReminderItem(reminder: Reminder, onClick: (Any) -> Unit) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick(reminder) },
-        shape = RoundedCornerShape(20.dp),
-        color = ActionFABLight.copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, ActionFABLight.copy(alpha = 0.2f))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(ActionFABLight.copy(alpha = 0.2f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.NotificationsActive, null, tint = ActionFABLight, modifier = Modifier.size(20.dp))
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                val timeStr = remember(reminder.dueDate) {
-                    val dt = Instant.fromEpochMilliseconds(reminder.dueDate).toLocalDateTime(TimeZone.currentSystemDefault())
-                    "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
-                }
-                Text(reminder.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                Text("Batas Waktu: $timeStr", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-            }
-            if (reminder.isCompleted) {
-                Icon(Icons.Default.CheckCircle, null, tint = SuccessStreak)
-            }
-        }
-    }
-}
-
-@Composable
-fun EventItem(event: CalendarEvent, onClick: (Any) -> Unit) {
-    val startTimeStr = remember(event.startTime) {
-        val instant = Instant.fromEpochMilliseconds(event.startTime)
-        val dt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-        "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
-    }
-    val color = remember(event.color, event.isHoliday) {
-        if (event.isHoliday) Color(0xFF4CAF50)
-        else try {
-            if (event.color?.startsWith("#") == true) {
-                Color(event.color.removePrefix("#").toLong(16) or 0xFF000000)
-            } else {
-                PrimaryLight
-            }
-        } catch (_: Exception) {
-            PrimaryLight
-        }
-    }
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick(event) },
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(45.dp)) {
-                Text(startTimeStr, fontWeight = FontWeight.Black, style = MaterialTheme.typography.bodyMedium, color = color)
-                Text("WIB", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Box(modifier = Modifier.width(2.dp).height(35.dp).clip(CircleShape).background(color.copy(alpha = 0.5f)))
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(event.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                event.location?.let {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(12.dp), tint = Color.Gray)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+fun TimelineListSection(events: List<CalendarEvent>, reminders: List<Reminder>, onItemClick: (Any) -> Unit) {
+    LazyColumn(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        items(reminders) { reminder ->
+            Surface(modifier = Modifier.fillMaxWidth().clickable { onItemClick(reminder) }, shape = RoundedCornerShape(20.dp), color = ActionFABLight.copy(alpha = 0.1f), border = BorderStroke(1.dp, ActionFABLight.copy(alpha = 0.2f))) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.NotificationsActive, null, tint = ActionFABLight, modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        val timeStr = remember(reminder.dueDate) {
+                            val dt = Instant.fromEpochMilliseconds(reminder.dueDate).toLocalDateTime(TimeZone.currentSystemDefault())
+                            "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
+                        }
+                        Text(reminder.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text("Batas Waktu: $timeStr", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     }
                 }
-                if (event.description != null && event.description != event.title) {
-                     Text(event.description, style = MaterialTheme.typography.bodySmall, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        items(events) { event ->
+            val startTimeStr = remember(event.startTime) {
+                val dt = Instant.fromEpochMilliseconds(event.startTime).toLocalDateTime(TimeZone.currentSystemDefault())
+                "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
+            }
+            val accentColor = if (event.isHoliday) Color(0xFF4CAF50) else Color(0xFF4361EE)
+            Surface(modifier = Modifier.fillMaxWidth().clickable { onItemClick(event) }, shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface, border = BorderStroke(1.dp, accentColor.copy(alpha = 0.2f))) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AccessTime, null, tint = accentColor, modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(event.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text("$startTimeStr • ${if (event.isHoliday) "Libur Nasional" else "Agenda"}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
                 }
             }
         }
@@ -600,247 +406,55 @@ fun EventItem(event: CalendarEvent, onClick: (Any) -> Unit) {
 }
 
 @Composable
-fun DetailDialog(
-    item: Any,
-    onDismiss: () -> Unit,
-    onDelete: () -> Unit
-) {
-    val title = when (item) {
-        is CalendarEvent -> item.title
-        is Reminder -> item.title
+fun DetailDialog(item: Any, onDismiss: () -> Unit, onDelete: () -> Unit) {
+    val title = when (item) { is CalendarEvent -> item.title; is Reminder -> item.title; else -> "" }
+    val desc = when (item) { is CalendarEvent -> item.description; is Reminder -> item.description; else -> null } ?: "Tidak ada keterangan"
+    val time = when (item) {
+        is CalendarEvent -> { val dt = Instant.fromEpochMilliseconds(item.startTime).toLocalDateTime(TimeZone.currentSystemDefault()); "${dt.dayOfMonth} ${dt.month.name} ${dt.year}, ${dt.hour}:${dt.minute.toString().padStart(2, '0')}" }
+        is Reminder -> { val dt = Instant.fromEpochMilliseconds(item.dueDate).toLocalDateTime(TimeZone.currentSystemDefault()); "${dt.dayOfMonth} ${dt.month.name} ${dt.year}, ${dt.hour}:${dt.minute.toString().padStart(2, '0')}" }
         else -> ""
     }
-    val description = when (item) {
-        is CalendarEvent -> item.description ?: "Tidak ada keterangan"
-        is Reminder -> item.description ?: "Tidak ada keterangan"
-        else -> ""
-    }
-    val timeStr = when (item) {
-        is CalendarEvent -> {
-            val dt = Instant.fromEpochMilliseconds(item.startTime).toLocalDateTime(TimeZone.currentSystemDefault())
-            "${dt.dayOfMonth} ${dt.month.name} ${dt.year}, ${dt.hour}:${dt.minute.toString().padStart(2, '0')}"
-        }
-        is Reminder -> {
-            val dt = Instant.fromEpochMilliseconds(item.dueDate).toLocalDateTime(TimeZone.currentSystemDefault())
-            "${dt.dayOfMonth} ${dt.month.name} ${dt.year}, ${dt.hour}:${dt.minute.toString().padStart(2, '0')}"
-        }
-        else -> ""
-    }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title, fontWeight = FontWeight.Black) },
-        text = {
-            Column {
-                Text(timeStr, style = MaterialTheme.typography.labelMedium, color = PrimaryLight)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(description)
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Tutup") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)) {
-                Text("Hapus")
-            }
-        }
+        text = { Column { Text(time, style = MaterialTheme.typography.labelMedium, color = PrimaryLight); Spacer(modifier = Modifier.height(16.dp)); Text(desc) } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Tutup") } },
+        dismissButton = { TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)) { Text("Hapus") } }
     )
 }
 
 @Composable
-fun AddEventDialog(
-    selectedDate: LocalDate,
-    onDismiss: () -> Unit,
-    onSave: (String, String?, Long, Long) -> Unit
-) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var startHour by remember { mutableStateOf("09") }
-    var startMinute by remember { mutableStateOf("00") }
-    
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Tambah Agenda") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Judul Agenda") },
-                    placeholder = { Text("Misal: Kuliah Pemrograman") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Deskripsi (Opsional)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Jam Mulai:", style = MaterialTheme.typography.bodyMedium)
-                    OutlinedTextField(
-                        value = startHour,
-                        onValueChange = { if (it.length <= 2) startHour = it },
-                        modifier = Modifier.width(60.dp),
-                        singleLine = true
-                    )
-                    Text(":")
-                    OutlinedTextField(
-                        value = startMinute,
-                        onValueChange = { if (it.length <= 2) startMinute = it },
-                        modifier = Modifier.width(60.dp),
-                        singleLine = true
-                    )
-                }
+fun AddEventDialog(selectedDate: LocalDate, onDismiss: () -> Unit, onSave: (String, String?, Long, Long) -> Unit) {
+    var title by remember { mutableStateOf("") }; var desc by remember { mutableStateOf("") }; var h by remember { mutableStateOf("09") }; var m by remember { mutableStateOf("00") }
+    AlertDialog(onDismissRequest = onDismiss, title = { Text("Tambah Agenda") }, text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Judul") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Deskripsi") }, modifier = Modifier.fillMaxWidth())
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Jam Mulai:"); OutlinedTextField(value = h, onValueChange = { h = it }, modifier = Modifier.width(60.dp)); Text(":"); OutlinedTextField(value = m, onValueChange = { m = it }, modifier = Modifier.width(60.dp))
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val hour = startHour.toIntOrNull() ?: 9
-                    val minute = startMinute.toIntOrNull() ?: 0
-                    val startDateTime = LocalDateTime(selectedDate.year, selectedDate.month, selectedDate.dayOfMonth, hour, minute)
-                    val startEpoch = startDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
-                    onSave(title, description.ifBlank { null }, startEpoch, startEpoch + 3600000)
-                },
-                enabled = title.isNotBlank()
-            ) { Text("Simpan") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } }
-    )
+        }
+    }, confirmButton = { Button(onClick = { val dt = LocalDateTime(selectedDate.year, selectedDate.month, selectedDate.dayOfMonth, h.toIntOrNull() ?: 9, m.toIntOrNull() ?: 0); val epoch = dt.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(); onSave(title, desc.ifBlank { null }, epoch, epoch + 3600000) }, enabled = title.isNotBlank()) { Text("Simpan") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddReminderDialog(
-    initialDate: LocalDate,
-    onDismiss: () -> Unit,
-    onSave: (String, String?, Long) -> Unit
-) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf(initialDate) }
-    var startHour by remember { mutableStateOf("09") }
-    var startMinute by remember { mutableStateOf("00") }
-    
-    var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate.toInstant(LocalTime(0, 0), TimeZone.currentSystemDefault()).toEpochMilliseconds()
-    )
-
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        selectedDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
-                    }
-                    showDatePicker = false
-                }) { Text("Pilih") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+fun AddReminderDialog(initialDate: LocalDate, onDismiss: () -> Unit, onSave: (String, String?, Long) -> Unit) {
+    var title by remember { mutableStateOf("") }; var desc by remember { mutableStateOf("") }; var date by remember { mutableStateOf(initialDate) }; var h by remember { mutableStateOf("09") }; var m by remember { mutableStateOf("00") }; var showDP by remember { mutableStateOf(false) }
+    val dpState = rememberDatePickerState(initialSelectedDateMillis = date.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds())
+    if (showDP) { DatePickerDialog(onDismissRequest = { showDP = false }, confirmButton = { TextButton(onClick = { dpState.selectedDateMillis?.let { date = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date }; showDP = false }) { Text("Pilih") } }) { DatePicker(state = dpState) } }
+    AlertDialog(onDismissRequest = onDismiss, title = { Text("Buat Pengingat") }, text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Judul") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Keterangan") }, modifier = Modifier.fillMaxWidth())
+            Row(modifier = Modifier.fillMaxWidth().clickable { showDP = true }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.CalendarMonth, null, tint = PrimaryLight); Spacer(modifier = Modifier.width(12.dp)); Column { Text("Tanggal:", style = MaterialTheme.typography.labelSmall); Text("${date.dayOfMonth} ${date.month.name} ${date.year}", fontWeight = FontWeight.Bold) }
             }
-        ) {
-            DatePicker(state = datePickerState)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.AccessTime, null, tint = PrimaryLight); Spacer(modifier = Modifier.width(12.dp)); Text("Jam:"); Spacer(modifier = Modifier.width(8.dp)); OutlinedTextField(value = h, onValueChange = { h = it }, modifier = Modifier.width(60.dp)); Text(":", modifier = Modifier.padding(horizontal = 4.dp)); OutlinedTextField(value = m, onValueChange = { m = it }, modifier = Modifier.width(60.dp))
+            }
         }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Buat Pengingat") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Judul Pengingat") },
-                    placeholder = { Text("Misal: Deadline Tugas") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Keterangan") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDatePicker = true }
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.CalendarMonth, null, tint = PrimaryLight)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text("Tanggal:", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                        Text(
-                            "${selectedDate.dayOfMonth} ${selectedDate.month.name} ${selectedDate.year}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.AccessTime, null, tint = PrimaryLight)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("Jam:", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedTextField(
-                        value = startHour,
-                        onValueChange = { if (it.length <= 2) startHour = it },
-                        modifier = Modifier.width(60.dp),
-                        singleLine = true
-                    )
-                    Text(":", modifier = Modifier.padding(horizontal = 4.dp))
-                    OutlinedTextField(
-                        value = startMinute,
-                        onValueChange = { if (it.length <= 2) startMinute = it },
-                        modifier = Modifier.width(60.dp),
-                        singleLine = true
-                    )
-                }
-                
-                Text(
-                    "Notifikasi akan dikirim 3 hari, 2 hari, dan 1 hari sebelum deadline.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = ActionFABLight
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val hour = startHour.toIntOrNull() ?: 9
-                    val minute = startMinute.toIntOrNull() ?: 0
-                    val dueDateTime = LocalDateTime(selectedDate.year, selectedDate.month, selectedDate.dayOfMonth, hour, minute)
-                    val dueEpoch = dueDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
-                    onSave(title, description.ifBlank { null }, dueEpoch)
-                },
-                enabled = title.isNotBlank()
-            ) { Text("Pasang Pengingat") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } }
-    )
+    }, confirmButton = { Button(onClick = { val dt = LocalDateTime(date.year, date.month, date.dayOfMonth, h.toIntOrNull() ?: 9, m.toIntOrNull() ?: 0); onSave(title, desc.ifBlank { null }, dt.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()) }, enabled = title.isNotBlank()) { Text("Pasang") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } })
 }
 
-private fun LocalDate.toInstant(time: LocalTime, zone: TimeZone): Instant {
-    return LocalDateTime(this, time).toInstant(zone)
-}
+private fun LocalDate.atStartOfDayIn(zone: TimeZone): Instant = LocalDateTime(this, LocalTime(0,0)).toInstant(zone)

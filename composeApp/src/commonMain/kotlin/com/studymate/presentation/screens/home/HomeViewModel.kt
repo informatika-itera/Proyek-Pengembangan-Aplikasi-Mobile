@@ -55,7 +55,8 @@ class HomeViewModel(
                     userName = userName,
                     currentStreak = streak,
                     recentNotes = recentNotes,
-                    dailyMantra = mantra
+                    dailyMantra = mantra,
+                    userProfile = profile
                 )
             }.collect {
                 _uiState.emit(it)

@@ -5,7 +5,7 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Notes : Screen("notes")
     object Quiz : Screen("quiz")
-    object Calendar : Screen("calendar") {
+    object Calendar : Screen("calendar?date={date}") {
         fun createRoute(date: String? = null) = if (date != null) "calendar?date=$date" else "calendar"
     }
     object Profile : Screen("profile")

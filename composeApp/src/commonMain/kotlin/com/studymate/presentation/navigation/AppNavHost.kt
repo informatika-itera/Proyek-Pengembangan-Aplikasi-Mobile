@@ -185,20 +185,37 @@ fun AppNavHost(
                     )
                 }
 
-                composable(Screen.Calendar.route) { CalendarScreen() }
+                composable(
+                    route = Screen.Calendar.route,
+                    arguments = listOf(navArgument(NavArgs.DATE) { 
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    })
+                ) { backStackEntry ->
+                    val dateStr = backStackEntry.arguments?.getString(NavArgs.DATE)
+                    val viewModel: com.studymate.presentation.screens.calendar.CalendarViewModel = koinViewModel()
+                    
+                    LaunchedEffect(dateStr) {
+                        dateStr?.let {
+                            try {
+                                val date = kotlinx.datetime.LocalDate.parse(it)
+                                viewModel.onDateSelected(date)
+                            } catch (e: Exception) {}
+                        }
+                    }
+                    CalendarScreen(viewModel)
+                }
                 composable(Screen.Profile.route) {
                     val viewModel: ProfileViewModel = koinViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = onThemeToggle,
-                        onNavigateToPlanner = {
-                            navController.navigate(Screen.Calendar.route) {
-                                popUpTo(Screen.Profile.route) {
-                                    saveState = true
-                                }
+                        onNavigateToPlanner = { date ->
+                            navController.navigate(Screen.Calendar.createRoute(date?.toString())) {
+                                popUpTo(Screen.Home.route)
                                 launchSingleTop = true
-                                restoreState = true
                             }
                         }
                     )

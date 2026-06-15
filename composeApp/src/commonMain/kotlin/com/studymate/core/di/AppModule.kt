@@ -52,6 +52,9 @@ val dataModule = module {
     single<QuizRepository> { QuizRepositoryImpl(database = get()) }
     single<AuthRepository> { AuthRepositoryImpl(userProfileRepository = get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(database = get()) }
+    single<com.studymate.domain.repository.PreferenceRepository> { 
+        com.studymate.data.repository.PreferenceRepositoryImpl(database = get()) 
+    }
 }
 
 val useCaseModule = module {
@@ -60,6 +63,7 @@ val useCaseModule = module {
 }
 
 val viewModelModule = module {
+    viewModel { com.studymate.presentation.AppViewModel(preferenceRepository = get()) }
     viewModel { HomeViewModel(noteRepository = get(), profileRepository = get()) }
     viewModel { 
         NotesViewModel(

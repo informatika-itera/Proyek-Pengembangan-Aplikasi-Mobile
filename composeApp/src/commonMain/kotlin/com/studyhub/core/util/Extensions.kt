@@ -4,6 +4,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toInstant
@@ -33,6 +34,28 @@ fun Long.toLocalMillisFromUtc(timeZone: TimeZone = TimeZone.currentSystemDefault
     // then back to start of day millis in our local timezone.
     val utcDate = Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC).date
     return utcDate.atStartOfDayMillis(timeZone)
+}
+
+fun combineDateAndTime(dateMillis: Long, timeString: String?): Long {
+    val localDate = Instant.fromEpochMilliseconds(dateMillis).toLocalDateTime(TimeZone.currentSystemDefault()).date
+    return if (timeString != null) {
+        val parts = timeString.split(":")
+        if (parts.size == 2) {
+            val hour = parts[0].toIntOrNull() ?: 0
+            val minute = parts[1].toIntOrNull() ?: 0
+            try {
+                LocalDateTime(localDate.year, localDate.month, localDate.dayOfMonth, hour, minute)
+                    .toInstant(TimeZone.currentSystemDefault())
+                    .toEpochMilliseconds()
+            } catch (e: Exception) {
+                localDate.atEndOfDayMillis()
+            }
+        } else {
+            localDate.atEndOfDayMillis()
+        }
+    } else {
+        localDate.atEndOfDayMillis()
+    }
 }
 
 fun Instant.formatToDisplay(): String {
@@ -100,4 +123,3 @@ inline fun <T> Result<T>.handle(
     this.onSuccess(onSuccess)
     this.onFailure(onFailure)
 }
-

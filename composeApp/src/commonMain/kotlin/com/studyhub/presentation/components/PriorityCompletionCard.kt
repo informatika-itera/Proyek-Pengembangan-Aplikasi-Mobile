@@ -33,7 +33,8 @@ fun PriorityCompletionCard(
         ) {
             Text(
                 "Completion per Prioritas",
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
             )
             PriorityBar(
                 label = "Tinggi",
@@ -43,7 +44,7 @@ fun PriorityCompletionCard(
             PriorityBar(
                 label = "Sedang",
                 rate = mediumCompletion,
-                color = Color(0xFFF59E0B)
+                color = MaterialTheme.colorScheme.tertiary
             )
             PriorityBar(
                 label = "Rendah",

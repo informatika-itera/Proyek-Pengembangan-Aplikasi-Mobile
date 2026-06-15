@@ -17,7 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studyhub.core.manager.PomodoroManager
 import com.studyhub.domain.model.PomodoroPhase
+import com.studyhub.presentation.theme.Spacing
 import org.koin.compose.koinInject
-import kotlin.math.PI
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,12 +41,15 @@ fun FocusTimerBottomSheet(
     
     val progress = if (state.totalSeconds > 0) 1f - (state.timeRemainingSeconds.toFloat() / state.totalSeconds.toFloat()) else 0f
     
-    val activeColor = if (state.phase == PomodoroPhase.FOCUS) Color(0xFF9C7C50) else Color(0xFF10B981)
+    val activeColor = if (state.phase == PomodoroPhase.FOCUS) 
+        MaterialTheme.colorScheme.primary 
+    else
+        MaterialTheme.colorScheme.secondary
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
@@ -66,19 +69,20 @@ fun FocusTimerBottomSheet(
                     Text(
                         "Focus Timer",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         "Session ${state.currentSession} • ${state.completedSessionsToday} completed",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 IconButton(
                     onClick = onDismiss,
-                    modifier = Modifier.background(Color(0xFFF3F4F6), CircleShape)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 ) {
-                    Icon(Icons.Default.Close, "Tutup", modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Close, contentDescription = "Tutup", modifier = Modifier.size(20.dp))
                 }
             }
 
@@ -87,8 +91,8 @@ fun FocusTimerBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFF3F4F6)
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ) {
                 Row(
                     modifier = Modifier.padding(4.dp),
@@ -98,21 +102,17 @@ fun FocusTimerBottomSheet(
                         selected = state.phase == PomodoroPhase.FOCUS,
                         label = "Focus",
                         icon = Icons.Outlined.Timer,
-                        activeColor = Color(0xFF9C7C50),
+                        activeColor = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),
-                        onClick = {
-                            // Manual phase switch if not running
-                        }
+                        onClick = { }
                     )
                     ModeTab(
                         selected = state.phase != PomodoroPhase.FOCUS,
                         label = "Break",
                         icon = Icons.Outlined.Coffee,
-                        activeColor = Color(0xFF10B981),
+                        activeColor = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.weight(1f),
-                        onClick = {
-                            // Manual phase switch if not running
-                        }
+                        onClick = { }
                     )
                 }
             }
@@ -142,13 +142,13 @@ fun FocusTimerBottomSheet(
                     Box(
                         modifier = Modifier
                             .size(48.dp)
-                            .background(activeColor, RoundedCornerShape(14.dp)),
+                            .background(activeColor, MaterialTheme.shapes.medium),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             if (state.phase == PomodoroPhase.FOCUS) Icons.Outlined.Timer else Icons.Outlined.Coffee,
-                            null,
-                            tint = Color.White
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                     
@@ -157,7 +157,8 @@ fun FocusTimerBottomSheet(
                     Text(
                         formatTime(state.timeRemainingSeconds),
                         style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         if (state.phase == PomodoroPhase.FOCUS) "Stay focused!" else "Take a breather",
@@ -181,9 +182,9 @@ fun FocusTimerBottomSheet(
                     },
                     modifier = Modifier
                         .size(56.dp)
-                        .background(Color(0xFFF3F4F6), CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 ) {
-                    Icon(Icons.Default.Refresh, "Reset", tint = Color.Gray)
+                    Icon(Icons.Default.Refresh, contentDescription = "Ulangi", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 Spacer(Modifier.width(24.dp))
@@ -201,8 +202,8 @@ fun FocusTimerBottomSheet(
                 ) {
                     Icon(
                         if (state.isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        if (state.isRunning) "Pause" else "Mulai",
-                        tint = Color.White,
+                        contentDescription = if (state.isRunning) "Jeda" else "Mulai",
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(42.dp)
                     )
                 }
@@ -216,9 +217,9 @@ fun FocusTimerBottomSheet(
                     },
                     modifier = Modifier
                         .size(56.dp)
-                        .background(Color(0xFFF3F4F6), CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 ) {
-                    Icon(Icons.Default.SkipNext, "Lewati", tint = Color.Gray)
+                    Icon(Icons.Default.SkipNext, contentDescription = "Lewati", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -233,7 +234,7 @@ fun FocusTimerBottomSheet(
                     repeat(4) { i ->
                         val active = i < (state.completedSessionsToday % 4)
                         val width by animateDpAsState(if (active) 22.dp else 8.dp)
-                        val color by animateColorAsState(if (active) activeColor else Color.LightGray)
+                        val color by animateColorAsState(if (active) activeColor else MaterialTheme.colorScheme.outlineVariant)
                         
                         Box(
                             modifier = Modifier
@@ -247,7 +248,7 @@ fun FocusTimerBottomSheet(
                 Text(
                     "${state.completedSessionsToday % 4}/4 sessions before long break",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -267,8 +268,8 @@ private fun ModeTab(
         modifier = modifier
             .fillMaxHeight()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = if (selected) Color.White else Color.Transparent,
+        shape = MaterialTheme.shapes.medium,
+        color = if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
         tonalElevation = if (selected) 2.dp else 0.dp
     ) {
         Row(
@@ -278,8 +279,8 @@ private fun ModeTab(
         ) {
             Icon(
                 icon,
-                null,
-                tint = if (selected) activeColor else Color.Gray,
+                contentDescription = null,
+                tint = if (selected) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(Modifier.width(8.dp))
@@ -287,7 +288,7 @@ private fun ModeTab(
                 label,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                color = if (selected) Color.Black else Color.Gray
+                color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

@@ -14,8 +14,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studyhub.presentation.theme.GoldenSuedeDark
-import com.studyhub.presentation.theme.GoldenSuedeLight
+import com.studyhub.presentation.theme.Spacing
 
 @Composable
 fun StudyHubHeader(
@@ -27,7 +26,10 @@ fun StudyHubHeader(
     content: @Composable (ColumnScope.() -> Unit)? = null
 ) {
     val headerBrush = Brush.linearGradient(
-        colors = listOf(GoldenSuedeDark, GoldenSuedeLight),
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.secondary // Mixed for brand gradient feel
+        ),
         start = androidx.compose.ui.geometry.Offset(0f, 0f),
         end = androidx.compose.ui.geometry.Offset.Infinite
     )
@@ -38,8 +40,8 @@ fun StudyHubHeader(
                 .fillMaxWidth()
                 .background(headerBrush)
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp)
-                .padding(top = 16.dp, bottom = 12.dp)
+                .padding(horizontal = Spacing.normal)
+                .padding(top = Spacing.normal, bottom = Spacing.small)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
@@ -53,17 +55,16 @@ fun StudyHubHeader(
                         if (dateText != null) {
                             Text(
                                 text = dateText,
-                                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                                color = Color.White.copy(alpha = 0.8f)
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                             )
                         }
                         Text(
                             text = title,
                             style = MaterialTheme.typography.headlineMedium.copy(
-                                fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                         if (subtitle != null) {
                             subtitle()
@@ -71,20 +72,20 @@ fun StudyHubHeader(
                     }
                     
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                         verticalAlignment = Alignment.CenterVertically,
                         content = actions
                     )
                 }
                 
                 if (content != null) {
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(Spacing.normal))
                     content()
                 }
             }
         }
         
-        // Canvas Curve
+        // Canvas Curve to blend with background
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()

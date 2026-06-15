@@ -13,10 +13,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,10 +25,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,8 +37,10 @@ import com.studyhub.domain.model.Priority
 import com.studyhub.domain.model.SortBy
 import com.studyhub.domain.model.TaskStatus
 import com.studyhub.presentation.components.EmptyStateView
+import com.studyhub.presentation.components.LoadingView
+import com.studyhub.presentation.components.ErrorView
 import com.studyhub.presentation.components.GlassIconButton
-import com.studyhub.presentation.components.StudyHubHeader
+import com.studyhub.presentation.components.ScreenHeader
 import com.studyhub.presentation.components.TaskCard
 import com.studyhub.presentation.components.TaskGridCard
 import com.studyhub.presentation.theme.*
@@ -52,148 +54,192 @@ fun TasksScreen(
 ) {
     val viewModel: TasksViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
-    val listState = rememberLazyListState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
-
-    var showAddBottomSheet by remember { mutableStateOf(false) }
-    var editingTaskId by remember { mutableStateOf<String?>(null) }
+    
+    val snackbarHostState = remember { SnackbarHostState() }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is TasksUiEvent.ShowSnackbar -> {
+                is UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(
                         message = event.message,
                         actionLabel = event.actionLabel,
                         duration = SnackbarDuration.Short
                     )
                 }
+                is UiEvent.NavigateBack -> { /* Handle if needed */ }
             }
         }
     }
+
+    var showAddBottomSheet by remember { mutableStateOf(false) }
+    var editingTaskId by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                ExtendedFloatingActionButton(
-                    onClick = onNavigateToSmartPriority,
-                    icon = {
-                        Icon(Icons.Default.AutoAwesome, "Prioritas AI")
-                    },
-                    text = { Text("AI Priority") },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    expanded = !listState.isScrollInProgress
-                )
 
-                FloatingActionButton(
-                    onClick = { 
-                        editingTaskId = null
-                        showAddBottomSheet = true 
-                    },
-                    containerColor = Color(0xFF5F5E5A),
-                    contentColor = Color.White,
-                    shape = CircleShape,
-                    modifier = Modifier.size(48.dp),
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
-                ) {
-                    Icon(Icons.Default.Add, "Tambah tugas")
-                }
+            FloatingActionButton(
+                onClick = {
+                    editingTaskId = null
+                    showAddBottomSheet = true
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape,
+                modifier = Modifier.size(56.dp),
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Tambah tugas")
             }
         }
     ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         ) {
-            when (val state = uiState) {
-                is TasksUiState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-                is TasksUiState.Error -> {
-                    EmptyStateView(
-                        message = state.message,
-                        actionLabel = "Coba Lagi",
-                        onAction = { viewModel.clearFilters() },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                is TasksUiState.Success -> {
-                    // Header Section
-                    StudyHubHeader(
-                        title = "My Tasks",
-                        subtitle = {
-                            Text("${state.filteredTasks.size} tasks found", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-                        },
+            val state = uiState
+            
+            // Header Section
+            ScreenHeader {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        actions = {
-                            GlassIconButton(
-                                icon = Icons.Default.AutoAwesome,
-                                onClick = onNavigateToSmartPriority,
-                                contentDescription = "Smart Priority"
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                "My Tasks",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
                             )
-                            GlassIconButton(
-                                icon = if (state.viewMode == ViewMode.LIST) Icons.Default.GridView else Icons.AutoMirrored.Filled.List,
-                                onClick = { viewModel.toggleViewMode() },
-                                contentDescription = "Ganti Tampilan"
-                            )
-                        },
-                        content = {
-                            // Glass Search Bar
-                            Surface(
-                                modifier = Modifier.fillMaxWidth().height(52.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                color = Color.White.copy(alpha = 0.22f),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.35f))
-                            ) {
-                                TextField(
-                                    value = state.searchQuery,
-                                    onValueChange = viewModel::setSearchQuery,
-                                    modifier = Modifier.fillMaxSize(),
-                                    placeholder = { 
-                                        Text("Search tasks or subjects...", color = Color.White.copy(alpha = 0.60f), fontSize = 14.sp) 
-                                    },
-                                    leadingIcon = { 
-                                        Icon(Icons.Default.Search, "Cari", tint = Color.White.copy(alpha = 0.8f))
-                                    },
-                                    colors = TextFieldDefaults.colors(
-                                        focusedTextColor = Color.White,
-                                        unfocusedTextColor = Color.White,
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        disabledContainerColor = Color.Transparent,
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                    ),
-                                    singleLine = true,
-                                    keyboardOptions = KeyboardOptions(
-                                        imeAction = ImeAction.Search,
-                                        capitalization = KeyboardCapitalization.Words
-                                    )
+                            if (state is TasksUiState.Success) {
+                                Text(
+                                    "${state.filteredTasks.size} tasks found",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White.copy(alpha = 0.85f)
                                 )
                             }
                         }
-                    )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(
+                                Spacing.small
+                            )
+                        ) {
+                            IconButton(
+                                onClick = onNavigateToSmartPriority,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        Color.White.copy(alpha = 0.2f),
+                                        CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Default.AutoAwesome,
+                                    contentDescription = "AI Priority",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            if (state is TasksUiState.Success) {
+                                IconButton(
+                                    onClick = { viewModel.toggleViewMode() },
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(
+                                            Color.White.copy(alpha = 0.2f),
+                                            CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        if (state.viewMode == ViewMode.LIST) Icons.Default.GridView else Icons.Default.List,
+                                        contentDescription = "Toggle view",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
-                    // Body Content
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 160.dp)
-                    ) {
+                    Spacer(Modifier.height(Spacing.normal))
+
+                    // Search bar inside header
+                    if (state is TasksUiState.Success) {
+                        OutlinedTextField(
+                            value = state.searchQuery,
+                            onValueChange = viewModel::setSearchQuery,
+                            placeholder = {
+                                Text(
+                                    "Search tasks or subjects...",
+                                    color = Color.White.copy(alpha = 0.7f)
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search, null,
+                                    tint = Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            trailingIcon = {
+                                if (state.searchQuery.isNotBlank()) {
+                                    IconButton(onClick = {
+                                        viewModel.setSearchQuery("")
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Close, null,
+                                            tint = Color.White.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.extraLarge,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.White.copy(alpha = 0.8f),
+                                unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = Color.White,
+                                focusedContainerColor = Color.White.copy(alpha = 0.15f),
+                                unfocusedContainerColor = Color.White.copy(alpha = 0.1f)
+                            ),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
+                        )
+                    }
+                }
+            }
+
+            // Body Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 180.dp)
+            ) {
+                when (state) {
+                    is TasksUiState.Loading -> LoadingView()
+                    is TasksUiState.Error -> ErrorView(
+                        message = state.message,
+                        onRetry = { viewModel.setFilter(null, null, null) }
+                    )
+                    is TasksUiState.Success -> {
                         // Filters Section
-                        Column(modifier = Modifier.padding(top = 16.dp)) {
+                        Column(modifier = Modifier.padding(top = Spacing.normal)) {
                             // Status Tabs
                             LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                contentPadding = PaddingValues(horizontal = 20.dp),
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                                contentPadding = PaddingValues(horizontal = Spacing.normal),
                             ) {
                                 item {
                                     FilterTab(
@@ -203,10 +249,12 @@ fun TasksScreen(
                                         count = state.taskCounts["all"] ?: 0
                                     )
                                 }
-                                items(TaskStatus.entries) { status ->
+                                items(TaskStatus.entries, key = { it.value }, contentType = { "status_filter" }) { status ->
+                                    val currentPriority = state.filterPriority
+                                    val currentSubject = state.filterSubject
                                     FilterTab(
                                         selected = state.filterStatus == status,
-                                        onClick = { viewModel.setFilter(status, state.filterPriority, state.filterSubject) },
+                                        onClick = { viewModel.setFilter(status, currentPriority, currentSubject) },
                                         label = status.value.replace("_", " ").capitalizeFirst(),
                                         count = state.taskCounts[status.value] ?: 0
                                     )
@@ -228,7 +276,7 @@ fun TasksScreen(
                                             shape = MaterialTheme.shapes.small
                                         )
                                     }
-                                    items(state.availableSubjects) { subject ->
+                                    items(state.availableSubjects, key = { it }, contentType = { "subject_filter" }) { subject ->
                                         FilterChip(
                                             selected = state.filterSubject == subject,
                                             onClick = {
@@ -244,29 +292,28 @@ fun TasksScreen(
                                 }
                             }
 
-                            Spacer(Modifier.height(8.dp))
-
                             // Priority Chips
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.normal),
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                val currentStatus = state.filterStatus
+                                val currentSubject = state.filterSubject
+                                
                                 PriorityChip(
                                     selected = state.filterPriority == null,
-                                    onClick = { viewModel.setFilter(state.filterStatus, null, state.filterSubject) },
+                                    onClick = { viewModel.setFilter(currentStatus, null, currentSubject) },
                                     label = "All Priority"
                                 )
                                 Priority.entries.forEach { priority ->
                                     PriorityChip(
                                         selected = state.filterPriority == priority,
-                                        onClick = { viewModel.setFilter(state.filterStatus, priority, state.filterSubject) },
+                                        onClick = { viewModel.setFilter(currentStatus, priority, currentSubject) },
                                         label = priority.name.capitalizeFirst()
                                     )
                                 }
                             }
-
-                            Spacer(Modifier.height(8.dp))
 
                             // Sort + Show Completed row
                             Row(
@@ -281,8 +328,8 @@ fun TasksScreen(
                                 TextButton(
                                     onClick = { showSortMenu = true }
                                 ) {
-                                    Icon(Icons.Default.Sort, "Urutkan", Modifier.size(16.dp))
-                                    Spacer(Modifier.width(4.dp))
+                                    Icon(Icons.Default.Sort, contentDescription = "Urutkan", Modifier.size(16.dp))
+                                    Spacer(Modifier.width(Spacing.extraSmall))
                                     Text(
                                         "Urutkan: ${state.sortBy.name.lowercase().replace("_", " ").capitalizeFirst()}",
                                         style = MaterialTheme.typography.labelMedium
@@ -302,7 +349,7 @@ fun TasksScreen(
                                                 },
                                                 leadingIcon = {
                                                     if (state.sortBy == sort)
-                                                        Icon(Icons.Default.Check, "Terpilih",
+                                                        Icon(Icons.Default.Check, contentDescription = "Terpilih",
                                                             Modifier.size(16.dp))
                                                 }
                                             )
@@ -316,7 +363,8 @@ fun TasksScreen(
                                 ) {
                                     Text(
                                         "Selesai",
-                                        style = MaterialTheme.typography.labelMedium
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Switch(
                                         checked = state.showCompleted,
@@ -342,117 +390,75 @@ fun TasksScreen(
                             if (state.viewMode == ViewMode.LIST) {
                                 LazyColumn(
                                     state = listState,
-                                    contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp, start = 20.dp, end = 20.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    contentPadding = PaddingValues(top = Spacing.normal, bottom = 100.dp, start = Spacing.normal, end = Spacing.normal),
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
                                     modifier = Modifier.fillMaxSize()
                                 ) {
                                     items(
                                         items = state.filteredTasks,
                                         key = { it.id },
-                                        contentType = { "task" }
+                                        contentType = { "task_list_item" }
                                     ) { task ->
-                                        val dismissState = rememberSwipeToDismissBoxState(
-                                            confirmValueChange = { value ->
-                                                if (value == SwipeToDismissBoxValue.EndToStart) {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    viewModel.showDeleteConfirm(task.id)
-                                                    false // Don't dismiss yet, wait for dialog
-                                                } else false
-                                            }
-                                        )
-
-                                        SwipeToDismissBox(
-                                            state = dismissState,
-                                            enableDismissFromStartToEnd = false,
-                                            backgroundContent = {
-                                                val color = when (dismissState.dismissDirection) {
-                                                    SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
-                                                    else -> Color.Transparent
-                                                }
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .clip(RoundedCornerShape(16.dp))
-                                                        .background(color)
-                                                        .padding(horizontal = 20.dp),
-                                                    contentAlignment = Alignment.CenterEnd
-                                                ) {
-                                                    Icon(
-                                                        Icons.Default.Delete,
-                                                        contentDescription = "Hapus",
-                                                        tint = Color.White
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            TaskCard(
-                                                task = task,
-                                                onEdit = {
-                                                    editingTaskId = task.id
-                                                    showAddBottomSheet = true
-                                                },
-                                                onDelete = { viewModel.showDeleteConfirm(task.id) },
-                                                onStatusChange = { newStatus ->
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    viewModel.updateStatus(task.id, newStatus)
-                                                },
-                                                onClick = { onNavigateToTaskDetail(task.id) }
-                                            )
-                                        }
-                                    }
-                                }
-                            } else {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Fixed(2),
-                                    contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp, start = 20.dp, end = 20.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    items(
-                                        items = state.filteredTasks,
-                                        key = { it.id },
-                                        contentType = { "task" }
-                                    ) { task ->
-                                        TaskGridCard(
+                                        TaskCard(
                                             task = task,
                                             onEdit = {
                                                 editingTaskId = task.id
                                                 showAddBottomSheet = true
                                             },
                                             onDelete = { viewModel.showDeleteConfirm(task.id) },
-                                            onStatusChange = { newStatus ->
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                viewModel.updateStatus(task.id, newStatus)
-                                            },
                                             onClick = { onNavigateToTaskDetail(task.id) }
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    contentPadding = PaddingValues(top = Spacing.normal, bottom = 100.dp, start = Spacing.normal, end = Spacing.normal),
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(
+                                        items = state.filteredTasks,
+                                        key = { it.id },
+                                        contentType = { "task_grid_item" }
+                                    ) { task ->
+                                        val taskId = task.id
+                                        TaskGridCard(
+                                            task = task,
+                                            onEdit = {
+                                                editingTaskId = taskId
+                                                showAddBottomSheet = true
+                                            },
+                                            onDelete = { viewModel.showDeleteConfirm(taskId) },
+                                            onClick = { onNavigateToTaskDetail(taskId) }
                                         )
                                     }
                                 }
                             }
                         }
-                    }
 
-                    // Delete Confirmation Dialog
-                    if (state.deleteConfirmTaskId != null) {
-                        val taskIdToDelete = state.deleteConfirmTaskId
-                        AlertDialog(
-                            onDismissRequest = { viewModel.showDeleteConfirm(null) },
-                            title = { Text("Delete Task") },
-                            text = { Text("Are you sure you want to delete this task?") },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    viewModel.deleteTask(taskIdToDelete)
-                                    viewModel.showDeleteConfirm(null)
-                                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { viewModel.showDeleteConfirm(null) }) {
-                                    Text("Cancel")
+                        // Delete Confirmation Dialog
+                        if (state.deleteConfirmTaskId != null) {
+                            AlertDialog(
+                                onDismissRequest = { viewModel.showDeleteConfirm(null) },
+                                title = { Text("Hapus Tugas") },
+                                text = { Text("Apakah Anda yakin ingin menghapus tugas ini? Tindakan ini tidak dapat dibatalkan.") },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        viewModel.deleteTask(state.deleteConfirmTaskId)
+                                        viewModel.showDeleteConfirm(null)
+                                    }) { 
+                                        Text("Hapus", color = MaterialTheme.colorScheme.error)
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { viewModel.showDeleteConfirm(null) }) {
+                                        Text("Batal")
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -481,29 +487,29 @@ fun FilterTab(selected: Boolean, onClick: () -> Unit, label: String, count: Int)
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = if (selected) Color(0xFF5F5E5A) else Color.White,
-        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE0D8CE))
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = Spacing.normal, vertical = Spacing.small),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 label,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                color = if (selected) Color.White else Color(0xFF888888),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(Spacing.extraSmall))
             Surface(
-                color = if (selected) Color.White.copy(alpha = 0.25f) else Color(0xFFF2EDE4),
+                color = if (selected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
                 shape = CircleShape
             ) {
                 Text(
                     count.toString(),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                    color = if (selected) Color.White else Color(0xFF888888),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -516,14 +522,14 @@ fun PriorityChip(selected: Boolean, onClick: () -> Unit, label: String) {
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = if (selected) Color(0xFF5F5E5A) else Color.White,
-        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0D8CE))
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Text(
             label,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = if (selected) Color.White else Color(0xFF888888),
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }

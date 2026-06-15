@@ -17,6 +17,8 @@ fun DarkModeToggleItem(
     onToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val reduceMotion = LocalReduceMotion.current
+
     ListItem(
         modifier = modifier,
         headlineContent = {
@@ -34,21 +36,32 @@ fun DarkModeToggleItem(
             )
         },
         leadingContent = {
-            AnimatedContent(
-                targetState = isDarkMode,
-                transitionSpec = {
-                    (scaleIn() + fadeIn()).togetherWith(scaleOut() + fadeOut())
-                },
-                label = "dark_mode_icon_anim"
-            ) { dark ->
+            if (reduceMotion) {
                 Icon(
-                    imageVector = if (dark) Icons.Default.DarkMode
+                    imageVector = if (isDarkMode) Icons.Default.DarkMode
                                   else Icons.Default.LightMode,
                     contentDescription = null,
-                    tint = if (dark) MaterialTheme.colorScheme.primary
-                           else Color(0xFFF59E0B),
+                    tint = if (isDarkMode) MaterialTheme.colorScheme.primary
+                           else MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(24.dp)
                 )
+            } else {
+                AnimatedContent(
+                    targetState = isDarkMode,
+                    transitionSpec = {
+                        (scaleIn() + fadeIn()).togetherWith(scaleOut() + fadeOut())
+                    },
+                    label = "dark_mode_icon_anim"
+                ) { dark ->
+                    Icon(
+                        imageVector = if (dark) Icons.Default.DarkMode
+                                      else Icons.Default.LightMode,
+                        contentDescription = null,
+                        tint = if (dark) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         },
         trailingContent = {

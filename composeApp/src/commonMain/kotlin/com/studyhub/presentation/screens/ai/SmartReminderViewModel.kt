@@ -3,6 +3,7 @@ package com.studyhub.presentation.screens.ai
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studyhub.data.local.AiUsageLimit
+import com.studyhub.domain.model.AiError
 import com.studyhub.domain.model.ReminderSchedule
 import com.studyhub.domain.usecase.ai.GetAiUsageStatsUseCase
 import com.studyhub.domain.usecase.ai.GetSmartReminderUseCase
@@ -40,7 +41,13 @@ class SmartReminderViewModel(
                 val schedule = getSmartReminderUseCase(taskId)
                 _uiState.value = SmartReminderUiState.Success(schedule)
             } catch (e: Exception) {
-                _uiState.value = SmartReminderUiState.Error(e.message ?: "Gagal mendapatkan rekomendasi")
+                val message = when(e) {
+                    is AiError.NoInternet -> e.message
+                    is AiError.QuotaExceeded -> e.message
+                    is AiError.ApiError -> e.message
+                    else -> "Layanan AI sedang tidak tersedia"
+                } ?: "Terjadi kesalahan"
+                _uiState.value = SmartReminderUiState.Error(message)
             }
         }
     }

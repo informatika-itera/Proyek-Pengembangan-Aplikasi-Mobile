@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 // Compressed task for AI prompt — hemat token
 @Serializable
 data class AiTaskSummary(
-    val i: String,     // id dipersingkat 8 char
+    val i: String,     // full id
     val t: String,     // title max 30 char
     val s: String,     // subject max 15 char
     val p: String,     // priority: H/M/L
@@ -35,7 +35,7 @@ data class AiUsageStats(
 )
 
 fun Task.toAiSummary() = AiTaskSummary(
-    i = id.take(8),
+    i = id,
     t = title.take(30),
     s = subject.take(15),
     p = when (priority) {

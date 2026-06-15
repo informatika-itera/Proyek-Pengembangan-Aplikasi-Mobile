@@ -6,13 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.studyhub.core.util.atEndOfDayMillis
 import com.studyhub.domain.model.Task
 import com.studyhub.domain.model.TaskStatus
-import com.studyhub.domain.usecase.notification.GetUnreadCountUseCase
+import com.studyhub.domain.usecase.notification.ObserveUnreadCountUseCase
 import com.studyhub.domain.usecase.preferences.GetUserPreferencesUseCase
 import com.studyhub.domain.usecase.task.DeleteTaskUseCase
 import com.studyhub.domain.usecase.task.GetActiveTasksUseCase
 import com.studyhub.domain.usecase.task.GetAllTasksUseCase
 import com.studyhub.domain.usecase.task.GetTasksByDateUseCase
-import com.studyhub.domain.usecase.task.UpdateTaskStatusUseCase
+import com.studyhub.domain.repository.PreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
@@ -48,7 +48,7 @@ sealed interface HomeUiState {
 }
 
 sealed interface HomeUiEvent {
-    data class ShowSnackbar(val message: String) : HomeUiEvent
+    data class ShowStreakPopup(val streak: Int) : HomeUiEvent
 }
 
 class HomeViewModel(
@@ -56,84 +56,73 @@ class HomeViewModel(
     private val getAllTasksUseCase: GetAllTasksUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    private val updateTaskStatusUseCase: UpdateTaskStatusUseCase,
     private val getUserPreferencesUseCase: GetUserPreferencesUseCase,
-    private val getUnreadCountUseCase: GetUnreadCountUseCase
+    private val observeUnreadCountUseCase: ObserveUnreadCountUseCase,
+    private val preferencesRepository: PreferencesRepository,
+    private val scheduleSmartReminderUseCase: com.studyhub.domain.usecase.notification.ScheduleSmartReminderUseCase
 ) : ViewModel() {
+
+    private val _uiEvent = MutableSharedFlow<HomeUiEvent>()
+    val uiEvent: SharedFlow<HomeUiEvent> = _uiEvent.asSharedFlow()
 
     private val now = Clock.System.now()
     private val localNow = now.toLocalDateTime(TimeZone.currentSystemDefault())
     private val today = localNow.date
 
-    private val _unreadCount = MutableStateFlow(0)
-    val unreadCount: StateFlow<Int> = _unreadCount.asStateFlow()
-    
-    private val _uiEvent = MutableSharedFlow<HomeUiEvent>()
-    val uiEvent = _uiEvent.asSharedFlow()
-
-    fun loadUnreadCount() {
-        viewModelScope.launch {
-            try {
-                _unreadCount.value = getUnreadCountUseCase()
-            } catch (e: Exception) { }
-        }
-    }
-
     val uiState: StateFlow<HomeUiState> = combine(
-        getUserPreferencesUseCase().distinctUntilChanged(),
-        getAllTasksUseCase().distinctUntilChanged(),
-        getActiveTasksUseCase().distinctUntilChanged(),
-        getTasksByDateUseCase(today).distinctUntilChanged(),
-        _unreadCount
-    ) { params ->
-        val prefs = params[0] as com.studyhub.domain.model.UserPreferences
-        val allTasks = params[1] as List<Task>
-        val allActive = params[2] as List<Task>
-        val todayTasks = params[3] as List<Task>
-        val unread = params[4] as Int
+        getUserPreferencesUseCase(),
+        getAllTasksUseCase(),
+        getActiveTasksUseCase(),
+        getTasksByDateUseCase(today),
+        observeUnreadCountUseCase()
+    ) { prefs, allTasks, allActive, todayTasks, unread ->
+        try {
+            val startOfTomorrow = today.atEndOfDayMillis() + 1
 
-        val startOfTomorrow = today.atEndOfDayMillis() + 1
-        
-        val activeNotDeleted = allTasks.filter { !it.isDeleted }
-        val doneCount = activeNotDeleted.count { it.status == TaskStatus.DONE }
-        val totalCount = activeNotDeleted.size
-        val activeCount = allActive.size
-        val dueTodayCount = todayTasks.count { it.status != TaskStatus.DONE }
-        
-        val completionPct = if (totalCount > 0) (doneCount * 100) / totalCount else 0
-        
-        val upcoming = allActive
-            .filter { it.dueDate >= startOfTomorrow }
-            .sortedBy { it.dueDate }
-            .take(4)
+            val validAllTasks = allTasks.filter { !it.isDeleted }
+            val doneCount = validAllTasks.count { it.status == TaskStatus.DONE }
+            val totalCount = validAllTasks.size
+            val activeCount = allActive.size
+            val dueTodayCount = todayTasks.count { it.status != TaskStatus.DONE }
 
-        val subjects = activeNotDeleted.map { it.subject }.distinct()
-        val stats = subjects.map { s ->
-            val subTasks = activeNotDeleted.filter { it.subject == s }
-            val subDone = subTasks.count { it.status == TaskStatus.DONE }
-            val subTotal = subTasks.size
-            SubjectHomeStat(
-                name = s,
-                doneCount = subDone,
-                totalCount = subTotal,
-                completionRate = if (subTotal > 0) (subDone * 100) / subTotal else 0,
-                color = getSubjectColor(s)
+            val completionPct = if (totalCount > 0) (doneCount * 100) / totalCount else 0
+
+            val upcoming = allActive
+                .filter { it.dueDate >= startOfTomorrow }
+                .sortedBy { it.dueDate }
+                .take(4)
+                .distinctBy { it.id } // Safety filter for duplicate IDs
+
+            val subjects = validAllTasks.map { it.subject }.distinct()
+            val stats = subjects.map { s ->
+                val subTasks = validAllTasks.filter { it.subject == s }
+                val subDone = subTasks.count { it.status == TaskStatus.DONE }
+                val subTotal = subTasks.size
+                SubjectHomeStat(
+                    name = s,
+                    doneCount = subDone,
+                    totalCount = subTotal,
+                    completionRate = if (subTotal > 0) (subDone * 100) / subTotal else 0,
+                    color = Color.Transparent // Will be assigned in UI or kept dynamic
+                )
+            }.sortedByDescending { it.totalCount }
+
+            HomeUiState.Success(
+                userName = prefs.userName,
+                pomodoroWorkDuration = prefs.pomodoroFocusDuration,
+                todayTasksCount = dueTodayCount,
+                totalTasks = totalCount,
+                doneTasks = doneCount,
+                activeTasks = activeCount,
+                dueTodayTasks = dueTodayCount,
+                completionPercentage = completionPct,
+                upcomingTasks = upcoming,
+                subjectStats = stats,
+                unreadNotifCount = unread
             )
-        }.sortedByDescending { it.totalCount }
-
-        HomeUiState.Success(
-            userName = prefs.userName,
-            pomodoroWorkDuration = prefs.pomodoroFocusDuration,
-            todayTasksCount = dueTodayCount,
-            totalTasks = totalCount,
-            doneTasks = doneCount,
-            activeTasks = activeCount,
-            dueTodayTasks = dueTodayCount,
-            completionPercentage = completionPct,
-            upcomingTasks = upcoming,
-            subjectStats = stats,
-            unreadNotifCount = unread
-        )
+        } catch (e: Exception) {
+            HomeUiState.Error(e.message ?: "Terjadi kesalahan saat memuat data")
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -141,19 +130,23 @@ class HomeViewModel(
     )
 
     init {
-        loadUnreadCount()
+        updateStreakAndReminders()
     }
 
-    fun updateStatus(taskId: String, status: TaskStatus) {
-        viewModelScope.launch(Dispatchers.IO) {
+    private fun updateStreakAndReminders() {
+        viewModelScope.launch {
             try {
-                updateTaskStatusUseCase(taskId, status)
-                _uiEvent.emit(HomeUiEvent.ShowSnackbar(
-                    if (status == TaskStatus.DONE) "Tugas ditandai selesai ✓" else "Tugas dikembalikan"
-                ))
-            } catch (e: Exception) {
-                _uiEvent.emit(HomeUiEvent.ShowSnackbar("Gagal: ${e.message}"))
-            }
+                val newStreak = preferencesRepository.updateStreak()
+                if (newStreak != null) {
+                    _uiEvent.emit(HomeUiEvent.ShowStreakPopup(newStreak))
+                }
+                
+                // Auto schedule reminders for active tasks that don't have one
+                val activeTasks = getActiveTasksUseCase().first()
+                activeTasks.forEach { task ->
+                    scheduleSmartReminderUseCase(task.id)
+                }
+            } catch (e: Exception) { }
         }
     }
 
@@ -161,19 +154,9 @@ class HomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 deleteTaskUseCase(taskId)
-                _uiEvent.emit(HomeUiEvent.ShowSnackbar("Tugas dihapus"))
             } catch (e: Exception) {
-                _uiEvent.emit(HomeUiEvent.ShowSnackbar("Gagal menghapus: ${e.message}"))
+                // Handle error
             }
         }
     }
-}
-
-private fun getSubjectColor(subject: String): Color {
-    val hash = subject.hashCode()
-    val colors = listOf(
-        Color(0xFF7B6FA0), Color(0xFF6B8F71), Color(0xFF8B7355),
-        Color(0xFFC06C84), Color(0xFF355C7D), Color(0xFFF67280), Color(0xFF45B7D1)
-    )
-    return colors[kotlin.math.abs(hash) % colors.size]
 }

@@ -8,8 +8,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -63,12 +61,10 @@ fun WeeklySummaryCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
-                    .clip(CircleShape)
-                    .semantics {
-                        contentDescription = "Progress tugas minggu ini: ${(completionRate * 100).toInt()}%"
-                    },
+                    .clip(CircleShape),
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                trackColor = MaterialTheme.colorScheme.primary
+                    .copy(alpha = 0.3f)
             )
         }
     }

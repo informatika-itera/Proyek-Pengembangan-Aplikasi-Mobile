@@ -17,9 +17,24 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.studyhub.presentation.theme.Spacing
+
+@Composable
+fun glassSurfaceColor(): Color {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    return if (isDark) Color.Black.copy(alpha = 0.25f) 
+           else Color.White.copy(alpha = 0.8f)
+}
+
+@Composable
+fun glassBorderColor(): Color {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    return if (isDark) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.3f)
+}
 
 @Composable
 fun LiquidGlassCard(
@@ -28,9 +43,11 @@ fun LiquidGlassCard(
     borderAlpha: Float = 0.3f,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
-    val bgColor = if (isDark) Color(0xFFFFFFFF).copy(alpha = 0.06f) else Color(0xFFFFFFFF).copy(alpha = 0.12f)
-    val borderColor = if (isDark) Color(0xFFFFFFFF).copy(alpha = 0.10f) else Color(0xFFFFFFFF).copy(alpha = borderAlpha)
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    // Use white/black with opacity for glass effect, but keep it clean
+    val baseColor = if (isDark) Color.Black else Color.White
+    val bgColor = if (isDark) baseColor.copy(alpha = 0.15f) else baseColor.copy(alpha = 0.12f)
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.1f) else baseColor.copy(alpha = borderAlpha)
     
     Box(
         modifier = modifier
@@ -52,7 +69,7 @@ fun LiquidGlassCard(
         )
         
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(Spacing.normal),
             content = content
         )
     }
@@ -83,8 +100,8 @@ fun GlassIconButton(
                         .padding(top = 10.dp, end = 10.dp)
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFBBF24))
-                        .border(1.dp, Color(0xFF8B7355), CircleShape)
+                        .background(MaterialTheme.colorScheme.error)
+                        .border(1.dp, MaterialTheme.colorScheme.onError, CircleShape)
                 )
             }
         }
@@ -95,8 +112,8 @@ fun GlassIconButton(
 fun PillBadge(
     text: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = Color.White.copy(alpha = 0.2f),
-    contentColor: Color = Color.White
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     Surface(
         modifier = modifier,
@@ -105,7 +122,7 @@ fun PillBadge(
         contentColor = contentColor
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = Spacing.medium, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             content = text

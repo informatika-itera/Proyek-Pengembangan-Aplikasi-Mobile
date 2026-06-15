@@ -1,7 +1,9 @@
 package com.studyhub.presentation.navigation
 
 sealed class Screen(val route: String) {
-    object Main : Screen("main")
+    object Main : Screen("main?openPomodoro={openPomodoro}") {
+        fun createRoute(openPomodoro: Boolean = false) = "main?openPomodoro=$openPomodoro"
+    }
     object Home : Screen("home")
     object Tasks : Screen("tasks")
     object Calendar : Screen("calendar")
@@ -19,6 +21,7 @@ sealed class Screen(val route: String) {
     object SmartPriority : Screen("smart_priority")
     object NotifHistory : Screen("notif_history")
     object Progress : Screen("progress")
+    object Report : Screen("report")
     object Pomodoro : Screen("pomodoro?taskId={taskId}") {
         fun createRoute(taskId: String? = null) =
             if (taskId != null) "pomodoro?taskId=$taskId"

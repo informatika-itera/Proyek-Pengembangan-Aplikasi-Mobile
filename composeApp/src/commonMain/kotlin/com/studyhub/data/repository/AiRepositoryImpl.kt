@@ -6,9 +6,9 @@ import com.studyhub.data.local.AiCacheTTL
 import com.studyhub.data.local.AiUsageLimit
 import com.studyhub.data.remote.GroqApiClient
 import com.studyhub.domain.model.*
-import com.studyhub.domain.repository.AiError
 import com.studyhub.domain.repository.AiRepository
 import kotlinx.serialization.json.Json
+import okio.IOException
 
 class AiRepositoryImpl(
     private val groqApiClient: GroqApiClient,
@@ -35,7 +35,7 @@ class AiRepositoryImpl(
 
         // Layer 2: Cek quota harian
         if (!cacheDataSource.canCallPriority()) {
-            throw AiError.QuotaExceeded()
+            return fallbackPrioritySort(tasks)
         }
 
         // Layer 3: Panggil AI dengan prompt terkompresi
@@ -55,11 +55,11 @@ class AiRepositoryImpl(
             cacheDataSource.deleteExpiredCache()
 
             parsePriorityResponse(response, tasks)
+        } catch (e: IOException) {
+            throw AiError.NoInternet()
         } catch (e: Exception) {
             if (e is AiError) throw e
-            // In KMP we can't easily distinguish all network errors in commonMain without extra dependencies
-            // but we can check for common Ktor exceptions if imported
-            throw AiError.ApiError(-1, e.message)
+            throw AiError.ApiError(-1, e.message ?: "Layanan AI sedang tidak tersedia")
         }
     }
 
@@ -96,8 +96,11 @@ class AiRepositoryImpl(
             cacheDataSource.incrementReminderUsage()
 
             parseReminderResponse(response, task)
+        } catch (e: IOException) {
+            throw AiError.NoInternet()
         } catch (e: Exception) {
-            fallbackReminder(task)
+            if (e is AiError) throw e
+            throw AiError.ApiError(-1, e.message ?: "Layanan AI sedang tidak tersedia")
         }
     }
 
@@ -114,12 +117,13 @@ class AiRepositoryImpl(
         summaries: List<AiTaskSummary>
     ): String {
         val tasksJson = summaries.joinToString(",") {
-            """{"i":"${it.i}","t":"${it.t}","s":"${it.s}",""" +
+            """{"id":"${it.i}","t":"${it.t}","s":"${it.s}",""" +
             """"p":"${it.p}","due":${it.due},"est":${it.est}}"""
         }
-        return """Rank tasks by urgency. Return JSON array only.
-Format:[{"taskId":"...","priorityOrder":1,"reason":"reason max 8 words"}]
-Tasks:[$tasksJson]"""
+        return """Rank tasks by study urgency. Return JSON array only.
+Format:[{"taskId":"...","priorityOrder":1,"reason":"...max 8 words"}]
+Tasks:[$tasksJson]
+Note: Use the exact value from the "id" field as the taskId in your response."""
     }
 
     private fun buildReminderPrompt(
@@ -150,22 +154,29 @@ Now:${com.studyhub.core.util.currentTimeMillis()}"""
         raw: String,
         tasks: List<Task>
     ): List<PriorityResult> = try {
+        println("Groq Raw Response: $raw")
         val clean = raw.trim()
             .removePrefix("```json")
             .removePrefix("```")
             .removeSuffix("```")
             .trim()
-        Json { ignoreUnknownKeys = true }
+        
+        val results = Json { ignoreUnknownKeys = true }
             .decodeFromString<List<PriorityResult>>(clean)
-            .map { result ->
-                // Map shortened id back to full id
-                val fullId = tasks.find {
-                    it.id.startsWith(result.taskId) ||
-                    it.id.take(8) == result.taskId
-                }?.id ?: result.taskId
-                result.copy(taskId = fullId)
+        
+        println("Groq Decoded Result Count: ${results.size}")
+        
+        results.map { result ->
+            // Match by finding the task whose ID contains the result.taskId string
+            // This is safer since AI might still return shortened versions
+            val matchingTask = tasks.find { it.id == result.taskId || it.id.contains(result.taskId) }
+            if (matchingTask == null) {
+                println("No match found for taskId: ${result.taskId}")
             }
+            result.copy(taskId = matchingTask?.id ?: result.taskId)
+        }
     } catch (e: Exception) {
+        println("Groq Parse Error: ${e.message}")
         fallbackPrioritySort(tasks)
     }
 
@@ -209,7 +220,7 @@ Now:${com.studyhub.core.util.currentTimeMillis()}"""
 
     private fun fallbackReminder(task: Task) = ReminderSchedule(
         taskId = task.id,
-        suggestedReminderTime = task.dueDate - 86_400_000L,
+        suggestedReminderTime = task.dueDate - 86_400_000L, // H-1
         adaptiveReason = "Default H-1 reminder"
     )
 }

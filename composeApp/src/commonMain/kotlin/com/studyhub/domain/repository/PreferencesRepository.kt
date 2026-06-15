@@ -17,4 +17,5 @@ interface PreferencesRepository {
     suspend fun setPomodoroSettings(
         focus: Int, shortBreak: Int, longBreak: Int
     )
+    suspend fun updateStreak(): Int?
 }

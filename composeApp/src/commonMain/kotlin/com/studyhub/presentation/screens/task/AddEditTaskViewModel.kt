@@ -6,16 +6,25 @@ import com.studyhub.domain.model.Priority
 import com.studyhub.domain.model.Subject
 import com.studyhub.domain.model.Task
 import com.studyhub.domain.model.TaskStatus
+import com.studyhub.core.util.TaskColor
 import com.studyhub.domain.usecase.subject.AddSubjectUseCase
 import com.studyhub.domain.usecase.subject.GetAllSubjectsUseCase
 import com.studyhub.domain.usecase.task.AddTaskUseCase
 import com.studyhub.domain.usecase.task.GetTaskByIdUseCase
 import com.studyhub.domain.usecase.task.UpdateTaskUseCase
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
 sealed interface AddEditTaskUiState {
+    object Idle : AddEditTaskUiState
     object Loading : AddEditTaskUiState
     data class Success(
         val existingTask: Task? = null,
@@ -24,9 +33,9 @@ sealed interface AddEditTaskUiState {
     data class Error(val message: String) : AddEditTaskUiState
 }
 
-sealed interface AddEditTaskUiEvent {
-    object SaveSuccess : AddEditTaskUiEvent
-    data class ShowSnackbar(val message: String) : AddEditTaskUiEvent
+sealed interface AddEditTaskEvent {
+    data class ShowSnackbar(val message: String) : AddEditTaskEvent
+    object NavigateBack : AddEditTaskEvent
 }
 
 class AddEditTaskViewModel(
@@ -37,38 +46,35 @@ class AddEditTaskViewModel(
     private val addSubjectUseCase: AddSubjectUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<AddEditTaskUiState>(AddEditTaskUiState.Loading)
+    private val _uiState = MutableStateFlow<AddEditTaskUiState>(AddEditTaskUiState.Idle)
     val uiState: StateFlow<AddEditTaskUiState> = _uiState.asStateFlow()
 
-    private val _uiEvent = MutableSharedFlow<AddEditTaskUiEvent>()
-    val uiEvent = _uiEvent.asSharedFlow()
+    private val _uiEvent = MutableSharedFlow<AddEditTaskEvent>()
+    val uiEvent: SharedFlow<AddEditTaskEvent> = _uiEvent.asSharedFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    fun loadTask(taskId: String?) {
+    fun loadTask(taskId: String) {
         viewModelScope.launch {
-            _uiState.value = AddEditTaskUiState.Loading
-            try {
-                val subjects = getAllSubjectsUseCase()
-                val task = if (taskId != null) getTaskByIdUseCase(taskId).firstOrNull() else null
-                _uiState.value = AddEditTaskUiState.Success(existingTask = task, subjects = subjects)
-            } catch (e: Exception) {
-                _uiState.value = AddEditTaskUiState.Error(e.message ?: "Gagal memuat data")
+            _uiState.update { AddEditTaskUiState.Loading }
+            val subjects = getAllSubjectsUseCase()
+            val task = getTaskByIdUseCase(taskId).firstOrNull()
+            _uiState.update { AddEditTaskUiState.Success(existingTask = task, subjects = subjects) }
+        }
+    }
+
+    fun loadSubjects() {
+        viewModelScope.launch {
+            val subjects = getAllSubjectsUseCase()
+            val currentState = _uiState.value
+            if (currentState is AddEditTaskUiState.Success) {
+                _uiState.update { currentState.copy(subjects = subjects) }
+            } else if (currentState is AddEditTaskUiState.Idle) {
+                _uiState.update { AddEditTaskUiState.Success(subjects = subjects) }
             }
         }
     }
 
-    fun loadSubjectsOnly() {
-        if (_uiState.value is AddEditTaskUiState.Success) {
-            viewModelScope.launch {
-                val subjects = getAllSubjectsUseCase()
-                val current = (_uiState.value as AddEditTaskUiState.Success)
-                _uiState.value = current.copy(subjects = subjects)
-            }
-        } else {
-            loadTask(null)
-        }
+    fun resetState() {
+        _uiState.update { AddEditTaskUiState.Idle }
     }
 
     fun addSubject(name: String) {
@@ -77,15 +83,14 @@ class AddEditTaskViewModel(
                 val newSubject = Subject(
                     id = "sub_${Clock.System.now().toEpochMilliseconds()}",
                     name = name,
-                    colorHex = "#8B7355",
+                    colorHex = "#8B7355", // Default color
                     icon = "school",
                     createdAt = Clock.System.now().toEpochMilliseconds()
                 )
                 addSubjectUseCase(newSubject)
-                loadSubjectsOnly()
-                _uiEvent.emit(AddEditTaskUiEvent.ShowSnackbar("Mata kuliah berhasil ditambahkan"))
+                loadSubjects()
             } catch (e: Exception) {
-                _uiEvent.emit(AddEditTaskUiEvent.ShowSnackbar(e.message ?: "Gagal menambah mata kuliah"))
+                _uiState.update { AddEditTaskUiState.Error(e.message ?: "Gagal menambah mata kuliah") }
             }
         }
     }
@@ -98,14 +103,27 @@ class AddEditTaskViewModel(
         priority: Priority,
         status: TaskStatus,
         dueDate: Long,
+        dueTime: String?,
         estimatedMinutes: Int
     ) {
         viewModelScope.launch {
-            _isLoading.value = true
+            val currentState = _uiState.value
+            val existingTask = if (currentState is AddEditTaskUiState.Success) {
+                currentState.existingTask
+            } else null
+            
+            val existingCreatedAt = existingTask?.createdAt
+            val existingColorHex = existingTask?.colorHex
+            val existingCompletedAt = existingTask?.completedAt
+
+            _uiState.update { AddEditTaskUiState.Loading }
             try {
                 val now = Clock.System.now().toEpochMilliseconds()
-                val existing = if (_uiState.value is AddEditTaskUiState.Success) {
-                    (_uiState.value as AddEditTaskUiState.Success).existingTask
+                
+                // Jika status DONE, gunakan completedAt yang lama jika ada, jika tidak ada gunakan now.
+                // Jika status bukan DONE, completedAt adalah null.
+                val completedAt = if (status == TaskStatus.DONE) {
+                    existingCompletedAt ?: now
                 } else null
 
                 val task = Task(
@@ -116,22 +134,25 @@ class AddEditTaskViewModel(
                     priority = priority,
                     status = status,
                     dueDate = dueDate,
-                    dueTime = null,
+                    dueTime = dueTime,
                     tags = emptyList(),
                     estimatedMinutes = estimatedMinutes,
                     isDeleted = false,
-                    completedAt = if (status == TaskStatus.DONE) now else null,
-                    createdAt = existing?.createdAt ?: now,
-                    updatedAt = now
+                    completedAt = completedAt,
+                    createdAt = existingCreatedAt ?: now,
+                    updatedAt = now,
+                    colorHex = existingColorHex ?: TaskColor.random()
                 )
-                if (taskId == null) addTaskUseCase(task)
-                else updateTaskUseCase(task)
-                
-                _uiEvent.emit(AddEditTaskUiEvent.SaveSuccess)
+                if (taskId == null) {
+                    addTaskUseCase(task)
+                } else {
+                    updateTaskUseCase(task)
+                }
+                _uiState.update { AddEditTaskUiState.Idle }
+                _uiEvent.emit(AddEditTaskEvent.ShowSnackbar(if (taskId == null) "Tugas berhasil ditambahkan" else "Tugas berhasil diperbarui"))
+                _uiEvent.emit(AddEditTaskEvent.NavigateBack)
             } catch (e: Exception) {
-                _uiEvent.emit(AddEditTaskUiEvent.ShowSnackbar(e.message ?: "Gagal menyimpan tugas"))
-            } finally {
-                _isLoading.value = false
+                _uiState.update { AddEditTaskUiState.Error(e.message ?: "Gagal menyimpan tugas") }
             }
         }
     }

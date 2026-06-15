@@ -4,14 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.studyhub.presentation.components.*
+import com.studyhub.presentation.components.LoadingView
+import com.studyhub.presentation.components.ErrorView
 import com.studyhub.presentation.navigation.Screen
 import com.studyhub.presentation.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -22,8 +23,6 @@ fun ProgressScreen(navController: NavController) {
     val viewModel: ProgressViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) { viewModel.loadStats() }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,22 +31,22 @@ fun ProgressScreen(navController: NavController) {
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 }
             )
         }
     ) { padding ->
         when (val state = uiState) {
-            is ProgressUiState.Loading -> Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            is ProgressUiState.Loading -> LoadingView(Modifier.padding(padding))
+            is ProgressUiState.Error -> ErrorView(
+                message = state.message,
+                onRetry = { viewModel.loadStats() },
+                modifier = Modifier.padding(padding)
+            )
             is ProgressUiState.Success -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier.padding(padding),
                     contentPadding = PaddingValues(Spacing.normal),
                     verticalArrangement = Arrangement.spacedBy(Spacing.normal)
                 ) {
@@ -78,7 +77,8 @@ fun ProgressScreen(navController: NavController) {
                     }
                     items(
                         items = state.subjectProgress,
-                        key = { it.subject }
+                        key = { it.subject },
+                        contentType = { "subject_progress" }
                     ) { progress ->
                         SubjectProgressItem(progress = progress)
                     }
@@ -93,21 +93,13 @@ fun ProgressScreen(navController: NavController) {
                     }
                 }
             }
-            is ProgressUiState.Error -> {
-                EmptyStateView(
-                    message = state.message,
-                    actionLabel = "Coba Lagi",
-                    onAction = { viewModel.loadStats() },
-                    modifier = Modifier.fillMaxSize().padding(padding)
-                )
-            }
             is ProgressUiState.Empty -> EmptyStateView(
                 message = "Belum ada data progress",
                 actionLabel = "Tambah Tugas",
                 onAction = {
                     navController.navigate(Screen.AddTask.createRoute())
                 },
-                modifier = Modifier.fillMaxSize().padding(padding)
+                modifier = Modifier.padding(padding)
             )
         }
     }

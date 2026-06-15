@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-sealed class TaskDetailUiState {
-    object Loading : TaskDetailUiState()
-    data class Success(val task: Task) : TaskDetailUiState()
-    data class Error(val message: String) : TaskDetailUiState()
+sealed interface TaskDetailUiState {
+    object Loading : TaskDetailUiState
+    data class Success(val task: Task) : TaskDetailUiState
+    data class Error(val message: String) : TaskDetailUiState
 }
 
 sealed class TaskDetailEvent {

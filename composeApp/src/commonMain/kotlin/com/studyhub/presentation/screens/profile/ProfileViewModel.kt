@@ -1,6 +1,5 @@
 package com.studyhub.presentation.screens.profile
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studyhub.domain.model.TaskStatus
@@ -17,8 +16,8 @@ sealed interface ProfileUiState {
     object Loading : ProfileUiState
     data class Success(
         val userName: String,
-        val major: String = "Computer Science",
-        val level: Int = 12,
+        val major: String,
+        val level: Int,
         val isDarkMode: Boolean,
         val notificationEnabled: Boolean,
         val isAiReminderEnabled: Boolean,
@@ -31,17 +30,19 @@ sealed interface ProfileUiState {
         val completionRate: Int,
         val totalStudyHours: Int,
         val subjectBreakdown: List<SubjectStat>,
-        val achievements: List<Achievement>
+        val achievements: List<Achievement>,
+        val dayStreak: Int
     ) : ProfileUiState
     data class Error(val message: String) : ProfileUiState
 }
 
+@androidx.compose.runtime.Stable
 data class SubjectStat(
     val name: String,
-    val count: Int,
-    val color: Color
+    val count: Int
 )
 
+@androidx.compose.runtime.Stable
 data class Achievement(
     val title: String,
     val isEarned: Boolean,
@@ -61,21 +62,19 @@ class ProfileViewModel(
         getAllTasksUseCase()
     ) { prefs, allTasks ->
         try {
-            val activeTasks = allTasks.filter { !it.isDeleted }
-            val doneCount = activeTasks.count { it.status == TaskStatus.DONE }
-            val inProgressCount = activeTasks.count { it.status == TaskStatus.IN_PROGRESS }
-            val totalCount = activeTasks.size
+            val doneCount = allTasks.count { it.status == TaskStatus.DONE }
+            val inProgressCount = allTasks.count { it.status == TaskStatus.IN_PROGRESS }
+            val totalCount = allTasks.size
             val completionRate = if (totalCount > 0) (doneCount * 100) / totalCount else 0
             
-            val totalMinutes = activeTasks.filter { it.status == TaskStatus.DONE }.sumOf { it.estimatedMinutes }
+            val totalMinutes = allTasks.filter { it.status == TaskStatus.DONE }.sumOf { it.estimatedMinutes }
             val totalHours = totalMinutes / 60
 
-            val subjects = activeTasks.map { it.subject }.distinct()
+            val subjects = allTasks.map { it.subject }.distinct()
             val subjectBreakdown = subjects.map { s ->
                 SubjectStat(
                     name = s,
-                    count = activeTasks.count { it.subject == s },
-                    color = getSubjectColor(s)
+                    count = allTasks.count { it.subject == s }
                 )
             }
 
@@ -88,6 +87,8 @@ class ProfileViewModel(
 
             ProfileUiState.Success(
                 userName = prefs.userName,
+                major = "Computer Science",
+                level = 12,
                 isDarkMode = prefs.isDarkMode,
                 notificationEnabled = prefs.notificationEnabled,
                 isAiReminderEnabled = prefs.isAiReminderEnabled,
@@ -100,21 +101,24 @@ class ProfileViewModel(
                 completionRate = completionRate,
                 totalStudyHours = totalHours,
                 subjectBreakdown = subjectBreakdown,
-                achievements = achievements
+                achievements = achievements,
+                dayStreak = prefs.currentStreak
             )
         } catch (e: Exception) {
             ProfileUiState.Error(e.message ?: "Terjadi kesalahan")
         }
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly, // Change to Eagerly for testing
+        started = SharingStarted.WhileSubscribed(5000),
         initialValue = ProfileUiState.Loading
     )
 
     fun toggleDarkMode() {
         viewModelScope.launch {
-            val current = (uiState.value as? ProfileUiState.Success)?.isDarkMode ?: false
-            setDarkModeUseCase(!current)
+            val state = uiState.value
+            if (state is ProfileUiState.Success) {
+                setDarkModeUseCase(!state.isDarkMode)
+            }
         }
     }
 
@@ -137,19 +141,30 @@ class ProfileViewModel(
     }
 
     fun updatePomodoroFocus(delta: Int) {
-        // Implementation logic
+        viewModelScope.launch {
+            val state = uiState.value
+            if (state is ProfileUiState.Success) {
+                val newValue = (state.pomodoroFocusDuration + delta).coerceIn(5, 60)
+                preferencesRepository.setPomodoroSettings(
+                    focus = newValue,
+                    shortBreak = state.pomodoroShortBreak,
+                    longBreak = state.pomodoroLongBreak
+                )
+            }
+        }
     }
 
     fun updatePomodoroBreak(delta: Int) {
-        // Implementation logic
+        viewModelScope.launch {
+            val state = uiState.value
+            if (state is ProfileUiState.Success) {
+                val newValue = (state.pomodoroShortBreak + delta).coerceIn(1, 30)
+                preferencesRepository.setPomodoroSettings(
+                    focus = state.pomodoroFocusDuration,
+                    shortBreak = newValue,
+                    longBreak = state.pomodoroLongBreak
+                )
+            }
+        }
     }
-}
-
-private fun getSubjectColor(subject: String): Color {
-    val hash = subject.hashCode()
-    val colors = listOf(
-        Color(0xFF7B6FA0), Color(0xFF6B8F71), Color(0xFF8B7355),
-        Color(0xFFC06C84), Color(0xFF355C7D), Color(0xFFF67280), Color(0xFF45B7D1)
-    )
-    return colors[kotlin.math.abs(hash) % colors.size]
 }

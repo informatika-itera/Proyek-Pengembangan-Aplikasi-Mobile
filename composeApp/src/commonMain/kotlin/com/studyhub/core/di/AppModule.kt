@@ -9,7 +9,6 @@ import com.studyhub.data.sync.SyncManager
 import com.studyhub.core.manager.PomodoroManager
 import com.studyhub.data.remote.GroqApiClient
 import com.studyhub.domain.repository.*
-import com.studyhub.core.util.NetworkMonitor
 import com.studyhub.presentation.navigation.NetworkViewModel
 import com.studyhub.domain.usecase.task.*
 import com.studyhub.domain.usecase.subject.*
@@ -31,8 +30,10 @@ import com.studyhub.presentation.screens.ai.SmartReminderViewModel
 import com.studyhub.presentation.screens.notification.NotifHistoryViewModel
 import com.studyhub.presentation.screens.pomodoro.PomodoroViewModel
 import com.studyhub.presentation.screens.progress.ProgressViewModel
+import com.studyhub.presentation.screens.report.ReportViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.compose.viewmodel.dsl.viewModel
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 import org.koin.core.context.startKoin
@@ -104,6 +105,7 @@ val useCaseModule = module {
     factory { CancelReminderUseCase(get()) }
     factory { GetNotifHistoryUseCase(get()) }
     factory { GetUnreadCountUseCase(get()) }
+    factory { ObserveUnreadCountUseCase(get()) }
     factory { MarkNotifReadUseCase(get()) }
     factory { DeleteNotifHistoryUseCase(get()) }
 }
@@ -112,8 +114,8 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModelOf(::HomeViewModel)
-    viewModelOf(::TasksViewModel)
     viewModelOf(::AddEditTaskViewModel)
+    viewModelOf(::TasksViewModel)
     viewModelOf(::TaskDetailViewModel)
     viewModelOf(::CalendarViewModel)
     viewModelOf(::ProfileViewModel)
@@ -124,6 +126,7 @@ val viewModelModule = module {
     viewModelOf(::NotifHistoryViewModel)
     viewModelOf(::PomodoroViewModel)
     viewModelOf(::ProgressViewModel)
+    viewModel { ReportViewModel(get(), get(), get()) }
 }
 
 // ==================== SHARED MODULES ====================

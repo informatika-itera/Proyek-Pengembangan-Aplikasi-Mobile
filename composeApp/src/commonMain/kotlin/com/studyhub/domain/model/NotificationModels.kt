@@ -3,6 +3,11 @@ package com.studyhub.domain.model
 import androidx.compose.runtime.Stable
 
 @Stable
+enum class NotifType {
+    TASK, POMODORO
+}
+
+@Stable
 data class ReminderInfo(
     val taskId: String,
     val scheduledAt: Long,
@@ -19,7 +24,8 @@ data class NotifHistoryItem(
     val taskSubject: String,
     val aiReason: String,
     val sentAt: Long,
-    val isRead: Boolean
+    val isRead: Boolean,
+    val type: NotifType = NotifType.TASK
 )
 
 @Stable

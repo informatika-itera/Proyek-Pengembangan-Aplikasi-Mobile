@@ -22,12 +22,16 @@ val PrimaryContainer = GoldenSuedeLight.copy(alpha = 0.2f)
 val OnPrimaryContainer = DarkText
 val Secondary = Color(0xFF6B8F71)
 val OnSecondary = Color.White
+val Tertiary = HighlightGold
+val OnTertiary = Color.White
 val Background = CreamBackground
 val OnBackground = DarkText
 val Surface = Color.White
 val OnSurface = DarkText
 val SurfaceVariant = Color(0xFFF5F2E8)
 val OnSurfaceVariant = MutedText
+val Error = Color(0xFFB91C1C)
+val OnError = Color.White
 
 // ── Dark Mode ──
 val PrimaryDark = GoldenSuedeLight
@@ -36,17 +40,24 @@ val PrimaryContainerDark = GoldenSuedeDark.copy(alpha = 0.3f)
 val OnPrimaryContainerDark = Color.White
 val SecondaryDark = Color(0xFFA8C9AD)
 val OnSecondaryDark = Color(0xFF1A3D20)
+val TertiaryDark = HighlightGold.copy(alpha = 0.8f)
+val OnTertiaryDark = Color.Black
 val BackgroundDark = DarkBackground
 val OnBackgroundDark = Color.White
 val SurfaceDark = Color(0xFF252525)
 val OnSurfaceDark = Color.White
 val SurfaceVariantDark = Color(0xFF333333)
 val OnSurfaceVariantDark = Color(0xFFB0B0B0)
+val ErrorDark = Color(0xFFF2B8B5)
+val OnErrorDark = Color(0xFF601410)
 
 // ── Semantic Colors ──
 val PriorityHigh = Color(0xFFFF4D4D)
+val PriorityHighContainer = Color(0xFFFF4D4D).copy(alpha = 0.15f)
 val PriorityMedium = HighlightGold
+val PriorityMediumContainer = HighlightGold.copy(alpha = 0.15f)
 val PriorityLow = Color(0xFF22C55E)
+val PriorityLowContainer = Color(0xFF22C55E).copy(alpha = 0.15f)
 
 val LightColorScheme = lightColorScheme(
     primary = Primary,
@@ -55,14 +66,18 @@ val LightColorScheme = lightColorScheme(
     onPrimaryContainer = OnPrimaryContainer,
     secondary = Secondary,
     onSecondary = OnSecondary,
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
     background = Background,
     onBackground = OnBackground,
     surface = Surface,
     onSurface = OnSurface,
     surfaceVariant = SurfaceVariant,
     onSurfaceVariant = OnSurfaceVariant,
+    error = Error,
+    onError = OnError,
     outline = MutedText.copy(alpha = 0.5f),
-    outlineVariant = Color.White.copy(alpha = 0.25f)
+    outlineVariant = Color.Black.copy(alpha = 0.1f)
 )
 
 val DarkColorScheme = darkColorScheme(
@@ -72,12 +87,16 @@ val DarkColorScheme = darkColorScheme(
     onPrimaryContainer = OnPrimaryContainerDark,
     secondary = SecondaryDark,
     onSecondary = OnSecondaryDark,
+    tertiary = TertiaryDark,
+    onTertiary = OnTertiaryDark,
     background = BackgroundDark,
     onBackground = OnBackgroundDark,
     surface = SurfaceDark,
     onSurface = OnSurfaceDark,
     surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = OnSurfaceVariantDark,
+    error = ErrorDark,
+    onError = OnErrorDark,
     outline = Color.White.copy(alpha = 0.3f),
     outlineVariant = Color.White.copy(alpha = 0.1f)
 )

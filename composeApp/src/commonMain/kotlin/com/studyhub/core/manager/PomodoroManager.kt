@@ -197,7 +197,8 @@ class PomodoroManager(
                 taskId = "pomodoro",
                 taskTitle = title,
                 taskSubject = "Pomodoro",
-                aiReason = reason
+                aiReason = reason,
+                type = NotifType.POMODORO
             )
         } catch (e: Exception) { }
     }

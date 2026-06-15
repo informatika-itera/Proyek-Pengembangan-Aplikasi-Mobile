@@ -12,12 +12,13 @@ CREATE TABLE TaskEntity (
     isDeleted INTEGER NOT NULL DEFAULT 0,
     completedAt INTEGER,
     createdAt INTEGER NOT NULL,
-    updatedAt INTEGER NOT NULL
+    updatedAt INTEGER NOT NULL,
+    colorHex TEXT NOT NULL DEFAULT '#85C1A3'
 );
 
 insertTask:
-INSERT OR REPLACE INTO TaskEntity
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO TaskEntity
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAllTasks:
 SELECT * FROM TaskEntity
@@ -61,7 +62,7 @@ UPDATE TaskEntity SET
     title = ?, description = ?, subject = ?,
     priority = ?, status = ?, dueDate = ?,
     dueTime = ?, tags = ?, estimatedMinutes = ?,
-    updatedAt = ?
+    updatedAt = ?, colorHex = ?
 WHERE id = ?;
 
 updateStatus:

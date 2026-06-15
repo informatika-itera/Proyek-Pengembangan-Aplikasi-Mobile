@@ -2,9 +2,7 @@ package com.studyhub.presentation.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +18,9 @@ fun SubjectProgressItem(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Spacing.extraSmall)
+        verticalArrangement = Arrangement.spacedBy(
+            Spacing.extraSmall
+        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -39,7 +39,10 @@ fun SubjectProgressItem(
         }
         LinearProgressIndicator(
             progress = { progress.completionRate },
-            modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(CircleShape),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )

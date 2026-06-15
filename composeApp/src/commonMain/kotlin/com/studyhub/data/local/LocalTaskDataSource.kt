@@ -31,7 +31,8 @@ class LocalTaskDataSource(private val database: StudyHubDatabase) {
             isDeleted = if (task.isDeleted) 1L else 0L,
             completedAt = task.completedAt,
             createdAt = task.createdAt,
-            updatedAt = task.updatedAt
+            updatedAt = task.updatedAt,
+            colorHex = task.colorHex
         )
     }
 
@@ -91,6 +92,7 @@ class LocalTaskDataSource(private val database: StudyHubDatabase) {
             tags = task.tags.joinToString(",", "[", "]") { "\"$it\"" },
             estimatedMinutes = task.estimatedMinutes.toLong(),
             updatedAt = task.updatedAt,
+            colorHex = task.colorHex,
             id = task.id
         )
     }
@@ -120,6 +122,7 @@ class LocalTaskDataSource(private val database: StudyHubDatabase) {
         isDeleted = isDeleted == 1L,
         completedAt = completedAt,
         createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt,
+        colorHex = colorHex
     )
 }

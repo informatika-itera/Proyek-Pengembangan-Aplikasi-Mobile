@@ -11,9 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.studyhub.domain.model.NotifType
+import com.studyhub.presentation.components.LoadingView
+import com.studyhub.presentation.components.ErrorView
 import com.studyhub.presentation.components.NotifHistoryCard
 import com.studyhub.presentation.navigation.Screen
 import com.studyhub.presentation.theme.*
@@ -24,6 +28,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun NotifHistoryScreen(navController: NavController) {
     val viewModel: NotifHistoryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showClearConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadHistory()
@@ -33,32 +38,35 @@ fun NotifHistoryScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Notifikasi") },
+                title = { Text("Riwayat Notifikasi", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
-                        Icon(Icons.Default.ArrowBack, null)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
-                    if (uiState is NotifHistoryUiState.Success &&
-                        (uiState as NotifHistoryUiState.Success).items.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.clearAll() }) {
-                            Icon(Icons.Default.DeleteSweep, "Hapus semua")
+                    if (uiState is NotifHistoryUiState.Success) {
+                        val items = (uiState as NotifHistoryUiState.Success).items
+                        if (items.isNotEmpty()) {
+                            IconButton(onClick = { showClearConfirm = true }) {
+                                Icon(Icons.Default.DeleteSweep, contentDescription = "Hapus semua")
+                            }
                         }
                     }
                 }
             )
         }
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background)) {
             when (val state = uiState) {
-                is NotifHistoryUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
+                is NotifHistoryUiState.Loading -> LoadingView()
+
+                is NotifHistoryUiState.Error -> ErrorView(
+                    message = state.message,
+                    onRetry = { viewModel.loadHistory() }
+                )
 
                 is NotifHistoryUiState.Empty -> {
                     Box(
@@ -66,10 +74,12 @@ fun NotifHistoryScreen(navController: NavController) {
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(Spacing.extraLarge)
                         ) {
                             Icon(
-                                Icons.Default.NotificationsNone, null,
+                                Icons.Default.NotificationsNone, "Kosong",
                                 modifier = Modifier.size(72.dp),
                                 tint = MaterialTheme.colorScheme.outline
                             )
@@ -97,12 +107,15 @@ fun NotifHistoryScreen(navController: NavController) {
                         items(
                             items = state.items,
                             key = { it.id },
-                            contentType = { "notification" }
+                            contentType = { "notif_item" }
                         ) { item ->
+                            val itemId = item.id
+                            val itemTaskId = item.taskId
+                            
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        viewModel.deleteItem(item.id)
+                                        viewModel.deleteItem(itemId)
                                         true
                                     } else false
                                 }
@@ -123,18 +136,25 @@ fun NotifHistoryScreen(navController: NavController) {
                                         contentAlignment = Alignment.CenterEnd
                                     ) {
                                         Icon(
-                                            Icons.Default.Delete, null,
+                                            Icons.Default.Delete, "Hapus",
                                             tint = MaterialTheme.colorScheme.onErrorContainer
                                         )
                                     }
-                                }
+                                },
+                                enableDismissFromStartToEnd = false
                             ) {
                                 NotifHistoryCard(
                                     item = item,
                                     onTap = {
-                                        navController.navigate(
-                                            Screen.TaskDetail.createRoute(item.taskId)
-                                        )
+                                        if (item.type == NotifType.POMODORO) {
+                                            navController.navigate(Screen.Main.createRoute(openPomodoro = true)) {
+                                                popUpTo(Screen.Main.route) { inclusive = true }
+                                            }
+                                        } else {
+                                            navController.navigate(
+                                                Screen.TaskDetail.createRoute(itemTaskId)
+                                            )
+                                        }
                                     }
                                 )
                             }
@@ -143,5 +163,26 @@ fun NotifHistoryScreen(navController: NavController) {
                 }
             }
         }
+    }
+
+    if (showClearConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirm = false },
+            title = { Text("Hapus Semua Riwayat") },
+            text = { Text("Apakah Anda yakin ingin menghapus semua riwayat notifikasi?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.clearAll()
+                    showClearConfirm = false
+                }) {
+                    Text("Hapus Semua", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirm = false }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }

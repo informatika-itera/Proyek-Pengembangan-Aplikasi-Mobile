@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.studyhub.domain.model.NotifType
 import com.studyhub.domain.repository.NotifHistoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -139,7 +140,8 @@ class PomodoroBroadcastReceiver : BroadcastReceiver(), KoinComponent {
                 taskId = "pomodoro_${System.currentTimeMillis()}",
                 taskTitle = title,
                 taskSubject = subject,
-                aiReason = reason
+                aiReason = reason,
+                type = NotifType.POMODORO
             )
             println("PomodoroBroadcastReceiver: History saved")
         } catch (e: Exception) {

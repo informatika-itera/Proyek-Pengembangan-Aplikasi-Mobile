@@ -6,7 +6,6 @@ import com.studyhub.domain.repository.PomodoroSessionSummary
 
 class FakePomodoroRepository : PomodoroRepository {
     var focusMinutesToday = 0
-    var focusCountToday = 0
     var saveSessionCalled = false
 
     override suspend fun saveSession(
@@ -15,7 +14,9 @@ class FakePomodoroRepository : PomodoroRepository {
         wasCompleted: Boolean
     ) { saveSessionCalled = true }
 
-    override suspend fun getTodayFocusCount() = focusCountToday
-    override suspend fun getTodayFocusMinutes() = focusMinutesToday
-    override suspend fun getTodaySessions() = emptyList<PomodoroSessionSummary>()
+    override suspend fun getFocusMinutesInRange(start: Long, end: Long): Int = focusMinutesToday
+    
+    override suspend fun getSessionsInRange(start: Long, end: Long): List<PomodoroSessionSummary> = emptyList()
+    
+    override suspend fun getTodayFocusMinutes(): Int = focusMinutesToday
 }

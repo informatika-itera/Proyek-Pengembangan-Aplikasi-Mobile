@@ -18,6 +18,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.studyhub.data.local.AiUsageLimit
 import com.studyhub.presentation.components.*
+import com.studyhub.presentation.components.LoadingView
+import com.studyhub.presentation.components.ErrorView
 import com.studyhub.presentation.navigation.Screen
 import com.studyhub.presentation.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -33,17 +35,17 @@ fun SmartPriorityScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Smart Priority") },
+                title = { Text("Smart Priority", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
-                        Icon(Icons.Default.ArrowBack, null)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = "Perbarui")
                     }
                 }
             )
@@ -53,40 +55,25 @@ fun SmartPriorityScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             when (val state = uiState) {
 
                 is SmartPriorityUiState.Idle -> {}
 
-                is SmartPriorityUiState.Loading -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.height(Spacing.normal))
-                        Text(
-                            "AI sedang menganalisis tugas...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                is SmartPriorityUiState.Loading -> LoadingView()
 
                 is SmartPriorityUiState.QuotaExceeded -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(Spacing.large),
+                            .padding(Spacing.extraLarge),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            Icons.Default.Warning, null,
-                            modifier = Modifier.size(64.dp),
+                            Icons.Default.Warning, contentDescription = "Kuota Habis",
+                            modifier = Modifier.size(72.dp),
                             tint = MaterialTheme.colorScheme.error
                         )
                         Spacer(Modifier.height(Spacing.normal))
@@ -102,6 +89,10 @@ fun SmartPriorityScreen(navController: NavController) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
+                        Spacer(Modifier.height(Spacing.large))
+                        Button(onClick = { navController.popBackStack() }) {
+                            Text("Kembali")
+                        }
                     }
                 }
 
@@ -117,33 +108,24 @@ fun SmartPriorityScreen(navController: NavController) {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(
-                                    horizontal = Spacing.normal
-                                ),
-                            color = MaterialTheme.colorScheme
-                                .secondaryContainer,
+                                .padding(horizontal = Spacing.normal),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             shape = MaterialTheme.shapes.small
                         ) {
                             Row(
-                                modifier = Modifier.padding(
-                                    Spacing.small
-                                ),
-                                horizontalArrangement = Arrangement
-                                    .spacedBy(Spacing.extraSmall),
+                                modifier = Modifier.padding(Spacing.small),
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.extraSmall),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    Icons.Default.Cached, null,
+                                    Icons.Default.Cached, contentDescription = null,
                                     modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme
-                                        .onSecondaryContainer
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
                                     "Dari cache — diperbarui setiap 6 jam",
-                                    style = MaterialTheme.typography
-                                        .labelSmall,
-                                    color = MaterialTheme.colorScheme
-                                        .onSecondaryContainer
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
@@ -152,22 +134,22 @@ fun SmartPriorityScreen(navController: NavController) {
 
                     LazyColumn(
                         contentPadding = PaddingValues(Spacing.normal),
-                        verticalArrangement = Arrangement.spacedBy(
-                            Spacing.small
-                        )
+                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         itemsIndexed(
                             items = state.prioritizedTasks,
-                            key = { _, pair -> pair.first.id }
+                            key = { _, pair -> pair.first.id },
+                            contentType = { _, _ -> "prioritized_task" }
                         ) { index, (task, result) ->
+                            val taskId = task.id
                             StaggeredItem(index = index) {
                                 PriorityTaskCard(
                                     task = task,
                                     result = result,
                                     onTap = {
                                         navController.navigate(
-                                            Screen.TaskDetail
-                                                .createRoute(task.id)
+                                            Screen.TaskDetail.createRoute(taskId)
                                         )
                                     }
                                 )
@@ -176,55 +158,10 @@ fun SmartPriorityScreen(navController: NavController) {
                     }
                 }
 
-                is SmartPriorityUiState.Error -> {
-                    Column(
-                        modifier = Modifier.padding(Spacing.normal)
-                    ) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme
-                                    .colorScheme.errorContainer
-                            )
-                        ) {
-                            Text(
-                                "AI tidak tersedia: ${state.message}" +
-                                "\nMenumpilkan urutan lokal.",
-                                modifier = Modifier.padding(
-                                    Spacing.medium
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme
-                                    .onErrorContainer
-                            )
-                        }
-                        Spacer(Modifier.height(Spacing.normal))
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(
-                                Spacing.small
-                            )
-                        ) {
-                            itemsIndexed(
-                                items = state.fallbackTasks,
-                                key = { _, task -> task.id }
-                            ) { index, task ->
-                                StaggeredItem(index = index) {
-                                    TaskCard(
-                                        task = task,
-                                        onEdit = {},
-                                        onDelete = {},
-                                        onStatusChange = {},
-                                        onClick = {
-                                            navController.navigate(
-                                                Screen.TaskDetail
-                                                    .createRoute(task.id)
-                                            )
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                is SmartPriorityUiState.Error -> ErrorView(
+                    message = state.message,
+                    onRetry = { viewModel.refresh() }
+                )
             }
         }
     }

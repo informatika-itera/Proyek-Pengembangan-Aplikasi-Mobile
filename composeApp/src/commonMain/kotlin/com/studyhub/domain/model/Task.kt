@@ -18,7 +18,8 @@ data class Task(
     val isDeleted: Boolean,
     val completedAt: Long?,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val colorHex: String = "#85C1A3" // Default color
 ) {
     val displaySubject: String get() = subject.ifBlank { "Lainnya" }
 }

@@ -20,10 +20,10 @@ class FilterAndSortTasksUseCase {
             (showCompleted || task.status != TaskStatus.DONE) &&
             (filterStatus == null || task.status == filterStatus) &&
             (filterPriority == null || task.priority == filterPriority) &&
-            (filterSubject == null || task.subject == filterSubject) &&
+            (filterSubject == null || (task.subject.ifBlank { "Lainnya" }) == filterSubject) &&
             (searchQuery.isBlank() ||
                 task.title.contains(searchQuery, ignoreCase = true) ||
-                task.subject.contains(searchQuery, ignoreCase = true) ||
+                (task.subject.ifBlank { "Lainnya" }).contains(searchQuery, ignoreCase = true) ||
                 task.description.contains(searchQuery, ignoreCase = true))
         }
         .sortedWith(
@@ -31,7 +31,7 @@ class FilterAndSortTasksUseCase {
                 when (sortBy) {
                     SortBy.DUE_DATE -> it.dueDate
                     SortBy.PRIORITY -> it.priority.ordinal
-                    SortBy.SUBJECT -> it.subject
+                    SortBy.SUBJECT -> it.subject.ifBlank { "Lainnya" }
                     SortBy.TITLE -> it.title
                 }
             }.thenBy { it.dueDate }

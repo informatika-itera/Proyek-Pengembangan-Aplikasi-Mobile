@@ -1,7 +1,6 @@
 package com.studyhub.presentation.screens.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,13 +17,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.studyhub.core.util.SystemAppearance
-import com.studyhub.presentation.components.StudyHubHeader
+import com.studyhub.presentation.components.LoadingView
+import com.studyhub.presentation.components.ErrorView
+import com.studyhub.presentation.components.ScreenHeader
+import com.studyhub.presentation.navigation.Screen
 import com.studyhub.presentation.theme.*
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.painterResource
+import studyhub.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -32,246 +39,398 @@ fun ProfileScreen(navController: NavController) {
     val viewModel: ProfileViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        when (val state = uiState) {
-            is ProfileUiState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            is ProfileUiState.Error -> {
-                Text(state.message, modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.error)
-            }
-            is ProfileUiState.Success -> {
-                SystemAppearance(isDarkMode = state.isDarkMode)
-                
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 100.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    // ── Header ──
-                    item {
-                        StudyHubHeader(
-                            title = "Profile",
-                            subtitle = {
-                                Text("Your study dashboard", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+    when (val state = uiState) {
+        is ProfileUiState.Loading -> LoadingView()
+        is ProfileUiState.Error -> ErrorView(
+            message = state.message,
+            onRetry = { /* Combine flows will trigger on state change */ }
+        )
+        is ProfileUiState.Success -> {
+            SystemAppearance(isDarkMode = state.isDarkMode)
 
-                    // ── Profile Card ──
-                    item {
-                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8E0D4))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        Surface(
-                                            modifier = Modifier.size(52.dp),
-                                            shape = RoundedCornerShape(14.dp),
-                                            color = Color(0xFF5F5E5A)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Icon(Icons.Default.School, "Tingkat Pendidikan", tint = Color.White, modifier = Modifier.size(28.dp))
-                                            }
-                                        }
-                                        
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                state.userName,
-                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                                color = Color(0xFF2C2416)
-                                            )
-                                            Text(
-                                                "${state.major} · Year 2",
-                                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                                                color = Color(0xFF888888)
-                                            )
-                                        }
-                                        
-                                        Column(horizontalAlignment = Alignment.End) {
-                                            Text(
-                                                "Lv ${state.level}",
-                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp),
-                                                color = Color(0xFFB8860B)
-                                            )
-                                            Text(
-                                                "Scholar",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = Color(0xFF888888)
-                                            )
-                                        }
-                                    }
-                                    
-                                    Spacer(Modifier.height(16.dp))
-                                    
-                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = Color(0xFFFFF3E0),
-                                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD180))
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text("🔥", fontSize = 14.sp)
-                                                Spacer(Modifier.width(4.dp))
-                                                Text(
-                                                    "7-Day Streak", 
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                    color = Color(0xFFE65100)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentPadding = PaddingValues(bottom = 100.dp),
+                verticalArrangement = Arrangement.spacedBy(Spacing.large)
+            ) {
+                // ── Header ──
+                item {
+                    ScreenHeader {
+                        Column {
+                            Text(
+                                "Profile",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                "Your study dashboard",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.85f)
+                            )
                         }
-                    }
-
-                    // ── Stats Grid ──
-                    item {
-                        Column(
-                            modifier = Modifier.padding(horizontal = 20.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                StatCard(
-                                    modifier = Modifier.weight(1f),
-                                    label = "Total Tasks",
-                                    value = state.totalTasks.toString(),
-                                    icon = Icons.AutoMirrored.Filled.Assignment,
-                                    color = Color(0xFFF1EBE0),
-                                    iconColor = Color(0xFF8B7355)
-                                )
-                                StatCard(
-                                    modifier = Modifier.weight(1f),
-                                    label = "Completed",
-                                    value = state.doneTasks.toString(),
-                                    icon = Icons.Default.CheckCircle,
-                                    color = Color(0xFFE1F5EE),
-                                    iconColor = Color(0xFF10B981)
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                StatCard(
-                                    modifier = Modifier.weight(1f),
-                                    label = "In Progress",
-                                    value = state.inProgressTasks.toString(),
-                                    icon = Icons.Default.TrendingUp,
-                                    color = Color(0xFFE6F1FB),
-                                    iconColor = Color(0xFF3B82F6)
-                                )
-                                StatCard(
-                                    modifier = Modifier.weight(1f),
-                                    label = "Study Hours",
-                                    value = "${state.totalStudyHours}h",
-                                    icon = Icons.Default.Schedule,
-                                    color = Color(0xFFFAEEDA),
-                                    iconColor = Color(0xFFFBBF24)
-                                )
-                            }
-                        }
-                    }
-
-                    // ── Subject Breakdown ──
-                    item {
-                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            Text("Subject Breakdown", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                            Text("Task distribution across subjects", style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp), color = Color(0xFF888888))
-                            Spacer(Modifier.height(16.dp))
-                            
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8E0D4))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    state.subjectBreakdown.forEach { stat ->
-                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                            Box(Modifier.size(10.dp).clip(CircleShape).background(stat.color))
-                                            Text(stat.name, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), modifier = Modifier.width(80.dp), color = Color(0xFF2C2416))
-                                            LinearProgressIndicator(
-                                                progress = { stat.count.toFloat() / state.totalTasks.coerceAtLeast(1) },
-                                                modifier = Modifier.weight(1f).height(5.dp).clip(CircleShape),
-                                                color = stat.color,
-                                                trackColor = Color(0xFFF2EDE4)
-                                            )
-                                            Text(stat.count.toString(), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = Color(0xFF2C2416))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // ── Settings ──
-                    item {
-                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            Text("Settings", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                            Spacer(Modifier.height(16.dp))
-                            
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8E0D4))
-                            ) {
-                                Column {
-                                    SettingsToggleItem(
-                                        title = "Dark Mode",
-                                        icon = Icons.Default.DarkMode,
-                                        checked = state.isDarkMode,
-                                        onCheckedChange = { viewModel.toggleDarkMode() }
-                                    )
-                                    
-                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = Color(0xFFE8E0D4))
-                                    
-                                    SettingsToggleItem(
-                                        title = "Notifikasi",
-                                        subtitle = "Aktifkan pengingat tugas",
-                                        icon = Icons.Default.Notifications,
-                                        checked = state.notificationEnabled,
-                                        onCheckedChange = { viewModel.toggleNotification(it) }
-                                    )
-
-                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = Color(0xFFE8E0D4))
-
-                                    SettingsToggleItem(
-                                        title = "Smart Reminder AI",
-                                        subtitle = if (state.notificationEnabled) "Waktu reminder adaptif oleh AI" else "Aktifkan notifikasi terlebih dahulu",
-                                        icon = Icons.Default.AutoAwesome,
-                                        checked = state.isAiReminderEnabled && state.notificationEnabled,
-                                        onCheckedChange = { if (state.notificationEnabled) viewModel.toggleAiReminder(it) },
-                                        enabled = state.notificationEnabled
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Spacer(Modifier.height(16.dp))
-                        Text(
-                            "Study Hub v1.0.0",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFF888888)
-                        )
                     }
                 }
+
+                // ── Profile Card ──
+                item {
+                    Box(modifier = Modifier.padding(horizontal = Spacing.normal)) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(Spacing.normal)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.normal)
+                                ) {
+                                    Surface(
+                                        modifier = Modifier.size(52.dp),
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = MaterialTheme.colorScheme.primaryContainer
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                Icons.Default.School,
+                                                contentDescription = "Major Icon",
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                        }
+                                    }
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            state.userName,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            "${state.major} · Year 2",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            "Lv ${state.level}",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Text(
+                                            "Scholar",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                Spacer(Modifier.height(Spacing.normal))
+
+                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                                    BadgeChip(
+                                        text = "${state.dayStreak}-Day Streak",
+                                        icon = "🔥",
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+
+                                    BadgeChip(
+                                        text = "${state.completionRate}% Rate",
+                                        icon = "📈",
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Stats Grid ──
+                item {
+                    Column(
+                        modifier = Modifier.padding(horizontal = Spacing.normal),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.small)
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                            StatCard(
+                                modifier = Modifier.weight(1f),
+                                label = "Total Tasks",
+                                value = state.totalTasks.toString(),
+                                icon = Icons.AutoMirrored.Filled.Assignment,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                iconColor = MaterialTheme.colorScheme.primary
+                            )
+                            StatCard(
+                                modifier = Modifier.weight(1f),
+                                label = "Completed",
+                                value = state.doneTasks.toString(),
+                                icon = Icons.Default.CheckCircle,
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                iconColor = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                            StatCard(
+                                modifier = Modifier.weight(1f),
+                                label = "In Progress",
+                                value = state.inProgressTasks.toString(),
+                                icon = Icons.Default.TrendingUp,
+                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                iconColor = MaterialTheme.colorScheme.tertiary
+                            )
+                            StatCard(
+                                modifier = Modifier.weight(1f),
+                                label = "Study Hours",
+                                value = "${state.totalStudyHours}h",
+                                icon = Icons.Default.Schedule,
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                iconColor = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
+                // ── Report Shortcut ──
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Spacing.normal),
+                        onClick = { navController.navigate(Screen.Report.route) },
+                        shape = MaterialTheme.shapes.large,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(Spacing.normal),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
+                            ) {
+                                Surface(
+                                    modifier = Modifier.size(44.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            Icons.Default.Assessment, null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+                                Column {
+                                    Text(
+                                        "Laporan Belajar",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        "Lihat analisis lengkap belajarmu",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+
+                // ── Subject Breakdown ──
+                item {
+                    Column(modifier = Modifier.padding(horizontal = Spacing.normal)) {
+                        Text(
+                            "Subject Breakdown",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            "Task distribution across subjects",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(Spacing.normal))
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(Spacing.normal), verticalArrangement = Arrangement.spacedBy(Spacing.normal)) {
+                                state.subjectBreakdown.forEach { stat ->
+                                    key(stat.name) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                                            Box(
+                                                Modifier
+                                                    .size(10.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.primary)
+                                            )
+                                            Text(
+                                                stat.name,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontWeight = FontWeight.Medium,
+                                                modifier = Modifier.width(80.dp),
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            LinearProgressIndicator(
+                                                progress = { stat.count.toFloat() / state.totalTasks.coerceAtLeast(1) },
+                                                modifier = Modifier.weight(1f).height(6.dp).clip(CircleShape),
+                                                color = MaterialTheme.colorScheme.primary,
+                                                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                            Text(
+                                                stat.count.toString(),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                                if (state.subjectBreakdown.isEmpty()) {
+                                    Text(
+                                        "No subject data available",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Settings ──
+                item {
+                    Column(modifier = Modifier.padding(horizontal = Spacing.normal)) {
+                        Text(
+                            "Settings",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(Spacing.normal))
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column {
+                                SettingsToggleItem(
+                                    title = "Dark Mode",
+                                    icon = Icons.Default.DarkMode,
+                                    checked = state.isDarkMode,
+                                    onCheckedChange = { viewModel.toggleDarkMode() }
+                                )
+
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.normal), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+
+                                SettingsToggleItem(
+                                    title = "Notifikasi",
+                                    subtitle = "Aktifkan pengingat tugas",
+                                    icon = Icons.Default.Notifications,
+                                    checked = state.notificationEnabled,
+                                    onCheckedChange = { viewModel.toggleNotification(it) }
+                                )
+
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.normal), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+
+                                SettingsToggleItem(
+                                    title = "Smart Reminder AI",
+                                    subtitle = if (state.notificationEnabled) "Waktu reminder adaptif oleh AI" else "Aktifkan notifikasi terlebih dahulu",
+                                    icon = Icons.Default.AutoAwesome,
+                                    checked = state.isAiReminderEnabled && state.notificationEnabled,
+                                    onCheckedChange = { if (state.notificationEnabled) viewModel.toggleAiReminder(it) },
+                                    enabled = state.notificationEnabled
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(Modifier.height(Spacing.large))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(Res.drawable.logo_studyhub),
+                            contentDescription = "StudyHub Logo",
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        )
+
+                        Spacer(Modifier.height(Spacing.small))
+                        Text(
+                            "Study Hub v1.0.0",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "Catat. Fokus. Raih Tujuan.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                    Spacer(Modifier.height(Spacing.large))
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun BadgeChip(
+    text: String,
+    icon: String,
+    containerColor: Color,
+    contentColor: Color
+) {
+    Surface(
+        shape = CircleShape,
+        color = containerColor,
+        border = androidx.compose.foundation.BorderStroke(1.dp, contentColor.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(icon, fontSize = 14.sp)
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = contentColor
+            )
         }
     }
 }
@@ -287,28 +446,37 @@ fun StatCard(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8E0D4)),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = 2.dp
     ) {
         Row(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier.padding(Spacing.medium),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small)
         ) {
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(MaterialTheme.shapes.small)
                     .background(color),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, label, tint = iconColor, modifier = Modifier.size(18.dp))
+                Icon(icon, contentDescription = label, tint = iconColor, modifier = Modifier.size(18.dp))
             }
             Column {
-                Text(value, style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp), fontWeight = FontWeight.Bold, color = Color(0xFF2C2416))
-                Text(label, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = Color(0xFF888888))
+                Text(
+                    value,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -326,33 +494,43 @@ fun SettingsToggleItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(Spacing.normal),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(Spacing.normal)
     ) {
         Box(
             modifier = Modifier
                 .size(38.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .background(if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.2f)),
+                .clip(MaterialTheme.shapes.small)
+                .background(if (enabled) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, title, tint = if (enabled) MaterialTheme.colorScheme.primary else Color.Gray, modifier = Modifier.size(18.dp))
+            Icon(
+                icon,
+                contentDescription = title,
+                tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = if (enabled) Color.Unspecified else Color.Gray)
+            Text(
+                title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+            )
             if (subtitle != null) {
-                Text(subtitle, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = MaterialTheme.colorScheme.primary
-            )
+            enabled = enabled
         )
     }
 }

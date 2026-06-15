@@ -18,24 +18,24 @@ fun DueDateChip(dueDate: Long) {
     val deadline = formatDeadline(dueDate)
     Surface(
         color = when {
-            deadline == "Overdue" -> Color(0xFFFEE2E2)
-            deadline == "Tomorrow" -> Color(0xFFFFF7ED)
-            else -> Color(0xFFF1EBE0)
+            deadline == "Overdue" -> MaterialTheme.colorScheme.errorContainer
+            deadline == "Tomorrow" -> MaterialTheme.colorScheme.secondaryContainer
+            else -> MaterialTheme.colorScheme.surfaceVariant
         },
         shape = MaterialTheme.shapes.extraSmall
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = Spacing.small, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.extraSmall)
         ) {
             Icon(
-                Icons.Default.CalendarToday, null,
+                Icons.Default.CalendarToday, contentDescription = null,
                 modifier = Modifier.size(10.dp),
                 tint = when {
-                    deadline == "Overdue" -> Color(0xFFB91C1C)
-                    deadline == "Tomorrow" -> Color(0xFFEA580C)
-                    else -> Color(0xFF8B7355)
+                    deadline == "Overdue" -> MaterialTheme.colorScheme.error
+                    deadline == "Tomorrow" -> MaterialTheme.colorScheme.onSecondaryContainer
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
             Text(
@@ -43,9 +43,9 @@ fun DueDateChip(dueDate: Long) {
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                 fontWeight = FontWeight.Bold,
                 color = when {
-                    deadline == "Overdue" -> Color(0xFFB91C1C)
-                    deadline == "Tomorrow" -> Color(0xFFEA580C)
-                    else -> Color(0xFF8B7355)
+                    deadline == "Overdue" -> MaterialTheme.colorScheme.onErrorContainer
+                    deadline == "Tomorrow" -> MaterialTheme.colorScheme.onSecondaryContainer
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
         }

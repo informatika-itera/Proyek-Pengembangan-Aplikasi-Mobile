@@ -12,20 +12,14 @@ insertSession:
 INSERT INTO PomodoroSessionEntity
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
-selectTodaySessions:
+selectSessionsInRange:
 SELECT * FROM PomodoroSessionEntity
-WHERE completedAt >= ?
-ORDER BY completedAt DESC;
+WHERE completedAt >= ? AND completedAt < ?
+ORDER BY completedAt ASC;
 
-selectTodayFocusCount:
-SELECT COUNT(*) FROM PomodoroSessionEntity
-WHERE phase = 'FOCUS'
-AND wasCompleted = 1
-AND completedAt >= ?;
-
-selectTotalFocusMinutesToday:
+selectTotalFocusMinutesInRange:
 SELECT SUM(durationMinutes) AS total
 FROM PomodoroSessionEntity
 WHERE phase = 'FOCUS'
 AND wasCompleted = 1
-AND completedAt >= ?;
+AND completedAt >= ? AND completedAt < ?;

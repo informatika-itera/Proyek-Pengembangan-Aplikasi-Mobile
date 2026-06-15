@@ -4,9 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -24,21 +22,43 @@ import com.studyhub.presentation.screens.ai.SmartPriorityScreen
 import com.studyhub.presentation.screens.notification.NotifHistoryScreen
 import com.studyhub.presentation.screens.pomodoro.PomodoroScreen
 import com.studyhub.presentation.screens.progress.ProgressScreen
+import com.studyhub.presentation.screens.report.ReportScreen
 import com.studyhub.presentation.screens.task.AddEditTaskScreen
 import com.studyhub.presentation.screens.task.TaskDetailScreen
 import com.studyhub.presentation.screens.task.TasksScreen
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    openScreen: String? = null,
+    taskId: String? = null,
+    onScreenOpened: () -> Unit = {}
+) {
     val navController = rememberNavController()
 
-    // Use ViewModel instead of koinInject() to prevent context issues
     val networkViewModel: NetworkViewModel = koinViewModel()
     val isOnline by networkViewModel.isOnline.collectAsStateWithLifecycle()
 
+    LaunchedEffect(openScreen, taskId) {
+        if (openScreen != null) {
+            when (openScreen) {
+                "task_detail" -> {
+                    taskId?.let {
+                        navController.navigate(Screen.TaskDetail.createRoute(it))
+                    }
+                }
+                "pomodoro" -> {
+                    navController.navigate(Screen.Main.createRoute(openPomodoro = true)) {
+                        popUpTo(Screen.Main.route) { inclusive = true }
+                    }
+                }
+            }
+            onScreenOpened()
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        // Safe offline banner — at top, animated
         OfflineBanner(isOnline = isOnline)
 
         NavHost(
@@ -58,8 +78,20 @@ fun AppNavigation() {
                 fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { 30 }
             }
         ) {
-            composable(Screen.Main.route) {
-                MainScreen(navController)
+            composable(
+                route = Screen.Main.route,
+                arguments = listOf(
+                    navArgument("openPomodoro") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                )
+            ) { backStackEntry ->
+                val openFromArg = backStackEntry.arguments?.getBoolean("openPomodoro") ?: false
+                MainScreen(
+                    rootNavController = navController, 
+                    initialOpenPomodoro = openFromArg || openScreen == "pomodoro"
+                )
             }
 
             composable(
@@ -79,7 +111,7 @@ fun AppNavigation() {
                 })
             ) { backStackEntry ->
                 AddEditTaskScreen(
-                    initialDate = backStackEntry.arguments?.getString("date"),
+                    date = backStackEntry.arguments?.getString("date"),
                     taskId = null,
                     navController = navController
                 )
@@ -90,7 +122,7 @@ fun AppNavigation() {
                 arguments = listOf(navArgument("taskId") { type = NavType.StringType })
             ) { backStackEntry ->
                 AddEditTaskScreen(
-                    initialDate = null,
+                    date = null,
                     taskId = backStackEntry.arguments?.getString("taskId") ?: "",
                     navController = navController
                 )
@@ -102,15 +134,6 @@ fun AppNavigation() {
 
             composable(Screen.NotifHistory.route) {
                 NotifHistoryScreen(navController)
-            }
-
-            composable(Screen.Pomodoro.route) { backStackEntry ->
-                val taskId = backStackEntry.arguments?.getString("taskId")
-                PomodoroScreen(taskId, navController)
-            }
-
-            composable(Screen.Progress.route) {
-                ProgressScreen(navController)
             }
 
             composable(
@@ -128,12 +151,23 @@ fun AppNavigation() {
                     navController = navController
                 )
             }
+
+            composable(Screen.Progress.route) {
+                ProgressScreen(navController)
+            }
+
+            composable(Screen.Report.route) {
+                ReportScreen(navController)
+            }
         }
     }
 }
 
 @Composable
-fun MainScreen(rootNavController: NavController) {
+fun MainScreen(
+    rootNavController: NavController,
+    initialOpenPomodoro: Boolean = false
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -146,7 +180,7 @@ fun MainScreen(rootNavController: NavController) {
                 onItemSelected = { screen ->
                     if (currentRoute != screen.route) {
                         navController.navigate(screen.route) {
-                            popUpTo(navController.graph.startDestinationRoute!!) {
+                            popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
                             launchSingleTop = true
@@ -172,7 +206,7 @@ fun MainScreen(rootNavController: NavController) {
                 HomeScreen(
                     onNavigateToTasks = { 
                         navController.navigate(Screen.Tasks.route) {
-                            popUpTo(navController.graph.startDestinationRoute!!) {
+                            popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
                             launchSingleTop = true
@@ -182,7 +216,9 @@ fun MainScreen(rootNavController: NavController) {
                     onNavigateToTaskDetail = { taskId -> rootNavController.navigate(Screen.TaskDetail.createRoute(taskId)) },
                     onNavigateToSmartPriority = { rootNavController.navigate(Screen.SmartPriority.route) },
                     onNavigateToNotifHistory = { rootNavController.navigate(Screen.NotifHistory.route) },
-                    onNavigateToProgress = { rootNavController.navigate(Screen.Progress.route) }
+                    onNavigateToProgress = { rootNavController.navigate(Screen.Progress.route) },
+                    onNavigateToReport = { rootNavController.navigate(Screen.Report.route) },
+                    openPomodoro = initialOpenPomodoro
                 ) 
             }
             composable(Screen.Tasks.route) { 
@@ -200,4 +236,3 @@ fun MainScreen(rootNavController: NavController) {
         }
     }
 }
-

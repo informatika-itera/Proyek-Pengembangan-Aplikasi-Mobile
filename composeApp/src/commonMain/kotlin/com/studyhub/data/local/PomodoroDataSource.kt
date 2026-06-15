@@ -2,6 +2,7 @@ package com.studyhub.data.local
 
 import com.studyhub.database.StudyHubDatabase
 import com.studyhub.core.util.uuid
+import com.studyhub.database.PomodoroSessionEntity
 
 class PomodoroDataSource(
     private val database: StudyHubDatabase
@@ -22,15 +23,15 @@ class PomodoroDataSource(
         )
     } catch (e: Exception) { }
 
-    fun getTodayFocusCount(startOfDay: Long): Int = try {
+    fun getSessionsInRange(start: Long, end: Long): List<PomodoroSessionEntity> = try {
         database.pomodoroSessionEntityQueries
-            .selectTodayFocusCount(startOfDay)
-            .executeAsOne().toInt()
-    } catch (e: Exception) { 0 }
+            .selectSessionsInRange(start, end)
+            .executeAsList()
+    } catch (e: Exception) { emptyList() }
 
-    fun getTodayFocusMinutes(startOfDay: Long): Int = try {
+    fun getFocusMinutesInRange(start: Long, end: Long): Int = try {
         database.pomodoroSessionEntityQueries
-            .selectTotalFocusMinutesToday(startOfDay)
+            .selectTotalFocusMinutesInRange(start, end)
             .executeAsOne().total?.toInt() ?: 0
     } catch (e: Exception) { 0 }
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.studyhub.domain.model.NotifHistoryItem
+import com.studyhub.domain.model.NotifType
 import com.studyhub.presentation.theme.Spacing
 
 @Composable
@@ -39,13 +41,16 @@ fun NotifHistoryCard(
             horizontalArrangement = Arrangement.spacedBy(Spacing.normal),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Bell icon with unread indicator
+            // Icon with unread indicator
             Box {
+                val icon = if (item.type == NotifType.POMODORO) Icons.Default.Timer else Icons.Default.Notifications
+                val iconColor = if (!item.isRead) {
+                    if (item.type == NotifType.POMODORO) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                } else MaterialTheme.colorScheme.outline
+                
                 Icon(
-                    Icons.Default.Notifications, null,
-                    tint = if (!item.isRead)
-                        MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.outline,
+                    icon, null,
+                    tint = iconColor,
                     modifier = Modifier.size(24.dp)
                 )
                 if (!item.isRead) {
@@ -70,13 +75,8 @@ fun NotifHistoryCard(
                 Text(
                     item.taskSubject,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    "AI: ${item.aiReason}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
